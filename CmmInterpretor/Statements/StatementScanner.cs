@@ -23,7 +23,7 @@ namespace CmmInterpretor.Statements
 
             var tokens = _scanner.Peek(2);
 
-            if (tokens[0].type == TokenType.Identifier && tokens[1] is { type : TokenType.Operator, Text : "::" })
+            if (tokens[0].type == TokenType.Identifier && tokens[1] is { type : TokenType.Operator, value: "::" })
             {
                 _scanner.GetNextToken();
                 _scanner.GetNextToken();
@@ -69,7 +69,7 @@ namespace CmmInterpretor.Statements
             {
                 Token token = _scanner.GetNextToken();
 
-                if (token is { type: TokenType.Operator, Text: ";" })
+                if (token is { type: TokenType.Operator, value: ";" })
                     return line;
 
                 line.Add(token);
@@ -119,7 +119,7 @@ namespace CmmInterpretor.Statements
         //    }
 
             Token def = _scanner.GetNextToken();
-            if (def is not { type : TokenType.Keyword, Text : "def" })
+            if (def is not { type: TokenType.Keyword, value: "def" })
                 throw new SyntaxError("");
 
             statement.definitions = GetLine().Split(Token.Comma);
@@ -164,7 +164,7 @@ namespace CmmInterpretor.Statements
             if (!_scanner.HasNextToken())
                 return statement;
             Token @else = _scanner.Peek();
-            if (@else is not { type : TokenType.Keyword, Text : "else" })
+            if (@else is not { type: TokenType.Keyword, value: "else" })
                 return statement;
             _scanner.GetNextToken();
 
@@ -172,7 +172,7 @@ namespace CmmInterpretor.Statements
             if (!_scanner.HasNextToken())
                 throw new SyntaxError("");
             Token token = _scanner.Peek();
-            if (token is { type : TokenType.Keyword, Text : "if" })
+            if (token is { type: TokenType.Keyword, value: "if" })
                 goto If;
             else if (token.type == TokenType.Block)
                 statement.bodies.Add(ParseCodeBlock(_scanner.GetNextToken().Text));
@@ -250,9 +250,7 @@ namespace CmmInterpretor.Statements
                 if (!_scanner.HasNextToken())
                     throw new SyntaxError("");
                 Token keyword = _scanner.GetNextToken();
-                if (keyword.type != TokenType.Keyword || !(keyword.Text is "while" or "until"))
-                    throw new SyntaxError("");
-                if (keyword is not { type : TokenType.Keyword, Text : "while" or "until" })
+                if (keyword is not { type: TokenType.Keyword, value: "while" or "until" })
                     throw new SyntaxError("");
                 statement.until = keyword.Text == "until";
 
@@ -267,7 +265,7 @@ namespace CmmInterpretor.Statements
                 if (!_scanner.HasNextToken())
                     throw new SyntaxError("");
                 Token semicolon = _scanner.GetNextToken();
-                if (semicolon is not { type : TokenType.Operator, Text : ";" })
+                if (semicolon is not { type: TokenType.Operator, value: ";" })
                     throw new SyntaxError("missing semicolon");
             }
             else
@@ -310,7 +308,7 @@ namespace CmmInterpretor.Statements
 
             var tokens = (List<Token>)token.value;
 
-            if (tokens[0].type == TokenType.Identifier && tokens[1] is { type : TokenType.Keyword, Text : "in" })
+            if (tokens[0].type == TokenType.Identifier && tokens[1] is { type: TokenType.Keyword, value: "in" })
             {
                 var statement = new ForInStatement
                 {
@@ -372,7 +370,7 @@ namespace CmmInterpretor.Statements
             if (!_scanner.HasNextToken())
                 return statement;
             Token @catch = _scanner.Peek();
-            if (@catch is { type : TokenType.Keyword, Text : "catch" })
+            if (@catch is { type: TokenType.Keyword, value: "catch" })
             {
                 _scanner.GetNextToken();
 
@@ -389,7 +387,7 @@ namespace CmmInterpretor.Statements
             if (!_scanner.HasNextToken())
                 return statement;
             Token @finally = _scanner.Peek();
-            if (@finally.type == TokenType.Keyword && @finally.Text == "finally")
+            if (@finally is { type: TokenType.Keyword, value: "finally" })
             {
                 _scanner.GetNextToken();
 
@@ -479,14 +477,14 @@ namespace CmmInterpretor.Statements
             {
                 Token token = _scanner.GetNextCommandToken();
 
-                if (token is { type : TokenType.Operator, Text : ";" })
+                if (token is { type: TokenType.Operator, value: ";" })
                 {
                     if (statement.commands[^1].Count == 0)
                         throw new SyntaxError("Missing command");
 
                     return statement;
                 }
-                else if (token is { type : TokenType.Operator, Text : "|>" })
+                else if (token is { type: TokenType.Operator, value: "|>" })
                 {
                     statement.commands.Add(new());
                 }
