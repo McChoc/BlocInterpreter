@@ -158,7 +158,7 @@ namespace CmmInterpretor
                 }
                 else if (expr[i].type == TokenType.Parentheses)
                 {
-                    if (value.Value() is Function fun)
+                    if (value.Value().Implicit(out Function func))
                     {
                         var tokens = (List<Token>)expr[i].value;
 
@@ -180,7 +180,7 @@ namespace CmmInterpretor
                         Array array = parameters.Count == 1 && parameters[0] is Array arr ? arr : new Array(parameters.ToList());
 
                         {
-                            var result = fun.Call(array, call.Engine);
+                            var result = func.Call(array, call.Engine);
 
                             if (result is not IValue v)
                                 return result;

@@ -59,9 +59,26 @@ namespace CmmInterpretor.Tokens
         public Token Peek()
         {
             int previousIndex = _index;
-            Token token = GetNextToken();
+
+            var token = GetNextToken();
+
             _index = previousIndex;
+
             return token;
+        }
+
+        public List<Token> Peek(int count)
+        {
+            int previousIndex = _index;
+
+            var tokens = new List<Token>();
+
+            for (int i = 0; i < count && HasNextToken(); i++)
+                tokens.Add(GetNextToken());
+
+            _index = previousIndex;
+
+            return tokens;
         }
 
         public Token GetNextToken()

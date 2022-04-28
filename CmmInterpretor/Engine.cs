@@ -44,8 +44,8 @@ namespace CmmInterpretor
 
                 statements.Add(statement);
 
-                if (statement is LabelStatement lbl)
-                    labels.Add(lbl.Label, i);
+                if (statement.Label is not null)
+                    labels.Add(statement.Label, i);
             }
 
             Value output = null;

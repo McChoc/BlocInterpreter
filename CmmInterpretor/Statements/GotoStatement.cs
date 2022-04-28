@@ -5,7 +5,7 @@ namespace CmmInterpretor.Statements
 {
     public class GotoStatement : Statement
     {
-        public string Label { get; set; }
+        public new string Label { get; set; }
 
         public GotoStatement(string label) => Label = label;
 

@@ -19,57 +19,46 @@ namespace CmmInterpretor.Statements
             if (!_scanner.HasNextToken())
                 throw new Exception();
 
-            Token firstToken = _scanner.Peek();
+            string label = null;
 
-            if (firstToken.type == TokenType.Block)
-                return GetBlockStatement();
+            var tokens = _scanner.Peek(2);
 
-            if (firstToken is { type : TokenType.Operator, Text : ";" })
-                return GetEmptyStatement();
+            if (tokens[0].type == TokenType.Identifier && tokens[1] is { type : TokenType.Operator, Text : "::" })
+            {
+                _scanner.GetNextToken();
+                _scanner.GetNextToken();
 
-            if (firstToken is { type : TokenType.Operator, Text : "::" })
-                return GetLabelStatement();
+                label = tokens[0].Text;
+            }
 
-            if (firstToken is { type: TokenType.Operator, Text: "@" })
-                return GetDefStatement();
+            var statement = _scanner.Peek() switch
+            {
+                { type: TokenType.Block } => GetBlockStatement(),
+                { type: TokenType.Operator, value: ";" } => GetEmptyStatement(),
+                { type: TokenType.Operator, value: "/" } => GetCommandStatement(),
+                { type: TokenType.Operator, value: "@@" } => throw new NotImplementedException(),
+                { type: TokenType.Operator, value: "@" } or
+                { type: TokenType.Keyword, value: "def" or "const" } => GetDefStatement(),
+                { type: TokenType.Keyword, value: "undef" } => GetUndefStatement(),
+                { type: TokenType.Keyword, value: "if" } => GetIfStatement(),
+                { type: TokenType.Keyword, value: "do" or "while" or "until" } => GetWhileStatement(),
+                { type: TokenType.Keyword, value: "loop" } => GetLoopStatement(),
+                { type: TokenType.Keyword, value: "repeat" } => GetRepeatStatement(),
+                { type: TokenType.Keyword, value: "for" } => GetForStatement(),
+                { type: TokenType.Keyword, value: "try" } => GetTryStatement(),
+                { type: TokenType.Keyword, value: "throw" } => GetThrowStatement(),
+                { type: TokenType.Keyword, value: "return" } => GetReturnStatement(),
+                { type: TokenType.Keyword, value: "exit" } => GetExitStatement(),
+                { type: TokenType.Keyword, value: "continue" } => GetContinueStatement(),
+                { type: TokenType.Keyword, value: "break" } => GetBreakStatement(),
+                { type: TokenType.Keyword, value: "goto" } => GetGotoStatement(),
+                { type: TokenType.Keyword, value: "pass" } => GetPassStatement(),
+                _ => new ExpressionStatement(GetLine())
+            };
 
-            if (firstToken is { type: TokenType.Operator, Text: "@@" })
-                throw new NotImplementedException();
+            statement.Label = label;
 
-            if (firstToken is { type: TokenType.Operator, Text: "/" })
-                return GetCommandStatement();
-
-            if (firstToken.type == TokenType.Keyword)
-                return firstToken.value switch
-                {
-                    "def" => GetDefStatement(),
-                    "undef" => GetUndefStatement(),
-
-                    "if" => GetIfStatement(),
-
-                    "do" or
-                    "while" or
-                    "until" => GetWhileStatement(),
-
-                    "loop" => GetLoopStatement(),
-                    "repeat" => GetRepeatStatement(),
-                    "for" => GetForStatement(),
-
-                    "try" => GetTryStatement(),
-
-                    "return" => GetReturnStatement(),
-                    "exit" => GetExitStatement(),
-                    "throw" => GetThrowStatement(),
-                    "continue" => GetContinueStatement(),
-                    "break" => GetBreakStatement(),
-                    "goto" => GetGotoStatement(),
-
-                    "pass" => GetPassStatement(),
-
-                    _ => new ExpressionStatement(GetLine())
-                };
-
-            return new ExpressionStatement(GetLine());
+            return statement;
         }
 
         private List<Token> GetLine()
@@ -80,7 +69,7 @@ namespace CmmInterpretor.Statements
             {
                 Token token = _scanner.GetNextToken();
 
-                if (token is { type : TokenType.Operator, Text : ";" })
+                if (token is { type: TokenType.Operator, Text: ";" })
                     return line;
 
                 line.Add(token);
@@ -472,19 +461,6 @@ namespace CmmInterpretor.Statements
                 throw new SyntaxError("Unexpected symbol.");
 
             return new GotoStatement(expression[0].Text);
-        }
-
-        private Statement GetLabelStatement()
-        {
-            var expression = GetLine().GetRange(1..);
-
-            if (expression.Count != 1)
-                throw new SyntaxError("Unexpected symbol.");
-
-            if (expression[0].type != TokenType.Identifier)
-                throw new SyntaxError("Unexpected symbol.");
-
-            return new LabelStatement(expression[0].Text);
         }
 
         private Statement GetCommandStatement()

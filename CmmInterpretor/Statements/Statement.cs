@@ -7,6 +7,8 @@ namespace CmmInterpretor.Statements
 {
     public abstract class Statement
     {
+        public string Label { get; set; }
+
         public abstract IResult Execute(Call call);
 
         protected static IResult ExecuteBlock(List<Statement> statements, Call call)
@@ -75,8 +77,8 @@ namespace CmmInterpretor.Statements
             var labels = new Dictionary<string, int>();
 
             for (int i = 0; i < statements.Count; i++)
-                if (statements[i] is LabelStatement lbl)
-                    labels.Add(lbl.Label, i);
+                if (statements[i].Label is not null)
+                    labels.Add(statements[i].Label, i);
 
             return labels;
         }

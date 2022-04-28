@@ -37,8 +37,8 @@ namespace CmmInterpretor.Values
                 var labels = new Dictionary<string, int>();
 
                 for (int i = 0; i < Code.Count; i++)
-                    if (Code[i] is LabelStatement lbl)
-                        labels.Add(lbl.Label, i);
+                    if (Code[i].Label is not null)
+                        labels.Add(Code[i].Label, i);
 
                 for (int i = 0; i < Code.Count; i++)
                 {
