@@ -16,7 +16,7 @@ namespace CmmInterpretor
         {
             for (int i = 0; i < expr.Count; i++)
             {
-                if (expr[i].type == TokenType.Operator && expr[i].Text == "=>")
+                if (expr[i] is { type: TokenType.Operator, value: "=>" })
                 {
                     if (i == 0)
                         throw new SyntaxError("Missing identifiers");

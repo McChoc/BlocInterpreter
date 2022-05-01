@@ -4,6 +4,7 @@ using CmmInterpretor.Extensions;
 using CmmInterpretor.Results;
 using CmmInterpretor.Tokens;
 using CmmInterpretor.Values;
+using CmmInterpretor.Variables;
 using System.Collections.Generic;
 
 namespace CmmInterpretor
@@ -25,46 +26,46 @@ namespace CmmInterpretor
                 string op = expr[0].Text;
 
                 if (op == "+")
-                    return Operator.Positive(value.Value());
+                    return Operator.Positive(value);
                 
                 if (op == "-")
-                    return Operator.Negative(value.Value());
+                    return Operator.Negative(value);
                 
                 if (op == "~")
-                    return Operator.Reverse(value.Value());
+                    return Operator.Reverse(value);
 
                 if (op == "!")
-                    return Operator.Not(value.Value());
+                    return Operator.Not(value);
 
                 if (op == "++")
                 {
-                    if (result is not Pointer ptr)
+                    if (result is not Variable var)
                         throw new SyntaxError("The right part of an increment must be a variable");
 
-                    if (!value.Value().Implicit(out Number num))
+                    if (!value.Implicit(out Number num))
                         return new Throw("Cannot convert to number");
 
-                    return ptr.Set(new Number(num.Value + 1));
+                    return var.Value = new Number(num.Value + 1);
                 }
 
                 if (op == "--")
                 {
-                    if (result is not Pointer ptr)
+                    if (result is not Variable var)
                         throw new SyntaxError("The right part of a decrement must be a variable");
 
-                    if (!value.Value().Implicit(out Number num))
+                    if (!value.Implicit(out Number num))
                         return new Throw("Cannot convert to number");
 
-                    return ptr.Set(new Number(num.Value - 1));
+                    return var.Value = new Number(num.Value - 1);
                 }
 
                 if (op == "~~")
                 {
-                    if (result is not Pointer ptr)
+                    if (result is not Variable var)
                         throw new SyntaxError("The right part of an inversion must be a variable");
 
-                    if (value.Value().Implicit(out Number num))
-                        return ptr.Set(new Number(~num.ToInt()));
+                    if (value.Implicit(out Number num))
+                        return var.Value = new Number(~num.ToInt());
 
                     //TODO support inversing types
 
@@ -73,21 +74,21 @@ namespace CmmInterpretor
 
                 if (op == "!!")
                 {
-                    if (result is not Pointer ptr)
+                    if (result is not Variable var)
                         throw new SyntaxError("The right part of a negation must be a variable");
 
-                    if (!value.Value().Implicit(out Bool b))
+                    if (!value.Implicit(out Bool b))
                         return new Throw("Cannot convert to bool");
 
-                    return ptr.Set(new Bool(!b.Value));
+                    return var.Value = new Bool(!b.Value);
                 }
 
                 if (op == "len")
                 {
-                    if (value.Value().Implicit(out Array arr))
-                        return new Number(arr.Variables.Count);
+                    if (value.Implicit(out Array arr))
+                        return new Number(arr.Values.Count);
 
-                    if (value.Value().Implicit(out String str))
+                    if (value.Implicit(out String str))
                         return new Number(str.Value.Length);
 
                     throw new SyntaxError("The expression must be a String or an Array");
@@ -95,7 +96,7 @@ namespace CmmInterpretor
 
                 if (op == "chr")
                 {
-                    if (!value.Value().Implicit(out Number num))
+                    if (!value.Implicit(out Number num))
                         return new Throw("Cannot convert to number");
 
                     return new String(((char)num.ToInt()).ToString());
@@ -103,7 +104,7 @@ namespace CmmInterpretor
 
                 if (op == "ord")
                 {
-                    if (!value.Value().Implicit(out String str))
+                    if (!value.Implicit(out String str))
                         return new Throw("Cannot convert to string");
 
                     if (str.Value.Length != 1)
@@ -114,25 +115,27 @@ namespace CmmInterpretor
 
                 if (op == "val")
                 {
-                    if (value.Value().Implicit(out Reference r))
-                        return (IResult)r.Pointer ?? new Throw ("Invalid reference.");
+                    if (value.Implicit(out Reference r))
+                        return (IResult)r.Variable ?? new Throw ("Invalid reference.");
 
                     return (IResult)value;
                 }
 
                 if (op == "ref")
                 {
-                    if (result is not Pointer ptr)
+                    if (result is not Variable var)
                         throw new SyntaxError("The right part of a reference must be a variable");
 
-                    return new Reference(ptr);
+                    return new Reference(var);
                 }
 
                 if (op == "new")
                 {
-                    var variable = new Variable(null, value.Value().Copy(), null);
-                    var pointer = new Pointer(variable, call.Engine);
-                    var reference = new Reference(pointer);
+                    value = value.Copy();
+                    value.Assign();
+
+                    var variable = new HeapVariable(value.Value);
+                    var reference = new Reference(variable);
 
                     variable.References.Add(reference);
 
@@ -141,34 +144,34 @@ namespace CmmInterpretor
 
                 if (op == "del")
                 {
-                    if (!value.Value().Implicit(out Reference r))
+                    if (!value.Implicit(out Reference r))
                         return new Throw("Cannot convert to reference");
 
-                    if (r.Pointer.Variable.name != null)
+                    if (r.Variable is not HeapVariable)
                         return new Throw("The reference have to point to a variable stored on the heap.");
 
-                    var val = r.Pointer.Get();
+                    var val = r.Variable.Value;
 
-                    r.Pointer.Remove();
+                    r.Variable.Destroy();
 
                     return val;
                 }
 
                 if (op == "nameof")
                 {
-                    if (EvaluateUnaries(expr.GetRange(1..), call, precedence) is not Pointer ptr)
-                        throw new SyntaxError("The expression must be a variable");
+                    if (EvaluateUnaries(expr.GetRange(1..), call, precedence) is not StackVariable var)
+                        throw new SyntaxError("The expression must be a variable stored on the stack");
 
-                    return ptr.NameOf();
+                    return new String(var.Name);
                 }
 
                 if (op == "typeof")
                 {
-                    return new Type(value.Value().TypeOf());
+                    return new TypeCollection(value.Type);
                 }
             }
 
-            if (expr[^1].type == TokenType.Operator || expr[^1].type == TokenType.Keyword)
+            if (expr[^1].type is TokenType.Operator or TokenType.Keyword)
             {
                 var result = EvaluateUnaries(expr.GetRange(..^1), call, precedence);
 
@@ -179,38 +182,38 @@ namespace CmmInterpretor
 
                 if (op == "++")
                 {
-                    if (result is not Pointer ptr)
+                    if (result is not Variable var)
                         throw new SyntaxError("The left part of an increment must be a variable");
 
-                    if (!value.Value().Implicit(out Number num))
+                    if (!value.Implicit(out Number num))
                         return new Throw("Cannot convert to number");
 
-                    ptr.Set(new Number(num.Value + 1));
+                    var.Value = new Number(num.Value + 1);
 
                     return num;
                 }
 
                 if (op == "--")
                 {
-                    if (result is not Pointer ptr)
+                    if (result is not Variable var)
                         throw new SyntaxError("The left part of an increment must be a variable");
 
-                    if (!value.Value().Implicit(out Number num))
+                    if (!value.Implicit(out Number num))
                         return new Throw("Cannot convert to number");
 
-                    ptr.Set(new Number(num.Value - 1));
+                    var.Value = new Number(num.Value - 1);
 
                     return num;
                 }
 
                 if (op == "~~")
                 {
-                    if (result is not Pointer ptr)
+                    if (result is not Variable var)
                         throw new SyntaxError("The right part of an inversion must be a variable");
 
-                    if (value.Value().Implicit(out Number num))
+                    if (value.Implicit(out Number num))
                     {
-                        ptr.Set(new Number(~num.ToInt()));
+                        var.Value = new Number(~num.ToInt());
                         return num;
                     }
 
@@ -221,13 +224,13 @@ namespace CmmInterpretor
 
                 if (op == "!!")
                 {
-                    if (result is not Pointer ptr)
+                    if (result is not Variable var)
                         throw new SyntaxError("The right part of a negation must be a variable");
 
-                    if (!value.Value().Implicit(out Bool b))
+                    if (!value.Implicit(out Bool b))
                         return new Throw("Cannot convert to bool");
 
-                    ptr.Set(new Bool(!b.Value));
+                    var.Value = new Bool(!b.Value);
                     return b;
                 }
             }

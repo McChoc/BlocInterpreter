@@ -12,43 +12,39 @@ namespace CmmInterpretor
         {
             for (int i = expr.Count - 1; i >= 0; i--)
             {
-                if (expr[i].type == TokenType.Operator)
+                if (expr[i] is { type: TokenType.Operator, value: "+" or "-" })
                 {
-                    string op = expr[i].Text;
+                    if (i == expr.Count - 1)
+                        return new Throw("Missing right part of additive");
 
-                    if (op is "+" or "-")
+                    if (i == 0)
+                        continue;
+
+                    if (i == 1 &&
+                        expr[0].type is TokenType.Operator or TokenType.Keyword)
+                        continue;
+
+                    if (i >= 2 &&
+                        expr[i - 1].type is TokenType.Operator or TokenType.Keyword &&
+                        expr[i - 2].type is not TokenType.Identifier)
+                        continue;
+
+                    var resultA = EvaluateAdditives(expr.GetRange(..i), call, precedence);
+
+                    if (resultA is not IValue a)
+                        return resultA;
+
+                    var resultB = Evaluate(expr.GetRange((i + 1)..), call, precedence - 1);
+
+                    if (resultB is not IValue b)
+                        return resultB;
+
+                    return expr[i].value switch
                     {
-                        if (i == expr.Count - 1)
-                            return new Throw("Missing right part of additive");
-
-                        if (i == 0)
-                            continue;
-
-                        if (i == 1 &&
-                            expr[0].type is TokenType.Operator or TokenType.Keyword)
-                            continue;
-
-                        if (i >= 2 &&
-                            expr[i - 1].type is TokenType.Operator or TokenType.Keyword &&
-                            expr[i - 2].type is not TokenType.Identifier)
-                            continue;
-
-                        var a = EvaluateAdditives(expr.GetRange(..i), call, precedence);
-
-                        if (a is not IValue aa)
-                            return a;
-
-                        var b = Evaluate(expr.GetRange((i + 1)..), call, precedence - 1);
-
-                        if (b is not IValue bb)
-                            return b;
-
-                        if (op == "+")
-                            return Operator.Add(aa.Value(), bb.Value());
-
-                        if (op == "-")
-                            return Operator.Substract(aa.Value(), bb.Value());
-                    }
+                        "+" => Operator.Add(a, b),
+                        "-" => Operator.Substract(a, b),
+                        _ => throw new System.Exception()
+                    };
                 }
             }
 

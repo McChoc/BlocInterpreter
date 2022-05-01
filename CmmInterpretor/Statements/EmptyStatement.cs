@@ -6,6 +6,6 @@ namespace CmmInterpretor.Statements
 {
     public class EmptyStatement : Statement
     {
-        public override IResult Execute(Call _) => new Void();
+        public override IResult Execute(Call _) => Void.Value;
     }
 }

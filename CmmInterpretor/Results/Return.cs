@@ -7,7 +7,7 @@ namespace CmmInterpretor.Results
     {
         public Value value;
 
-        public Return() => value = new Void();
+        public Return() => value = Void.Value;
 
         public Return(Value value) => this.value = value;
     }

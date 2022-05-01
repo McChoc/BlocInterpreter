@@ -18,7 +18,7 @@ namespace CmmInterpretor.Statements
             if (result is not IValue value)
                 return result;
 
-            if (!value.Value().Implicit(out Number num))
+            if (!value.Implicit(out Number num))
                 return new Throw("Cannot implicitly convert to number");
 
             int loopCount = num.ToInt();
@@ -41,10 +41,11 @@ namespace CmmInterpretor.Statements
                     {
                         if (r is Continue)
                             continue;
-                        else if (r is Break)
+
+                        if (r is Break)
                             break;
-                        else
-                            return r;
+                        
+                        return r;
                     }
                 }
                 finally
@@ -53,7 +54,7 @@ namespace CmmInterpretor.Statements
                 }
             }
 
-            return new Void();
+            return Void.Value;
         }
     }
 }

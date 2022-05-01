@@ -13,7 +13,7 @@ namespace CmmInterpretor
         {
             for (int i = expr.Count - 1; i >= 0; i--)
             {
-                if (expr[i].type == TokenType.Operator && expr[i].Text == "^")
+                if (expr[i] is { type: TokenType.Operator, value: "^" })
                 {
                     if (i == 0)
                         throw new SyntaxError("Missing the left part of logical XOR");
@@ -31,7 +31,7 @@ namespace CmmInterpretor
                     if (b is not IValue bb)
                         return b;
 
-                    return Operator.Xor(aa.Value(), bb.Value());
+                    return Operator.Xor(aa, bb);
                 }
             }
 

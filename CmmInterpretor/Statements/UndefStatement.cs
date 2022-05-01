@@ -17,13 +17,13 @@ namespace CmmInterpretor.Statements
         {
             foreach (List<Token> undefinition in _undefinitions)
             {
-                if (Evaluator.Evaluate(undefinition, call) is not Pointer ptr)
+                if (Evaluator.Evaluate(undefinition, call) is not Variable var)
                     throw new SyntaxError("Only a variable can be undefined.");
 
-                ptr.Remove();
+                var.Destroy(); //TODO check que ça a de l'allure
             }
 
-            return new Void();
+            return Void.Value;
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using CmmInterpretor.Data;
 using CmmInterpretor.Results;
+using CmmInterpretor.Variables;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,25 +8,32 @@ namespace CmmInterpretor.Values
 {
     public class Tuple : Value
     {
-        public List<IValue> Variables { get; set; }
+        public List<IValue> Values { get; }
 
-        public Tuple() => Variables = new List<IValue>();
-        public Tuple(List<IValue> value) => Variables = value;
+        public override VariableType Type => VariableType.Tuple;
 
-        public override VariableType TypeOf() => VariableType.Tuple;
+        public Tuple(List<IValue> value) => Values = value;
 
-        public override Value Copy() => new Tuple(Variables.Select(v => v.Value().Copy()).ToList<IValue>());
-
-        public override bool Equals(Value other)
+        public override Value Copy() => new Tuple(Values.Select(v => v.Copy()).ToList<IValue>());
+        public override void Assign()
         {
-            if (other is not Tuple tpl)
+            for (int i = 0; i < Values.Count; i++)
+            {
+                Values[i] = new ChildVariable(Values[i].Value, null, this);
+                Values[i].Assign();
+            }
+        }
+
+        public override bool Equals(IValue other)
+        {
+            if (other.Value is not Tuple tpl)
                 return false;
 
-            if (Variables.Count != tpl.Variables.Count)
+            if (Values.Count != tpl.Values.Count)
                 return false;
 
-            for (int i = 0; i < Variables.Count; i++)
-                if (!Variables[i].Equals(tpl.Variables[i]))
+            for (int i = 0; i < Values.Count; i++)
+                if (!Values[i].Equals(tpl.Values[i]))
                     return false;
 
             return true;
@@ -37,9 +45,9 @@ namespace CmmInterpretor.Values
             {
                 value = Bool.True as T;
 
-                foreach (var variable in Variables)
+                foreach (var variable in Values)
                 {
-                    if (variable.Value().Implicit(out Bool b))
+                    if (variable.Implicit(out Bool b))
                     {
                         if (!b.Value)
                             value = Bool.False as T;
@@ -70,39 +78,59 @@ namespace CmmInterpretor.Values
             return false;
         }
 
-        public override IResult Explicit<T>()
+        public override IResult Implicit(VariableType type)
         {
-            if (typeof(T) == typeof(Bool))
+            if (type == VariableType.Bool)
             {
-                foreach (var variable in Variables)
+                foreach (var variable in Values)
                 {
-                    var result = variable.Value().Explicit<Bool>();
+                    var result = variable.Implicit(VariableType.Bool);
 
-                    if (result is not IValue v || !((Bool)v.Value()).Value)
+                    if (result is not IValue v || !((Bool)v.Value).Value)
                         return result;
                 }
 
                 return Bool.True;
             }
 
-            if (typeof(T) == typeof(String))
-                return new String(ToString());
+            return type switch
+            {
+                VariableType.String => new String(ToString()),
+                VariableType.Tuple => this,
+                _ => new Throw($"Cannot implicitly cast tuple as {type.ToString().ToLower()}")
+            };
+        }
 
-            if (typeof(T) == typeof(Array))
-                return new Array(Variables.Select(v => v.Value().Copy()).ToList());
+        public override IResult Explicit(VariableType type)
+        {
+            if (type == VariableType.Bool)
+            {
+                foreach (var variable in Values)
+                {
+                    var result = variable.Explicit(VariableType.Bool);
 
-            if (typeof(T) == typeof(Tuple))
-                return this;
+                    if (result is not IValue v || !((Bool)v.Value).Value)
+                        return result;
+                }
 
-            return new Throw($"Cannot cast tuple as {typeof(T)}");
+                return Bool.True;
+            }
+
+            return type switch
+            {
+                VariableType.String => new String(ToString()),
+                VariableType.Array => new Array(Values.Select(v => v.Copy()).ToList<IValue>()),
+                VariableType.Tuple => this,
+                _ => new Throw($"Cannot cast tuple as {type.ToString().ToLower()}")
+            };
         }
 
         public override string ToString(int depth)
         {
-            if (!Variables.Any(v => v is Tuple || v is Array || v is Struct))
-                return "(" + string.Join(", ", Variables.Select(v => v.Value())) + ")";
+            if (!Values.Any(v => v is Tuple || v is Array || v is Struct))
+                return "(" + string.Join(", ", Values.Select(v => v.Value)) + ")";
             else
-                return "(\n" + string.Join(",\n", Variables.Select(v => new string(' ', (depth + 1) * 4) + v.Value().ToString(depth + 1))) + "\n" + new string(' ', depth * 4) + ")";
+                return "(\n" + string.Join(",\n", Values.Select(v => new string(' ', (depth + 1) * 4) + v.Value.ToString(depth + 1))) + "\n" + new string(' ', depth * 4) + ")";
         }
     }
 }

@@ -1,25 +1,24 @@
 ﻿using CmmInterpretor.Data;
 using CmmInterpretor.Results;
-using System;
+using System.Collections.Generic;
 
 namespace CmmInterpretor.Values
 {
     public class Range : Value, IIterable
     {
-        public int? Start { get; set; }
-        public int? End { get; set; }
-        public int Step { get; set; }
+        public int? Start { get; }
+        public int? End { get; }
+        public int Step { get; }
 
-        public Range() { }
+        public override VariableType Type => VariableType.Range;
+
         public Range(int? start, int? end, int step = 1) => (Start, End, Step) = (start, end, step);
 
-        public override VariableType TypeOf() => VariableType.Range;
+        public override Value Copy() => this;
 
-        public override Value Copy() => new Range(Start, End, Step);
-
-        public override bool Equals(Value other)
+        public override bool Equals(IValue other)
         {
-            if (other is not Range rng)
+            if (other.Value is not Range rng)
                 return false;
 
             if (Start != rng.Start)
@@ -58,52 +57,44 @@ namespace CmmInterpretor.Values
             return false;
         }
 
-        public override IResult Explicit<T>()
+        public override IResult Implicit(VariableType type)
         {
-            if (typeof(T) == typeof(Bool))
-                return Bool.True;
+            return type switch
+            {
+                VariableType.Bool => Bool.True,
+                VariableType.Range => this,
+                VariableType.String => new String(ToString()),
+                _ => new Throw($"Cannot implicitly cast range as {type.ToString().ToLower()}")
+            };
+        }
 
-            if (typeof(T) == typeof(Range))
-                return this;
-
-            if (typeof(T) == typeof(String))
-                return new String(ToString());
-
-            return new Throw($"Cannot cast range as {typeof(T)}");
+        public override IResult Explicit(VariableType type)
+        {
+            return type switch
+            {
+                VariableType.Bool => Bool.True,
+                VariableType.Range => this,
+                VariableType.String => new String(ToString()),
+                _ => new Throw($"Cannot cast range as {type.ToString().ToLower()}")
+            };
         }
 
         public override string ToString(int _) => $"{Start}..{End}{(Step != 1 ? $"..{Step}" : "")}";
 
-        public int Count
+        public IEnumerable<Value> Iterate()
         {
-            get
-            {
-                int start = Start ?? (Step >= 0 ? 0 : -1);
-                int end = End ?? (Step >= 0 ? 0 : -1);
+            double start = Start ?? (Step >= 0 ? 0 : -1);
+            double end = End ?? (Step >= 0 ? double.PositiveInfinity : double.NegativeInfinity);
 
-                if (Step != 0 && (start >= 0 == (End == null ? Step < 0 : End >= 0)))
-                {
-                    int count = (end - start + Step - Math.Sign(Step)) / Step;
+            if (Step > 1)
+                for (double i = start; i < end; i += Step)
+                    yield return new Number(i);
 
-                    return count >= 0 ? count : 0;
-                }
+            if (Step < 1)
+                for (double i = start; i > end; i += Step)
+                    yield return new Number(i);
 
-                return 0;
-            }
-        }
-        public Value this[int index]
-        {
-            get
-            {
-                int start = Start ?? (Step >= 0 ? 0 : -1);
-
-                int number = start + Step * index;
-
-                if (Step == 0 || (start >= 0 != (End == null ? Step < 0 : End >= 0)))
-                    throw new Exception();
-
-                return new Number(number);
-            }
+            yield break;
         }
     }
 }

@@ -23,14 +23,14 @@ namespace CmmInterpretor.Statements
                 if (result is not IValue value)
                     return result;
 
-                if (!value.Value().Implicit(out Bool b))
+                if (!value.Implicit(out Bool b))
                     return new Throw("Cannot implicitly convert to bool");
 
                 if (b.Value)
                     return ExecuteBlock((List<Statement>)bodies[i].value, call);
             }
 
-            return new Void();
+            return Void.Value;
         }
     }
 }

@@ -1,22 +1,25 @@
 ﻿using CmmInterpretor.Data;
 using CmmInterpretor.Results;
-using System;
 
 namespace CmmInterpretor.Values
 {
     public class Void : Value
     {
-        public override VariableType TypeOf() => VariableType.Void;
+        public static Void Value { get; } = new();
 
-        public override Value Copy() => throw new Exception();
+        public override VariableType Type => VariableType.Void;
 
-        public override bool Equals(Value other) => throw new Exception();
+        private Void() { }
+
+        public override Value Copy() => this;
+
+        public override bool Equals(IValue other) => throw new System.Exception();
 
         public override bool Implicit<T>(out T value)
         {
-            if (typeof(T) == typeof(Type))
+            if (typeof(T) == typeof(TypeCollection))
             {
-                value = new Type(VariableType.Void) as T;
+                value = new TypeCollection(VariableType.Void) as T;
                 return true;
             }
 
@@ -24,12 +27,20 @@ namespace CmmInterpretor.Values
             return false;
         }
 
-        public override IResult Explicit<T>()
+        public override IResult Implicit(VariableType type)
         {
-            if (typeof(T) == typeof(Type))
-                return new Type(VariableType.Void);
+            if (type == VariableType.Void)
+                return new TypeCollection(VariableType.Void);
 
-            return new Throw($"Cannot cast void as {typeof(T)}");
+            return new Throw($"Cannot implicitly cast void as {type.ToString().ToLower()}");
+        }
+
+        public override IResult Explicit(VariableType type)
+        {
+            if (type == VariableType.Void)
+                return new TypeCollection(VariableType.Void);
+
+            return new Throw($"Cannot cast void as {type.ToString().ToLower()}");
         }
 
         public override string ToString(int _) => "void";

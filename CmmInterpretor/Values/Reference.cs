@@ -5,33 +5,26 @@ namespace CmmInterpretor.Values
 {
     public class Reference : Value
     {
-        public Pointer Pointer { get; set; }
+        public Variable Variable { get; private set; }
 
-        public override VariableType TypeOf() => VariableType.Reference;
+        public override VariableType Type => VariableType.Reference;
 
-        public Reference(Pointer pointer) => Pointer = pointer;
+        public Reference(Variable var) => Variable = var;
 
-        public override Value Copy() => new Reference(Pointer);
+        public override Value Copy() => new Reference(Variable);
 
         public void Invalidate()
         {
-            Pointer = null;
+            Variable = null;
         }
 
-        public override bool Equals(Value other)
+        public override bool Equals(IValue other)
         {
-            if (other is not Reference r)
+            if (other.Value is not Reference r)
                 return false;
 
-            if (Pointer.Variable != r.Pointer.Variable)
+            if (Variable != r.Variable)
                 return false;
-
-            if (Pointer.Accessors.Count != r.Pointer.Accessors.Count)
-                return false;
-
-            for (int i = 0; i < Pointer.Accessors.Count; i++)
-                if (Pointer.Accessors[i] != r.Pointer.Accessors[i])
-                    return false;
 
             return true;
         }
@@ -43,9 +36,9 @@ namespace CmmInterpretor.Values
                 value = this as T;
                 return true;
             }
-            else if (Pointer.Variable.value is T t)
+            else if (Variable.Value.Implicit(out T val))
             {
-                value = t;
+                value = val;
                 return true;
             }
 
@@ -53,16 +46,15 @@ namespace CmmInterpretor.Values
             return false;
         }
 
-        public override IResult Explicit<T>()
+        public override IResult Implicit(VariableType type)
         {
-            if (typeof(T) == typeof(Reference))
+            if (type == VariableType.Reference)
                 return this;
 
-            if (Pointer.Variable.value is T t)
-                return t;
-
-            return new Throw($"Cannot cast void as {typeof(T)}");
+            return Variable.Value.Explicit(type);
         }
+
+        public override IResult Explicit(VariableType type) => Implicit(type);
 
         public override string ToString(int _) => "[reference]";
     }

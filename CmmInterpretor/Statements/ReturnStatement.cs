@@ -19,7 +19,7 @@ namespace CmmInterpretor.Statements
             var result = Evaluator.Evaluate(_tokens, call);
 
             if (result is IValue value)
-                return new Return(value.Value());
+                return new Return(value.Value);
 
             return result;
         }

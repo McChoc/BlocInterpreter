@@ -1,8 +1,9 @@
-﻿namespace CmmInterpretor.Data
+﻿using System.Collections.Generic;
+
+namespace CmmInterpretor.Data
 {
     public interface IIterable
     {
-        int Count { get; }
-        Value this[int index] { get; }
+        IEnumerable<Value> Iterate();
     }
 }

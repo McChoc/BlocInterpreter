@@ -1,39 +1,46 @@
 ﻿using CmmInterpretor.Data;
 using CmmInterpretor.Results;
+using CmmInterpretor.Variables;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace CmmInterpretor.Values
 {
-    public class Struct : Value
+    public class Struct : Value, IIndexable
     {
-        public Dictionary<string, Value> Variables { get; set; }
+        public static Struct Empty { get; } = new(new());
 
-        public Struct() => Variables = new Dictionary<string, Value>();
-        public Struct(Dictionary<string, Value> value) => Variables = value;
+        public Dictionary<string, IValue> Values { get; private set; }
 
-        public IResult Get(Value variable, Engine _)
+        public override VariableType Type => VariableType.Struct;
+
+        public Struct(Dictionary<string, IValue> value) => Values = value;
+
+        public override Value Copy() => new Struct(Values.ToDictionary(p => p.Key, p => (IValue)p.Value.Copy()));
+        public override void Assign()
         {
-            if (variable is String str)
-                return Variables[str.Value];
-            else
-                return new Throw("It should be a string.");
+            foreach (var key in Values.Keys)
+            {
+                Values[key] = new ChildVariable((Value)Values[key], key, this);
+                Values[key].Assign();
+            }
+        }
+        public override void Destroy()
+        {
+            foreach (var value in Values.Values)
+                value.Destroy();
         }
 
-        public override VariableType TypeOf() => VariableType.Struct;
-
-        public override Value Copy() => new Struct(Variables.ToDictionary(p => p.Key, p => p.Value.Copy()));
-
-        public override bool Equals(Value other)
+        public override bool Equals(IValue other)
         {
-            if (other is not Struct obj)
+            if (other.Value is not Struct obj)
                 return false;
 
-            if (Variables.Count != obj.Variables.Count)
+            if (Values.Count != obj.Values.Count)
                 return false;
 
-            foreach (string key in Variables.Keys)
-                if (!Variables[key].Equals(obj.Variables[key]))
+            foreach (string key in Values.Keys)
+                if (!Values[key].Equals(obj.Values[key]))
                     return false;
 
             return true;
@@ -63,32 +70,55 @@ namespace CmmInterpretor.Values
             return false;
         }
 
-        public override IResult Explicit<T>()
+        public override IResult Implicit(VariableType type)
         {
-            if (typeof(T) == typeof(Bool))
-                return Bool.True;
+            return type switch
+            {
+                VariableType.Bool => Bool.True,
+                VariableType.String => new String(ToString()),
+                VariableType.Struct => this,
+                _ => new Throw($"Cannot implicitly cast struct as {type.ToString().ToLower()}")
+            };
+        }
 
-            if (typeof(T) == typeof(String))
-                return new String(ToString());
-
-            if (typeof(T) == typeof(Tuple))
-                return new Tuple(Variables.OrderBy(x => x.Key).Select(v => v.Value.Copy()).ToList<IValue>());
-
-            if (typeof(T) == typeof(Array))
-                return new Array(Variables.OrderBy(x => x.Key).Select(x => new Struct(new Dictionary<string, Value>() { { "key", new String(x.Key) }, { "value", x.Value.Copy() } })).ToList<Value>());
-
-            if (typeof(T) == typeof(Struct))
-                return this;
-
-            return new Throw($"Cannot cast struct as {typeof(T)}");
+        public override IResult Explicit(VariableType type)
+        {
+            return type switch
+            {
+                VariableType.Bool => Bool.True,
+                VariableType.String => new String(ToString()),
+                VariableType.Tuple => new Tuple(Values.OrderBy(x => x.Key).Select(v => v.Value.Copy()).ToList<IValue>()),
+                VariableType.Array => new Array(Values.OrderBy(x => x.Key).Select(x => new Struct(new Dictionary<string, IValue>() { { "key", new String(x.Key) }, { "value", x.Value.Copy() } })).ToList<IValue>()),
+                VariableType.Struct => this,
+                _ => new Throw($"Cannot cast struct as {type.ToString().ToLower()}")
+            };
         }
 
         public override string ToString(int depth)
         {
-            if (Variables.Count == 0)
+            if (Values.Count == 0)
                 return "{ } as struct";
             else
-                return "{\n" + string.Join(",\n", Variables.OrderBy(x => x.Key).Select(p => new string(' ', (depth + 1) * 4) + p.Key + " = " + p.Value.ToString(depth + 1))) + "\n" + new string(' ', depth * 4) + "}";
+                return "{\n" + string.Join(",\n", Values.OrderBy(x => x.Key).Select(p => new string(' ', (depth + 1) * 4) + p.Key + " = " + p.Value.ToString(depth + 1))) + "\n" + new string(' ', depth * 4) + "}";
+        }
+
+        public IResult Get(string identifier)
+        {
+            if (Values.ContainsKey(identifier))
+                return (IResult)Values[identifier];
+
+            return new Throw($"'{identifier}' was not defined inside this struct");
+        }
+
+        public IResult Index(Value value, Engine engine)
+        {
+            if (value is not String str)
+                return new Throw("It should be a string.");
+
+            if (Values.ContainsKey(str.Value))
+                return (IResult)Values[str.Value];
+
+            return new Throw($"'{str.Value}' was not defined inside this struct");
         }
     }
 }

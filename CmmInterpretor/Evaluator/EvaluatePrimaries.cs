@@ -17,13 +17,13 @@ namespace CmmInterpretor
 
             int i = 1;
 
-            switch (expr[0].type)
+            switch (expr[0])
             {
-                case TokenType.Literal:
+                case { type: TokenType.Literal }:
                     value = (Value)expr[0].value;
                     break;
 
-                case TokenType.Interpolated:
+                case { type: TokenType.Interpolated }:
                     {
                         var result = call.Interpolate(expr[0]);
 
@@ -34,7 +34,7 @@ namespace CmmInterpretor
                     }
                     break;
 
-                case TokenType.Block:
+                case { type: TokenType.Block }:
                     {
                         var result = call.Initialize(expr[0]);
 
@@ -45,7 +45,7 @@ namespace CmmInterpretor
                     }
                     break;
 
-                case TokenType.Parentheses:
+                case { type: TokenType.Parentheses }:
                     {
                         List<Token> tokens = (List<Token>)expr[0].value;
 
@@ -58,29 +58,33 @@ namespace CmmInterpretor
                     }
                     break;
 
-                case TokenType.Identifier:
-                    string identifier = expr[0].Text;
+                case { type: TokenType.Identifier, value: "global" }:
+                    value = call.Global;
+                    break;
 
-                    switch (identifier)
+                case { type: TokenType.Identifier, value: "this" }:
+                    value = call.This;
+                    break;
+
+                case { type: TokenType.Identifier, value: "recall" }:
+                    value = call.Recall;
+                    break;
+
+                case { type: TokenType.Identifier, value: "params" }:
+                    value = call.Params;
+                    break;
+
+                case { type: TokenType.Identifier, value: string identifier }:
                     {
-                        case "global": value = call.Global; break;
+                        if (!call.TryGet(identifier, out Variable var))
+                            return new Throw($"Variable '{identifier}' was not defined in scope");
 
-                        case "this": value = call.This; break;
-
-                        case "recall": value = call.Recall; break;
-
-                        case "params": value = call.Params; break;
-
-                        default:
-                            if (!call.TryGet(identifier, out Pointer ptr))
-                                return new Throw($"Variable '{identifier}' was not defined in scope");
-
-                            value = ptr;
-                            break;
+                        value = var;
                     }
                     break;
 
-                default: throw new SyntaxError("Unexpected symbol");
+                default:
+                    throw new SyntaxError("Unexpected symbol");
             }
 
             for (; i < expr.Count; i++)
@@ -95,13 +99,9 @@ namespace CmmInterpretor
                     if (identifier.type != TokenType.Identifier)
                         throw new SyntaxError("Unexpected symbol");
 
-                    if (value is Pointer ptr)
+                    if (value.Implicit(out Struct obj))
                     {
-                        ptr.Accessors.Add(identifier.Text);
-                    }
-                    else if (value.Value() is Struct obj)
-                    {
-                        IResult result = obj.Get(new String(identifier.Text), call.Engine);
+                        IResult result = obj.Get(identifier.Text);
 
                         if (result is not IValue v)
                             return result;
@@ -110,55 +110,33 @@ namespace CmmInterpretor
                     }
                     else
                     {
-                        throw new SyntaxError("It was not a Struct");
+                        throw new SyntaxError("The '.' operator can only be apllied to a struct");
                     }
 
                     i++;
                 }
                 else if (expr[i].type == TokenType.Brackets)
                 {
+                    if (value.Value is not IIndexable indx)
+                        return new Throw("You can only index a string, an array or a struct.");
+
                     IResult result = Evaluate((List<Token>)expr[i].value, call);
 
                     if (result is not IValue v)
                         return result;
 
-                    Value accessor = v.Value();
+                    Value accessor = v.Value;
 
-                    if (value is Pointer ptr && (accessor is Number || accessor is String))
-                    {
-                        if (accessor is Number num)
-                            ptr.Accessors.Add(num.ToInt());
-                        else if (accessor is String str)
-                            ptr.Accessors.Add(str.Value);
+                    result = indx.Index(accessor, call.Engine);
 
-                        value = ptr;
-                    }
-                    else
-                    {
-                        switch (value.Value())
-                        {
-                            case String str:
-                                result = str.Get(accessor, call.Engine);
-                                break;
-                            case Array arr:
-                                result = arr.Get(accessor, call.Engine);
-                                break;
-                            case Struct obj:
-                                result = obj.Get(accessor, call.Engine);
-                                break;
-                            default:
-                                return new Throw("It was not a string, an array or a struct");
-                        }
+                    if (result is not IValue vv)
+                        return result;
 
-                        if (result is not IValue vv)
-                            return result;
-
-                        value = vv;
-                    }
+                    value = vv;
                 }
                 else if (expr[i].type == TokenType.Parentheses)
                 {
-                    if (value.Value().Implicit(out Function func))
+                    if (value.Implicit(out Function func))
                     {
                         var tokens = (List<Token>)expr[i].value;
 
@@ -173,11 +151,11 @@ namespace CmmInterpretor
                                 if (result is not IValue v)
                                     return result;
 
-                                parameters.Add(v.Value());
+                                parameters.Add(v.Value);
                             }
                         }
 
-                        Array array = parameters.Count == 1 && parameters[0] is Array arr ? arr : new Array(parameters.ToList());
+                        Array array = parameters.Count == 1 && parameters[0] is Array arr ? arr : new Array(parameters.ToList<IValue>());
 
                         {
                             var result = func.Call(array, call.Engine);

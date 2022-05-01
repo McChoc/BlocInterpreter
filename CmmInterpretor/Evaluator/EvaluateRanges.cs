@@ -30,7 +30,7 @@ namespace CmmInterpretor
 
                     if (result is IValue value)
                     {
-                        if (value.Value().Implicit(out Number number))
+                        if (value.Implicit(out Number number))
                             start = number.ToInt();
                         else
                             return new Throw("Should be a number");
@@ -47,7 +47,7 @@ namespace CmmInterpretor
 
                     if (result is IValue value)
                     {
-                        if (value.Value().Implicit(out Number number))
+                        if (value.Implicit(out Number number))
                             end = number.ToInt();
                         else
                             return new Throw("Should be a number");
@@ -72,7 +72,7 @@ namespace CmmInterpretor
 
                     if (result is IValue value)
                     {
-                        if (value.Value().Implicit(out Number number))
+                        if (value.Implicit(out Number number))
                             start = number.ToInt();
                         else
                             return new Throw("Should be a number");
@@ -89,7 +89,7 @@ namespace CmmInterpretor
 
                     if (result is IValue value)
                     {
-                        if (value.Value().Implicit(out Number number))
+                        if (value.Implicit(out Number number))
                             end = number.ToInt();
                         else
                             return new Throw("Should be a number");
@@ -106,7 +106,7 @@ namespace CmmInterpretor
 
                     if (result is IValue value)
                     {
-                        if (value.Value().Implicit(out Number number))
+                        if (value.Implicit(out Number number))
                             step = number.ToInt();
                         else
                             return new Throw("Should be a number");

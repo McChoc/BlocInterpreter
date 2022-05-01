@@ -215,27 +215,27 @@ namespace CmmInterpretor.Tokens
 
             return word switch
             {
-                "void" => new Token(TokenType.Literal, new Void()),
-                "null" => new Token(TokenType.Literal, new Null()),
+                "void" => new Token(TokenType.Literal, Void.Value),
+                "null" => new Token(TokenType.Literal, Null.Value),
 
                 "false" => new Token(TokenType.Literal, Bool.False),
                 "true" => new Token(TokenType.Literal, Bool.True),
                 "nan" => new Token(TokenType.Literal, Number.NaN),
                 "infinity" => new Token(TokenType.Literal, Number.Infinity),
 
-                "bool" => new Token(TokenType.Literal, new Type(VariableType.Bool)),
-                "number" => new Token(TokenType.Literal, new Type(VariableType.Number)),
-                "range" => new Token(TokenType.Literal, new Type(VariableType.Range)),
-                "string" => new Token(TokenType.Literal, new Type(VariableType.String)),
-                "tuple" => new Token(TokenType.Literal, new Type(VariableType.Tuple)),
-                "array" => new Token(TokenType.Literal, new Type(VariableType.Array)),
-                "struct" => new Token(TokenType.Literal, new Type(VariableType.Struct)),
-                "function" => new Token(TokenType.Literal, new Type(VariableType.Function)),
-                "task" => new Token(TokenType.Literal, new Type(VariableType.Task)),
-                "reference" => new Token(TokenType.Literal, new Type(VariableType.Reference)),
-                "complex" => new Token(TokenType.Literal, new Type(VariableType.Complex)),
-                "type" => new Token(TokenType.Literal, new Type(VariableType.Type)),
-                "any" => new Token(TokenType.Literal, Type.Any),
+                "bool" => new Token(TokenType.Literal, new TypeCollection(VariableType.Bool)),
+                "number" => new Token(TokenType.Literal, new TypeCollection(VariableType.Number)),
+                "range" => new Token(TokenType.Literal, new TypeCollection(VariableType.Range)),
+                "string" => new Token(TokenType.Literal, new TypeCollection(VariableType.String)),
+                "tuple" => new Token(TokenType.Literal, new TypeCollection(VariableType.Tuple)),
+                "array" => new Token(TokenType.Literal, new TypeCollection(VariableType.Array)),
+                "struct" => new Token(TokenType.Literal, new TypeCollection(VariableType.Struct)),
+                "function" => new Token(TokenType.Literal, new TypeCollection(VariableType.Function)),
+                "task" => new Token(TokenType.Literal, new TypeCollection(VariableType.Task)),
+                "reference" => new Token(TokenType.Literal, new TypeCollection(VariableType.Reference)),
+                "complex" => new Token(TokenType.Literal, new TypeCollection(VariableType.Complex)),
+                "type" => new Token(TokenType.Literal, new TypeCollection(VariableType.Type)),
+                "any" => new Token(TokenType.Literal, TypeCollection.Any),
 
                 _ => new Token(TokenType.Identifier, word.TrimStart('$')),
             };

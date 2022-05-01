@@ -5,21 +5,20 @@ namespace CmmInterpretor.Values
 {
     public class Bool : Value
     {
-        public static Bool False => new(false);
-        public static Bool True => new(true);
+        public static Bool False { get; } = new(false);
+        public static Bool True { get; } = new(true);
 
-        public bool Value { get; set; }
+        public bool Value { get; }
 
-        public Bool() => Value = false;
+        public override VariableType Type => VariableType.Bool;
+
         public Bool(bool value) => Value = value;
 
-        public override VariableType TypeOf() => VariableType.Bool;
+        public override Value Copy() => this;
 
-        public override Value Copy() => new Bool(Value);
-
-        public override bool Equals(Value other)
+        public override bool Equals(IValue other)
         {
-            if (other is Bool b)
+            if (other.Value is Bool b)
                 return Value == b.Value;
 
             return false;
@@ -49,18 +48,26 @@ namespace CmmInterpretor.Values
             return false;
         }
 
-        public override IResult Explicit<T>()
+        public override IResult Implicit(VariableType type)
         {
-            if (typeof(T) == typeof(Bool))
-                return this;
+            return type switch
+            {
+                VariableType.Bool => this,
+                VariableType.Number => new Number(Value ? 1 : 0),
+                VariableType.String => new String(ToString()),
+                _ => new Throw($"Cannot implicitly cast bool as {type.ToString().ToLower()}")
+            };
+        }
 
-            if (typeof(T) == typeof(Number))
-                return Value ? new Number(1) : new Number(0);
-
-            if (typeof(T) == typeof(String))
-                return new String(ToString());
-
-            return new Throw($"Cannot cast bool as {typeof(T)}");
+        public override IResult Explicit(VariableType type)
+        {
+            return type switch
+            {
+                VariableType.Bool => this,
+                VariableType.Number => new Number(Value ? 1 : 0),
+                VariableType.String => new String(ToString()),
+                _ => new Throw($"Cannot cast bool as {type.ToString().ToLower()}")
+            };
         }
 
         public override string ToString(int _) => Value ? "true" : "false";

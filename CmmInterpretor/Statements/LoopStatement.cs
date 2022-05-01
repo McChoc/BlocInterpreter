@@ -34,10 +34,11 @@ namespace CmmInterpretor.Statements
                     {
                         if (result is Continue)
                             continue;
-                        else if (result is Break)
+
+                        if (result is Break)
                             break;
-                        else
-                            return result;
+                        
+                        return result;
                     }
                 }
                 finally
@@ -46,7 +47,7 @@ namespace CmmInterpretor.Statements
                 }
             }
 
-            return new Void();
+            return Void.Value;
         }
     }
 }

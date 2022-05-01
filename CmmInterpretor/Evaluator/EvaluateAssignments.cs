@@ -14,144 +14,125 @@ namespace CmmInterpretor
         {
             for (int i = 0; i < expr.Count; i++)
             {
-                if (expr[i].type == TokenType.Operator)
+                if (expr[i] is { type: TokenType.Operator, value: "=" or "+=" or "-=" or "*=" or "/=" or "%=" or "**=" or "//=" or "%%=" or "&&=" or "||=" or "^^=" or "&=" or "|=" or "^=" or "<<=" or ">>=" })
                 {
                     string op = expr[i].Text;
 
-                    if (op is "=" or "+=" or "-=" or "*=" or "/=" or "%=" or "**=" or "//=" or "%%=" or "&&=" or "||=" or "^^=" or "&=" or "|=" or "^=" or "<<=" or ">>=")
+                    if (i == 0)
+                        throw new SyntaxError("Missing the left part of assignment");
+
+                    if (i > expr.Count - 1)
+                        throw new SyntaxError("Missing the right part of assignment");
+
+                    var resultA = Evaluate(expr.GetRange(..i), call, precedence - 1);
+
+                    if (resultA is not IValue a)
+                        return resultA;
+
+                    if (a is not Variable var)
+                        throw new SyntaxError("You cannot assign a value to a literal");
+
+                    if (op == "=")
                     {
-                        if (i == 0)
-                            throw new SyntaxError("Missing the left part of assignment");
+                        var resultB = EvaluateAssignments(expr.GetRange((i + 1)..), call, precedence);
 
-                        if (i > expr.Count - 1)
-                            throw new SyntaxError("Missing the right part of assignment");
+                        if (resultB is not IValue b)
+                            return resultB;
 
-                        if (op == "=")
+                        b = b.Copy();
+                        b.Assign();
+                        var.Value.Destroy();
+                        return var.Value = b.Value;
+                    }
+                    else if (op == "&&=")
+                    {
+                        if (!a.Implicit(out Bool boolA))
+                            return new Throw("Cannot implicitly convert to bool");
+
+                        if (!boolA.Value)
+                            return a.Value;
+
+                        var resultB = EvaluateAssignments(expr.GetRange((i + 1)..), call, precedence);
+
+                        if (resultB is not IValue b)
+                            return resultB;
+
+                        if (!b.Implicit(out Bool _))
+                            return new Throw("Cannot implicitly convert to bool");
+
+                        b = b.Copy();
+                        b.Assign();
+                        var.Value.Destroy();
+                        return var.Value = b.Value;
+                    }
+                    else if (op == "||=")
+                    {
+                        if (!a.Implicit(out Bool boolA))
+                            return new Throw("Cannot implicitly convert to bool");
+
+                        if (boolA.Value)
+                            return a.Value;
+
+                        var resultB = EvaluateAssignments(expr.GetRange((i + 1)..), call, precedence);
+
+                        if (resultB is not IValue b)
+                            return resultB;
+
+                        if (!b.Implicit(out Bool _))
+                            return new Throw("Cannot implicitly convert to bool");
+
+                        b = b.Copy();
+                        b.Assign();
+                        var.Value.Destroy();
+                        return var.Value = b.Value;
+                    }
+                    else if (op == "^^=")
+                    {
+                        if (!a.Implicit(out Bool boolA))
+                            return new Throw("Cannot implicitly convert to bool");
+
+                        var resultB = EvaluateAssignments(expr.GetRange((i + 1)..), call, precedence);
+
+                        if (resultB is not IValue b)
+                            return resultB;
+
+                        if (!b.Implicit(out Bool boolB))
+                            return new Throw("Cannot implicitly convert to bool");
+
+                        var.Value.Destroy();
+                        return var.Value = new Bool(boolA.Value != boolB.Value);
+                    }
+                    else
+                    {
+                        var resultB = EvaluateAssignments(expr.GetRange((i + 1)..), call, precedence);
+
+                        if (resultB is not IValue b)
+                            return resultB;
+
+                        var result = expr[i].value switch
                         {
-                            var a = Evaluate(expr.GetRange(..i), call, precedence - 1);
+                            "+=" => Operator.Add(a, b),
+                            "-=" => Operator.Substract(a, b),
+                            "*=" => Operator.Multiply(a, b),
+                            "/=" => Operator.Divide(a, b),
+                            "%=" => Operator.Remainder(a, b),
+                            "**=" => Operator.Power(a, b),
+                            "//=" => Operator.Root(a, b),
+                            "%%=" => Operator.Logarithm(a, b),
+                            "&=" => Operator.And(a, b),
+                            "|=" => Operator.Or(a, b),
+                            "^=" => Operator.Xor(a, b),
+                            "<<=" => Operator.Left(a, b),
+                            ">>=" => Operator.Right(a, b),
+                            _ => throw new System.Exception(),
+                        };
 
-                            if (a is not IValue)
-                                return a;
+                        if (result is not IValue value)
+                            return result;
 
-                            if (a is not Pointer ptr)
-                                throw new SyntaxError("You cannot assign a value to a literal");
-
-                            var b = EvaluateAssignments(expr.GetRange((i + 1)..), call, precedence);
-
-                            if (b is not IValue bb)
-                                return b;
-
-                            return ptr.Set(bb.Value());
-                        }
-                        else if (op == "&&=")
-                        {
-                            var a = Evaluate(expr.GetRange(..i), call, precedence - 1);
-
-                            if (a is not IValue aa)
-                                return a;
-
-                            if (a is not Pointer ptr)
-                                throw new SyntaxError("You cannot assign a value to a literal");
-
-                            if (!aa.Value().Implicit(out Bool aaa))
-                                return new Throw("Cannot implicitly convert to bool");
-
-                            if (!aaa.Value)
-                                return aa.Value();
-
-                            var b = EvaluateAssignments(expr.GetRange((i + 1)..), call, precedence);
-
-                            if (b is not IValue bb)
-                                return b;
-
-                            return ptr.Set(bb.Value());
-                        }
-                        else if (op == "||=")
-                        {
-                            var a = Evaluate(expr.GetRange(..i), call, precedence - 1);
-
-                            if (a is not IValue aa)
-                                return a;
-
-                            if (a is not Pointer ptr)
-                                throw new SyntaxError("You cannot assign a value to a literal");
-
-                            if (!aa.Value().Implicit(out Bool aaa))
-                                return new Throw("Cannot implicitly convert to bool");
-
-                            if (aaa.Value)
-                                return aa.Value();
-
-                            var b = EvaluateAssignments(expr.GetRange((i + 1)..), call, precedence);
-
-                            if (b is not IValue bb)
-                                return b;
-
-                            return ptr.Set(bb.Value());
-                        }
-                        else if (op == "^^=")
-                        {
-                            var a = Evaluate(expr.GetRange(..i), call, precedence - 1);
-
-                            if (a is not IValue aa)
-                                return a;
-
-                            if (a is not Pointer ptr)
-                                throw new SyntaxError("You cannot assign a value to a literal");
-
-                            if (!aa.Value().Implicit(out Bool aaa))
-                                return new Throw("Cannot implicitly convert to bool");
-
-                            var b = EvaluateAssignments(expr.GetRange((i + 1)..), call, precedence);
-
-                            if (b is not IValue bb)
-                                return b;
-
-                            if (!bb.Value().Implicit(out Bool bbb))
-                                return new Throw("Cannot implicitly convert to bool");
-
-                            return ptr.Set(new Bool(aaa.Value != bbb.Value));
-                        }
-                        else
-                        {
-                            var a = Evaluate(expr.GetRange(..i), call, precedence - 1);
-
-                            if (a is not IValue)
-                                return a;
-
-                            if (a is not Pointer ptr)
-                                throw new SyntaxError("You cannot assign a value to a literal");
-
-                            var b = EvaluateAssignments(expr.GetRange((i + 1)..), call, precedence);
-
-                            if (b is not IValue value)
-                                return b;
-
-                            System.Func<Value, Value, IResult> operation = expr[i].value switch
-                            {
-                                "+=" => Operator.Add,
-                                "-=" => Operator.Substract,
-                                "*=" => Operator.Multiply,
-                                "/=" => Operator.Divide,
-                                "%=" => Operator.Remainder,
-                                "**=" => Operator.Power,
-                                "//=" => Operator.Root,
-                                "%%=" => Operator.Logarithm,
-                                "&=" => Operator.And,
-                                "|=" => Operator.Or,
-                                "^=" => Operator.Xor,
-                                "<<=" => Operator.Left,
-                                ">>=" => Operator.Right,
-                                _ => throw new System.Exception(),
-                            };
-
-                            var result = operation(ptr.Variable.value, value.Value());
-
-                            if (result is not IValue v)
-                                return result;
-
-                            return ptr.Set(v.Value());
-                        }
+                        value.Assign();
+                        var.Value.Destroy();
+                        return var.Value = value.Value;
                     }
                 }
             }

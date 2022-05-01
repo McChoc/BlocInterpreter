@@ -21,7 +21,7 @@ namespace CmmInterpretor
                 if (i == expr.Count)
                     return Evaluate(expr, call, precedence - 1);
 
-                if (expr[i].type == TokenType.Operator && expr[i].Text == "?")
+                if (expr[i] is { type: TokenType.Operator, value: "?" })
                 {
                     idx1 = i;
                     break;
@@ -35,20 +35,17 @@ namespace CmmInterpretor
                 if (i == expr.Count)
                     throw new SyntaxError("Missing ':'.");
 
-                if (expr[i].type == TokenType.Operator)
+                if (expr[i] is { type: TokenType.Operator, value: "?" })
+                    depth++;
+
+                if (expr[i] is { type: TokenType.Operator, value: ":" })
                 {
-                    if (expr[i].Text == "?")
-                        depth++;
+                    depth--;
 
-                    if (expr[i].Text == ":")
+                    if (depth == 0)
                     {
-                        depth--;
-
-                        if (depth == 0)
-                        {
-                            idx2 = i;
-                            break;
-                        }
+                        idx2 = i;
+                        break;
                     }
                 }
             }
@@ -58,7 +55,7 @@ namespace CmmInterpretor
             if (result is not IValue value)
                 return result;
 
-            if (value.Value().Implicit(out Bool b))
+            if (value.Implicit(out Bool b))
             {
                 if (b.Value)
                     return EvaluateTernaries(expr.GetRange((idx1 + 1)..idx2), call, precedence);

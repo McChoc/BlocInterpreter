@@ -13,30 +13,25 @@ namespace CmmInterpretor
         {
             for (int i = expr.Count - 1; i >= 0; i--)
             {
-                if (expr[i].type == TokenType.Operator)
+                if (expr[i] is { type: TokenType.Operator, value: "<=>" })
                 {
-                    string op = expr[i].Text;
+                    if (i == 0)
+                        throw new SyntaxError("Missing the left part of comparison");
 
-                    if (op == "<=>")
-                    {
-                        if (i == 0)
-                            throw new SyntaxError("Missing the left part of comparison");
+                    if (i > expr.Count - 1)
+                        throw new SyntaxError("Missing the right part of comparison");
 
-                        if (i > expr.Count - 1)
-                            throw new SyntaxError("Missing the right part of comparison");
+                    var resultA = EvaluateAdditives(expr.GetRange(..i), call, precedence);
 
-                        var a = EvaluateAdditives(expr.GetRange(..i), call, precedence);
+                    if (resultA is not IValue a)
+                        return resultA;
 
-                        if (a is not IValue aa)
-                            return a;
+                    var resultB = Evaluate(expr.GetRange((i + 1)..), call, precedence - 1);
 
-                        var b = Evaluate(expr.GetRange((i + 1)..), call, precedence - 1);
+                    if (resultB is not IValue b)
+                        return resultB;
 
-                        if (b is not IValue bb)
-                            return b;
-
-                        return Operator.Compare(aa.Value(), bb.Value());
-                    }
+                    return Operator.Compare(a, b);
                 }
             }
 

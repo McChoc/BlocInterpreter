@@ -5,16 +5,18 @@ namespace CmmInterpretor.Values
 {
     public class Task : Value
     {
-        public override VariableType TypeOf() => VariableType.Task;
+        public override VariableType Type => VariableType.Task;
 
         public override Value Copy() => this;
 
-        public override bool Equals(Value other)
+        public override bool Equals(IValue other)
         {
-            if (other is Task task)
-                return true; // TODO
+            if (other.Value is not Task task)
+                return false;
+            
+            // TODO
 
-            return false;
+            return true;
         }
 
         public override bool Implicit<T>(out T value)
@@ -41,18 +43,26 @@ namespace CmmInterpretor.Values
             return false;
         }
 
-        public override IResult Explicit<T>()
+        public override IResult Implicit(VariableType type)
         {
-            if (typeof(T) == typeof(Bool))
-                return Bool.True;
+            return type switch
+            {
+                VariableType.Bool => Bool.True,
+                VariableType.String => new String(ToString()),
+                VariableType.Task => this,
+                _ => new Throw($"Cannot implicitly cast task as {type.ToString().ToLower()}")
+            };
+        }
 
-            if (typeof(T) == typeof(String))
-                return new String(ToString());
-
-            if (typeof(T) == typeof(Task))
-                return this;
-
-            return new Throw($"Cannot cast task as {typeof(T)}");
+        public override IResult Explicit(VariableType type)
+        {
+            return type switch
+            {
+                VariableType.Bool => Bool.True,
+                VariableType.String => new String(ToString()),
+                VariableType.Task => this,
+                _ => new Throw($"Cannot cast task as {type.ToString().ToLower()}")
+            };
         }
 
         public override string ToString(int _) => "[task]";

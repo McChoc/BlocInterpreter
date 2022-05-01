@@ -5,13 +5,17 @@ namespace CmmInterpretor.Values
 {
     public class Null : Value
     {
-        public override VariableType TypeOf() => VariableType.Null;
+        public static Null Value { get; } = new();
 
-        public override Value Copy() => new Null();
+        public override VariableType Type => VariableType.Null;
 
-        public override bool Equals(Value other)
+        private Null() { }
+
+        public override Value Copy() => this;
+
+        public override bool Equals(IValue other)
         {
-            return other is Null;
+            return other.Value is Null;
         }
 
         public override bool Implicit<T>(out T value)
@@ -24,25 +28,25 @@ namespace CmmInterpretor.Values
 
             if (typeof(T) == typeof(String))
             {
-                value = new String() as T;
+                value = String.Empty as T;
                 return true;
             }
 
             if (typeof(T) == typeof(Array))
             {
-                value = new Array() as T;
+                value = Array.Empty as T;
                 return true;
             }
 
             if (typeof(T) == typeof(Struct))
             {
-                value = new Struct() as T;
+                value = Struct.Empty as T;
                 return true;
             }
 
-            if (typeof(T) == typeof(Type))
+            if (typeof(T) == typeof(TypeCollection))
             {
-                value = new Type(VariableType.Null) as T;
+                value = new TypeCollection(VariableType.Null) as T;
                 return true;
             }
 
@@ -50,24 +54,30 @@ namespace CmmInterpretor.Values
             return false;
         }
 
-        public override IResult Explicit<T>()
+        public override IResult Implicit(VariableType type)
         {
-            if (typeof(T) == typeof(Bool))
-                return Bool.False;
+            return type switch
+            {
+                VariableType.Bool => Bool.False,
+                VariableType.String => String.Empty,
+                VariableType.Array => Array.Empty,
+                VariableType.Struct => Struct.Empty,
+                VariableType.Type => new TypeCollection(VariableType.Null),
+                _ => new Throw($"Cannot implicitly cast null as {type.ToString().ToLower()}")
+            };
+        }
 
-            if (typeof(T) == typeof(String))
-                return new String();
-
-            if (typeof(T) == typeof(Array))
-                return new Array();
-
-            if (typeof(T) == typeof(Struct))
-                return new Struct();
-
-            if (typeof(T) == typeof(Type))
-                return new Type(VariableType.Null);
-
-            return new Throw($"Cannot cast null as {typeof(T)}");
+        public override IResult Explicit(VariableType type)
+        {
+            return type switch
+            {
+                VariableType.Bool => Bool.False,
+                VariableType.String => String.Empty,
+                VariableType.Array => Array.Empty,
+                VariableType.Struct => Struct.Empty,
+                VariableType.Type => new TypeCollection(VariableType.Null),
+                _ => new Throw($"Cannot cast null as {type.ToString().ToLower()}")
+            };
         }
 
         public override string ToString(int _) => "null";

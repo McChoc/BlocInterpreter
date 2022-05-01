@@ -31,7 +31,7 @@ namespace CmmInterpretor.Statements
                 if (result is not IValue value)
                     return result;
 
-                if (!value.Value().Implicit(out Bool b))
+                if (!value.Implicit(out Bool b))
                     return new Throw("Cannot implicitly convert to bool");
 
                 if (!b.Value)
@@ -52,10 +52,11 @@ namespace CmmInterpretor.Statements
                     {
                         if (r is Continue)
                             continue;
-                        else if (r is Break)
+
+                        if (r is Break)
                             break;
-                        else
-                            return r;
+                        
+                        return r;
                     }
                 }
                 finally
@@ -68,7 +69,7 @@ namespace CmmInterpretor.Statements
 
             call.Pop();
 
-            return new Void();
+            return Void.Value;
         }
     }
 }

@@ -56,7 +56,7 @@ namespace CmmInterpretor
 
                 if (result is IValue value)
                 {
-                    output = value.Value();
+                    output = value.Value;
                 }
                 else if (result is Goto g)
                 {
@@ -75,7 +75,7 @@ namespace CmmInterpretor
                 }
             }
 
-            return statements.Count == 1 ? output : new Void();
+            return statements.Count == 1 ? output : Void.Value;
         }
 
         public class Builder

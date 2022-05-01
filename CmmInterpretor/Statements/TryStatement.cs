@@ -18,7 +18,7 @@ namespace CmmInterpretor.Statements
             
             if (result is Throw)
             {
-                result = new Void();
+                result = Void.Value;
 
                 if (@catch.type != TokenType.Empty)
                 {

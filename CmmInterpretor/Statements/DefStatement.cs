@@ -4,6 +4,7 @@ using CmmInterpretor.Extensions;
 using CmmInterpretor.Results;
 using CmmInterpretor.Tokens;
 using CmmInterpretor.Values;
+using CmmInterpretor.Variables;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -24,11 +25,11 @@ namespace CmmInterpretor.Statements
                 if (definition[0].type == TokenType.Identifier)
                 {
                     string identifier = definition[0].Text;
-                    Value value = new Null();
+                    Value value = Null.Value;
 
                     if (definition.Count > 1)
                     {
-                        if (definition[1].type != TokenType.Operator || definition[1].Text != "=")
+                        if (definition[1] is not { type: TokenType.Operator, value: "=" })
                             throw new SyntaxError("Unexpected symbol");
 
                         var result = Evaluator.Evaluate(definition.GetRange(2..), call);
@@ -36,10 +37,12 @@ namespace CmmInterpretor.Statements
                         if (result is not IValue v)
                             return result;
 
-                        value = v.Value();
+                        value = v.Copy();
                     }
 
-                    if (!call.TryAdd(new Variable(identifier, value, call.Scopes[^1]), out _))
+                    value.Assign();
+
+                    if (!call.TryAdd(new StackVariable(value, identifier, call.Scopes[^1])))
                         return new Throw($"Variable '{identifier}' was already defined in scope");
                 }
                 else if (definition[0].type == TokenType.Parentheses)
@@ -53,11 +56,11 @@ namespace CmmInterpretor.Statements
                         throw new SyntaxError("The left part of an assignement must be a variable");
 
                     var identifiers = expressions.Select(e => e[0].Text).ToList();
-                    var values = Enumerable.Repeat<Value>(new Null(), identifiers.Count).ToList();
+                    var values = Enumerable.Repeat<Value>(Null.Value, identifiers.Count).ToList();
 
                     if (definition.Count > 1)
                     {
-                        if (definition[1].type != TokenType.Operator || definition[1].Text != "=")
+                        if (definition[1] is not { type: TokenType.Operator, value: "=" })
                             throw new SyntaxError("Unexpected symbol");
 
                         var result = Evaluator.Evaluate(definition.GetRange(2..), call);
@@ -67,24 +70,26 @@ namespace CmmInterpretor.Statements
 
                         if (value is Tuple tuple)
                         {
-                            if (identifiers.Count != tuple.Variables.Count)
+                            if (identifiers.Count != tuple.Values.Count)
                                 throw new SyntaxError("Miss match number of elements in tuples.");
 
-                            tuple.Variables = tuple.Variables.Select(e => e.Value()).ToList<IValue>();
+                            tuple = (Tuple)tuple.Copy();
 
                             for (int i = 0; i < identifiers.Count; i++)
-                                values[i] = tuple.Variables[i].Value();
+                                values[i] = tuple.Values[i].Value;
                         }
                         else
                         {
                             for (int i = 0; i < identifiers.Count; i++)
-                                values[i] = value.Value().Copy();
+                                values[i] = value.Copy();
                         }
                     }
 
                     foreach (var (identifier, value) in identifiers.Zip(values, (i, v) => (i, v)))
                     {
-                        if (!call.TryAdd(new Variable(identifier, value, call.Scopes[^1]), out _))
+                        value.Assign();
+
+                        if (!call.TryAdd(new StackVariable(value, identifier, call.Scopes[^1])))
                             return new Throw($"Variable '{identifier}' was already defined in scope");
                     }
                 }
@@ -94,7 +99,7 @@ namespace CmmInterpretor.Statements
                 }
             }
 
-            return new Void();
+            return Void.Value;
         }
 
         //public struct Decorator

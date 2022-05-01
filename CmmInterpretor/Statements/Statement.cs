@@ -44,7 +44,7 @@ namespace CmmInterpretor.Statements
                 call.Pop();
             }
 
-            return new Void();
+            return Void.Value;
         }
 
         protected static IResult ExecuteBlockInLoop(List<Statement> statements, Dictionary<string, int> labels, Call call)
@@ -69,7 +69,7 @@ namespace CmmInterpretor.Statements
                 }
             }
 
-            return new Void();
+            return Void.Value;
         }
 
         protected static Dictionary<string, int> GetLabels(List<Statement> statements)

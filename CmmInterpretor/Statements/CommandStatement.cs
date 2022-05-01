@@ -12,7 +12,7 @@ namespace CmmInterpretor.Statements
 
         public override IResult Execute(Call call)
         {
-            Value output = new Void();
+            Value output = Void.Value;
 
             foreach (var command in commands)
             {
@@ -25,7 +25,7 @@ namespace CmmInterpretor.Statements
                     if (result is not IValue value)
                         return result;
 
-                    words.Add(((String)value.Value()).Value);
+                    words.Add(((String)value.Value).Value);
                 }
 
                 string name = words[0];
@@ -40,7 +40,7 @@ namespace CmmInterpretor.Statements
             if (output.Implicit(out String str))
                 call.Engine.Log(str.Value);
 
-            return new Void();
+            return Void.Value;
         }
 
         private static IResult GetText(Token token, Call call)
@@ -58,7 +58,7 @@ namespace CmmInterpretor.Statements
                 if (result is not IValue value)
                     return result;
 
-                if (!value.Value().Implicit(out String str))
+                if (!value.Implicit(out String str))
                     return new Throw("Cannot implicitly convert to string");
 
                 return str;
@@ -68,10 +68,10 @@ namespace CmmInterpretor.Statements
             {
                 string identifier = token.Text;
 
-                if (!call.TryGet(identifier, out Pointer ptr))
+                if (!call.TryGet(identifier, out Variable var))
                     return new Throw($"Variable '{identifier}' was not defined in scope");
 
-                if (!ptr.Get().Implicit(out String str))
+                if (!var.Value.Implicit(out String str))
                     return new Throw("Cannot implicitly convert to string");
 
                 return str;

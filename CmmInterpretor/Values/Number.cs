@@ -6,21 +6,20 @@ namespace CmmInterpretor.Values
 {
     public class Number : Value
     {
-        public static Number NaN => new(double.NaN);
-        public static Number Infinity => new(double.PositiveInfinity);
+        public static Number NaN { get; } = new(double.NaN);
+        public static Number Infinity { get; } = new(double.PositiveInfinity);
 
-        public double Value { get; set; }
+        public double Value { get; }
 
-        public Number() => Value = 0;
+        public override VariableType Type => VariableType.Number;
+
         public Number(double value) => Value = value;
 
-        public override VariableType TypeOf() => VariableType.Number;
+        public override Value Copy() => this;
 
-        public override Value Copy() => new Number(Value);
-
-        public override bool Equals(Value other)
+        public override bool Equals(IValue other)
         {
-            if (other is Number num)
+            if (other.Value is Number num)
                 return Value == num.Value;
 
             return false;
@@ -50,18 +49,26 @@ namespace CmmInterpretor.Values
             return false;
         }
 
-        public override IResult Explicit<T>()
+        public override IResult Implicit(VariableType type)
         {
-            if (typeof(T) == typeof(Bool))
-                return new Bool(Value != 0 && Value != double.NaN);
+            return type switch
+            {
+                VariableType.Bool => new Bool(Value is not (0 or double.NaN)),
+                VariableType.Number => this,
+                VariableType.String => new String(ToString()),
+                _ => new Throw($"Cannot implicitly cast number as {type.ToString().ToLower()}")
+            };
+        }
 
-            if (typeof(T) == typeof(Number))
-                return this;
-
-            if (typeof(T) == typeof(String))
-                return new String(ToString());
-
-            return new Throw($"Cannot cast number as {typeof(T)}");
+        public override IResult Explicit(VariableType type)
+        {
+            return type switch
+            {
+                VariableType.Bool => new Bool(Value is not (0 or double.NaN)),
+                VariableType.Number => this,
+                VariableType.String => new String(ToString()),
+                _ => new Throw($"Cannot cast number as {type.ToString().ToLower()}")
+            };
         }
 
         public int ToInt() => (int)Value;

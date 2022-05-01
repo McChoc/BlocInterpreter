@@ -43,15 +43,15 @@ while (true)
             string code = string.Join("\n", lines);
             lines.Clear();
 
-            if (code[^1] != ';')
+            if (code.Length == 0 || code[^1] != ';')
                 code += ';';
 
             var result = engine.Execute(code);
 
             if (result is IValue value)
             {
-                if (value.Value() is not Void)
-                    Console.WriteLine(value.Value().ToString());
+                if (value.Value is not Void)
+                    Console.WriteLine(value.Value.ToString());
             }
             else if (result is Return || result is Exit)
             {

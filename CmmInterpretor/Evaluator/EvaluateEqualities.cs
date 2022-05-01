@@ -14,32 +14,30 @@ namespace CmmInterpretor
         {
             for (int i = expr.Count - 1; i >= 0; i--)
             {
-                if (expr[i].type == TokenType.Operator)
+                if (expr[i] is { type: TokenType.Operator, value: "==" or "!=" })
                 {
-                    string op = expr[i].Text;
+                    if (i == 0)
+                        throw new SyntaxError("Missing the left part of equality");
 
-                    if (op is "==" or "!=")
+                    if (i > expr.Count - 1)
+                        throw new SyntaxError("Missing the right part of equality");
+
+                    var resultA = EvaluateEqualities(expr.GetRange(..i), call, precedence);
+
+                    if (resultA is not IValue a)
+                        return resultA;
+
+                    var resultB = Evaluate(expr.GetRange((i + 1)..), call, precedence - 1);
+
+                    if (resultB is not IValue b)
+                        return resultB;
+
+                    return expr[i].value switch
                     {
-                        if (i == 0)
-                            throw new SyntaxError("Missing the left part of equality");
-
-                        if (i > expr.Count - 1)
-                            throw new SyntaxError("Missing the right part of equality");
-
-                        var a = EvaluateEqualities(expr.GetRange(..i), call, precedence);
-
-                        if (a is not IValue aa)
-                            return a;
-
-                        var b = Evaluate(expr.GetRange((i + 1)..), call, precedence - 1);
-
-                        if (b is not IValue bb)
-                            return b;
-
-                        bool equality = aa.Value().Equals(bb.Value());
-
-                        return new Bool(op == "==" ? equality : !equality);
-                    }
+                        "==" => new Bool(a.Equals(b)),
+                        "!=" => new Bool(!a.Equals(b)),
+                        _ => throw new System.Exception()
+                    };
                 }
             }
 

@@ -7,7 +7,7 @@ namespace CmmInterpretor.Results
     {
         public Value value;
 
-        public Throw() => value = new Void();
+        public Throw() => value = Void.Value;
 
         public Throw(string text) => value = new String(text);
 

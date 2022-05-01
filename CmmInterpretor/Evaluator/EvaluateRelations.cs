@@ -13,40 +13,35 @@ namespace CmmInterpretor
         {
             for (int i = expr.Count - 1; i >= 0; i--)
             {
-                if (expr[i].type is TokenType.Operator or TokenType.Keyword)
+                if (expr[i] is { type: TokenType.Operator or TokenType.Keyword, value: "<" or "<=" or ">" or ">=" or "in" or "is" or "as" })
                 {
-                    string op = expr[i].Text;
+                    if (i == 0)
+                        throw new SyntaxError("Missing the left part of relation");
 
-                    if (op is "<" or "<=" or ">" or ">=" or "in" or "is" or "as")
+                    if (i > expr.Count - 1)
+                        throw new SyntaxError("Missing the right part of relation");
+
+                    var a = EvaluateRelations(expr.GetRange(..i), call, precedence);
+
+                    if (a is not IValue aa)
+                        return a;
+
+                    var b = Evaluate(expr.GetRange((i + 1)..), call, precedence - 1);
+
+                    if (b is not IValue bb)
+                        return a;
+
+                    return expr[i].value switch
                     {
-                        if (i == 0)
-                            throw new SyntaxError("Missing the left part of relation");
-
-                        if (i > expr.Count - 1)
-                            throw new SyntaxError("Missing the right part of relation");
-
-                        var a = EvaluateRelations(expr.GetRange(..i), call, precedence);
-
-                        if (a is not IValue aa)
-                            return a;
-
-                        var b = Evaluate(expr.GetRange((i + 1)..), call, precedence - 1);
-
-                        if (b is not IValue bb)
-                            return a;
-
-                        return op switch
-                        {
-                            "<" => Operator.Less(aa.Value(), bb.Value()),
-                            "<=" => Operator.LessOrEqual(aa.Value(), bb.Value()),
-                            ">" => Operator.Greater(aa.Value(), bb.Value()),
-                            ">=" => Operator.GreaterOrEqual(aa.Value(), bb.Value()),
-                            "in" => Operator.In(aa.Value(), bb.Value()),
-                            "is" => Operator.Is(aa.Value(), bb.Value()),
-                            "as" => Operator.As(aa.Value(), bb.Value()),
-                            _ => throw new System.Exception()
-                        };
-                    }
+                        "<" => Operator.Less(aa, bb),
+                        "<=" => Operator.LessOrEqual(aa, bb),
+                        ">" => Operator.Greater(aa, bb),
+                        ">=" => Operator.GreaterOrEqual(aa, bb),
+                        "in" => Operator.In(aa, bb),
+                        "is" => Operator.Is(aa, bb),
+                        "as" => Operator.As(aa, bb),
+                        _ => throw new System.Exception()
+                    };
                 }
             }
 

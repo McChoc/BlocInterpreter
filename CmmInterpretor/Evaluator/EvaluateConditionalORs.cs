@@ -14,7 +14,7 @@ namespace CmmInterpretor
         {
             for (int i = expr.Count - 1; i >= 0; i--)
             {
-                if (expr[i].type == TokenType.Operator && expr[i].Text == "||")
+                if (expr[i] is { type: TokenType.Operator, value: "||" })
                 {
                     if (i == 0)
                         throw new SyntaxError("Missing the left part of logical OR");
@@ -22,26 +22,30 @@ namespace CmmInterpretor
                     if (i == expr.Count - 1)
                         throw new SyntaxError("Missing the right part of logical OR");
 
-                    var a = EvaluateConditionalORs(expr.GetRange(..i), call, precedence);
+                    {
+                        var result = EvaluateConditionalORs(expr.GetRange(..i), call, precedence);
 
-                    if (a is not IValue aa)
-                        return a;
+                        if (result is not IValue value)
+                            return result;
 
-                    if (!aa.Value().Implicit(out Bool aaa))
-                        return new Throw("Cannot implicitly convert to bool");
+                        if (!value.Implicit(out Bool @bool))
+                            return new Throw("Cannot implicitly convert to bool");
 
-                    if (aaa.Value)
-                        return aa.Value();
+                        if (@bool.Value)
+                            return value.Value;
+                    }
 
-                    var b = Evaluate(expr.GetRange((i + 1)..), call, precedence - 1);
+                    {
+                        var result = Evaluate(expr.GetRange((i + 1)..), call, precedence - 1);
 
-                    if (b is not IValue bb)
-                        return b;
+                        if (result is not IValue value)
+                            return result;
 
-                    if (!bb.Value().Implicit(out Bool _))
-                        return new Throw("Cannot implicitly convert to bool");
+                        if (!value.Implicit(out Bool _))
+                            return new Throw("Cannot implicitly convert to bool");
 
-                    return bb.Value();
+                        return value.Value;
+                    }
                 }
             }
 

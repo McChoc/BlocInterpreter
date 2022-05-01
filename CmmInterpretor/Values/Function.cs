@@ -3,8 +3,8 @@ using CmmInterpretor.Exceptions;
 using CmmInterpretor.Results;
 using CmmInterpretor.Statements;
 using CmmInterpretor.Tokens;
+using CmmInterpretor.Variables;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace CmmInterpretor.Values
 {
@@ -14,6 +14,8 @@ namespace CmmInterpretor.Values
         public List<string> Names { get; set; } = new();
         public List<Statement> Code { get; set; }
         public Scope Captures { get; set; }
+
+        public override VariableType Type => VariableType.Function;
 
         public Function() => Code = new List<Statement>();
         public Function(List<Statement> code) => Code = code;
@@ -32,7 +34,7 @@ namespace CmmInterpretor.Values
                 call.SetParams(variables);
 
                 for (int i = 0; i < Names.Count; i++)
-                    call.Set(Names[i], new Variable(Names[i], variables.Count > i ? variables[i] : new Null(), call.Scopes[^1]));
+                    call.Set(Names[i], new StackVariable(variables.Values.Count > i ? variables.Values[i].Value : Null.Value, Names[i], call.Scopes[^1]));
 
                 var labels = new Dictionary<string, int>();
 
@@ -68,11 +70,9 @@ namespace CmmInterpretor.Values
                     }
                 }
 
-                return new Void();
+                return Void.Value;
             }
         }
-
-        public override VariableType TypeOf() => VariableType.Function;
 
         public override Value Copy() => new Function()
         {
@@ -82,9 +82,9 @@ namespace CmmInterpretor.Values
             Captures = Captures
         };
 
-        public override bool Equals(Value other)
+        public override bool Equals(IValue other)
         {
-            if (other is not Function func)
+            if (other.Value is not Function func)
                 return false;
 
             if (Async != func.Async)
@@ -138,18 +138,26 @@ namespace CmmInterpretor.Values
             return false;
         }
 
-        public override IResult Explicit<T>()
+        public override IResult Implicit(VariableType type)
         {
-            if (typeof(T) == typeof(Bool))
-                return Bool.True;
+            return type switch
+            {
+                VariableType.Bool => Bool.True,
+                VariableType.String => new String(ToString()),
+                VariableType.Function => this,
+                _ => new Throw($"Cannot implicitly cast function as {type.ToString().ToLower()}")
+            };
+        }
 
-            if (typeof(T) == typeof(String))
-                return new String(ToString());
-
-            if (typeof(T) == typeof(Function))
-                return this;
-
-            return new Throw($"Cannot cast function as {typeof(T)}");
+        public override IResult Explicit(VariableType type)
+        {
+            return type switch
+            {
+                VariableType.Bool => Bool.True,
+                VariableType.String => new String(ToString()),
+                VariableType.Function => this,
+                _ => new Throw($"Cannot cast function as {type.ToString().ToLower()}")
+            };
         }
 
         public override string ToString(int _) => $"{(Async ? "async" : "")}({ string.Join(", ", Names) }) {{...}}";

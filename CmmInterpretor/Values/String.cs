@@ -1,63 +1,26 @@
 ﻿using CmmInterpretor.Data;
 using CmmInterpretor.Results;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
 namespace CmmInterpretor.Values
 {
-    public class String : Value, IIterable
+    public class String : Value, IIterable, IIndexable
     {
-        public string Value { get; set; }
+        public static String Empty { get; } = new("");
 
-        public String() => Value = "";
+        public string Value { get; }
+
+        public override VariableType Type => VariableType.String;
+
         public String(string value) => Value = value;
 
-        public IResult Get(Value variable, Engine _)
+        public override Value Copy() => this;
+
+        public override bool Equals(IValue other)
         {
-            if (variable is Number number)
-            {
-                int index = number.ToInt() >= 0 ? number.ToInt() : Value.Length + number.ToInt();
-
-                return new String (Value[index].ToString());
-            }
-            else if (variable is Range range)
-            {
-                var builder = new StringBuilder();
-
-                int start = (int)(range.Start != null
-                    ? (range.Start >= 0
-                        ? range.Start
-                        : Value.Length + range.Start)
-                    : (range.Step >= 0
-                        ? 0
-                        : Value.Length - 1));
-
-                int end = (int)(range.End != null
-                    ? (range.End >= 0
-                        ? range.End
-                        : Value.Length + range.End)
-                    : (range.Step >= 0
-                        ? Value.Length
-                        : -1));
-
-                for (int i = start; i != end && end - i > 0 == range.Step > 0; i += range.Step)
-                    builder.Append(Value[i]);
-
-                return new String(builder.ToString());
-            }
-            else
-            {
-                return new Throw("It should be a number or a range.");
-            }
-        }
-
-        public override VariableType TypeOf() => VariableType.String;
-
-        public override Value Copy() => new String(Value);
-
-        public override bool Equals(Value other)
-        {
-            if (other is String str)
+            if (other.Value is String str)
                 return Value == str.Value;
 
             return false;
@@ -81,26 +44,72 @@ namespace CmmInterpretor.Values
             return false;
         }
 
-        public override IResult Explicit<T>()
+        public override IResult Implicit(VariableType type)
         {
-            if (typeof(T) == typeof(Bool))
-                return Bool.True;
+            return type switch
+            {
+                VariableType.Bool => Bool.True,
+                VariableType.String => this,
+                _ => new Throw($"Cannot implicitly cast string as {type.ToString().ToLower()}")
+            };
+        }
 
-            if (typeof(T) == typeof(String))
-                return this;
-
-            if (typeof(T) == typeof(Tuple))
-                return new Tuple(Value.ToCharArray().Select(c => new String(c.ToString())).ToList<IValue>());
-
-            if (typeof(T) == typeof(Array))
-                return new Array(Value.ToCharArray().Select(c => new String(c.ToString())).ToList<Value>());
-
-            return new Throw($"Cannot cast string as {typeof(T)}");
+        public override IResult Explicit(VariableType type)
+        {
+            return type switch
+            {
+                VariableType.Bool => Bool.True,
+                VariableType.String => this,
+                VariableType.Tuple => new Tuple(Value.ToCharArray().Select(c => new String(c.ToString())).ToList<IValue>()),
+                VariableType.Array => new Array(Value.ToCharArray().Select(c => new String(c.ToString())).ToList<IValue>()),
+                _ => new Throw($"Cannot cast string as {type.ToString().ToLower()}")
+            };
         }
 
         public override string ToString(int _) => $"'{Value}'";
 
-        public int Count => Value.Length;
-        public Value this[int index] => new String(Value[index].ToString());
+        public IEnumerable<Value> Iterate()
+        {
+            foreach (var @char in Value)
+                yield return new String(@char.ToString());
+        }
+
+        public IResult Index(Value val, Engine _)
+        {
+            if (val is Number num)
+            {
+                int index = num.ToInt() >= 0 ? num.ToInt() : Value.Length + num.ToInt();
+
+                return new String(Value[index].ToString());
+            }
+
+            if (val is Range rng)
+            {
+                var builder = new StringBuilder();
+
+                int start = (int)(rng.Start != null
+                    ? (rng.Start >= 0
+                        ? rng.Start
+                        : Value.Length + rng.Start)
+                    : (rng.Step >= 0
+                        ? 0
+                        : Value.Length - 1));
+
+                int end = (int)(rng.End != null
+                    ? (rng.End >= 0
+                        ? rng.End
+                        : Value.Length + rng.End)
+                    : (rng.Step >= 0
+                        ? Value.Length
+                        : -1));
+
+                for (int i = start; i != end && end - i > 0 == rng.Step > 0; i += rng.Step)
+                    builder.Append(Value[i]);
+
+                return new String(builder.ToString());
+            }
+            
+            return new Throw("It should be a number or a range.");
+        }
     }
 }

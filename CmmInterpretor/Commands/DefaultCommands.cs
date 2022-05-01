@@ -1,6 +1,7 @@
 ﻿using CmmInterpretor.Data;
 using CmmInterpretor.Results;
 using CmmInterpretor.Values;
+using CmmInterpretor.Variables;
 using System.Linq;
 using System.Reflection;
 
@@ -90,7 +91,7 @@ namespace CmmInterpretor.Commands
                     return new String($"'clear' does not take arguments.\nType '/help clear' to see its usage.");
 
                 call.Engine.Clear();
-                return new Void();
+                return Void.Value;
             }
         );
 
@@ -111,18 +112,18 @@ namespace CmmInterpretor.Commands
                     if (!input.Implicit(out String str))
                         return new String("The input could not be converted to a string.");
 
-                    if (!call.TryGet(str.Value, out var ptr))
+                    if (!call.TryGet(str.Value, out Variable var))
                         return new String("The variable was not defined.");
 
-                    return ptr.Get();
+                    return var.Value;
                 }
 
                 if (args.Length == 1)
                 {
-                    if (!call.TryGet(args[0], out var ptr))
+                    if (!call.TryGet(args[0], out Variable var))
                         return new String("The variable was not defined.");
 
-                    return ptr.Get();
+                    return var.Value;
                 }
 
                 return new String($"'get' does not take {args.Length} arguments.\nType '/help get' to see its usage.");
@@ -149,9 +150,9 @@ namespace CmmInterpretor.Commands
                     var name = args[0];
                     var value = input;
 
-                    call.Set(name, new Variable(name, value, call.Scopes[^1]));
+                    call.Set(name, new StackVariable(value, name, call.Scopes[^1]));
 
-                    return new Void();
+                    return Void.Value;
                 }
 
                 if (args.Length == 2)
@@ -159,9 +160,9 @@ namespace CmmInterpretor.Commands
                     var name = args[0];
                     var value = new String(args[1]);
 
-                    call.Set(name, new Variable(name, value, call.Scopes[^1]));
+                    call.Set(name, new StackVariable(value, name, call.Scopes[^1]));
 
-                    return new Void();
+                    return Void.Value;
                 }
 
                 return new String($"'get' does not take {args.Length} arguments.\nType '/help get' to see its usage.");
@@ -180,18 +181,18 @@ namespace CmmInterpretor.Commands
                     return new String($"'set' does not take 0 arguments.\nType '/help set' to see its usage.");
 
                 var name = args[0];
-                var variables = new Array(args[1..].Select(a => new String(a)).ToList<Value>());
+                var variables = new Array(args[1..].Select(a => new String(a)).ToList<IValue>());
 
-                if (!call.TryGet(name, out var ptr))
+                if (!call.TryGet(name, out Variable var))
                     return new String("The variable was not defined.");
 
-                if (!ptr.Get().Implicit(out Function func))
+                if (!var.Value.Implicit(out Function func))
                     return new String("The variable could not be converted to a function.");
 
                 var result = func.Call(variables, call.Engine);
 
                 if (result is IValue value)
-                    return value.Value();
+                    return value.Value;
 
                 if (result is Throw t)
                     return t.value;

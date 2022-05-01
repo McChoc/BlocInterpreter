@@ -5,18 +5,17 @@ namespace CmmInterpretor.Values
 {
     public class Complex : Value
     {
-        public object Value { get; set; }
+        public object Value { get; }
 
-        public Complex() => Value = null;
+        public override VariableType Type => VariableType.Complex;
+
         public Complex(object value) => Value = value;
-
-        public override VariableType TypeOf() => VariableType.Complex;
 
         public override Value Copy() => this;
 
-        public override bool Equals(Value other)
+        public override bool Equals(IValue other)
         {
-            if (other is Complex c)
+            if (other.Value is Complex c)
                 return Value == c.Value;
 
             return false;
@@ -46,18 +45,26 @@ namespace CmmInterpretor.Values
             return false;
         }
 
-        public override IResult Explicit<T>()
+        public override IResult Implicit(VariableType type)
         {
-            if (typeof(T) == typeof(Bool))
-                return Bool.True;
+            return type switch
+            {
+                VariableType.Bool => Bool.True,
+                VariableType.String => new String(ToString()),
+                VariableType.Complex => this,
+                _ => new Throw($"Cannot implicitly cast complex as {type.ToString().ToLower()}")
+            };
+        }
 
-            if (typeof(T) == typeof(String))
-                return new String(ToString());
-
-            if (typeof(T) == typeof(Complex))
-                return this;
-
-            return new Throw($"Cannot cast task as {typeof(T)}");
+        public override IResult Explicit(VariableType type)
+        {
+            return type switch
+            {
+                VariableType.Bool => Bool.True,
+                VariableType.String => new String(ToString()),
+                VariableType.Complex => this,
+                _ => new Throw($"Cannot cast complex as {type.ToString().ToLower()}")
+            };
         }
 
         public override string ToString(int _) => "[complex]";

@@ -2,6 +2,7 @@
 using CmmInterpretor.Results;
 using CmmInterpretor.Tokens;
 using CmmInterpretor.Values;
+using CmmInterpretor.Variables;
 using System.Collections.Generic;
 
 namespace CmmInterpretor.Statements
@@ -24,7 +25,10 @@ namespace CmmInterpretor.Statements
             var statements = (List<Statement>)body.value;
             var labels = GetLabels(statements);
 
-            for (int i = 0; i < (value.Value() as IIterable).Count; i++)
+            if (value.Value is not IIterable iter)
+                return new Throw("You can only iterate over a range, a string or an array.");
+
+            foreach (var item in iter.Iterate())
             {
                 loopCount++;
 
@@ -35,7 +39,7 @@ namespace CmmInterpretor.Statements
                 {
                     call.Push();
 
-                    call.Set(variableName, new Variable(variableName, (value.Value() as IIterable)[i], call.Scopes[^1]));
+                    call.Set(variableName, new StackVariable(item, variableName, call.Scopes[^1]));
 
                     var r = ExecuteBlockInLoop(statements, labels, call);
 
@@ -43,10 +47,11 @@ namespace CmmInterpretor.Statements
                     {
                         if (r is Continue)
                             continue;
-                        else if (r is Break)
+
+                        if (r is Break)
                             break;
-                        else
-                            return r;
+
+                        return r;
                     }
                 }
                 finally
@@ -55,7 +60,7 @@ namespace CmmInterpretor.Statements
                 }
             }
 
-            return new Void();
+            return Void.Value;
         }
     }
 }

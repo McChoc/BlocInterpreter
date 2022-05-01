@@ -4,7 +4,7 @@ namespace CmmInterpretor.Data
 {
     internal class Decorator
     {
-        public Pointer pointer;
+        public Variable variable;
         public List<Value> arguments;
     }
 }
