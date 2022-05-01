@@ -22,84 +22,82 @@ namespace CmmInterpretor.Statements
 
             foreach (var definition in definitions)
             {
-                if (definition[0].type == TokenType.Identifier)
+                Token identifier = definition[0];
+                Value value = Null.Value;
+
+                if (definition.Count > 1)
                 {
-                    string identifier = definition[0].Text;
-                    Value value = Null.Value;
-
-                    if (definition.Count > 1)
-                    {
-                        if (definition[1] is not { type: TokenType.Operator, value: "=" })
-                            throw new SyntaxError("Unexpected symbol");
-
-                        var result = Evaluator.Evaluate(definition.GetRange(2..), call);
-
-                        if (result is not IValue v)
-                            return result;
-
-                        value = v.Copy();
-                    }
-
-                    value.Assign();
-
-                    if (!call.TryAdd(new StackVariable(value, identifier, call.Scopes[^1])))
-                        return new Throw($"Variable '{identifier}' was already defined in scope");
-                }
-                else if (definition[0].type == TokenType.Parentheses)
-                {
-                    var expressions = ((List<Token>)definition[0].value).Split(Token.Comma);
-
-                    if (expressions.Any(e => e.Count != 1))
+                    if (definition[1] is not { type: TokenType.Operator, value: "=" })
                         throw new SyntaxError("Unexpected symbol");
 
-                    if (expressions.Any(e => e[0].type != TokenType.Identifier))
-                        throw new SyntaxError("The left part of an assignement must be a variable");
+                    var result = Evaluator.Evaluate(definition.GetRange(2..), call);
 
-                    var identifiers = expressions.Select(e => e[0].Text).ToList();
-                    var values = Enumerable.Repeat<Value>(Null.Value, identifiers.Count).ToList();
+                    if (result is not IValue v)
+                        return result;
 
-                    if (definition.Count > 1)
-                    {
-                        if (definition[1] is not { type: TokenType.Operator, value: "=" })
-                            throw new SyntaxError("Unexpected symbol");
-
-                        var result = Evaluator.Evaluate(definition.GetRange(2..), call);
-
-                        if (result is not IValue value)
-                            return result;
-
-                        if (value is Tuple tuple)
-                        {
-                            if (identifiers.Count != tuple.Values.Count)
-                                throw new SyntaxError("Miss match number of elements in tuples.");
-
-                            tuple = (Tuple)tuple.Copy();
-
-                            for (int i = 0; i < identifiers.Count; i++)
-                                values[i] = tuple.Values[i].Value;
-                        }
-                        else
-                        {
-                            for (int i = 0; i < identifiers.Count; i++)
-                                values[i] = value.Copy();
-                        }
-                    }
-
-                    foreach (var (identifier, value) in identifiers.Zip(values, (i, v) => (i, v)))
-                    {
-                        value.Assign();
-
-                        if (!call.TryAdd(new StackVariable(value, identifier, call.Scopes[^1])))
-                            return new Throw($"Variable '{identifier}' was already defined in scope");
-                    }
+                    value = v.Copy();
                 }
-                else
+
                 {
-                    throw new SyntaxError("The left part of an assignement must be a variable");
+                    var result = Define(identifier, value, call);
+
+                    if (result is IValue)
+                        return result;
                 }
             }
 
             return Void.Value;
+        }
+
+        private IResult Define(Token token, Value value, Call call)
+        {
+            if (token is { type: TokenType.Identifier, value: string name })
+            {
+                value.Assign();
+
+                if (!call.TryAdd(new StackVariable(value, name, call.Scopes[^1])))
+                    return new Throw($"Variable '{token}' was already defined in scope");
+
+                return Void.Value;
+            }
+            
+            if (token is { type: TokenType.Parentheses, value: List<Token> expression })
+            {
+                var expressions = expression.Split(Token.Comma);
+
+                if (expressions.Any(e => e.Count != 1))
+                    throw new SyntaxError("Unexpected symbol");
+
+                var identifiers = expressions.Select(e => e[0]).ToList();
+
+                if (!value.Implicit(out Tuple tuple))
+                {
+                    foreach (var identifier in identifiers)
+                    {
+                        var result = Define(identifier, value, call);
+
+                        if (result is not IValue)
+                            return result;
+                    }
+                }
+                else
+                {
+                    if (identifiers.Count != tuple.Values.Count)
+                        throw new SyntaxError("Miss match number of elements in tuples.");
+
+                    foreach (var (identifier, val) in identifiers.Zip(tuple.Values.Select(v => v.Value), (i, v) => (i, v)))
+                    {
+                        var result = Define(identifier, val, call);
+
+                        if (result is not IValue)
+                            return result;
+                    }
+                }
+
+                return Void.Value;
+            }
+            
+            throw new SyntaxError("The left part of an assignement must be a variable");
         }
 
         //public struct Decorator
