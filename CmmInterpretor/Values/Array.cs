@@ -97,7 +97,7 @@ namespace CmmInterpretor.Values
         {
             if (Values.Count == 0)
                 return "{ } as array";
-            else if (!Values.Any(v => v is Array || v is Struct))
+            else if (!Values.Any(v => v.Value is Array or Struct or Tuple))
                 return "{ " + string.Join(", ", Values.Select(v => v.Value.ToString())) + " }";
             else
                 return "{\n" + string.Join(",\n", Values.Select(v => new string(' ', (depth + 1) * 4) + v.ToString(depth + 1))) + "\n" + new string(' ', depth * 4) + "}";

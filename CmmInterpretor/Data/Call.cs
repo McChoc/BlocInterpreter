@@ -136,6 +136,9 @@ namespace CmmInterpretor.Data
             
             var lines = tokens.Split(Token.Comma);
 
+            if (lines.Count > 0 && lines[^1].Count == 0)
+                lines.RemoveAt(lines.Count - 1);
+
             if (tokens.Count >= 2 && tokens[0].type == TokenType.Identifier && tokens[1] is { type: TokenType.Operator, value: "=" })
             {
                 var values = new Dictionary<string, IValue>();

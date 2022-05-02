@@ -127,7 +127,7 @@ namespace CmmInterpretor.Values
 
         public override string ToString(int depth)
         {
-            if (!Values.Any(v => v is Tuple || v is Array || v is Struct))
+            if (!Values.Any(v => v.Value is Array or Struct or Tuple))
                 return "(" + string.Join(", ", Values.Select(v => v.Value)) + ")";
             else
                 return "(\n" + string.Join(",\n", Values.Select(v => new string(' ', (depth + 1) * 4) + v.Value.ToString(depth + 1))) + "\n" + new string(' ', depth * 4) + ")";
