@@ -31,10 +31,12 @@ namespace CmmInterpretor.Tokens
 
         private static readonly HashSet<string> keyWords = new()
         {
-            "chr", "ord", "len", "in", "is", "as",
-            "val", "ref", "new", "del",
-            "async", "await", "nameof", "typeof",
-            "def", "const", "undef",
+            "chr", "ord", "len",
+            "in", "is", "as",
+            "val", "ref", "new",
+            "async", "await",
+            "nameof", "typeof",
+            "def", "delete",
             "import", "if", "else",
             "do", "while", "until",
             "loop", "repeat", "for",

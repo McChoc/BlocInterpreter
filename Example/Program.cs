@@ -21,8 +21,6 @@ Engine engine = new Engine.Builder(args)
 
 while (true)
 {
-    int a = 0;
-
     try
     {
         Console.Write("> ");
@@ -75,11 +73,4 @@ while (true)
         Console.WriteLine();
         Console.ResetColor();
     }
-    //catch
-    //{
-    //    ConsoleColor.SetColor(RED);
-    //    Console.WriteLine("An unexpected error occured");
-    //    Console.WriteLine();
-    //    Console.ResetColor();
-    //}
 }

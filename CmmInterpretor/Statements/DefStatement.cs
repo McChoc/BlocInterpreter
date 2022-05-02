@@ -41,7 +41,7 @@ namespace CmmInterpretor.Statements
                 {
                     var result = Define(identifier, value, call);
 
-                    if (result is IValue)
+                    if (result is not IValue)
                         return result;
                 }
             }

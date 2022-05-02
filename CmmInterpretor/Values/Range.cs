@@ -86,11 +86,11 @@ namespace CmmInterpretor.Values
             double start = Start ?? (Step >= 0 ? 0 : -1);
             double end = End ?? (Step >= 0 ? double.PositiveInfinity : double.NegativeInfinity);
 
-            if (Step > 1)
+            if (Step > 0)
                 for (double i = start; i < end; i += Step)
                     yield return new Number(i);
 
-            if (Step < 1)
+            if (Step < 0)
                 for (double i = start; i > end; i += Step)
                     yield return new Number(i);
 

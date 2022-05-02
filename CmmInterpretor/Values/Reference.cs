@@ -11,7 +11,12 @@ namespace CmmInterpretor.Values
 
         public Reference(Variable var) => Variable = var;
 
-        public override Value Copy() => new Reference(Variable);
+        public override Value Copy()
+        {
+            var reference = new Reference(Variable);
+            Variable.References.Add(reference);
+            return reference;
+        }
 
         public void Invalidate()
         {

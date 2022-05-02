@@ -38,8 +38,8 @@ namespace CmmInterpretor.Statements
                 { type: TokenType.Operator, value: "/" } => GetCommandStatement(),
                 { type: TokenType.Operator, value: "@@" } => throw new NotImplementedException(),
                 { type: TokenType.Operator, value: "@" } or
-                { type: TokenType.Keyword, value: "def" or "const" } => GetDefStatement(),
-                { type: TokenType.Keyword, value: "undef" } => GetUndefStatement(),
+                { type: TokenType.Keyword, value: "def" } => GetDefStatement(),
+                { type: TokenType.Keyword, value: "delete" } => GetDeleteStatement(),
                 { type: TokenType.Keyword, value: "if" } => GetIfStatement(),
                 { type: TokenType.Keyword, value: "do" or "while" or "until" } => GetWhileStatement(),
                 { type: TokenType.Keyword, value: "loop" } => GetLoopStatement(),
@@ -127,13 +127,9 @@ namespace CmmInterpretor.Statements
             return statement;
         }
 
-        private Statement GetUndefStatement()
+        private Statement GetDeleteStatement()
         {
-            _scanner.GetNextToken();
-
-            var undefinitions = GetLine().Split(Token.Comma);
-
-            return new UndefStatement(undefinitions);
+            return new DeleteStatement(GetLine().GetRange(1..));
         }
 
         private Statement GetIfStatement()

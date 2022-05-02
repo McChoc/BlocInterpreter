@@ -126,7 +126,9 @@ namespace CmmInterpretor
                     if (result is not Variable var)
                         throw new SyntaxError("The right part of a reference must be a variable");
 
-                    return new Reference(var);
+                    var reference = new Reference(var);
+                    var.References.Add(reference);
+                    return reference;
                 }
 
                 if (op == "new")
@@ -140,21 +142,6 @@ namespace CmmInterpretor
                     variable.References.Add(reference);
 
                     return reference;
-                }
-
-                if (op == "del")
-                {
-                    if (!value.Implicit(out Reference r))
-                        return new Throw("Cannot convert to reference");
-
-                    if (r.Variable is not HeapVariable)
-                        return new Throw("The reference have to point to a variable stored on the heap.");
-
-                    var val = r.Variable.Value;
-
-                    r.Variable.Destroy();
-
-                    return val;
                 }
 
                 if (op == "nameof")
