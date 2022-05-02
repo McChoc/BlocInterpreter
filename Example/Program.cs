@@ -5,13 +5,10 @@ using CmmInterpretor.Exceptions;
 using CmmInterpretor.Results;
 using CmmInterpretor.Values;
 using System.Collections.Generic;
-using System.Linq;
 using Console = System.Console;
 
 const byte RED = 9;
 const byte ORANGE = 208;
-
-List<string> lines = new();
 
 Engine engine = new Engine.Builder(args)
     .OnLog(msg => Console.WriteLine(msg))
@@ -19,31 +16,38 @@ Engine engine = new Engine.Builder(args)
     .AddDefaultCommands()
     .Build();
 
+
 while (true)
 {
     try
     {
-        Console.Write("> ");
-        string line = Console.ReadLine();
+        int depth = 0;
+        var lines = new List<string>();
 
-        bool doExecute = true;
-
-        if (line.LastOrDefault() == '\\')
+        while (true)
         {
-            line = line[0..^1];
-            doExecute = false;
+            Console.Write("> ");
+            string line = Console.ReadLine();
+
+            lines.Add(line);
+
+            if (line.Length >= 1 && line[^1] == '{')
+                depth++;
+
+            if (line.Length >= 1 && line[^1] == '}')
+                depth--;
+
+            if (depth <= 0)
+                break;
         }
 
-        lines.Add(line);
+        string code = string.Join("\n", lines);
 
-        if (doExecute)
+        if (code.Length > 0 && code[^1] != ';')
+            code += ';';
+
+        if (code.Length > 0)
         {
-            string code = string.Join("\n", lines);
-            lines.Clear();
-
-            if (code.Length == 0 || code[^1] != ';')
-                code += ';';
-
             var result = engine.Execute(code);
 
             if (result is IValue value)
@@ -62,9 +66,9 @@ while (true)
                 Console.WriteLine();
                 Console.ResetColor();
             }
-
-            Console.WriteLine();
         }
+
+        Console.WriteLine();
     }
     catch (SyntaxError e)
     {
