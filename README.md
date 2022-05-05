@@ -334,7 +334,7 @@ The following table shows the precedence of all operators. The operators at the 
 | Operators                                                                                | Description          | Associativity    |
 |------------------------------------------------------------------------------------------|----------------------|------------------|
 | [`.`](#member-access-operator), [`[]`](#indexer-operator), [`()`](#invocation-operator)  | Primary              | Left-to-right 🡲 |
-| [`+`](#unary-plus-operator), [`-`](#unary-minus-operator-), [`~`](#complement-operator), [`!`](#negation-operator), [`++`](#increment-operator), [`--`](#decrement-operator-), [`~~`](#variable-complement-operator), [`!!`](#variable-negation-operator), [`len`](#length-operator-len), [`chr`](#character-operator-chr), [`ord`](#ordinal-operator-ord), [`val`](#value-operator-val), [`ref`](#reference-operator-ref), [`new`](#allocation-operator-new), [`await`](#await-operator-await), [`nameof`](#nameof-operator-nameof), [`typeof`](#typeof-operator-typeof) | Unary | Right-to-left 🡰 |
+| [`+`](#unary-plus-operator), [`-`](#unary-minus-operator-), [`~`](#complement-operator-), [`!`](#negation-operator), [`++`](#increment-operator), [`--`](#decrement-operator-), [`~~`](#variable-complement-operator-), [`!!`](#variable-negation-operator), [`len`](#length-operator-len), [`chr`](#character-operator-chr), [`ord`](#ordinal-operator-ord), [`val`](#value-operator-val), [`ref`](#reference-operator-ref), [`new`](#allocation-operator-new), [`await`](#await-operator-await), [`nameof`](#nameof-operator-nameof), [`typeof`](#typeof-operator-typeof) | Unary | Right-to-left 🡰 |
 | [`..`](#range-operator)                                                                  | Range                | Left-to-right 🡲 |
 | [`**`](#power-operator), [`//`](#root-operator), [`%%`](#logarithm-operator)             | Exponential          | Left-to-right 🡲 |
 | [`*`](#multiplication-operator), [`/`](#division-operator), [`%`](#remainder-operator)   | Multiplicative       | Left-to-right 🡲 |
@@ -345,12 +345,12 @@ The following table shows the precedence of all operators. The operators at the 
 | [`==`](#equality-operator), [`!=`](#inequality-operators), [`<>`](#inequality-operators) | Equality             | Left-to-right 🡲 |
 | [`&`](#bitwise-and-operator)                                                             | Bitwise AND          | Left-to-right 🡲 |
 | [`^`](#bitwise-xor-operator)                                                             | Bitwise XOR          | Left-to-right 🡲 |
-| [`|`](#bitwise-or-operator)                                                              | Bitwise OR           | Left-to-right 🡲 |
+| [`\|`](#bitwise-or-operator)                                                             | Bitwise OR           | Left-to-right 🡲 |
 | [`&&`](#boolean-and-operator)                                                            | Boolean AND          | Left-to-right 🡲 |
 | [`^^`](#boolean-xor-operator)                                                            | Boolean XOR          | Left-to-right 🡲 |
-| [`||`](#boolean-or-operator)                                                             | Boolean OR           | Left-to-right 🡲 |
+| [`\|\|`](#boolean-or-operator)                                                           | Boolean OR           | Left-to-right 🡲 |
 | [`?:`](#ternary-conditional-operator)                                                    | Ternary              | Right-to-left 🡰 |
-| [`=`](#assignment-operator), [`+=`, `-=`, `*=`, `/=`, `%=`, `**=`, `//=`, `%%=`, `<<=`, `>>=`, `&=`, `|=`, `^=`, `&&=`, `||=`, `^^=`](#compound-assignment-operators) | Assignment | Right-to-left 🡰 |
+| [`=`](#assignment-operator), [`+=`, `-=`, `*=`, `/=`, `%=`, `**=`, `//=`, `%%=`, `<<=`, `>>=`, `&=`, `\|=`, `^=`, `&&=`, `\|\|=`, `^^=`](#compound-assignment-operators) | Assignment | Right-to-left 🡰 |
 | `=>`                                                                                     | Lambda               | Right-to-left 🡰 |
 | `,`                                                                                      | Comma                | Left-to-right 🡲 |
 
