@@ -26,10 +26,10 @@ namespace CmmInterpretor
                 string op = expr[0].Text;
 
                 if (op == "+")
-                    return Operator.Positive(value);
+                    return Operator.Plus(value);
                 
                 if (op == "-")
-                    return Operator.Negative(value);
+                    return Operator.Minus(value);
                 
                 if (op == "~")
                     return Operator.Reverse(value);

@@ -12,24 +12,24 @@ namespace CmmInterpretor
         {
             EvaluatePrimaries,
             EvaluateUnaries,
+            EvaluateRanges,
             EvaluateExponentials,
             EvaluateMultiplicatives,
             EvaluateAdditives,
             EvaluateShifts,
+            EvaluateComparisons,
+            EvaluateRelations,
+            EvaluateEqualities,
             EvaluateLogicalANDs,
             EvaluateLogicalXORs,
             EvaluateLogicalORs,
-            EvaluateComparisons,
-            EvaluateRanges,
-            EvaluateRelations,
-            EvaluateEqualities,
             EvaluateConditionalANDs,
             EvaluateConditionalXORs,
             EvaluateConditionalORs,
             EvaluateTernaries,
             EvaluateAssignments,
-            EvaluateTuples,
-            EvaluateFunctions
+            EvaluateFunctions,
+            EvaluateTuples
         };
 
         public static IResult Evaluate(List<Token> expression, Call call) =>

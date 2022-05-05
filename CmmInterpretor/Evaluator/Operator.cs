@@ -10,7 +10,7 @@ namespace CmmInterpretor
 {
     public static class Operator
     {
-        public static IResult Positive(IValue v)
+        public static IResult Plus(IValue v)
         {
             if (v.Implicit(out Number num))
                 return new Number(+num.Value);
@@ -18,7 +18,7 @@ namespace CmmInterpretor
             return new Throw($"Cannot apply operator '+' on type {v.Type.ToString().ToLower()}");
         }
 
-        public static IResult Negative(IValue v)
+        public static IResult Minus(IValue v)
         {
             if (v.Implicit(out Number num))
                 return new Number(-num.Value);
@@ -76,7 +76,7 @@ namespace CmmInterpretor
             if (a.Implicit(out Number numA) && b.Implicit(out Number numB))
                 return new Number(Sign(numA.Value - numB.Value));
 
-            return new Throw($"Cannot apply operator '-' on operands of types {a.Type.ToString().ToLower()} and {b.Type.ToString().ToLower()}");
+            return new Throw($"Cannot apply operator '<=>' on operands of types {a.Type.ToString().ToLower()} and {b.Type.ToString().ToLower()}");
         }
 
         public static IResult Multiply(IValue a, IValue b)
