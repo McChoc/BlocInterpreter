@@ -331,28 +331,28 @@ Operators allow you to perform basic operations on values and variables. You can
 
 The following table shows the precedence of all operators. The operators at the top of the table are evaluated before the ones at the bottom. If some operators have the same precedence, their associativity will determine the order of operation. 
 
-| Operators                                                                                | Description          | Associativity         |
-|------------------------------------------------------------------------------------------|----------------------|-----------------------|
-| [`.`](#member-access-operator), [`[]`](#indexer-operator), [`()`](#invocation-operator)  | Primary              | Left-to-right&nbsp;🡲 |
-| [`+`](#unary-plus-operator), [`-`](#unary-minus-operator-), [`~`](#complement-operator-), [`!`](#negation-operator), [`++`](#increment-operator), [`--`](#decrement-operator-), [`~~`](#variable-complement-operator-), [`!!`](#variable-negation-operator), [`len`](#length-operator-len), [`chr`](#character-operator-chr), [`ord`](#ordinal-operator-ord), [`val`](#value-operator-val), [`ref`](#reference-operator-ref), [`new`](#allocation-operator-new), [`await`](#await-operator-await), [`nameof`](#nameof-operator-nameof), [`typeof`](#typeof-operator-typeof) | Unary | Right-to-left&nbsp;🡰 |
-| [`..`](#range-operator)                                                                  | Range                | Left-to-right&nbsp;🡲 |
-| [`**`](#power-operator), [`//`](#root-operator), [`%%`](#logarithm-operator)             | Exponential          | Left-to-right&nbsp;🡲 |
-| [`*`](#multiplication-operator), [`/`](#division-operator), [`%`](#remainder-operator)   | Multiplicative       | Left-to-right&nbsp;🡲 |
-| [`+`](#addition-operator), [`-`](#subtraction-operator-)                                 | Additive             | Left-to-right&nbsp;🡲 |
-| [`<<`](#left-shift-operator), [`>>`](#right-shift-operator)                              | Shift                | Left-to-right&nbsp;🡲 |
-| [`<=>`](#three-way-comparison-operator)                                                  | Three-way comparison | Left-to-right&nbsp;🡲 |
-| [`<`](#less-than-operator), [`>`](#greater-than-operator), [`<=`](#less-than-or-equal-operator), [`>=`](#greater-than-or-equal-operator), [`in`](#in-operator-in), [`not in`](#not-in-operator-not-in), [`is`](#is-operator-is), [`is not`](#is-not-operator-is-not), [`as`](#as-operator-as) | Relation | Left-to-right&nbsp;🡲 |
-| [`==`](#equality-operator), [`!=`](#inequality-operators), [`<>`](#inequality-operators) | Equality             | Left-to-right&nbsp;🡲 |
-| [`&`](#bitwise-and-operator)                                                             | Bitwise AND          | Left-to-right&nbsp;🡲 |
-| [`^`](#bitwise-xor-operator)                                                             | Bitwise XOR          | Left-to-right&nbsp;🡲 |
-| [`\|`](#bitwise-or-operator)                                                             | Bitwise OR           | Left-to-right&nbsp;🡲 |
-| [`&&`](#boolean-and-operator)                                                            | Boolean AND          | Left-to-right&nbsp;🡲 |
-| [`^^`](#boolean-xor-operator)                                                            | Boolean XOR          | Left-to-right&nbsp;🡲 |
-| [`\|\|`](#boolean-or-operator)                                                           | Boolean OR           | Left-to-right&nbsp;🡲 |
-| [`?:`](#ternary-conditional-operator)                                                    | Ternary              | Right-to-left&nbsp;🡰 |
-| [`=`](#assignment-operator), [`+=`, `-=`, `*=`, `/=`, `%=`, `**=`, `//=`, `%%=`, `<<=`, `>>=`, `&=`, `\|=`, `^=`, `&&=`, `\|\|=`, `^^=`](#compound-assignment-operators) | Assignment | Right-to-left&nbsp;🡰 |
-| `=>`                                                                                     | Lambda               | Right-to-left&nbsp;🡰 |
-| `,`                                                                                      | Comma                | Left-to-right&nbsp;🡲 |
+| Operators                                                                                | Description          | Associativity                     |
+|------------------------------------------------------------------------------------------|----------------------|-----------------------------------|
+| [`.`](#member-access-operator), [`[]`](#indexer-operator), [`()`](#invocation-operator)  | Primary              | Left&#8209;to&#8209;right&nbsp;🡲 |
+| [`+`](#unary-plus-operator), [`-`](#unary-minus-operator-), [`~`](#complement-operator-), [`!`](#negation-operator), [`++`](#increment-operator), [`--`](#decrement-operator-), [`~~`](#variable-complement-operator-), [`!!`](#variable-negation-operator), [`len`](#length-operator-len), [`chr`](#character-operator-chr), [`ord`](#ordinal-operator-ord), [`val`](#value-operator-val), [`ref`](#reference-operator-ref), [`new`](#allocation-operator-new), [`await`](#await-operator-await), [`nameof`](#nameof-operator-nameof), [`typeof`](#typeof-operator-typeof) | Unary | Right&#8209;to&#8209;left&nbsp;🡰 |
+| [`..`](#range-operator)                                                                  | Range                | Left&#8209;to&#8209;right&nbsp;🡲 |
+| [`**`](#power-operator), [`//`](#root-operator), [`%%`](#logarithm-operator)             | Exponential          | Left&#8209;to&#8209;right&nbsp;🡲 |
+| [`*`](#multiplication-operator), [`/`](#division-operator), [`%`](#remainder-operator)   | Multiplicative       | Left&#8209;to&#8209;right&nbsp;🡲 |
+| [`+`](#addition-operator), [`-`](#subtraction-operator-)                                 | Additive             | Left&#8209;to&#8209;right&nbsp;🡲 |
+| [`<<`](#left-shift-operator), [`>>`](#right-shift-operator)                              | Shift                | Left&#8209;to&#8209;right&nbsp;🡲 |
+| [`<=>`](#three-way-comparison-operator)                                                  | Three-way comparison | Left&#8209;to&#8209;right&nbsp;🡲 |
+| [`<`](#less-than-operator), [`>`](#greater-than-operator), [`<=`](#less-than-or-equal-operator), [`>=`](#greater-than-or-equal-operator), [`in`](#in-operator-in), [`not in`](#not-in-operator-not-in), [`is`](#is-operator-is), [`is not`](#is-not-operator-is-not), [`as`](#as-operator-as) | Relation | Left&#8209;to&#8209;right&nbsp;🡲 |
+| [`==`](#equality-operator), [`!=`](#inequality-operators), [`<>`](#inequality-operators) | Equality             | Left&#8209;to&#8209;right&nbsp;🡲 |
+| [`&`](#bitwise-and-operator)                                                             | Bitwise AND          | Left&#8209;to&#8209;right&nbsp;🡲 |
+| [`^`](#bitwise-xor-operator)                                                             | Bitwise XOR          | Left&#8209;to&#8209;right&nbsp;🡲 |
+| [`\|`](#bitwise-or-operator)                                                             | Bitwise OR           | Left&#8209;to&#8209;right&nbsp;🡲 |
+| [`&&`](#boolean-and-operator)                                                            | Boolean AND          | Left&#8209;to&#8209;right&nbsp;🡲 |
+| [`^^`](#boolean-xor-operator)                                                            | Boolean XOR          | Left&#8209;to&#8209;right&nbsp;🡲 |
+| [`\|\|`](#boolean-or-operator)                                                           | Boolean OR           | Left&#8209;to&#8209;right&nbsp;🡲 |
+| [`?:`](#ternary-conditional-operator)                                                    | Ternary              | Right&#8209;to&#8209;left&nbsp;🡰 |
+| [`=`](#assignment-operator), [`+=`, `-=`, `*=`, `/=`, `%=`, `**=`, `//=`, `%%=`, `<<=`, `>>=`, `&=`, `\|=`, `^=`, `&&=`, `\|\|=`, `^^=`](#compound-assignment-operators) | Assignment | Right&#8209;to&#8209;left&nbsp;🡰 |
+| `=>`                                                                                     | Lambda               | Right&#8209;to&#8209;left&nbsp;🡰 |
+| `,`                                                                                      | Comma                | Left&#8209;to&#8209;right&nbsp;🡲 |
 
 The pipe operator `|>` is not in that table because it can only be used inside a command statement which cannot have any other operators. Its associativity is from left to right.
 
