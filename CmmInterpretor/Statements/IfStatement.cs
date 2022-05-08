@@ -8,29 +8,24 @@ namespace CmmInterpretor.Statements
 {
     public class IfStatement : Statement
     {
-        public List<Token> conditions = new();
-        public List<Token> bodies = new();
+        public Token condition;
+        public Token ifBody;
+        public Token elseBody;
 
         public override IResult Execute(Call call)
         {
-            for (int i = 0; i < bodies.Count; i++)
-            {
-                if (i == conditions.Count)
-                    return ExecuteBlock((List<Statement>)bodies[i].value, call);
+            var result = Evaluator.Evaluate((List<Token>)condition.value, call);
 
-                var result = Evaluator.Evaluate((List<Token>)conditions[i].value, call);
+            if (result is not IValue value)
+                return result;
 
-                if (result is not IValue value)
-                    return result;
+            if (!value.Implicit(out Bool b))
+                return new Throw("Cannot implicitly convert to bool");
 
-                if (!value.Implicit(out Bool b))
-                    return new Throw("Cannot implicitly convert to bool");
-
-                if (b.Value)
-                    return ExecuteBlock((List<Statement>)bodies[i].value, call);
-            }
-
-            return Void.Value;
+            if (b.Value)
+                return ExecuteBlock((List<Statement>)ifBody.value, call);
+            else
+                return ExecuteBlock((List<Statement>)elseBody.value, call);
         }
     }
 }

@@ -136,25 +136,23 @@ namespace CmmInterpretor.Statements
         {
             var statement = new IfStatement();
 
-        If:
+            // if
             _scanner.GetNextToken();
-
-            // condition
             if (!_scanner.HasNextToken())
                 throw new SyntaxError("");
             Token condition = _scanner.GetNextToken();
             if (condition.type != TokenType.Parentheses)
                 throw new SyntaxError("");
-            statement.conditions.Add(condition);
+            statement.condition = condition;
 
             // body
             if (!_scanner.HasNextToken())
                 throw new SyntaxError("");
-            Token body = _scanner.Peek();
-            if (body.type == TokenType.Block)
-                statement.bodies.Add(ParseCodeBlock(_scanner.GetNextToken().Text));
+            Token ifBody = _scanner.Peek();
+            if (ifBody.type == TokenType.Block)
+                statement.ifBody = ParseCodeBlock(_scanner.GetNextToken().Text);
             else
-                statement.bodies.Add(new Token(TokenType.CodeBlock, new List<Statement>() { GetNextStatement() }));
+                statement.ifBody = new Token(TokenType.CodeBlock, new List<Statement>() { GetNextStatement() });
 
             // else
             if (!_scanner.HasNextToken())
@@ -164,16 +162,14 @@ namespace CmmInterpretor.Statements
                 return statement;
             _scanner.GetNextToken();
 
-            //body
+            // body
             if (!_scanner.HasNextToken())
                 throw new SyntaxError("");
-            Token token = _scanner.Peek();
-            if (token is { type: TokenType.Keyword, value: "if" })
-                goto If;
-            else if (token.type == TokenType.Block)
-                statement.bodies.Add(ParseCodeBlock(_scanner.GetNextToken().Text));
+            Token elseBody = _scanner.Peek();
+            if (elseBody.type == TokenType.Block)
+                statement.elseBody = ParseCodeBlock(_scanner.GetNextToken().Text);
             else
-                statement.bodies.Add(new Token(TokenType.CodeBlock, new List<Statement>() { GetNextStatement() }));
+                statement.elseBody = new Token(TokenType.CodeBlock, new List<Statement>() { GetNextStatement() });
 
             return statement;
         }
