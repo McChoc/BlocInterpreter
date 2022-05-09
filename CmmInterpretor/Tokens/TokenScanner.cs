@@ -32,7 +32,7 @@ namespace CmmInterpretor.Tokens
         private static readonly HashSet<string> keyWords = new()
         {
             "chr", "ord", "len",
-            "in", "is", "as",
+            "not", "in", "is", "as",
             "val", "ref", "new",
             "async", "await",
             "nameof", "typeof",
@@ -219,7 +219,6 @@ namespace CmmInterpretor.Tokens
             {
                 "void" => new Token(TokenType.Literal, Void.Value),
                 "null" => new Token(TokenType.Literal, Null.Value),
-
                 "false" => new Token(TokenType.Literal, Bool.False),
                 "true" => new Token(TokenType.Literal, Bool.True),
                 "nan" => new Token(TokenType.Literal, Number.NaN),

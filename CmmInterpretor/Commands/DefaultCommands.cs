@@ -181,7 +181,7 @@ namespace CmmInterpretor.Commands
                     return new String($"'set' does not take 0 arguments.\nType '/help set' to see its usage.");
 
                 var name = args[0];
-                var variables = new Array(args[1..].Select(a => new String(a)).ToList<IValue>());
+                var variables = args[1..].Select(a => new String(a)).ToList<Value>();
 
                 if (!call.TryGet(name, out Variable var))
                     return new String("The variable was not defined.");
@@ -189,7 +189,7 @@ namespace CmmInterpretor.Commands
                 if (!var.Value.Implicit(out Function func))
                     return new String("The variable could not be converted to a function.");
 
-                var result = func.Call(variables, call.Engine);
+                var result = func.Invoke(variables, call.Engine);
 
                 if (result is IValue value)
                     return value.Value;

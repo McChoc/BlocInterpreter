@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace CmmInterpretor.Values
 {
-    public class Function : Value
+    public class Function : Value, IInvokable
     {
         public bool Async { get; set; }
         public List<string> Names { get; set; } = new();
@@ -20,59 +20,6 @@ namespace CmmInterpretor.Values
         public Function() => Code = new List<Statement>();
         public Function(List<Statement> code) => Code = code;
         public Function(List<Token> expression) => Code = new() { new ReturnStatement(expression) };
-
-        public IResult Call(Array variables, Engine engine)
-        {
-            if (Async)
-            {
-                return new Task();
-            }
-            else
-            {
-                var call = new Call(engine, Captures);
-
-                call.SetParams(variables);
-
-                for (int i = 0; i < Names.Count; i++)
-                    call.Set(Names[i], new StackVariable(variables.Values.Count > i ? variables.Values[i].Value : Null.Value, Names[i], call.Scopes[^1]));
-
-                var labels = new Dictionary<string, int>();
-
-                for (int i = 0; i < Code.Count; i++)
-                    if (Code[i].Label is not null)
-                        labels.Add(Code[i].Label, i);
-
-                for (int i = 0; i < Code.Count; i++)
-                {
-                    var result = Code[i].Execute(call); ;
-
-                    if (result is not IValue)
-                    {
-                        if (result is Continue || result is Break)
-                        {
-                            throw new SyntaxError("No loop");
-                        }
-                        else if (result is Return r)
-                        {
-                            return r.value;
-                        }
-                        else if (result is Goto g)
-                        {
-                            if (labels.TryGetValue(g.label, out int index))
-                                i = index - 1;
-                            else
-                                return result;
-                        }
-                        else
-                        {
-                            return result;
-                        }
-                    }
-                }
-
-                return Void.Value;
-            }
-        }
 
         public override Value Copy() => new Function()
         {
@@ -161,5 +108,63 @@ namespace CmmInterpretor.Values
         }
 
         public override string ToString(int _) => $"{(Async ? "async" : "")}({ string.Join(", ", Names) }) {{...}}";
+
+        public IResult Invoke(List<Value> values, Engine engine)
+        {
+            if (Async)
+            {
+                return new Task();
+            }
+            else
+            {
+                var call = new Call(engine, Captures);
+
+                //call.SetParams(values);
+
+                for (int i = 0; i < Names.Count; i++)
+                {
+                    var name = Names[i];
+                    var value = values.Count > i ? values[i] != Void.Value ? values[i] : Null.Value : Null.Value;
+
+                    call.Set(name, new StackVariable(value, name, call.Scopes[^1]));
+                }
+
+                var labels = new Dictionary<string, int>();
+
+                for (int i = 0; i < Code.Count; i++)
+                    if (Code[i].Label is not null)
+                        labels.Add(Code[i].Label, i);
+
+                for (int i = 0; i < Code.Count; i++)
+                {
+                    var result = Code[i].Execute(call); ;
+
+                    if (result is not IValue)
+                    {
+                        if (result is Continue || result is Break)
+                        {
+                            throw new SyntaxError("No loop");
+                        }
+                        else if (result is Return r)
+                        {
+                            return r.value;
+                        }
+                        else if (result is Goto g)
+                        {
+                            if (labels.TryGetValue(g.label, out int index))
+                                i = index - 1;
+                            else
+                                return result;
+                        }
+                        else
+                        {
+                            return result;
+                        }
+                    }
+                }
+
+                return Void.Value;
+            }
+        }
     }
 }

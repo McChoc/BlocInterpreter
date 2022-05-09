@@ -17,29 +17,17 @@ namespace CmmInterpretor.Values
 
         public override bool Implicit<T>(out T value)
         {
-            if (typeof(T) == typeof(TypeCollection))
-            {
-                value = new TypeCollection(VariableType.Void) as T;
-                return true;
-            }
-
             value = null;
             return false;
         }
 
         public override IResult Implicit(VariableType type)
         {
-            if (type == VariableType.Void)
-                return new TypeCollection(VariableType.Void);
-
             return new Throw($"Cannot implicitly cast void as {type.ToString().ToLower()}");
         }
 
         public override IResult Explicit(VariableType type)
         {
-            if (type == VariableType.Void)
-                return new TypeCollection(VariableType.Void);
-
             return new Throw($"Cannot cast void as {type.ToString().ToLower()}");
         }
 

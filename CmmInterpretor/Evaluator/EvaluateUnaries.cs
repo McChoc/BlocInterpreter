@@ -220,6 +220,14 @@ namespace CmmInterpretor
                     var.Value = new Bool(!b.Value);
                     return b;
                 }
+
+                if (op == "?")
+                {
+                    if (!value.Implicit(out TypeCollection type))
+                        return new Throw("Cannot convert to type");
+
+                    return Operator.Or(type, new TypeCollection(VariableType.Null));
+                }
             }
 
             return Evaluate(expr, call, precedence - 1);

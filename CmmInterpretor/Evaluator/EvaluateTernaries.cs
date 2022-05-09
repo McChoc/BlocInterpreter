@@ -1,5 +1,4 @@
 ﻿using CmmInterpretor.Data;
-using CmmInterpretor.Exceptions;
 using CmmInterpretor.Extensions;
 using CmmInterpretor.Results;
 using CmmInterpretor.Tokens;
@@ -12,58 +11,42 @@ namespace CmmInterpretor
     {
         private static IResult EvaluateTernaries(List<Token> expr, Call call, int precedence)
         {
-            int idx1 = -1, idx2 = -1;
-
-            int i = 0;
-
-            for (; i <= expr.Count; i++)
+            for (int i = 0; i < expr.Count; i++)
             {
-                if (i == expr.Count)
-                    return Evaluate(expr, call, precedence - 1);
-
                 if (expr[i] is { type: TokenType.Operator, value: "?" })
                 {
-                    idx1 = i;
-                    break;
-                }
-            }
+                    int j = i, depth = 0;
 
-            int depth = 0;
-
-            for (; i <= expr.Count; i++)
-            {
-                if (i == expr.Count)
-                    throw new SyntaxError("Missing ':'.");
-
-                if (expr[i] is { type: TokenType.Operator, value: "?" })
-                    depth++;
-
-                if (expr[i] is { type: TokenType.Operator, value: ":" })
-                {
-                    depth--;
-
-                    if (depth == 0)
+                    for (; j < expr.Count; j++)
                     {
-                        idx2 = i;
-                        break;
+                        if (expr[j] is { type: TokenType.Operator, value: "?" })
+                            depth++;
+
+                        if (expr[j] is { type: TokenType.Operator, value: ":" })
+                        {
+                            depth--;
+
+                            if (depth == 0)
+                            {
+                                var result = Evaluate(expr.GetRange(..i), call, precedence - 1);
+
+                                if (result is not IValue value)
+                                    return result;
+
+                                if (!value.Implicit(out Bool b))
+                                    return new Throw("Cannot convert to bool");
+
+                                if (b.Value)
+                                    return EvaluateTernaries(expr.GetRange((i + 1)..j), call, precedence);
+                                else
+                                    return EvaluateTernaries(expr.GetRange((j + 1)..), call, precedence);
+                            }
+                        }
                     }
                 }
             }
 
-            var result = Evaluate(expr.GetRange(..idx1), call, precedence - 1);
-
-            if (result is not IValue value)
-                return result;
-
-            if (value.Implicit(out Bool b))
-            {
-                if (b.Value)
-                    return EvaluateTernaries(expr.GetRange((idx1 + 1)..idx2), call, precedence);
-                else
-                    return EvaluateTernaries(expr.GetRange((idx2 + 1)..), call, precedence);
-            }
-
-            return new Throw("Cannot convert to bool");
+            return Evaluate(expr, call, precedence - 1);
         }
     }
 }

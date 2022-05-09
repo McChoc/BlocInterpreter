@@ -318,12 +318,31 @@ namespace CmmInterpretor
             return new Throw($"Cannot apply operator 'in' on operands of types {a.Type.ToString().ToLower()} and {b.Type.ToString().ToLower()}");
         }
 
+        public static IResult NotIn(IValue a, IValue b)
+        {
+            if (b.Implicit(out Array arr))
+                return new Bool(arr.Values.All(v => !v.Equals(a)));
+
+            if (a.Implicit(out String sub) && b.Implicit(out String str))
+                return new Bool(!str.Value.Contains(sub.Value));
+
+            return new Throw($"Cannot apply operator 'not in' on operands of types {a.Type.ToString().ToLower()} and {b.Type.ToString().ToLower()}");
+        }
+
         public static IResult Is(IValue a, IValue b)
         {
             if (b.Implicit(out TypeCollection type))
                 return new Bool(type.Value.Contains(a.Type));
 
             return new Throw($"Cannot apply operator 'is' on operands of types {a.Type.ToString().ToLower()} and {b.Type.ToString().ToLower()}");
+        }
+
+        public static IResult IsNot(IValue a, IValue b)
+        {
+            if (b.Implicit(out TypeCollection type))
+                return new Bool(!type.Value.Contains(a.Type));
+
+            return new Throw($"Cannot apply operator 'is not' on operands of types {a.Type.ToString().ToLower()} and {b.Type.ToString().ToLower()}");
         }
 
         public static IResult As(IValue a, IValue b)

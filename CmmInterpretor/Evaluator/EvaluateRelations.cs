@@ -13,7 +13,7 @@ namespace CmmInterpretor
         {
             for (int i = expr.Count - 1; i >= 0; i--)
             {
-                if (expr[i] is { type: TokenType.Operator or TokenType.Keyword, value: "<" or "<=" or ">" or ">=" or "in" or "is" or "as" })
+                if (expr[i] is { type: TokenType.Operator or TokenType.Keyword, value: "<" or "<=" or ">" or ">=" or "in" or "not in" or "is" or "is not" or "as" })
                 {
                     if (i == 0)
                         throw new SyntaxError("Missing the left part of relation");
@@ -38,7 +38,9 @@ namespace CmmInterpretor
                         ">" => Operator.Greater(aa, bb),
                         ">=" => Operator.GreaterOrEqual(aa, bb),
                         "in" => Operator.In(aa, bb),
+                        "not in" => Operator.NotIn(aa, bb),
                         "is" => Operator.Is(aa, bb),
+                        "is not" => Operator.IsNot(aa, bb),
                         "as" => Operator.As(aa, bb),
                         _ => throw new System.Exception()
                     };

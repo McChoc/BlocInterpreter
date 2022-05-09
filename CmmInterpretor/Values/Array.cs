@@ -96,7 +96,7 @@ namespace CmmInterpretor.Values
         public override string ToString(int depth)
         {
             if (Values.Count == 0)
-                return "{ } as array";
+                return "array()";
             else if (!Values.Any(v => v.Value is Array or Struct or Tuple))
                 return "{ " + string.Join(", ", Values.Select(v => v.Value.ToString())) + " }";
             else
@@ -153,7 +153,7 @@ namespace CmmInterpretor.Values
 
                 foreach (var value in Values)
                 {
-                    var result = func.Call(new Array(new List<IValue>() { value }), engine);
+                    var result = func.Invoke(new() { value.Value }, engine);
 
                     if (result is IValue v)
                         list.Add(v.Value);

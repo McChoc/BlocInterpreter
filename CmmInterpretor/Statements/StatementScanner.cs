@@ -73,6 +73,17 @@ namespace CmmInterpretor.Statements
                     return line;
 
                 line.Add(token);
+
+                if (line.Count >= 2 && line[^2] is { type: TokenType.Keyword, value: "not" } && line[^1] is { type: TokenType.Keyword, value: "in" })
+                {
+                    line.RemoveRange(line.Count - 2, 2);
+                    line.Add(new Token(TokenType.Keyword, "not in"));
+                }
+                else if (line.Count >= 2 && line[^2] is { type: TokenType.Keyword, value: "is" } && line[^1] is { type: TokenType.Keyword, value: "not" })
+                {
+                    line.RemoveRange(line.Count - 2, 2);
+                    line.Add(new Token(TokenType.Keyword, "is not"));
+                }
             }
 
             throw new SyntaxError("missing semicolon");

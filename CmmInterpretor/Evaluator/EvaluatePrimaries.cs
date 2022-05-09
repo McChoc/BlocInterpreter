@@ -136,39 +136,35 @@ namespace CmmInterpretor
                 }
                 else if (expr[i].type == TokenType.Parentheses)
                 {
-                    if (value.Implicit(out Function func))
+                    if (value.Value is not IInvokable invk)
+                        return new Throw("You can only invoke a function or a type.");
+
+                    var tokens = (List<Token>)expr[i].value;
+
+                    var parameters = new List<Value>();
+
+                    if (tokens.Count > 0)
                     {
-                        var tokens = (List<Token>)expr[i].value;
-
-                        var parameters = new List<Value>();
-
-                        if (tokens.Count > 0)
+                        foreach (var expression in tokens.Split(Token.Comma))
                         {
-                            foreach (var expression in tokens.Split(Token.Comma))
-                            {
-                                var result = Evaluate(expression, call);
-
-                                if (result is not IValue v)
-                                    return result;
-
-                                parameters.Add(v.Value);
-                            }
-                        }
-
-                        Array array = parameters.Count == 1 && parameters[0] is Array arr ? arr : new Array(parameters.ToList<IValue>());
-
-                        {
-                            var result = func.Call(array, call.Engine);
+                            var result = Evaluate(expression, call);
 
                             if (result is not IValue v)
                                 return result;
 
-                            value = v;
+                            parameters.Add(v.Value);
                         }
                     }
-                    else
+
                     {
-                        throw new SyntaxError("It was not a function");
+                        var values = parameters.Count == 1 && parameters[0] is Array arr ? arr.Values.Cast<Value>().ToList() : parameters;
+
+                        var result = invk.Invoke(values, call.Engine);
+
+                        if (result is not IValue v)
+                            return result;
+
+                        value = v;
                     }
                 }
                 else

@@ -97,7 +97,7 @@ namespace CmmInterpretor.Values
         public override string ToString(int depth)
         {
             if (Values.Count == 0)
-                return "{ } as struct";
+                return "struct()";
             else
                 return "{\n" + string.Join(",\n", Values.OrderBy(x => x.Key).Select(p => new string(' ', (depth + 1) * 4) + p.Key + " = " + p.Value.ToString(depth + 1))) + "\n" + new string(' ', depth * 4) + "}";
         }

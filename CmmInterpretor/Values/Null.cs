@@ -32,24 +32,6 @@ namespace CmmInterpretor.Values
                 return true;
             }
 
-            if (typeof(T) == typeof(Array))
-            {
-                value = Array.Empty as T;
-                return true;
-            }
-
-            if (typeof(T) == typeof(Struct))
-            {
-                value = Struct.Empty as T;
-                return true;
-            }
-
-            if (typeof(T) == typeof(TypeCollection))
-            {
-                value = new TypeCollection(VariableType.Null) as T;
-                return true;
-            }
-
             value = null;
             return false;
         }
@@ -60,9 +42,6 @@ namespace CmmInterpretor.Values
             {
                 VariableType.Bool => Bool.False,
                 VariableType.String => String.Empty,
-                VariableType.Array => Array.Empty,
-                VariableType.Struct => Struct.Empty,
-                VariableType.Type => new TypeCollection(VariableType.Null),
                 _ => new Throw($"Cannot implicitly cast null as {type.ToString().ToLower()}")
             };
         }
@@ -73,9 +52,6 @@ namespace CmmInterpretor.Values
             {
                 VariableType.Bool => Bool.False,
                 VariableType.String => String.Empty,
-                VariableType.Array => Array.Empty,
-                VariableType.Struct => Struct.Empty,
-                VariableType.Type => new TypeCollection(VariableType.Null),
                 _ => new Throw($"Cannot cast null as {type.ToString().ToLower()}")
             };
         }

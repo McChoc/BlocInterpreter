@@ -132,7 +132,7 @@ namespace CmmInterpretor.Data
                 tokens.Add(scanner.GetNextToken());
 
             if (tokens.Count == 0)
-                return Null.Value;
+                throw new SyntaxError("Ambiguous literal. To create an empty array or an empty struct use a default constructor.");
             
             var lines = tokens.Split(Token.Comma);
 

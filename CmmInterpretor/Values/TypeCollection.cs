@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace CmmInterpretor.Values
 {
-    public class TypeCollection : Value
+    public class TypeCollection : Value, IInvokable
     {
         public static TypeCollection None { get; } = new(new HashSet<VariableType>());
         public static TypeCollection Any { get; } = new(System.Enum.GetValues(typeof(VariableType)).Cast<VariableType>().ToHashSet());
@@ -76,11 +76,36 @@ namespace CmmInterpretor.Values
         public override string ToString(int _)
         {
             if (Value.Count == 0)
-                return "~any";
+                return "type()";
             else if (Value.Count == System.Enum.GetValues(typeof(VariableType)).Length)
                 return "any";
             else
                 return string.Join(" | ", Value).ToLower();
+        }
+
+        public IResult Invoke(List<Value> values, Engine engine)
+        {
+            if (Value.Count != 1)
+                return new Throw("Cannot instantiate a composite type");
+
+            return Value.Single() switch
+            {
+                VariableType.Void => Void.Value,
+                VariableType.Null => Null.Value,
+                VariableType.Bool => Bool.False,
+                VariableType.Number => new Number(0),
+                VariableType.Range => new Range(null, null),
+                VariableType.String => String.Empty,
+                VariableType.Array => Array.Empty,
+                VariableType.Struct => Struct.Empty,
+                VariableType.Tuple => new Tuple(new()),
+                VariableType.Function => new Function(),
+                VariableType.Task => new Task(),
+                VariableType.Reference => new Reference(null),
+                VariableType.Complex => new Complex(null),
+                VariableType.Type => None,
+                _ => throw new System.Exception()
+            };
         }
     }
 }
