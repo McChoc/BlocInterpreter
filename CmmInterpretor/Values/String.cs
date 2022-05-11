@@ -74,7 +74,7 @@ namespace CmmInterpretor.Values
                 yield return new String(@char.ToString());
         }
 
-        public IResult Index(Value val, Engine _)
+        public IResult Index(Value val, Call _)
         {
             if (val is Number num)
             {

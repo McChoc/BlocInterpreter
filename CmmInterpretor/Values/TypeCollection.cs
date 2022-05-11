@@ -83,7 +83,7 @@ namespace CmmInterpretor.Values
                 return string.Join(" | ", Value).ToLower();
         }
 
-        public IResult Invoke(List<Value> values, Engine engine)
+        public IResult Invoke(List<Value> _0, Call _1)
         {
             if (Value.Count != 1)
                 return new Throw("Cannot instantiate a composite type");

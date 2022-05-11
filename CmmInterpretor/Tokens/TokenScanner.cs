@@ -19,8 +19,8 @@ namespace CmmInterpretor.Tokens
 
         private static readonly HashSet<string> operators = new()
         {
-            "-", "--", "-=", ",", ";", ":", "::", ":=",
-            "!", "!!", "!=", "?", ".", "..", "@", "@@",
+            "-", "--", "-=", ",", ";", ":", "::",
+            "!", "!!", "!=", "?", ".", "..",
             "*", "**", "**=", "*=", "/", "//", "//=", "/=",
             "&", "&&", "&&=", "&=", "%", "%%", "%%=", "%=",
             "^", "^^", "^^=", "^=", "+", "++", "+=",
@@ -31,19 +31,18 @@ namespace CmmInterpretor.Tokens
 
         private static readonly HashSet<string> keyWords = new()
         {
+            "recall", "params",
             "chr", "ord", "len",
             "not", "in", "is", "as",
             "val", "ref", "new",
-            "async", "await",
             "nameof", "typeof",
-            "def", "delete",
-            "import", "if", "else",
+            "pass", "def", "delete",
+            "if", "else", "lock",
             "do", "while", "until",
             "loop", "repeat", "for",
             "try", "catch", "finally",
             "return", "exit", "throw",
-            "continue", "break", "goto",
-            "lock", "with", "pass"
+            "continue", "break", "goto"
         };
 
         private int _index;

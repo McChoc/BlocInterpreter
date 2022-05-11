@@ -8,9 +8,12 @@ namespace CmmInterpretor.Data
 
         public Dictionary<string, Variable> Variables { get; } = new();
 
-        public Scope(Call call)
+        public Scope(Call call) => Call = call;
+
+        public void Destroy()
         {
-            Call = call;
+            foreach (var variable in Variables.Values)
+                variable.Destroy();
         }
     }
 }

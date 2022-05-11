@@ -5,6 +5,6 @@ namespace CmmInterpretor.Data
 {
     public interface IInvokable
     {
-        IResult Invoke(List<Value> values, Engine engine);
+        IResult Invoke(List<Value> values, Call call);
     }
 }

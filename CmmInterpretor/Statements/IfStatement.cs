@@ -24,8 +24,11 @@ namespace CmmInterpretor.Statements
 
             if (b.Value)
                 return ExecuteBlock((List<Statement>)ifBody.value, call);
-            else
+
+            if (elseBody.type != TokenType.Empty)
                 return ExecuteBlock((List<Statement>)elseBody.value, call);
+
+            return Void.Value;
         }
     }
 }

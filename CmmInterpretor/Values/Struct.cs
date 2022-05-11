@@ -110,7 +110,7 @@ namespace CmmInterpretor.Values
             return new Throw($"'{identifier}' was not defined inside this struct");
         }
 
-        public IResult Index(Value value, Engine engine)
+        public IResult Index(Value value, Call _)
         {
             if (value is not String str)
                 return new Throw("It should be a string.");

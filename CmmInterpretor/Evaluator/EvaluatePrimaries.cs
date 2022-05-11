@@ -19,13 +19,21 @@ namespace CmmInterpretor
 
             switch (expr[0])
             {
+                case { type: TokenType.Keyword, value: "recall" }:
+                    value = call.Recall;
+                    break;
+
+                case { type: TokenType.Keyword, value: "params" }:
+                    value = call.Params;
+                    break;
+
                 case { type: TokenType.Literal }:
                     value = (Value)expr[0].value;
                     break;
 
                 case { type: TokenType.Interpolated }:
                     {
-                        var result = call.Interpolate(expr[0]);
+                        var result = Interpolate(expr[0], call);
 
                         if (result is not IValue v)
                             return result;
@@ -36,7 +44,7 @@ namespace CmmInterpretor
 
                 case { type: TokenType.Block }:
                     {
-                        var result = call.Initialize(expr[0]);
+                        var result = Initialize(expr[0], call);
 
                         if (result is not IValue v)
                             return result;
@@ -56,22 +64,6 @@ namespace CmmInterpretor
 
                         value = v;
                     }
-                    break;
-
-                case { type: TokenType.Identifier, value: "global" }:
-                    value = call.Global;
-                    break;
-
-                case { type: TokenType.Identifier, value: "this" }:
-                    value = call.This;
-                    break;
-
-                case { type: TokenType.Identifier, value: "recall" }:
-                    value = call.Recall;
-                    break;
-
-                case { type: TokenType.Identifier, value: "params" }:
-                    value = call.Params;
                     break;
 
                 case { type: TokenType.Identifier, value: string identifier }:
@@ -127,7 +119,7 @@ namespace CmmInterpretor
 
                     Value accessor = v.Value;
 
-                    result = indx.Index(accessor, call.Engine);
+                    result = indx.Index(accessor, call);
 
                     if (result is not IValue vv)
                         return result;
@@ -159,7 +151,7 @@ namespace CmmInterpretor
                     {
                         var values = parameters.Count == 1 && parameters[0] is Array arr ? arr.Values.Cast<Value>().ToList() : parameters;
 
-                        var result = invk.Invoke(values, call.Engine);
+                        var result = invk.Invoke(values, call);
 
                         if (result is not IValue v)
                             return result;

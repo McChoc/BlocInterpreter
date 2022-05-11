@@ -4,6 +4,6 @@ namespace CmmInterpretor.Data
 {
     public interface IIndexable
     {
-        IResult Index(Value value, Engine engine);
+        IResult Index(Value value, Call call);
     }
 }

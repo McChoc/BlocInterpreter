@@ -189,7 +189,7 @@ namespace CmmInterpretor.Commands
                 if (!var.Value.Implicit(out Function func))
                     return new String("The variable could not be converted to a function.");
 
-                var result = func.Invoke(variables, call.Engine);
+                var result = func.Invoke(variables, call);
 
                 if (result is IValue value)
                     return value.Value;

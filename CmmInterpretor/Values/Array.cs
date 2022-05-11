@@ -109,7 +109,7 @@ namespace CmmInterpretor.Values
                 yield return value.Value;
         }
 
-        public IResult Index(Value val, Engine engine)
+        public IResult Index(Value val, Call call)
         {
             if (val is Number num)
             {
@@ -153,7 +153,7 @@ namespace CmmInterpretor.Values
 
                 foreach (var value in Values)
                 {
-                    var result = func.Invoke(new() { value.Value }, engine);
+                    var result = func.Invoke(new() { value.Value }, call);
 
                     if (result is IValue v)
                         list.Add(v.Value);

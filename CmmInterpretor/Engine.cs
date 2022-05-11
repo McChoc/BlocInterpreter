@@ -15,8 +15,8 @@ namespace CmmInterpretor
     {
         internal Dictionary<string, Command> Commands { get; set; }
 
-        internal Action<string> Log { get; set; }
-        internal Action Clear { get; set; }
+        public Action<string> Log { get; private set; }
+        public Action Clear { get; private set; }
 
         internal int StackLimit { get; set; }
         internal int LoopLimit { get; set; }
@@ -85,7 +85,7 @@ namespace CmmInterpretor
             private Action<string> _log = _ => { };
             private Action _clear = () => { };
 
-            private int _stackLimit = 100;
+            private int _stackLimit = 50;
             private int _loopLimit = 1000;
             private int _jumpLimit = 1000;
             private int _hopLimit = 100;

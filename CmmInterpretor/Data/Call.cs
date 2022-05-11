@@ -1,10 +1,7 @@
-﻿using CmmInterpretor.Exceptions;
-using CmmInterpretor.Extensions;
-using CmmInterpretor.Results;
-using CmmInterpretor.Tokens;
-using CmmInterpretor.Values;
+﻿using CmmInterpretor.Values;
 using CmmInterpretor.Variables;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CmmInterpretor.Data
 {
@@ -12,45 +9,48 @@ namespace CmmInterpretor.Data
     {
         public Engine Engine { get; }
 
-        public Variable Global { get; private set; }
-        public Variable This { get; private set; }
-        public Variable Recall { get; private set; }
-        public Variable Params { get; private set; }
-
-        public Scope Parent { get; }
+        public Call Parent { get; }
         public Scope Captures { get; }
+
+        public Variable Recall { get; }
+        public Variable Params { get; }
+
         public List<Scope> Scopes { get; }
 
-        public Call(Engine engine, Scope captures = null)
+        public Call(Engine engine)
         {
             Engine = engine;
-            Scopes = new List<Scope>();
-            Captures = captures ?? new Scope(this);
+            Scopes = new();
             Push();
         }
 
-        //public void SetGlobal(Scope scope)
-        //{
-        //    Global = new Variable(null);
-        //}
-
-        //public void SetThis(Variable var)
-        //{
-        //    This = var;
-        //}
-
-        //public void SetRecall(Variable var)
-        //{
-        //    Recall = var;
-        //}
-
-        public void SetParams(Array arr)
+        public Call(Call parent, Scope captures, Function recall, List<Value> @params)
+            : this(parent.Engine)
         {
-            Params = new HeapVariable(arr);
+            Parent = parent;
+            Captures = captures;
+
+            Recall = new HeapVariable(recall);
+            Params = new HeapVariable(new Array(@params.Cast<IValue>().ToList()));
+            Params.Value.Assign();
         }
 
         public void Push() => Scopes.Add(new Scope(this));
-        public void Pop() => Scopes.RemoveAt(Scopes.Count - 1);
+
+        public void Pop()
+        {
+            Scopes[^1].Destroy();
+            Scopes.RemoveAt(Scopes.Count - 1);
+        }
+
+        public void Destroy()
+        {
+            Recall.Destroy();
+            Params.Destroy();
+
+            foreach (Scope scope in Scopes)
+                scope.Destroy();
+        }
 
         public bool TryAdd(StackVariable variable)
         {
@@ -72,7 +72,7 @@ namespace CmmInterpretor.Data
                 }
             }
 
-            if (Captures.Variables.ContainsKey(name))
+            if (Captures is not null && Captures.Variables.ContainsKey(name))
             {
                 var = Captures.Variables[name];
                 return true;
@@ -96,95 +96,6 @@ namespace CmmInterpretor.Data
                     captures.Variables[pair.Key] = pair.Value;
 
             return captures;
-        }
-
-
-        public IResult Interpolate(Token token)
-        {
-            var (text, tokens) = ((string, List<Token>))token.value;
-
-            var strings = new string[tokens.Count];
-
-            for (int i = 0; i < tokens.Count; i++)
-            {
-                var result = Evaluator.Evaluate((List<Token>)tokens[i].value, this);
-
-                if (result is not IValue value)
-                    return result;
-
-                if (!value.Implicit(out String str))
-                    return new Throw("Cannot implicitly convert to string");
-
-                strings[i] = str.Value;
-            }
-
-            return new String(string.Format(text, strings));
-        }
-
-        public IResult Initialize(Token token)
-        {
-            var text = token.Text;
-
-            var scanner = new TokenScanner(text);
-            var tokens = new List<Token>();
-
-            while (scanner.HasNextToken())
-                tokens.Add(scanner.GetNextToken());
-
-            if (tokens.Count == 0)
-                throw new SyntaxError("Ambiguous literal. To create an empty array or an empty struct use a default constructor.");
-            
-            var lines = tokens.Split(Token.Comma);
-
-            if (lines.Count > 0 && lines[^1].Count == 0)
-                lines.RemoveAt(lines.Count - 1);
-
-            if (tokens.Count >= 2 && tokens[0].type == TokenType.Identifier && tokens[1] is { type: TokenType.Operator, value: "=" })
-            {
-                var values = new Dictionary<string, IValue>();
-
-                foreach (var line in lines)
-                {
-                    if (line.Count <= 0 || line[0].type != TokenType.Identifier)
-                        throw new SyntaxError("Missing identifier");
-
-                    var name = line[0].Text;
-
-                    if (line.Count <= 1 || line[1] is not { type: TokenType.Operator, value: "=" })
-                        throw new SyntaxError("Missing =");
-
-                    if (line.Count <= 2)
-                        throw new SyntaxError("Missing expression");
-
-                    var result = Evaluator.Evaluate(line.GetRange(2..), this);
-
-                    if (result is not IValue value)
-                        return result;
-
-                    values.Add(name, value.Value);
-                }
-
-                return new Struct(values);
-            }
-            else
-            {
-                var values = new List<IValue>();
-
-                foreach (var line in lines)
-                {
-                    if (line.Count <= 0)
-                        throw new SyntaxError("Missing expression");
-
-                    var result = Evaluator.Evaluate(line, this);
-
-                    if (result is not IValue value)
-                        return result;
-
-                    values.Add(value.Value);
-                }
-
-                return new Array(values);
-            }
         }
     }
 }

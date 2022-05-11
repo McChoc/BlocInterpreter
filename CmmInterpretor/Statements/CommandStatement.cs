@@ -53,7 +53,7 @@ namespace CmmInterpretor.Statements
 
             if (token.type == TokenType.Interpolated)
             {
-                var result = call.Interpolate(token);
+                var result = Evaluator.Interpolate(token, call);
 
                 if (result is not IValue value)
                     return result;

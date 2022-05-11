@@ -109,22 +109,21 @@ namespace CmmInterpretor.Values
 
         public override string ToString(int _) => $"{(Async ? "async" : "")}({ string.Join(", ", Names) }) {{...}}";
 
-        public IResult Invoke(List<Value> values, Engine engine)
+        public IResult Invoke(List<Value> values, Call parent)
         {
             if (Async)
             {
                 return new Task();
             }
-            else
+
+            var call = new Call(parent, Captures, this, values);
+
+            try
             {
-                var call = new Call(engine, Captures);
-
-                //call.SetParams(values);
-
                 for (int i = 0; i < Names.Count; i++)
                 {
                     var name = Names[i];
-                    var value = values.Count > i ? values[i] != Void.Value ? values[i] : Null.Value : Null.Value;
+                    var value = i < values.Count && values[i] != Void.Value ? values[i] : Null.Value;
 
                     call.Set(name, new StackVariable(value, name, call.Scopes[^1]));
                 }
@@ -141,7 +140,7 @@ namespace CmmInterpretor.Values
 
                     if (result is not IValue)
                     {
-                        if (result is Continue || result is Break)
+                        if (result is Continue or Break)
                         {
                             throw new SyntaxError("No loop");
                         }
@@ -154,7 +153,7 @@ namespace CmmInterpretor.Values
                             if (labels.TryGetValue(g.label, out int index))
                                 i = index - 1;
                             else
-                                return result;
+                                throw new SyntaxError("No such label in scope");
                         }
                         else
                         {
@@ -164,6 +163,10 @@ namespace CmmInterpretor.Values
                 }
 
                 return Void.Value;
+            }
+            finally
+            {
+                call.Destroy();
             }
         }
     }

@@ -16,14 +16,14 @@ namespace CmmInterpretor
             if (expr.Count == 0)
                 throw new SyntaxError("Missing value");
 
-            if (expr[0].type is TokenType.Operator or TokenType.Keyword)
+            if (expr[0] is { type: TokenType.Operator or TokenType.Keyword, value: "+" or "-" or "~" or "!" or "++" or "--" or "~~" or "!!" or "len" or "chr" or "ord" or "val" or "ref" or "new" or "nameof" or "typeof" })
             {
+                string op = expr[0].Text;
+
                 var result = EvaluateUnaries(expr.GetRange(1..), call, precedence);
 
                 if (result is not IValue value)
                     return result;
-
-                string op = expr[0].Text;
 
                 if (op == "+")
                     return Operator.Plus(value);
@@ -158,14 +158,14 @@ namespace CmmInterpretor
                 }
             }
 
-            if (expr[^1].type is TokenType.Operator or TokenType.Keyword)
+            if (expr[^1] is { type: TokenType.Operator, value: "++" or "--" or "~~" or "!!" or "?" })
             {
+                string op = expr[^1].Text;
+
                 var result = EvaluateUnaries(expr.GetRange(..^1), call, precedence);
 
                 if (result is not IValue value)
                     return result;
-
-                string op = expr[^1].Text;
 
                 if (op == "++")
                 {
