@@ -7,6 +7,7 @@
 - [Language reference](#language-reference)
     - [Values](#values)
     - [Variables](#variables)
+    - [Access keywords](#access-keywords)
     - [Operators](#operators)
     - [Statements](#statements)
     - [Commands](#commands)
@@ -14,7 +15,11 @@
 
 ## Example project
 
+//TODO
+
 ## Fundamentals
+
+//TODO
 
 ## Language reference
 
@@ -22,38 +27,45 @@
 
 #### void
 
-You can use the `void` literal to create a `void` value. It cannot be assigned to a variable and is only used when a function returns nothing. However the return statement implicitly returns `void` when no value is provided, so the `void` literal is rarely used. Since this type can only have one value, the `void` literal can be used both as a value and as a type.
+You can use the `void` literal to create an instance of type void. It cannot be assigned to a variable and is only used when a function returns nothing. However void is implicitly returned when the end of a function is reached or when no value is provided for a return statement, so the `void` literal is rarely used.
 
 ```python
-def display = (num) {
-    if (num is not number) # if num is not a number
-        return;         # returns void
+# The 3 functions return void
+def void_1 = () { }; 
 
-    /echo $num;
+def void_2 = () {
+    return;
+}; 
+
+def void_3 = () {
+    return void;
 }; 
 
 def foo = void; # throws an exception
 
-void is void;   # evaluates to true
+typeof void; # evaluates to void
 ```
 
 ---
 
 #### null
 
-You can use the `null` literal to create a `null` value. This is used to represent that a variable contains nothing and it is the default value of any variable. Since this type can only have one value, the `null` literal can be used both as a value and as a type.
+You can use the `null` literal to create an instance of type null. This is used when a variable contains nothing and is the default value of any variable.
 
 ```python
-def foo;        # foo has a value of null
+# Both variables have a value of null
+def foo; 
 
-null is null;   # evaluates to true
+def bar = null; 
+
+typeof null; # evaluates to null
 ```
 
 ---
 
 #### bool
 
-A `bool` is used to represent a boolean value which can be true or false. You can use the `true` and `false` literals to create a `bool` value. They are mainly used as conditions inside `if` statements and loops.
+You can use the `true` and `false` literals to create an instance of type bool. They represent a boolean value and are mainly used as conditions inside `if` statements and loops.
 
 ```python
 def condition = true; 
@@ -69,7 +81,7 @@ typeof false;   # evaluates to bool
 
 #### number
 
-A `number` is used to represent both integers and floating-point numbers. To create an integer, you can simply write a decimal number with digits from 0 to 9 or you can prefix it with `0b`, `0o` or `0x` to write a number in binary, octal or hexadecimal respectivly. To create a floating point number, you can simply add a dot `.` to separate its integral and fractional parts. Floating point numbers have to be decimal, but you can use the scientific notation by adding an `e` and an exponent. Both integers and floating-point literals can contain any number of underscores `_` to separate digits. You can also use the `infinity` and `nan` literals to create a number.
+A number is used to represent both integers and floating-point numbers. To create an integer, you can simply write a decimal number with digits from 0 to 9 or you can prefix it with `0b`, `0o` or `0x` to write a number in binary, octal or hexadecimal respectivly. To create a floating point number, you can simply add a dot `.` to separate its integral and fractional parts. Floating point numbers have to be decimal, but you can use the scientific notation by adding an `e` and an exponent. Both integers and floating-point literals can contain any number of underscores `_` to separate digits. You can also use the `infinity` and `nan` literals to create a number.
 
 ```python
 # they all represent the same number
@@ -80,13 +92,17 @@ A `number` is used to represent both integers and floating-point numbers. To cre
 
 3.141_592_654; 
 0.42E-2; 
+
+typeof nan;         # evaluates to number
+typeof infinity;    # evaluates to number
+typeof -infinity;   # evaluates to number
 ```
 
 ---
 
 #### range
 
-You can create a `range` using the [range operator `..`](#range-operator) and optionaly numbers. Ranges can be used to get a slice of a [string](#string) or [array](#array). They can also be used in a [for..in](#forin-statement) loop to iterate over all the integers inside that range. When iterating over a range, if the first number is not omited, it defaults to 0. The second number defaults to `infinity` or `-infinity` depending on the sign of the step. The default step is 1, but you can change it by adding a second range operator `..`. A step of 2 for example will iterate over every second iteger inside the range. A negative step will reverse the iteration. For more information on getting a slice of a string or array, see [indexer]().
+You can create a range using the [range operator](#range-operator)  `..` and optionaly numbers. Ranges can be used to get a slice of a [string](#string) or [array](#array). They can also be used in a [for..in](#forin-statement) loop to iterate over all the integers inside that range. When iterating over a range, if the first number is omited, it defaults to 0. The second number defaults to `infinity` or `-infinity` depending on the sign of the step. The default step is 1, but you can change it by adding a second range operator `..`. A step of 2 for example will iterate over every second iteger inside the range. A negative step will reverse the iteration. For more information on getting a slice of a string or array, see [indexer]().
 
 ```python
 def arr = { 1, 2, 3 }; 
@@ -103,7 +119,7 @@ typeof(..); # evaluates to range
 
 #### string
 
-A `string` is used to represent text. You can create one by putting a chain of characters between single `'` or double quotes `"`. Whether you use single or double quotes does no change anything at runtime, but using one allows you to create a string containing the other one. The string literal has to be on a single line.
+A string is used to represent text. You can create one by putting a chain of characters between single `'` or double quotes `"`. Whether you use single or double quotes does no change anything at runtime, but using one allows you to create a string containing the other one. A string literal has to be on a single line.
 
 ```python
 'this is a string'; 
@@ -137,15 +153,17 @@ If you want a string to include both single and double quotes or simply include 
 You can also create a string with triple quotes (`'''` or `"""`). These types of string are called raw strings and remove the need to use escape sequences. They allow you to create multi-line strings, to include backslashes `\` without escaping them and to include quotes by doubling them.
 
 ```python
-'''\ '''''; # evaluates to "\\ \'"
+''' \n '''; # \n is not interpreted as an escape sequence
 
-"""
-Hello 
-world
-"""; # evaluates to '\nHello\nworld\n'
+""" """""" """; # evaluates to ' """ '
+
+'''
+This string contains new lines
+without using espace sequances.
+'''; 
 ```
 
-You can also create a string with back quotes ``` ` ```. These types of string are called interpolated string. They allow you to embed expressions inside curly brackets `{ }` within a string. The content of the curly brackets will be evaluated and implicitly converted to a string before being concatenated to the rest of the string at runtime. This improves readability over concatenating multiple expressions with the [addition operator `+`](#addition-operator). If you want to actualy have curly brackets inside an interpolated string, you have to double them.
+You can also create a string with back quotes ``` ` ```. These types of string are called interpolated string. They allow you to embed expressions inside braces `{}` within a string. The content of the braces will be evaluated and implicitly converted to a string before being concatenated to the rest of the string at runtime. This improves readability over concatenating multiple expressions with the [addition operator](#addition-operator) `+`. If you want to actualy have curly brackets inside an interpolated string, you have to double them.
 
 ```python
 def foo = 42; 
@@ -162,40 +180,48 @@ You can also combine raw strings and interpolated strings with triple back quote
 ````python
 def foo = 42; 
 
+``` `` {{ ```; # evaluates to ' ` { '
+
 ```
+This is the value of foo
+inside a multi-line string:
 {foo}
-```; # evaluates to '\n42\n'
+```;
 ````
 
 ---
 
 #### array
 
-An `array` is used to represent a list of ordered values. You can create one by separating values with comams `,` inside braces `{ }`. The values can be of any type and you are allowed to leave a trailing comma `,` after the last value. You cannot make an empty array literal because it would be ambiguus with an empty `struct`. 
+An array is used to represent a list of ordered values. You can create one by putting a list of coma `,` separated values inside braces `{}`. The values can be of any type and you are allowed to leave a trailing comma `,` after the last value. You cannot make an empty array literal because it would be ambiguus with an empty [struct](#struct). If you want to create an empty array, use the default constructor for `array`.
 
 ```python
-def myArray = { 1, 2, 3 }; 
+def myArray = { 1, 2, 3, }; 
+
+def emptyArray = array(); 
 ```
 
 ---
 
 #### struct
 
-A `struct` is used to represent a set of key-value pairs. You can create one by separating key-value pairs with commas `,` inside braces `{ }`. A key-value pair is formed by a name, the equal symbol `=` and a value. The values can be of any type and the keys have to be valid variable names. You are allowed to leave a trailing comma `,` after the last key-value pair. You cannot make an empty struct literal because it would be ambiguus with an empty `array`. 
+A struct is used to represent a set of key-value pairs. You can create one by putting a list of coma `,` separated key-value pairs  inside braces `{}`. A key-value pair is formed by a name, the equal symbol `=` and a value. The values can be of any type and the keys have to be valid variable names. You are allowed to leave a trailing comma `,` after the last key-value pair. You cannot make an empty struct literal because it would be ambiguus with an empty [array](#array). If you want to create an empty struct, use the default constructor for `struct`.
 
 ```python
 def myStruct = {
     a = 1,
     b = 2,
-    c = 3
+    c = 3,
 }; 
+
+def emptyStruct = struct(); 
 ```
 
 ---
 
 #### tuple
 
-You can create a `tuple` by separating two or more expressions with comas `,`. Tuples are also usualy surouned by parentheses `()` because of the [operator precedence](). Tuples are useful to perform an operation on multiple values at the same time. You can perform an operation between all the values of a tuple and a single value or between all the values of two tuples. If the tuple don't have the same size, an exception is thrown.
+You can create a tuple by separating two or more expressions with the coma operator `,`. Tuples are also usualy surouned by parentheses `()` because of the [operator precedence](). Tuples are useful to perform an operation on multiple values at the same time. You can perform an operation between all the values of a tuple and a single value or between all the values of two tuples. If the tuple don't have the same size, an exception is thrown.
 
 ```python
 1, 2, 3;        # evaluates to (1, 2, 3)
@@ -214,7 +240,9 @@ You can create a `tuple` by separating two or more expressions with comas `,`. T
 
 #### function
 
-A `function` is used to hold statements that you want to execute at more than one place and allows you to reuse code. You can generalize a function by using parameters, allowing you to use that function in even more places. There are two syntax you can use to create a `function`. With the first syntax, you have to put a pair of parentheses `()` next to a pair of braces `{ }`. The parentheses can contain a list of comma `,` separated identifiers. These are the parameters of the function. The braces can contain a list of statements to execute when the function is called. These statements can acces the parameters of the function directly by using the names of the parameters as variables or by using the `params` keyword.
+A function is used to hold statements that you want to execute at more than one place and allows you to reuse code. You can generalize a function by using parameters, allowing you to use that function in even more places. There are two syntax you can use to create a function.
+
+With the first syntax, you have to put a pair of parentheses `()` next to a pair of braces `{}`. The parentheses can contain a list of comma `,` separated identifiers. These are the parameters of the function. The braces can contain a list of statements to execute when the function is called. These statements can acces the parameters of the function directly by using the names of the parameters as variables or by using the `params` keyword.
 
 ```python
 def print = (text) {
@@ -222,32 +250,12 @@ def print = (text) {
 }; 
 ```
 
-The second syntax is useful for single line function. To create a function using this syntax, you have to put a pair of parentheses next to the lambda operator `=>` next to an expression. The parentheses can be omited if there is exactly one parameter. This type of function will evaluate its expression and return the result. 
+With the first syntax, you have to put a pair of parentheses next to the lambda operator `=>` next to an expression. The parentheses can be omited if there is exactly one parameter. This type of function will evaluate its expression and return the result. This is prety useful for single line functions.
 
 ```python
 def add = (a, b) => a + b; 
 
 def toString = x => x as string; 
-```
-
-Both syntax can be used to create asynchronus functions by prefixing them with the `async` keyword. Asynchronus functions allow you to run slow code on a new thread without blocking the main thread. They return a `task` that can be used to wait for the operation to end or retreive the value returned by the function.
-
-```python
-def print = async (text) {
-    /echo $text;
-}; 
-
-def toString = async x => x as string; 
-```
-
----
-
-#### task
-
-Tasks cannot be directly created. They are returned when calling an `async` function. You can use the `await` operator to retreive the value returned by the function. If the function is not done executing, it will block the thread until it is before returning the result.
-
-```python
-
 ```
 
 ---
@@ -274,17 +282,24 @@ Complexes cannot be directly created. They are returned by some command and are 
 
 #### type
 
-You can create a type by using any of the following literals : `bool`,  `number`,  `range`,  `string`,  `array`,  `struct`,  `tuple`,  `function`,  `task`,  `reference`,  `complex`,  `type` and  `any`. While they are not type literals, `void` and `null` can be used as such because there is an implicit conversion from both `void` and `null` to `type`. You can also use the `typeof` operator to get the type of a value. Types can be used to check if a value is of a certain type with the `is` operator. Types can be combined into composit types using bitwise operators allowing to to check if a value is of one of many types at the same time. `any` is the composite type of every types. Types can also be used to cast a value from its type to another with the `as` operator. A value cannot be casted to a composite type.
+You can create a type by using any of the following literals : `bool`,  `number`,  `range`,  `string`,  `array`,  `struct`,  `tuple`,  `function`,  `reference`,  `complex`,  `type` and  `any`. You can also use the `typeof` operator to get the type of a value. You have to use the `typeof` operator to get the void or null type since they don't have literals. Types can be used to check if a value is of a certain type with the `is` or `is not` operator. Types can be combined into composit types using bitwise operators or the [nullable type operator](#nullable-type-operator) `?`. This allows you to check if a value is of any of the types within a composit type. `any` is the composite type of every types. Types can also be used to cast a value from its type to another with the `as` operator. A value cannot be casted to a composite type.
 
 ```python
+0 is number;            # evaluates to true
+0 is (array | struct);  # evaluates to false
 
+true as number; # evaluates to 1
+
+true as (number | string) # throws an exception
 ```
 
 ---
 
 ### Variables
 
-Variables allow you to store values and associate them with a name. A variable name can contain both lower and upper case characters, digits, uderscores `_` and any special character except for these : ```!"#$%&'()*+,-./:;<=>?@[\]^`{|}~```. A variable name cannot contain white spaces and cannot start with a digit. You can create a variable using the `def` statement. You can then access its value with its name.
+Variables allow you to store values in memory to use later. Values can be stored either on the stack or the heap.
+
+To store a value on the stack, you have to use a `def` statement. Variables stored on the stack can be accessed by their name but are automaticly deleted once you get out of the scope in which they were declared. A variable name can contain both lower and upper case characters, digits, uderscores `_` and any special character except for these : ```!"#$%&'()*+,-./:;<=>?@[\]^`{|}~```. A variable name cannot contain white spaces and cannot start with a digit.
 
 ```python
 # declaring a variable foo
@@ -300,7 +315,18 @@ foo;
 def bar = 42; 
 ```
 
-Some valid variable names can be embiguus between a variable and a keyword. By default, the interpretor will interpret them as keywords, but you can use the variable identifier character `$` to force the interpretor to interpret them as variables. The `$` **is not** part of the variable name. This means that the `nameof` operator will return the name with out the `$` and when using indexers you have to ommit the `$`. You can use the variable identifier character with any variable even if they are not embiguus and you have to use it with every variable inside a command.
+To store a value on the heap, you have to use the `new` operator. Variables stored on the heap can be accessed from outside their original scope but they do not have names and can only be accessed using [references](#reference). The `new` operator returns a reference to the newly created heap variable. Heap variable are automaticly deleted once all their references have been deleted.
+
+```python
+# creating a string on the heap and
+# storing a reference to it in the variable foo
+def foo = new 'Hello world'; 
+
+# retreiving its value
+val foo; 
+```
+
+Some valid variable names can be ambiguous between a variable and a keyword. By default, the interpretor will interpret them as keywords, but you can use the variable identifier character `$` to force the interpretor to interpret them as variables. The `$` **is not** part of the variable name. This means that the `nameof` operator will return the name with out the `$` and when using indexers you have to ommit the `$`. You can use the variable identifier character with any variable even if they are not embiguus and you have to use it with every variable inside a command.
 
 ```python
 def $for = { 'a', 'b', 'c' };
@@ -324,16 +350,51 @@ $bar; # evaluates to 42
 ```
 ---
 
+### Access keywords
+
+Most keywords are used as literals or operators or used to initiate a statements, but there are two keywords which can be used as variables. These keywords are `params` and `recall`.
+
+#### params
+
+The `params` keyword can be used inside of a [function](#function) to access an [array](#array) containing all the parameters that were sent when invoking that function. This is usefull if a function has a variable number of arguments. The array is deleted once you exit out of the function.
+
+```python
+def print = () {
+    for (x in params)
+        /echo $x;
+};
+```
+
+---
+
+#### recall
+
+The `recall` keyword can be used inside of a [function](#function) to access a copy of that function allowing you to *recall* it. This is the prefered way of doing recursion. You should not try to recursively call a function using its name. The copy is deleted once you exit out of the function.
+
+```python
+def fibonacci = (n) {
+    if (n == 0)
+        return 0;
+
+    if (n == 1)
+        return 1;
+
+    return recall(n - 1) + recall(n - 2);
+}; 
+```
+
+---
+
 ### Operators
 
-Operators allow you to perform basic operations on values and variables. You can combine values and variables with operators to create complexe expressions. An expression can then be evaluated and reduced to a single value which can be used by statements. The order in which operators are evaluated is determined by the precedence and associativity of these operators, but you can use parentheses `()` to change that order.
+Operators allow you to perform basic operations on values and variables. You can combine values and variables with operators to create complex expressions. An expression can then be evaluated and reduced to a single value. The order in which operators are evaluated is determined by the precedence and associativity of these operators, but you can use parentheses `()` to change that order.
 
 The following table shows the precedence of all operators. The operators at the top of the table are evaluated before the ones at the bottom. If some operators have the same precedence, their associativity will determine the order of operation. 
 
 | Operators                                                                                | Description          | Associativity                     |
 |------------------------------------------------------------------------------------------|----------------------|-----------------------------------|
 | [`.`](#member-access-operator), [`[]`](#indexer-operator), [`()`](#invocation-operator)  | Primary              | Left&#8209;to&#8209;right&nbsp;🡲 |
-| [`+`](#unary-plus-operator), [`-`](#unary-minus-operator-), [`~`](#complement-operator-), [`!`](#negation-operator), [`++`](#increment-operator), [`--`](#decrement-operator-), [`~~`](#variable-complement-operator-), [`!!`](#variable-negation-operator), [`len`](#length-operator-len), [`chr`](#character-operator-chr), [`ord`](#ordinal-operator-ord), [`val`](#value-operator-val), [`ref`](#reference-operator-ref), [`new`](#allocation-operator-new), [`await`](#await-operator-await), [`nameof`](#nameof-operator-nameof), [`typeof`](#typeof-operator-typeof) | Unary | Right&#8209;to&#8209;left&nbsp;🡰 |
+| [`+`](#unary-plus-operator), [`-`](#unary-minus-operator-), [`~`](#complement-operator-), [`!`](#negation-operator), [`++`](#increment-operator), [`--`](#decrement-operator-), [`~~`](#variable-complement-operator-), [`!!`](#variable-negation-operator), [`?`](#nullable-type-operator), [`len`](#length-operator-len), [`chr`](#character-operator-chr), [`ord`](#ordinal-operator-ord), [`val`](#value-operator-val), [`ref`](#reference-operator-ref), [`new`](#allocation-operator-new), [`nameof`](#nameof-operator-nameof), [`typeof`](#typeof-operator-typeof) | Unary | Right&#8209;to&#8209;left&nbsp;🡰 |
 | [`..`](#range-operator)                                                                  | Range                | Left&#8209;to&#8209;right&nbsp;🡲 |
 | [`**`](#power-operator), [`//`](#root-operator), [`%%`](#logarithm-operator)             | Exponential          | Left&#8209;to&#8209;right&nbsp;🡲 |
 | [`*`](#multiplication-operator), [`/`](#division-operator), [`%`](#remainder-operator)   | Multiplicative       | Left&#8209;to&#8209;right&nbsp;🡲 |
@@ -350,44 +411,44 @@ The following table shows the precedence of all operators. The operators at the 
 | [`\|\|`](#boolean-or-operator)                                                           | Boolean OR           | Left&#8209;to&#8209;right&nbsp;🡲 |
 | [`?:`](#ternary-conditional-operator)                                                    | Ternary              | Right&#8209;to&#8209;left&nbsp;🡰 |
 | [`=`](#assignment-operator), [`+=`, `-=`, `*=`, `/=`, `%=`, `**=`, `//=`, `%%=`, `<<=`, `>>=`, `&=`, `\|=`, `^=`, `&&=`, `\|\|=`, `^^=`](#compound-assignment-operators) | Assignment | Right&#8209;to&#8209;left&nbsp;🡰 |
-| `=>`                                                                                     | Lambda               | Right&#8209;to&#8209;left&nbsp;🡰 |
-| `,`                                                                                      | Comma                | Left&#8209;to&#8209;right&nbsp;🡲 |
+| [`=>`](#lambda-operator)                                                                 | Lambda               | Right&#8209;to&#8209;left&nbsp;🡰 |
+| [`,`](#comma-operator)                                                                   | Comma                | N/A                               |
 
 The pipe operator `|>` is not in that table because it can only be used inside a command statement which cannot have any other operators. Its associativity is from left to right.
 
 Unrelated to operator precedence and associativity, an operator will evaluate its operands from left to right.
 
-Note that the operands don't need to be exactly the type specified in a certain context, they only need to be [implicitly convertible]() to that type. In the case were the operands are implicitly convertible to multiple types and match more than one context, the upper most one takes priority. In the case were the operands do not match any context, an exception is thrown.
+Note that the operands don't need to be exactly the type specified in a certain context, they only need to be [implicitly convertible]() to that type. In the case were the operands are implicitly convertible to multiple types and match more than one operator overload, the upper most one takes priority. In the case were the operands do not match any overload, an exception is thrown.
 
 ---
 
 #### Addition operator `+`
 
-When both its operands are of type [number](#number), it will compute the sum of its operands.
+If both its operands are [numbers](#number), it will compute the sum of its operands.
 
 ```python
 5 + 4.6; # evaluates to 9.6
 ```
 
-When both its operands are of type [array](#array), it will concatenate its operands.
+If both its operands are [arrays](#array), it will concatenate them.
 
 ```python
 { 4, 4 } + { 2, 7 }; # evaluates to { 4, 4, 2, 7 }
 ```
 
-When its left operand is of type [array](#array), but the right one is not, it will append the right operand to the [array](#array).
+If its left operand is an [array](#array), but the right one is not, it will append the right operand to the [array](#array).
 
 ```python
 { 2, 5 } + 2; # evaluates to { 2, 5, 2 }
 ```
 
-When its right operand is of type [array](#array), but the left one is not, it will prepend the left operand to the [array](#array).
+If its right operand is an [array](#array), but the left one is not, it will prepend the left operand to the [array](#array).
 
 ```python
 2 + { 3, 8 }; # evaluates to { 2, 3, 8 }
 ```
 
-When both its operands are of type [string](#string), it will concatenate its operands.
+If both its operands are [strings](#string), it will concatenate them.
 
 ```python
 'fizz' + 'buzz'; # evaluates to 'fizzbuzz'
@@ -399,7 +460,7 @@ Note that [string interpolation]() provides a more convenient way to format stri
 
 #### Subtraction operator `-`
 
-When both its operands are of type [number](#number), it will subtract its right operand from its left operand.
+If both its operands are [numbers](#number), it will subtract its right operand from its left operand.
 
 ```python
 5 - 3;      # evaluates to 2
@@ -411,13 +472,13 @@ When both its operands are of type [number](#number), it will subtract its right
 
 #### Multiplication operator `*`
 
-When both its operands are of type [number](#number), it will compute the product of its operands.
+If both its operands are [numbers](#number), it will compute the product of its operands.
 
 ```python
 2 * 8.6; # evaluates to 17.2
 ```
 
-When one of its operands is of type [array](#array) and the other is of type [number](#number), it will concatenate an empty array with the given array a number of time equivalent to the floor of the given number.
+If one of its operands is an [array](#array) and the other is a [number](#number), it will concatenate an empty array with the given array a number of time equivalent to the floor of the given number.
 
 ```python
 { 1, 2 } * 3;   # evaluates to { 1, 2, 1, 2, 1, 2 }
@@ -426,7 +487,7 @@ When one of its operands is of type [array](#array) and the other is of type [nu
 { 1, 2 } * -2;  # throws an exception
 ```
 
-When one of its operands is of type [string](#string) and the other is of type [number](#number), it will concatenate an empty string with the given string a number of time equivalent to the floor of the given number.
+If one of its operands is a [string](#string) and the other is a [number](#number), it will concatenate an empty string with the given string a number of time equivalent to the floor of the given number.
 
 ```python
 'ab' * 3;   # evaluates to 'ababab'
@@ -439,7 +500,7 @@ When one of its operands is of type [string](#string) and the other is of type [
 
 #### Division operator `/`
 
-When both its operands are of type [number](#number), it will divide its left operand by its right operand. Dividing a positive number by zero will return `infinity`, dividing a negative number by zero will return `-infinity` and dividing zero by zero will return `nan`.
+If both its operands are [numbers](#number), it will divide its left operand by its right operand. Dividing a positive number by zero will return `infinity`, dividing a negative number by zero will return `-infinity` and dividing zero by zero will return `nan`.
 
 ```python
 6 / 4;  # evaluates to 1.5
@@ -454,7 +515,7 @@ The `/` can also be used to make a [command statement]().
 
 #### Remainder operator `%`
 
-When both its operands are of type [number](#number), it will compute the remainder after dividing its left operand by its right operand. Even though it is similar, this **is not** a modulus operator. It can be used as a modulus operator as long as its operands are positive, but with negative values the result will not be the same.
+If both its operands are [numbers](#number), it will compute the remainder after dividing its left operand by its right operand. Even though it is similar, this **is not** a modulus operator. It can be used as a modulus operator as long as its operands are positive, but with negative values the result will not be the same.
 
 ```python
 8 % 3;      # evaluates to 2
@@ -465,7 +526,7 @@ When both its operands are of type [number](#number), it will compute the remain
 
 #### Power operator `**`
 
-When both its operands are of type [number](#number), it will raise its left operand to the power of its right operand.
+If both its operands are [numbers](#number), it will raise its left operand to the power of its right operand.
 
 ```python
 5 ** 4;     # evaluates to 625
@@ -477,7 +538,7 @@ When both its operands are of type [number](#number), it will raise its left ope
 
 #### Root operator `//`
 
-When both its operands are of type [number](#number), it will compute the n^th^ root of its left operand, where n is the value of its right operand.
+If both its operands are [numbers](#number), it will compute the n^th^ root of its left operand, where n is the value of its right operand.
 
 ```python
 25 // 2; # evaluates to 5 (the square root of 25)
@@ -487,7 +548,7 @@ When both its operands are of type [number](#number), it will compute the n^th^ 
 
 #### Logarithm operator `%%`
 
-When both its operands are of type [number](#number), it will compute the logarithm of its left operand with its right operand as the base.
+If both its operands are [numbers](#number), it will compute the logarithm of its left operand with its right operand as the base.
 
 ```python
 100 %% 10; # evaluates to 2 (the logarithm base 10 of 100)
@@ -497,7 +558,7 @@ When both its operands are of type [number](#number), it will compute the logari
 
 #### Unary plus operator `+`
 
-When its operand is of type [number](#number), it will return the value of that operand. It can be used to [implicitly convert]() a value to a [number](#number).
+If its operand is a [number](#number), it will return the value of that number. It can be used to [implicitly convert]() a value to a [number](#number).
 
 ```python
 +4;     # evaluates to 4
@@ -508,7 +569,7 @@ When its operand is of type [number](#number), it will return the value of that 
 
 #### Unary minus operator `-`
 
-When its operand is of type [number](#number), it will compute the numeric negation of its operand.
+If its operand is a [number](#number), it will compute the numeric negation of its operand.
 
 ```python
 -4;     # evaluates to -4
@@ -521,7 +582,7 @@ Note that there is a space between the two `-`. If we remove that space, they wi
 
 #### Increment operator `++`
 
-When its operand is of type [number](#number), it will increment its operand by 1. The operand must be a variable. This operator can be used both as a prefix and a sufix. When used as a prefix, it returns the value of the variable *after* the increment. When used as a sufix, it returns the value of the variable *before* the increment, but after the implicit conversion.
+If its operand has a [number](#number) as its value, it will increment it by 1. The operand must be a variable. This operator can be used both as a prefix and a sufix. When used as a prefix, it returns the value of the variable *after* the increment. When used as a sufix, it returns the value of the variable *before* the increment, but after the implicit conversion.
 
 ```python
 def foo = 0; 
@@ -537,7 +598,7 @@ bar++;          # evaluates to 0, but bar has a value of 1
 
 #### Decrement operator `--`
 
-When its operand is of type [number](#number), it will decrement its operand by 1. The operand must be a variable. This operator can be used both as a prefix and a sufix. When used as a prefix, it returns the value of the variable *after* the decrement. When used as a sufix, it returns the value of the variable *before* the decrement, but after the implicit conversion.
+If its operand has a [number](#number) as its value, it will decrement it by 1. The operand must be a variable. This operator can be used both as a prefix and a sufix. When used as a prefix, it returns the value of the variable *after* the decrement. When used as a sufix, it returns the value of the variable *before* the decrement, but after the implicit conversion.
 
 ```python
 def foo = 0; 
@@ -621,16 +682,28 @@ result = foo || bar;
 
 #### Boolean XOR operator `^^`
 
-This operator will compute the logical XOR of its operands. The result is `true` if one of its operands evaluate `true` and the other evaluates to `false`. The result is `false` if both its operands evaluate `true` or if both its operands evaluate `false`.
+This operator will compute the logical XOR of its operands. Its operands are implicitly converted to bools for the evaluation, but the result will not nececeraly be of type `bool`. If one of its operands evaluate `true` and the other evaluates to `false`, the operator returns the one wich evaluated to true. If both its operands evaluate `true` or if both its operands evaluate `false`, the operator returns `null` which is implicitly convertible to `false`. Both operands are always evaluated.
 
 ```python
-false ^^ false; # evaluates to false
+def foo, bar; 
 
-false ^^ true;  # evaluates to true
+foo = null; 
+bar = { a = 2 }; 
 
-true ^^ false;  # evaluates to true
+result = foo ^^ bar; 
+/echo $result; 
+# output:
+# {
+#     a = 2
+# }
 
-true ^^ true;   # evaluates to false
+foo = { b = 5 }; 
+bar = { a = 2 }; 
+
+result = foo ^^ bar; 
+/echo $result; 
+# output:
+# null
 ```
 
 ---
@@ -648,7 +721,7 @@ This operator will compute the logical negation of its operand.The result is `tr
 
 #### Variable negation operator `!!`
 
-This operator will compute the lopgical negation of its operand and assign it the result. The operand must be a variable. This operator can be used both as a prefix and a sufix. When used as a prefix, it returns the value of the variable *after* the negation. When used as a sufix, it returns the value of the variable *before* the negation, but after the implicit conversion.
+This operator will compute the logical negation of its operand and assign it the result. The operand must be a variable. This operator can be used both as a prefix and a sufix. When used as a prefix, it returns the value of the variable *after* the negation. When used as a sufix, it returns the value of the variable *before* the negation, but after the implicit conversion.
 
 ```python
 def foo = false; 
@@ -667,87 +740,419 @@ false!!;        # is a syntax error
 
 #### Bitwise AND operator `&`
 
+If both its operands are [numbers](#number), it will compute the bitwise logical AND of its operands.
+
+```python
+def foo = 0b0011; 
+def bar = 0b1010; 
+
+foo | bar; # evaluates to 0b0010
+```
+
+If both its operands are [types](#type), it will return a composite type whose types are in both operands
+
+```python
+def foo = array | struct; 
+def bar = array | tuple; 
+
+foo & bar; # evaluates to array
+```
+
 ---
 
 #### Bitwise OR operator `|`
+
+If both its operands are [numbers](#number), it will compute the bitwise logical OR of its operands.
+
+```python
+def foo = 0b0011; 
+def bar = 0b1010; 
+
+foo | bar; # evaluates to 0b1011
+```
+
+If both its operands are [types](#type), it will return a composite type whose types are in either operands.
+
+```python
+def foo = array | struct; 
+def bar = array | tuple; 
+
+foo & bar; # evaluates to array | struct | tuple
+```
 
 ---
 
 #### Bitwise XOR operator `^`
 
+If both its operands are [numbers](#number), it will compute the bitwise logical XOR of its operands.
+
+```python
+def foo = 0b0011; 
+def bar = 0b1010; 
+
+foo | bar; # evaluates to 0b1001
+```
+
+If both its operands are [types](#type), it will return a composite type whose types are in exactly one of its operands.
+
+```python
+def foo = array | struct; 
+def bar = array | tuple; 
+
+foo & bar; # evaluates to struct | tuple
+```
+
 ---
 
 #### Left-shift operator `<<`
+
+If both its operands are [numbers](#number), it will shift to the left its left operand by the number of bits defined by its right operand.
+
+```python
+def foo = 0b_1111_0000_0000_0000_0000_0000_0000_1111; 
+
+foo << 4; # evaluates to 0b_0000_0000_0000_0000_0000_0000_1111_0000
+```
 
 ---
 
 #### Right-shift operator `>>`
 
+If both its operands are [numbers](#number), it will shift to the right its left operand by the number of bits defined by its right operand.
+
+```python
+def foo = 0b_1111_0000_0000_0000_0000_0000_0000_1111; 
+
+foo >> 4; # evaluates to 0b_1111_1111_0000_0000_0000_0000_0000_0000
+```
+
 ---
 
 #### Complement operator `~`
+
+If both its operands are [numbers](#number), it will compute the bitwise complement of its operand by reversing each bit.
+
+```python
+def foo = 0b_1111_0000_0000_1111_1111_0000_0000_1111; 
+
+~foo; # evaluates to 0b_0000_1111_1111_0000_0000_1111_1111_0000
+```
+
+If both its operands are [types](#type), it will return a composite type whose types are every types that were not in its operand.
+
+```python
+def foo = string | array | struct | tuple | function | reference | complex; 
+
+~foo; # evaluates to (void | null | bool | number | range | type)
+```
 
 ---
 
 #### Variable complement operator `~~`
 
+If its operand has a [number](#number) as its value, it will compute its bitwise complement and assign it the result. The operand must be a variable. This operator can be used both as a prefix and a sufix. When used as a prefix, it returns the value of the variable *after* the complement is assigned. When used as a sufix, it returns the value of the variable *before* the complement, but after the implicit conversion.
+
+```python
+def foo = 0b_1111_0000_0000_1111_1111_0000_0000_1111;  
+~~foo;
+# evaluates to 0b_0000_1111_1111_0000_0000_1111_1111_0000 and
+# foo has a value of 0b_0000_1111_1111_0000_0000_1111_1111_0000
+
+def bar = 0b_1111_0000_0000_1111_1111_0000_0000_1111; 
+bar~~;
+# evaluates to 0b_1111_0000_0000_1111_1111_0000_0000_1111 but,
+# foo has a value of 0b_0000_1111_1111_0000_0000_1111_1111_0000
+
+0~~; # is a syntax error
+```
+
+If its operand has a [type](#type) as its value, it will return a composite type whose types are every types that were not in its operand and assign it the result. The operand must be a variable. This operator can be used both as a prefix and a sufix. When used as a prefix, it returns the value of the variable *after* the complement is assigned. When used as a sufix, it returns the value of the variable *before* the complement, but after the implicit conversion.
+
+```python
+def foo = string | array | struct | tuple | function | reference | complex;  
+~~foo;
+# evaluates to (void | null | bool | number | range | type) and
+# foo has a value of (void | null | bool | number | range | type)
+
+def bar = string | array | struct | tuple | function | reference | complex; 
+bar~~;
+# evaluates to (string | array | struct | tuple | function | reference | complex) but,
+# foo has a value of (void | null | bool | number | range | type)
+
+0~~; # is a syntax error
+```
+
+---
+
+#### Nullable type operator `?`
+
+If its operand is a [type](#type), it will return a composite type whose types are the ones from its operand plus the null type.
+
+```python
+# Both evaluates to the same composite type
+number?; 
+number | typeof null; 
+```
+
 ---
 
 #### Equality operator `==`
+
+This operator returns `true` if its operands are equal and returns `false` otherwise. If the operands don't have the same type, the result is `false`. If both operands are reference, it returns `true` if they both point to the same variable. If they point to different variables, the result is `false` even if both variables have the same value.
+
+```python
+"Hello" == "Hello"; # evaluates to true
+"Hello" == "World"; # evaluates to false
+
+1 == '1'; # evaluates to false
+
+def foo = new { a = 2 }; 
+def bar = new { a = 2 }; 
+
+foo == bar;         # evaluates to false
+val foo == val bar; # evaluates to true
+```
 
 ---
 
 #### Inequality operators `!=`, `<>`
 
+These operators both return `true` if their operands are **not** equal and return `false` otherwise. It does the oposite of the [equality operator](#equality-operator).
+
+```python
+# they all evaluates to true
+1 <> "1"; 
+1 != "1"; 
+!(1 == "1"); 
+```
+
 ---
 
 #### Less than operator `<`
+
+If both its operands are [numbers](#number), it will return `true` if its left operand is less than its right operand and return `false` otherwise.
+
+```python
+2 < 1; # evaluates to false
+2 < 2; # evaluates to false
+2 < 5; # evaluates to true
+```
 
 ---
 
 #### Greater than operator `>`
 
+If both its operands are [numbers](#number), it will return `true` if its left operand is greater than its right operand and return `false` otherwise.
+
+```python
+2 > 1; # evaluates to true
+2 > 2; # evaluates to false
+2 > 5; # evaluates to false
+```
+
 ---
 
 #### Less than or equal operator `<=`
+
+If both its operands are [numbers](#number), it will return `true` if its left operand is less than or equal to its right operand and return `false` otherwise.
+
+```python
+2 <= 1; # evaluates to false
+2 <= 2; # evaluates to true
+2 <= 5; # evaluates to true
+```
 
 ---
 
 #### Greater than or equal operator `>=`
 
+If both its operands are [numbers](#number), it will return `true` if its left operand is greater than or equal to its right operand and return `false` otherwise.
+
+```python
+2 >= 1; # evaluates to true
+2 >= 2; # evaluates to true
+2 >= 5; # evaluates to false
+```
+
 ---
 
 #### Three-way comparison operator `<=>`
+
+If both its operands are [numbers](#number), it will return `1` if its left operand is greater than its right operand, return `-1` if its left operand is less than its right operand and return `0` if both operands are equal.
+
+```python
+2 <=> 1; # evaluates to 1
+2 <=> 2; # evaluates to 0
+2 <=> 5; # evaluates to -1
+```
 
 ---
 
 #### Assignment operator `=`
 
+This operator assigns the value of its right operand to a variable or an element of an array or struct given by its left operand. It also returns the value assigned to the left operand.
+
+```python
+def a, b; 
+
+a = 2;      # assigns 2 to the variable a
+
+a = b = 5;  # assigns 5 to b and then to a
+```
+
 ---
 
 #### Compound assignment operators
 
+Compound assignment operators are formed by combining some binary operators and the assignment operator. Here are all compound assignment operators :
+
 `+=`, `-=`, `*=`, `/=`, `%=`, `**=`, `//=`, `%%=`, `<<=`, `>>=`, `&=`, `|=`, `^=`, `&&=`, `||=`, `^^=`
+
+Given a binary operator `op`, the expression `x op= y` is equivalent to `x = x op y`.
+
+`x += 1` is equivalent to `++x` and `x -= 1` is equivalent to `--x`.
 
 ---
 
 #### Member access operator `.`
 
+This operator is used to access a member of a struct. If the memeber does not exist, an exception is thrown.
+
+```python
+def foo = {
+    a = 2,
+    b = {
+        c = 5
+    }
+}; 
+
+foo.a;      # evaluates to 2
+foo.b.c;    # evaluates to 5
+
+foo.e;      # throws an exception
+```
+
 ---
 
 #### Indexer operator `[]`
+
+This operator can be used to index elements of a string, an array or a struct. Inside the brackets, you have to provide exactly 1 parameter.
+
+If used on a [string](#string) with a [number](#number) as the parameter, it returns a string containing the single character from the original string at the index given by the parameter. Negative indices can be used to acces characters from the end of the string. If the index is outside the bounds of the string, an exception is thrown.
+
+```python
+def foo = 'Hello'; 
+
+foo[0];     # evaluates to 'H'
+foo[1];     # evaluates to 'e'
+foo[-1];    # evaluates to 'o'
+
+foo[5];     # throws an exception
+foo[-6];    # throws an exception
+```
+
+If used on a [string](#string) with a [range](#range) as the parameter, it returns a string containing a slice of the original string. If the slice goes outside the bounds of the string, an exception is thrown.
+
+```python
+def foo = 'Hello'; 
+
+foo[1..-1]; # evaluates to 'ell'
+```
+
+If used on a [string](#string) with a [function](#function) as the parameter, for each character in the string, it calls the function and passes it the character as the only parameter and returns a array where each element is the result of the each of the function calls.
+
+```python
+def foo = 'Hello'; 
+
+foo[x => ord x]; # evaluates to { 72, 101, 108, 108, 111 }
+```
+
+If used on an [array](#array) with a [number](#number) as the parameter, it returns the element inside the array at the index given by the parameter. Negative indices can be used to acces elements from the end of the array. If the index is outside the bounds of the array, an exception is thrown.
+
+```python
+def foo = { 'a', 'b', 'c', 'd', 'e' }; 
+
+foo[0];     # evaluates to 'a'
+foo[1];     # evaluates to 'b'
+foo[-1];    # evaluates to 'e'
+
+foo[5];     # throws an exception
+foo[-6];    # throws an exception
+
+def bar = {
+    { 1, 2, 3 },
+    { 4, 5, 6 },
+    { 7, 8, 9 }
+}; 
+
+bar[0][1]; # evaluates to 2
+```
+
+If used on an [array](#array) with a [range](#range) as the parameter, it returns an array containing a slice of the original array. If the slice goes outside the bounds of the array, an exception is thrown.
+
+```python
+def foo = { 'a', 'b', 'c', 'd', 'e' }; 
+
+foo[1..-1]; # evaluates to { 'b', 'c', 'd' }
+```
+
+If used on an [array](#array) with a [function](#function) as the parameter, for each element in the array, it calls the function and passes it the element as the only parameter and returns a array where each element is the result of the each of the function calls.
+
+```python
+def foo = { 1, 2, 3, 4, 5 }; 
+
+foo[x => x + 1]; # evaluates to { 2, 3, 4, 5, 6 }
+```
+
+If used on a [struct](#struct) with a [string](#string) as the parameter, it returns the member of the struct whose name is equal to the parameter. The string has to be a valid variable name. If the member does not exist, it is created.
+
+```python
+def foo = {
+    a = 2
+}; 
+
+foo['a'];       # evaluates to 2
+
+foo['b'] = 5;   # create a member b inside foo and assign it the value 5
+```
+
+Note that the prefered way to access a member of a struct is to use the [member access operator](#member-access-operator). You should only use an indexer to access a member whose name is determined at runtime or to add a member to a struct.
 
 ---
 
 #### Invocation operator `()`
 
+This operator can be used both to call a [function](#function) or to call the constructor of a [type](#type). You can provide parameters for the function or the constructor by putting a list of comma separated values inside the parentheses.
+
+```python
+def add = (a, b) => a + b; 
+
+add(1, 2); # calls the function in the variable add with 1 and 2 as parameters
+
+array(); #calls the array constructor without parameters
+```
+
 ---
 
 #### Range operator `..`
 
+This operator is used to create [ranges](#range).
+
+```python
+
+```
+
 ---
 
 #### Ternary conditional operator `?:`
+
+---
+
+#### Lambda operator `=>`
+
+---
+
+#### Comma operator `,`
 
 ---
 
@@ -800,10 +1205,6 @@ false!!;        # is a syntax error
 ---
 
 #### Typeof operator `typeof`
-
----
-
-#### Await operator `await`
 
 ---
 
@@ -860,7 +1261,7 @@ false!!;        # is a syntax error
 
 ---
 
-#### repeat statement
+#### while, do..while, until and do..until statements
 
 ---
 
@@ -872,15 +1273,7 @@ false!!;        # is a syntax error
 
 ---
 
-#### while statement
-
----
-
-#### until statement
-
----
-
-#### do statement
+#### repeat statement
 
 ---
 
@@ -909,5 +1302,7 @@ false!!;        # is a syntax error
 ---
 
 ### Commands
+
+---
 
 ### Comments

@@ -83,6 +83,9 @@ namespace CmmInterpretor
             {
                 if (expr[i] is { type : TokenType.Operator, Text : "." })
                 {
+                    if (!value.Implicit(out Struct obj))
+                        throw new SyntaxError("The '.' operator can only be apllied to a struct");
+                    
                     if (expr.Count <= i)
                         throw new SyntaxError("Missing identifier");
 
@@ -91,19 +94,12 @@ namespace CmmInterpretor
                     if (identifier.type != TokenType.Identifier)
                         throw new SyntaxError("Unexpected symbol");
 
-                    if (value.Implicit(out Struct obj))
-                    {
-                        IResult result = obj.Get(identifier.Text);
+                    IResult result = obj.Get(identifier.Text);
 
-                        if (result is not IValue v)
-                            return result;
+                    if (result is not IValue v)
+                        return result;
 
-                        value = v;
-                    }
-                    else
-                    {
-                        throw new SyntaxError("The '.' operator can only be apllied to a struct");
-                    }
+                    value = v;
 
                     i++;
                 }
