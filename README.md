@@ -221,7 +221,7 @@ def emptyStruct = struct();
 
 #### tuple
 
-You can create a tuple by separating two or more expressions with the coma operator `,`. Tuples are also usualy surouned by parentheses `()` because of the [operator precedence](). Tuples are useful to perform an operation on multiple values at the same time. You can perform an operation between all the values of a tuple and a single value or between all the values of two tuples. If the tuple don't have the same size, an exception is thrown.
+You can create a tuple by separating two or more expressions with the coma operator `,`. Tuples are also usualy surouned by parentheses `()` because of the [operator precedence](#operators). Tuples are useful to perform an operation on multiple values at the same time. You can perform an operation between all the values of a tuple and a single value or between all the values of two tuples. If the tuple don't have the same size, an exception is thrown.
 
 ```python
 1, 2, 3;        # evaluates to (1, 2, 3)
@@ -250,7 +250,7 @@ def print = (text) {
 }; 
 ```
 
-With the first syntax, you have to put a pair of parentheses next to the lambda operator `=>` next to an expression. The parentheses can be omited if there is exactly one parameter. This type of function will evaluate its expression and return the result. This is prety useful for single line functions.
+With the second syntax, you have to put a pair of parentheses next to the [lambda operator](#lambda-operator) `=>` next to an expression. The parentheses can be omited if there is exactly one parameter and it does not have an explicit default value. This type of function will evaluate its expression and return the result. This is prety useful for single line functions.
 
 ```python
 def add = (a, b) => a + b; 
@@ -1136,79 +1136,334 @@ array(); #calls the array constructor without parameters
 
 #### Range operator `..`
 
-This operator is used to create [ranges](#range).
+This operator is used to create [ranges](#range) which can be used to get a slice of a string or array or to iterate over all integers inside the range. The start of the range is given by the left operand and the end of the range is given gy the right operand. The start of the range is inclusive, but the end is exclusive. Negative indices can be used to reference indices from the end of a string or array. You can add a second range operator after the right operand and add a third operand to scecify the step of the range. Creating a range with a step of 0 will throw an exception.
 
 ```python
+def foo = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }; 
 
+foo[1..4];      # evaluates to { 1, 2, 3 }
+foo[-4..-1];    # evaluates to { 6, 7, 8 }
+foo[3..-3];     # evaluates to { 3, 4, 5, 6 }
+foo[1..8..2];   # evaluates to { 1, 3, 5, 7 }
+foo[4..0..-1];  # evaluates to { 4, 3, 2, 1 }
+foo[-2..1..-2]; # evaluates to { 8, 6, 4, 2 }
+foo[1..8..0];   # throws an exception
+```
+
+All operands can be omited to use their default value. The step always default to 1, but the start and end will default to different values depending on the context.
+
+When used with the indexer operator, the start defaults to 0 if the step is positive or the last index if the step is negative. The end default to the size of the string or array if the step is positive or -1 if the step is negative.
+
+```python
+def foo = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }; 
+
+foo[..5];       # evaluates to { 0, 1, 2, 3, 4 }
+foo[..5..-1];   # evaluates to { 9, 8, 7, 6 }
+foo[5..];       # evaluates to { 5, 6, 7, 8, 9 }
+foo[5....-1];   # evaluates to { 5, 4, 3, 2, 1, 0 }
+
+def bar = { 0, 1, 2, 3, 4 }; 
+
+bar[..];        # evaluates to { 0, 1, 2, 3, 4 }
+bar[....-1];    # evaluates to { 4, 3, 2, 1, 0 }
+```
+
+When used inside a for..in loop, the start defaults to 0 if the step is positive or -1 if the step is negative. The end defaults to infinity if the step is positive or -infinity if the step is negative.
+
+```python
+for (i in ..5)
+    /echo $i;
+# output
+# 0
+# 1
+# 2
+# 3
+# 4
+
+for (i in ..-5..-1)
+    /echo $i;
+# output
+# -1
+# -2
+# -3
+# -4
 ```
 
 ---
 
 #### Ternary conditional operator `?:`
 
+This operator has three operands : the condition, the consequent and the alternative. This is its syntax : `condition ? consequent : alternative`. The condition is always evaluated and must return a [bool](#bool). If the condition evaluates to `true`, the consequent is evaluated and its result is returned. If the condition evaluates to `false`, the alternative is evaluated and its result is returned. The consequent and the alternative cannot be both evaluated. If the condition cannot be implicitly converted to a [bool](#bool), an exception is thrown and none of the other two expressions are evaluated. This operator can be used as an inline [if statement](#if-statement).
+
+```python
+def print = (text) {
+    /echo $text;
+}; 
+
+def temperature; 
+
+temperature = 15; 
+print(temperature < 25 ? 'cold' : 'hot'); # outputs cold
+
+temperature = 30; 
+print(temperature < 25 ? 'cold' : 'hot'); # outputs hot
+
+print("") ? true : false; # throws an exception since print returns void
+```
+
 ---
 
 #### Lambda operator `=>`
+
+This operator is used to create single line functions. On the left side of the operator, you can define the parameters of the function. If the function has exacly one parameter and this operator does not have an explicit default value, you can simply write its name. Otherwise, the parameters have to be between parantheses and separated by commas. On the right side of the operator, you have to give it an expression. The resulting function, will evaluate this expression and return its result.
+
+```python
+def toString = x => x as string; 
+
+def add = (a, b) => a + b; 
+
+def foo = { 0, 1, 2, 3, 4 }; 
+
+foo[x => x + 1]; # evaluates to { 1, 2, 3, 4, 5 }
+```
 
 ---
 
 #### Comma operator `,`
 
+Commas can be used to separate the values of an array, the values of a struct, the parameters of a function declaration or the parameters sent with the invocation operator. Outside of these contexts, a comma will be interpreted as the comma operator. This operator is used to create [tuples](#tuple).
+
+```python
+1, 2, 3; # evaluates to (1, 2, 3)
+
+def foo = (1, 2, 3); 
+
+def (a, b, c) = foo; 
+
+a; # evaluates to 1
+b; # evaluates to 2
+c; # evaluates to 3
+```
+
 ---
 
 #### In operator `in`
+
+If its right operand is an [array](#array), it will return `true` if the array contains the value of its left operand, `false` otherwise.
+
+```python
+2 in { 1, 2, 3 }; # evaluates to true
+
+2 in { 4, 5, 6 }; # evaluates to false
+```
+
+If both its operands are [strings](#string), it will return `true` the right string contains the left one, `false` otherwise. The search is case sensitive.
+
+```python
+"Hello" in "Hello world";   # evaluates to true
+
+"Asdf" in "Hello world";    # evaluates to false
+
+"hello" in "Hello world";   # evaluates to false
+```
 
 ---
 
 #### Not in operator `not in`
 
+This operator does the oposite of the [in operator](#in-operator-in).
+
+```python
+# both evaluate to true
+2 not in { 4, 5, 6 }; 
+!(2 in { 4, 5, 6 }); 
+
+# both evaluate to true
+"Asdf" not in "Hello world"; 
+!("Asdf" in "Hello world"); 
+```
+
 ---
 
 #### Is operator `is`
+
+This operator returns `true` if the type of the left operand is equal to the type given by its right operand and returns `false` otherwise. Its right operand has to be a [type](#type).
+
+```python
+2 is number; # evaluate to true
+
+2 is string; # evaluates to false
+
+type is type; # evaluates to true
+```
+
+This operator can also be used with composite type. In which case, it returns `true` if the composite type contains the type of the left operand, `false` otherwise.
+
+```python
+2 is (bool | number); # evaluate to true
+
+2 is (bool | string); # evaluates to false
+
+# this produces the same result without using the is operator
+(typeof 2 & (bool | string)) != ~any; 
+```
 
 ---
 
 #### Is not operator `is not`
 
+This operator does the oposite of the [is operator](#is-operator-is).
+
+```python
+# both evaluate to true
+2 is not string; 
+!(2 is string); 
+```
+
 ---
 
 #### As operator `as`
+
+This operator performs an explicit conversion of the result of it left operand to the type given by its right operand. If its right operand is not a [type](#type), if the type is a composit type or if a conversion to that type does not exist, an exception is thrown.
+
+```python
+1 as bool; # evaluate to true
+
+1 as string; # evaluate to '1'
+
+1 as (bool | string); # throws an exception
+
+1 as array; # throws an exception
+```
 
 ---
 
 #### Length operator `len`
 
+If its operand is an [array](#array), it returns the number of element inside that array.
+
+```python
+len { };                # evaluates to 0
+len { 0, 1, 2, 3, 4 };  # evaluates to 5
+```
+
+If its operand is a [string](#string), its return the number of character in that string.
+
+```python
+len '';         # evaluates to 0
+len 'Hello';    # evaluates to 5
+```
+
 ---
 
 #### Character operator `chr`
+
+This operator returns a [string](#string) containing a single character whose character code is equal to the operand of the operator. Its operand has to be a [number](#number).
+
+```python
+chr 0;  # evaluates to '\0'
+chr 65; # evaluates to 'A'
+```
 
 ---
 
 #### Ordinal operator `ord`
 
+This operator returns a [number](#string) equal to the character code of the single character of its operand. If its operand is not a [string](#string) or contains more than 1 character, an exception is thrown.
+
+```python
+ord '\0';   # evaluates to 0
+ord 'A';    # evaluates to 65
+
+ord 'AB'; # throws an exception
+```
+
 ---
 
 #### Value operator `val`
+
+This operator will dereference every reference in a chain of references until it find a value and return this value. The result of this operator is guarentied to not be a reference. If its operand is not a reference, its value is simply returned. If too many references are dereferenced, an exception is thrown. This is the hop limit and prevents the program from freezing if two references are pointing at each other creating an infinite loop.
+
+```python
+val 2; # evaluates to 2
+
+def value = 5; 
+def ref1 = ref value; 
+def ref2 = ref ref1; 
+
+val value;  # evaluates to 5
+val ref1;   # evaluates to 5
+val ref2;   # evaluates to 5
+
+def foo; 
+def bar = ref foo; 
+foo = ref bar; 
+
+val foo; # throws an exception
+```
 
 ---
 
 #### Reference operator `ref`
 
+This operator returns a reference to its operand. Its operand has to be a variable.
+
+```python
+def foo = 2; 
+def bar = ref foo; # bar is a reference
+
+val bar;        # evaluates to 2
+nameof val bar; # evaluates to 'foo'
+```
+
 ---
 
 #### Allocation operator `new`
+
+This operator creates a copy of its operand on the heap and returns a reference pointing to that copy. For more information on the heap, see [Variables](#variables).
+
+```python
+def foo = new {
+    a = 2
+}; 
+# foo is a reference to a struct stored on the heap
+```
 
 ---
 
 #### Nameof operator `nameof`
 
+This operator returns a [string](#string) containing the name of its operand. Its operand has to be a variable. This operator is especialy useful in combination with the [value operator](#value-operator-val) to know the variable at which a reference is pointing.
+
+```python
+def foo, bar = ref foo; 
+
+nameof foo;     # 'foo'
+nameof bar;     # 'bar'
+nameof val bar; # 'foo'
+```
+
 ---
 
 #### Typeof operator `typeof`
 
+This operator returns the [type](#type) of its operand.
+
+```python
+typeof 2;                   # evaluates to number
+typeof 'Hello';             # evaluates to string
+typeof { 0, 1, 2, 3 ,4 };   # evaluates to array
+```
+
 ---
 
 #### Pipe operator `|>`
+
+By default, the output of a command is displayed on the standard output. This operator allows you to redirect the output of a command to the input of another command. The redirected output is not displayed on the standard output.
+
+```python
+
+```
 
 ---
 
