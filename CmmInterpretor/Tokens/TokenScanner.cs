@@ -91,14 +91,31 @@ namespace CmmInterpretor.Tokens
 
             if (char.IsDigit(_code[_index]) || (_code[_index] == '.' && _index < _code.Length - 1 && char.IsDigit(_code[_index + 1])))
                 return GetNumber();
-            else if (_code[_index] is '\'' or '"' or '`')
+
+            if (_code[_index] is '\'' or '"' or '`')
                 return GetString();
-            else if (_code[_index] is '(' or '{' or '[')
+
+            if (_code[_index] is '(' or '{' or '[')
                 return GetBlock();
+
             if (symbols.Contains(_code[_index]) && _code[_index] != '$')
                 return GetOperator();
-            else
-                return GetWord();
+
+            var word = GetWord();
+
+            if (word is { type: TokenType.Keyword, value: "not" } && HasNextToken() && Peek() is { type: TokenType.Keyword, value: "in" })
+            {
+                GetNextToken();
+                return new Token(TokenType.Keyword, "not in");
+            }
+
+            if (word is { type: TokenType.Keyword, value: "is" } && HasNextToken() && Peek() is { type: TokenType.Keyword, value: "not" })
+            {
+                GetNextToken();
+                return new Token(TokenType.Keyword, "is not");
+            }
+
+            return word;
         }
 
         public Token GetNextCommandToken()
