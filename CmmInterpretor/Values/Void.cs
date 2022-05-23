@@ -1,5 +1,4 @@
-﻿using CmmInterpretor.Data;
-using CmmInterpretor.Results;
+﻿using CmmInterpretor.Results;
 
 namespace CmmInterpretor.Values
 {
@@ -7,28 +6,27 @@ namespace CmmInterpretor.Values
     {
         public static Void Value { get; } = new();
 
-        public override VariableType Type => VariableType.Void;
+        public override ValueType Type => ValueType.Void;
 
         private Void() { }
 
         public override Value Copy() => this;
 
-        public override bool Equals(IValue other) => throw new System.Exception();
+        public override void Assign() => throw new Throw("You cannot assign void to a variable");
 
-        public override bool Implicit<T>(out T value)
+        public override bool Equals(IValue other)
         {
-            value = null;
-            return false;
+            return other.Value is Void;
         }
 
-        public override IResult Implicit(VariableType type)
+        public override T Implicit<T>()
         {
-            return new Throw($"Cannot implicitly cast void as {type.ToString().ToLower()}");
+            throw new Throw($"Cannot implicitly cast void as {typeof(T).Name.ToLower()}");
         }
 
-        public override IResult Explicit(VariableType type)
+        public override IValue Explicit(ValueType type)
         {
-            return new Throw($"Cannot cast void as {type.ToString().ToLower()}");
+            throw new Throw($"Cannot cast void as {type.ToString().ToLower()}");
         }
 
         public override string ToString(int _) => "void";

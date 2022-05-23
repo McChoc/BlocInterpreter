@@ -1,21 +1,17 @@
-﻿using CmmInterpretor.Data;
+﻿using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
-using CmmInterpretor.Tokens;
-using CmmInterpretor.Values;
 using System.Collections.Generic;
 
 namespace CmmInterpretor.Statements
 {
     public class LoopStatement : Statement
     {
-        public Token body;
+        public List<Statement> Statements { get; set; } = default!;
 
-        public override IResult Execute(Call call)
+        public override Result? Execute(Call call)
         {
             int loopCount = 0;
-
-            var statements = (List<Statement>)body.value;
-            var labels = GetLabels(statements);
+            var labels = GetLabels(Statements);
 
             while (true)
             {
@@ -28,18 +24,14 @@ namespace CmmInterpretor.Statements
                 {
                     call.Push();
 
-                    var result = ExecuteBlockInLoop(statements, labels, call);
+                    var result = ExecuteBlockInLoop(Statements, labels, call);
 
-                    if (result is not IValue)
-                    {
-                        if (result is Continue)
-                            continue;
-
-                        if (result is Break)
-                            break;
-                        
+                    if (result is Continue)
+                        continue;
+                    else if (result is Break)
+                        break;
+                    else if (result is not null)
                         return result;
-                    }
                 }
                 finally
                 {
@@ -47,7 +39,7 @@ namespace CmmInterpretor.Statements
                 }
             }
 
-            return Void.Value;
+            return null;
         }
     }
 }

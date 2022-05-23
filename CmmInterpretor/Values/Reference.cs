@@ -1,20 +1,20 @@
-﻿using CmmInterpretor.Data;
-using CmmInterpretor.Results;
+﻿using CmmInterpretor.Results;
+using CmmInterpretor.Variables;
 
 namespace CmmInterpretor.Values
 {
     public class Reference : Value
     {
-        public Variable Variable { get; private set; }
+        public Variable? Variable { get; private set; }
 
-        public override VariableType Type => VariableType.Reference;
+        public override ValueType Type => ValueType.Reference;
 
-        public Reference(Variable var) => Variable = var;
+        public Reference(Variable? variable) => Variable = variable;
 
         public override Value Copy()
         {
             var reference = new Reference(Variable);
-            Variable.References.Add(reference);
+            Variable?.References?.Add(reference);
             return reference;
         }
 
@@ -34,32 +34,27 @@ namespace CmmInterpretor.Values
             return true;
         }
 
-        public override bool Implicit<T>(out T value)
+        public override T Implicit<T>()
         {
             if (typeof(T) == typeof(Reference))
-            {
-                value = this as T;
-                return true;
-            }
-            else if (Variable.Value.Implicit(out T val))
-            {
-                value = val;
-                return true;
-            }
+                return (this as T)!;
 
-            value = null;
-            return false;
+            if (Variable is not null)
+                return Variable.Value.Implicit<T>();
+
+            throw new Throw("Invalid reference");
         }
 
-        public override IResult Implicit(VariableType type)
+        public override IValue Explicit(ValueType type)
         {
-            if (type == VariableType.Reference)
+            if (type == ValueType.Reference)
                 return this;
 
-            return Variable.Value.Explicit(type);
-        }
+            if (Variable is not null)
+                return Variable.Value.Explicit(type);
 
-        public override IResult Explicit(VariableType type) => Implicit(type);
+            throw new Throw("Invalid reference");
+        }
 
         public override string ToString(int _) => "[reference]";
     }

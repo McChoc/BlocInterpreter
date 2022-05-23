@@ -1,6 +1,6 @@
-﻿using CmmInterpretor.Data;
+﻿using CmmInterpretor.Memory;
+using CmmInterpretor.Expressions;
 using CmmInterpretor.Results;
-using CmmInterpretor.Tokens;
 using CmmInterpretor.Values;
 using System.Collections.Generic;
 
@@ -8,27 +8,28 @@ namespace CmmInterpretor.Statements
 {
     public class IfStatement : Statement
     {
-        public Token condition;
-        public Token ifBody;
-        public Token elseBody;
+        public IExpression Condition { get; set; } = default!;
+        public List<Statement> IfBody { get; set; } = default!;
+        public List<Statement> ElseBody { get; set; } = new();
 
-        public override IResult Execute(Call call)
+        public override Result? Execute(Call call)
         {
-            var result = Evaluator.Evaluate((List<Token>)condition.value, call);
+            try
+            {
+                var value = Condition.Evaluate(call);
 
-            if (result is not IValue value)
+                if (!value.Is(out Bool? @bool))
+                    return new Throw("Cannot implicitly convert to bool");
+
+                if (@bool!.Value)
+                    return ExecuteBlock(IfBody, call);
+                else
+                    return ExecuteBlock(ElseBody, call);
+            }
+            catch (Result result)
+            {
                 return result;
-
-            if (!value.Implicit(out Bool b))
-                return new Throw("Cannot implicitly convert to bool");
-
-            if (b.Value)
-                return ExecuteBlock((List<Statement>)ifBody.value, call);
-
-            if (elseBody.type != TokenType.Empty)
-                return ExecuteBlock((List<Statement>)elseBody.value, call);
-
-            return Void.Value;
+            }
         }
     }
 }

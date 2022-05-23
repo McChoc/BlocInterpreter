@@ -1,11 +1,10 @@
-﻿using CmmInterpretor.Data;
+﻿using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
-using CmmInterpretor.Values;
 
 namespace CmmInterpretor.Statements
 {
     public class EmptyStatement : Statement
     {
-        public override IResult Execute(Call _) => Void.Value;
+        public override Result? Execute(Call _) => null;
     }
 }

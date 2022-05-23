@@ -1,6 +1,6 @@
-﻿using CmmInterpretor.Data;
+﻿using CmmInterpretor.Memory;
+using CmmInterpretor.Expressions;
 using CmmInterpretor.Results;
-using CmmInterpretor.Tokens;
 using CmmInterpretor.Values;
 using System.Collections.Generic;
 
@@ -8,68 +8,72 @@ namespace CmmInterpretor.Statements
 {
     public class ForStatement : Statement
     {
-        public List<List<Token>> initialisation;
-        public List<Token> condition;
-        public List<Token> increment;
-        public Token body;
+        public DefStatement? Initialisation { get; set; }
+        public IExpression? Condition { get; set; }
+        public IExpression? Increment { get; set; }
+        public List<Statement> Statements { get; set; } = default!;
 
-        public override IResult Execute(Call call)
+        public override Result? Execute(Call call)
         {
-            call.Push();
-
-            new DefStatement() { definitions = initialisation }.Execute(call);
-
-            int loopCount = 0;
-
-            var statements = (List<Statement>)body.value;
-            var labels = GetLabels(statements);
-
-            while (true)
+            try
             {
-                var result = Evaluator.Evaluate(condition, call);
+                call.Push();
 
-                if (result is not IValue value)
-                    return result;
+                Initialisation?.Execute(call);
 
-                if (!value.Implicit(out Bool b))
-                    return new Throw("Cannot implicitly convert to bool");
+                int loopCount = 0;
 
-                if (!b.Value)
-                    break;
+                var labels = GetLabels(Statements);
 
-                loopCount++;
-
-                if (loopCount > call.Engine.LoopLimit)
-                    return new Throw("The loop limit was reached.");
-
-                try
+                while (true)
                 {
-                    call.Push();
-
-                    var r = ExecuteBlockInLoop(statements, labels, call);
-
-                    if (r is not IValue)
+                    if (Condition is not null)
                     {
+                        var value = Condition.Evaluate(call);
+
+                        if (!value.Is(out Bool? @bool))
+                            return new Throw("Cannot implicitly convert to bool");
+
+                        if (!@bool!.Value)
+                            break;
+                    }
+
+                    loopCount++;
+
+                    if (loopCount > call.Engine.LoopLimit)
+                        return new Throw("The loop limit was reached.");
+
+                    try
+                    {
+                        call.Push();
+
+                        var r = ExecuteBlockInLoop(Statements, labels, call);
+
                         if (r is Continue)
                             continue;
-
-                        if (r is Break)
+                        else if (r is Break)
                             break;
-                        
-                        return r;
+                        else if (r is not null)
+                            return r;
                     }
-                }
-                finally
-                {
-                    call.Pop();
-                }
+                    finally
+                    {
+                        call.Pop();
+                    }
 
-                Evaluator.Evaluate(increment, call);
+                    Increment?.Evaluate(call);
+                }
             }
-
-            call.Pop();
-
-            return Void.Value;
+            catch (Result result)
+            {
+                return result;
+            }
+            finally
+            {
+                call.Pop();
+            }
+            
+            return null;
         }
     }
 }

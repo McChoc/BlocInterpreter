@@ -1,4 +1,4 @@
-﻿using CmmInterpretor.Data;
+﻿using CmmInterpretor.Interfaces;
 using CmmInterpretor.Results;
 using System.Collections.Generic;
 
@@ -10,7 +10,7 @@ namespace CmmInterpretor.Values
         public int? End { get; }
         public int Step { get; }
 
-        public override VariableType Type => VariableType.Range;
+        public override ValueType Type => ValueType.Range;
 
         public Range(int? start, int? end, int step = 1) => (Start, End, Step) = (start, end, step);
 
@@ -33,49 +33,28 @@ namespace CmmInterpretor.Values
             return true;
         }
 
-        public override bool Implicit<T>(out T value)
+        public override T Implicit<T>()
         {
             if (typeof(T) == typeof(Bool))
-            {
-                value = Bool.True as T;
-                return true;
-            }
+                return (Bool.True as T)!;
 
             if (typeof(T) == typeof(Range))
-            {
-                value = this as T;
-                return true;
-            }
+                return (this as T)!;
 
             if (typeof(T) == typeof(String))
-            {
-                value = new String(ToString()) as T;
-                return true;
-            }
+                return (new String(ToString()) as T)!;
 
-            value = null;
-            return false;
+            throw new Throw($"Cannot implicitly cast range as {typeof(T).Name.ToLower()}");
         }
 
-        public override IResult Implicit(VariableType type)
+        public override IValue Explicit(ValueType type)
         {
             return type switch
             {
-                VariableType.Bool => Bool.True,
-                VariableType.Range => this,
-                VariableType.String => new String(ToString()),
-                _ => new Throw($"Cannot implicitly cast range as {type.ToString().ToLower()}")
-            };
-        }
-
-        public override IResult Explicit(VariableType type)
-        {
-            return type switch
-            {
-                VariableType.Bool => Bool.True,
-                VariableType.Range => this,
-                VariableType.String => new String(ToString()),
-                _ => new Throw($"Cannot cast range as {type.ToString().ToLower()}")
+                ValueType.Bool => Bool.True,
+                ValueType.Range => this,
+                ValueType.String => new String(ToString()),
+                _ => throw new Throw($"Cannot cast range as {type.ToString().ToLower()}")
             };
         }
 

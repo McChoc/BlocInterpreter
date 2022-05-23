@@ -1,10 +1,12 @@
-﻿using CmmInterpretor.Data;
+﻿using CmmInterpretor.Values;
 
 namespace CmmInterpretor.Variables
 {
     public class HeapVariable : Variable
     {
-        public HeapVariable(Value value) : base(value) { }
+        public override Value Value { get; set; }
+
+        public HeapVariable(Value value) => Value = value;
 
         public override void Destroy()
         {

@@ -395,7 +395,7 @@ The following table shows the precedence of all operators. The operators at the 
 |------------------------------------------------------------------------------------------|----------------------|-----------------------------------|
 | [`.`](#member-access-operator), [`[]`](#indexer-operator), [`()`](#invocation-operator)  | Primary              | Left&#8209;to&#8209;right&nbsp;🡲 |
 | [`+`](#unary-plus-operator), [`-`](#unary-minus-operator-), [`~`](#complement-operator-), [`!`](#negation-operator), [`++`](#increment-operator), [`--`](#decrement-operator-), [`~~`](#variable-complement-operator-), [`!!`](#variable-negation-operator), [`?`](#nullable-type-operator), [`len`](#length-operator-len), [`chr`](#character-operator-chr), [`ord`](#ordinal-operator-ord), [`val`](#value-operator-val), [`ref`](#reference-operator-ref), [`new`](#allocation-operator-new), [`nameof`](#nameof-operator-nameof), [`typeof`](#typeof-operator-typeof) | Unary | Right&#8209;to&#8209;left&nbsp;🡰 |
-| [`..`](#range-operator)                                                                  | Range                | Left&#8209;to&#8209;right&nbsp;🡲 |
+| [`..`](#range-operator)                                                                  | Range                | N/A                               |
 | [`**`](#power-operator), [`//`](#root-operator), [`%%`](#logarithm-operator)             | Exponential          | Left&#8209;to&#8209;right&nbsp;🡲 |
 | [`*`](#multiplication-operator), [`/`](#division-operator), [`%`](#remainder-operator)   | Multiplicative       | Left&#8209;to&#8209;right&nbsp;🡲 |
 | [`+`](#addition-operator), [`-`](#subtraction-operator-)                                 | Additive             | Left&#8209;to&#8209;right&nbsp;🡲 |
@@ -433,13 +433,13 @@ If both its operands are [numbers](#number), it will compute the sum of its oper
 If both its operands are [arrays](#array), it will concatenate them.
 
 ```python
-{ 4, 4 } + { 2, 7 }; # evaluates to { 4, 4, 2, 7 }
+({ 4, 4 } + { 2, 7 }); # evaluates to { 4, 4, 2, 7 }
 ```
 
 If its left operand is an [array](#array), but the right one is not, it will append the right operand to the [array](#array).
 
 ```python
-{ 2, 5 } + 2; # evaluates to { 2, 5, 2 }
+({ 2, 5 } + 2); # evaluates to { 2, 5, 2 }
 ```
 
 If its right operand is an [array](#array), but the left one is not, it will prepend the left operand to the [array](#array).
@@ -481,10 +481,10 @@ If both its operands are [numbers](#number), it will compute the product of its 
 If one of its operands is an [array](#array) and the other is a [number](#number), it will concatenate an empty array with the given array a number of time equivalent to the floor of the given number.
 
 ```python
-{ 1, 2 } * 3;   # evaluates to { 1, 2, 1, 2, 1, 2 }
-{ 1, 2 } * 0;   # evaluates to { }
-{ 1, 2 } * 1.9; # evaluates to { 1, 2 }
-{ 1, 2 } * -2;  # throws an exception
+({ 1, 2 } * 3);     # evaluates to { 1, 2, 1, 2, 1, 2 }
+({ 1, 2 } * 0);     # evaluates to array()
+({ 1, 2 } * 1.9);   # evaluates to { 1, 2 }
+({ 1, 2 } * -2);    # throws an exception
 ```
 
 If one of its operands is a [string](#string) and the other is a [number](#number), it will concatenate an empty string with the given string a number of time equivalent to the floor of the given number.
@@ -591,7 +591,7 @@ def foo = 0;
 def bar = 0; 
 bar++;          # evaluates to 0, but bar has a value of 1
 
-0++;            # is a syntax error
+0++;            # throws an exception
 ```
 
 ---
@@ -607,7 +607,7 @@ def foo = 0;
 def bar = 0; 
 bar--;          # evaluates to 0, but bar has a value of -1
 
-0--;            # is a syntax error
+0--;            # throws an exception
 ```
 
 ---
@@ -685,12 +685,9 @@ result = foo || bar;
 This operator will compute the logical XOR of its operands. Its operands are implicitly converted to bools for the evaluation, but the result will not nececeraly be of type `bool`. If one of its operands evaluate `true` and the other evaluates to `false`, the operator returns the one wich evaluated to true. If both its operands evaluate `true` or if both its operands evaluate `false`, the operator returns `null` which is implicitly convertible to `false`. Both operands are always evaluated.
 
 ```python
-def foo, bar; 
+def foo, bar = { a = 2 }; 
 
-foo = null; 
-bar = { a = 2 }; 
-
-result = foo ^^ bar; 
+def result = foo ^^ bar; 
 /echo $result; 
 # output:
 # {
@@ -733,7 +730,7 @@ bar!!;          # evaluates to false, but bar has a value of true
 def num = 1; 
 num!!;          # evaluates to true, but num has a value of false
 
-false!!;        # is a syntax error
+false!!;        # throws an exception
 ```
 
 ---
@@ -746,7 +743,7 @@ If both its operands are [numbers](#number), it will compute the bitwise logical
 def foo = 0b0011; 
 def bar = 0b1010; 
 
-foo | bar; # evaluates to 0b0010
+foo & bar; # evaluates to 0b0010
 ```
 
 If both its operands are [types](#type), it will return a composite type whose types are in both operands
@@ -777,7 +774,7 @@ If both its operands are [types](#type), it will return a composite type whose t
 def foo = array | struct; 
 def bar = array | tuple; 
 
-foo & bar; # evaluates to array | struct | tuple
+foo | bar; # evaluates to array | struct | tuple
 ```
 
 ---
@@ -790,7 +787,7 @@ If both its operands are [numbers](#number), it will compute the bitwise logical
 def foo = 0b0011; 
 def bar = 0b1010; 
 
-foo | bar; # evaluates to 0b1001
+foo ^ bar; # evaluates to 0b1001
 ```
 
 If both its operands are [types](#type), it will return a composite type whose types are in exactly one of its operands.
@@ -799,7 +796,7 @@ If both its operands are [types](#type), it will return a composite type whose t
 def foo = array | struct; 
 def bar = array | tuple; 
 
-foo & bar; # evaluates to struct | tuple
+foo ^ bar; # evaluates to struct | tuple
 ```
 
 ---
@@ -863,7 +860,7 @@ bar~~;
 # evaluates to 0b_1111_0000_0000_1111_1111_0000_0000_1111 but,
 # foo has a value of 0b_0000_1111_1111_0000_0000_1111_1111_0000
 
-0~~; # is a syntax error
+0~~; # throws an exception
 ```
 
 If its operand has a [type](#type) as its value, it will return a composite type whose types are every types that were not in its operand and assign it the result. The operand must be a variable. This operator can be used both as a prefix and a sufix. When used as a prefix, it returns the value of the variable *after* the complement is assigned. When used as a sufix, it returns the value of the variable *before* the complement, but after the implicit conversion.
@@ -879,7 +876,7 @@ bar~~;
 # evaluates to (string | array | struct | tuple | function | reference | complex) but,
 # foo has a value of (void | null | bool | number | range | type)
 
-0~~; # is a syntax error
+number~~; # throws an exception
 ```
 
 ---
@@ -1059,14 +1056,6 @@ def foo = 'Hello';
 foo[1..-1]; # evaluates to 'ell'
 ```
 
-If used on a [string](#string) with a [function](#function) as the parameter, for each character in the string, it calls the function and passes it the character as the only parameter and returns a array where each element is the result of the each of the function calls.
-
-```python
-def foo = 'Hello'; 
-
-foo[x => ord x]; # evaluates to { 72, 101, 108, 108, 111 }
-```
-
 If used on an [array](#array) with a [number](#number) as the parameter, it returns the element inside the array at the index given by the parameter. Negative indices can be used to acces elements from the end of the array. If the index is outside the bounds of the array, an exception is thrown.
 
 ```python
@@ -1111,12 +1100,10 @@ def foo = {
     a = 2
 }; 
 
-foo['a'];       # evaluates to 2
-
-foo['b'] = 5;   # create a member b inside foo and assign it the value 5
+foo['a']; # evaluates to 2
 ```
 
-Note that the prefered way to access a member of a struct is to use the [member access operator](#member-access-operator). You should only use an indexer to access a member whose name is determined at runtime or to add a member to a struct.
+Note that the prefered way to access a member of a struct is to use the [member access operator](#member-access-operator). You should only use an indexer to access a member whose name is determined at runtime.
 
 ---
 
@@ -1127,9 +1114,9 @@ This operator can be used both to call a [function](#function) or to call the co
 ```python
 def add = (a, b) => a + b; 
 
-add(1, 2); # calls the function in the variable add with 1 and 2 as parameters
+add(1, 2);  # calls the function in the variable add with 1 and 2 as parameters
 
-array(); #calls the array constructor without parameters
+array();    # calls the array constructor without parameters
 ```
 
 ---
@@ -1343,7 +1330,7 @@ This operator performs an explicit conversion of the result of it left operand t
 If its operand is an [array](#array), it returns the number of element inside that array.
 
 ```python
-len { };                # evaluates to 0
+len array();            # evaluates to 0
 len { 0, 1, 2, 3, 4 };  # evaluates to 5
 ```
 

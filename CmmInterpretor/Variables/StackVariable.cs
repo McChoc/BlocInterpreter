@@ -1,23 +1,25 @@
-﻿using CmmInterpretor.Data;
+﻿using CmmInterpretor.Memory;
+using CmmInterpretor.Values;
 
 namespace CmmInterpretor.Variables
 {
     public class StackVariable : Variable
     {
-        private readonly string _name;
         private readonly Scope _scope;
 
-        public string Name => _name;
+        public override Value Value { get; set; }
+        public string Name { get; }
 
-        public StackVariable(Value value, string name, Scope scope) : base(value)
+        public StackVariable(Value value, string name, Scope scope)
         {
-            _name = name;
+            Value = value;
+            Name = name;
             _scope = scope;
         }
 
         public override void Destroy()
         {
-            _scope.Variables.Remove(_name);
+            _scope.Variables.Remove(Name);
 
             foreach (var reference in References)
                 reference.Invalidate();

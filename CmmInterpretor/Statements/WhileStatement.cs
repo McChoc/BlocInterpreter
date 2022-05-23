@@ -1,6 +1,6 @@
-﻿using CmmInterpretor.Data;
+﻿using CmmInterpretor.Memory;
+using CmmInterpretor.Expressions;
 using CmmInterpretor.Results;
-using CmmInterpretor.Tokens;
 using CmmInterpretor.Values;
 using System.Collections.Generic;
 
@@ -8,37 +8,39 @@ namespace CmmInterpretor.Statements
 {
     public class WhileStatement : Statement
     {
-        public bool @do;
-        public bool until;
-        public Token condition;
-        public Token body;
+        public bool Do { get; set; }
+        public bool Until { get; set; }
+        public IExpression Condition { get; set; } = default!;
+        public List<Statement> Statements { get; set; } = default!;
 
-        public override IResult Execute(Call call)
+        public override Result? Execute(Call call)
         {
             int loopCount = 0;
-
-            var statements = (List<Statement>)body.value;
-            var labels = GetLabels(statements);
+            var labels = GetLabels(Statements);
 
             while (true)
             {
                 bool loop;
 
-                if (@do && loopCount == 0)
+                try
                 {
-                    loop = true;
+                    if (Do && loopCount == 0)
+                    {
+                        loop = true;
+                    }
+                    else
+                    {
+                        var value = Condition.Evaluate(call);
+
+                        if (!value.Is(out Bool? @bool))
+                            return new Throw("Cannot implicitly convert to bool");
+
+                        loop = @bool!.Value != Until;
+                    }
                 }
-                else
+                catch (Result result)
                 {
-                    var result = Evaluator.Evaluate((List<Token>)condition.value, call);
-
-                    if (result is not IValue value)
-                        return result;
-
-                    if (!value.Implicit(out Bool b))
-                        return new Throw("Cannot implicitly convert to bool");
-
-                    loop = b.Value != until;
+                    return result;
                 }
 
                 if (!loop)
@@ -53,18 +55,14 @@ namespace CmmInterpretor.Statements
                 {
                     call.Push();
 
-                    var result = ExecuteBlockInLoop(statements, labels, call);
+                    var result = ExecuteBlockInLoop(Statements, labels, call);
 
-                    if (result is not IValue)
-                    {
-                        if (result is Continue)
-                            continue;
-                        
-                        if (result is Break)
-                            break;
-                        
+                    if (result is Continue)
+                        continue;
+                    else if (result is Break)
+                        break;
+                    else if (result is not null)
                         return result;
-                    }
                 }
                 finally
                 {
@@ -72,7 +70,7 @@ namespace CmmInterpretor.Statements
                 }
             }
 
-            return Void.Value;
+            return null;
         }
     }
 }

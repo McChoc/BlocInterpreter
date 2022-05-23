@@ -2,7 +2,6 @@
 {
     public enum TokenType
     {
-        Empty,
         Operator,
         Keyword,
         Identifier,

@@ -1,66 +1,64 @@
-﻿using CmmInterpretor.Data;
+﻿using CmmInterpretor.Memory;
+using CmmInterpretor.Expressions;
 using CmmInterpretor.Results;
-using CmmInterpretor.Tokens;
-using CmmInterpretor.Values;
 using CmmInterpretor.Variables;
 using System.Collections.Generic;
+using CmmInterpretor.Interfaces;
 
 namespace CmmInterpretor.Statements
 {
     public class ForInStatement : Statement
     {
-        public string variableName;
-        public List<Token> iterable;
-        public Token body;
+        public string VariableName { get; set; } = default!;
+        public IExpression Iterable { get; set; } = default!;
+        public List<Statement> Statements { get; set; } = default!;
 
-        public override IResult Execute(Call call)
+        public override Result? Execute(Call call)
         {
-            var result = Evaluator.Evaluate(iterable, call);
-
-            if (result is not IValue value)
-                return result;
-
-            int loopCount = 0;
-
-            var statements = (List<Statement>)body.value;
-            var labels = GetLabels(statements);
-
-            if (value.Value is not IIterable iter)
-                return new Throw("You can only iterate over a range, a string or an array.");
-
-            foreach (var item in iter.Iterate())
+            try
             {
-                loopCount++;
+                var value = Iterable.Evaluate(call);
 
-                if (loopCount > call.Engine.LoopLimit)
-                    return new Throw("The loop limit was reached.");
+                if (value.Value is not IIterable iter)
+                    return new Throw("You can only iterate over a range, a string or an array.");
 
-                try
+                int loopCount = 0;
+                var labels = GetLabels(Statements);
+
+                foreach (var item in iter.Iterate())
                 {
-                    call.Push();
+                    loopCount++;
 
-                    call.Set(variableName, new StackVariable(item, variableName, call.Scopes[^1]));
+                    if (loopCount > call.Engine.LoopLimit)
+                        return new Throw("The loop limit was reached.");
 
-                    var r = ExecuteBlockInLoop(statements, labels, call);
-
-                    if (r is not IValue)
+                    try
                     {
+                        call.Push();
+
+                        call.Set(VariableName, new StackVariable(item, VariableName, call.Scopes[^1]));
+
+                        var r = ExecuteBlockInLoop(Statements, labels, call);
+
                         if (r is Continue)
                             continue;
-
-                        if (r is Break)
+                        else if (r is Break)
                             break;
-
-                        return r;
+                        else if (r is not null)
+                            return r;
+                    }
+                    finally
+                    {
+                        call.Pop();
                     }
                 }
-                finally
-                {
-                    call.Pop();
-                }
+            }
+            catch (Result result)
+            {
+                return result;
             }
 
-            return Void.Value;
+            return null;
         }
     }
 }

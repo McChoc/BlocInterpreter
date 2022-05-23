@@ -1,4 +1,5 @@
-﻿using CmmInterpretor.Data;
+﻿using CmmInterpretor.Interfaces;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace CmmInterpretor.Values
 
         public string Value { get; }
 
-        public override VariableType Type => VariableType.String;
+        public override ValueType Type => ValueType.String;
 
         public String(string value) => Value = value;
 
@@ -26,43 +27,26 @@ namespace CmmInterpretor.Values
             return false;
         }
 
-        public override bool Implicit<T>(out T value)
+        public override T Implicit<T>()
         {
             if (typeof(T) == typeof(Bool))
-            {
-                value = Bool.True as T;
-                return true;
-            }
+                return (Bool.True as T)!;
 
             if (typeof(T) == typeof(String))
-            {
-                value = this as T;
-                return true;
-            }
+                return (this as T)!;
 
-            value = null;
-            return false;
+            throw new Throw($"Cannot implicitly cast string as {typeof(T).Name.ToLower()}");
         }
 
-        public override IResult Implicit(VariableType type)
+        public override IValue Explicit(ValueType type)
         {
             return type switch
             {
-                VariableType.Bool => Bool.True,
-                VariableType.String => this,
-                _ => new Throw($"Cannot implicitly cast string as {type.ToString().ToLower()}")
-            };
-        }
-
-        public override IResult Explicit(VariableType type)
-        {
-            return type switch
-            {
-                VariableType.Bool => Bool.True,
-                VariableType.String => this,
-                VariableType.Tuple => new Tuple(Value.ToCharArray().Select(c => new String(c.ToString())).ToList<IValue>()),
-                VariableType.Array => new Array(Value.ToCharArray().Select(c => new String(c.ToString())).ToList<IValue>()),
-                _ => new Throw($"Cannot cast string as {type.ToString().ToLower()}")
+                ValueType.Bool => Bool.True,
+                ValueType.String => this,
+                ValueType.Tuple => new Tuple(Value.ToCharArray().Select(c => new String(c.ToString())).ToList<IValue>()),
+                ValueType.Array => new Array(Value.ToCharArray().Select(c => new String(c.ToString())).ToList<IValue>()),
+                _ => throw new Throw($"Cannot cast string as {type.ToString().ToLower()}")
             };
         }
 
@@ -74,11 +58,14 @@ namespace CmmInterpretor.Values
                 yield return new String(@char.ToString());
         }
 
-        public IResult Index(Value val, Call _)
+        public IValue Index(Value val, Call _)
         {
             if (val is Number num)
             {
                 int index = num.ToInt() >= 0 ? num.ToInt() : Value.Length + num.ToInt();
+
+                if (index < 0 || index >= Value.Length)
+                    throw new Throw("Index out of range");
 
                 return new String(Value[index].ToString());
             }
@@ -109,7 +96,7 @@ namespace CmmInterpretor.Values
                 return new String(builder.ToString());
             }
             
-            return new Throw("It should be a number or a range.");
+            throw new Throw("It should be a number or a range.");
         }
     }
 }

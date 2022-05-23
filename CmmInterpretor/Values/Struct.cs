@@ -1,4 +1,5 @@
-﻿using CmmInterpretor.Data;
+﻿using CmmInterpretor.Interfaces;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
 using CmmInterpretor.Variables;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ namespace CmmInterpretor.Values
 
         public Dictionary<string, IValue> Values { get; private set; }
 
-        public override VariableType Type => VariableType.Struct;
+        public override ValueType Type => ValueType.Struct;
 
         public Struct(Dictionary<string, IValue> value) => Values = value;
 
@@ -46,51 +47,30 @@ namespace CmmInterpretor.Values
             return true;
         }
 
-        public override bool Implicit<T>(out T value)
+        public override T Implicit<T>()
         {
             if (typeof(T) == typeof(Bool))
-            {
-                value = Bool.True as T;
-                return true;
-            }
+                return (Bool.True as T)!;
 
             if (typeof(T) == typeof(String))
-            {
-                value = new String(ToString()) as T;
-                return true;
-            }
+                return (new String(ToString()) as T)!;
 
             if (typeof(T) == typeof(Struct))
-            {
-                value = this as T;
-                return true;
-            }
+                return (this as T)!;
 
-            value = null;
-            return false;
+            throw new Throw($"Cannot implicitly cast struct as {typeof(T).Name.ToLower()}");
         }
 
-        public override IResult Implicit(VariableType type)
+        public override IValue Explicit(ValueType type)
         {
             return type switch
             {
-                VariableType.Bool => Bool.True,
-                VariableType.String => new String(ToString()),
-                VariableType.Struct => this,
-                _ => new Throw($"Cannot implicitly cast struct as {type.ToString().ToLower()}")
-            };
-        }
-
-        public override IResult Explicit(VariableType type)
-        {
-            return type switch
-            {
-                VariableType.Bool => Bool.True,
-                VariableType.String => new String(ToString()),
-                VariableType.Tuple => new Tuple(Values.OrderBy(x => x.Key).Select(v => v.Value.Copy()).ToList<IValue>()),
-                VariableType.Array => new Array(Values.OrderBy(x => x.Key).Select(x => new Struct(new Dictionary<string, IValue>() { { "key", new String(x.Key) }, { "value", x.Value.Copy() } })).ToList<IValue>()),
-                VariableType.Struct => this,
-                _ => new Throw($"Cannot cast struct as {type.ToString().ToLower()}")
+                ValueType.Bool => Bool.True,
+                ValueType.String => new String(ToString()),
+                ValueType.Tuple => new Tuple(Values.OrderBy(x => x.Key).Select(v => v.Value.Copy()).ToList<IValue>()),
+                ValueType.Array => new Array(Values.OrderBy(x => x.Key).Select(x => new Struct(new Dictionary<string, IValue>() { { "key", new String(x.Key) }, { "value", x.Value.Copy() } })).ToList<IValue>()),
+                ValueType.Struct => this,
+                _ => throw new Throw($"Cannot cast struct as {type.ToString().ToLower()}")
             };
         }
 
@@ -102,23 +82,23 @@ namespace CmmInterpretor.Values
                 return "{\n" + string.Join(",\n", Values.OrderBy(x => x.Key).Select(p => new string(' ', (depth + 1) * 4) + p.Key + " = " + p.Value.ToString(depth + 1))) + "\n" + new string(' ', depth * 4) + "}";
         }
 
-        public IResult Get(string identifier)
+        public IValue Get(string identifier)
         {
             if (Values.ContainsKey(identifier))
-                return (IResult)Values[identifier];
+                return Values[identifier];
 
-            return new Throw($"'{identifier}' was not defined inside this struct");
+            throw new Throw($"'{identifier}' was not defined inside this struct");
         }
 
-        public IResult Index(Value value, Call _)
+        public IValue Index(Value value, Call _)
         {
             if (value is not String str)
-                return new Throw("It should be a string.");
+                throw new Throw("It should be a string.");
 
             if (Values.ContainsKey(str.Value))
-                return (IResult)Values[str.Value];
+                return Values[str.Value];
 
-            return new Throw($"'{str.Value}' was not defined inside this struct");
+            throw new Throw($"'{str.Value}' was not defined inside this struct");
         }
     }
 }

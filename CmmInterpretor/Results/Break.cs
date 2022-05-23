@@ -1,6 +1,6 @@
 ﻿namespace CmmInterpretor.Results
 {
-    public class Break : IResult
+    public class Break : Result
     {
         public int depth = 1;
     }

@@ -1,8 +1,7 @@
-﻿using CmmInterpretor.Data;
-using CmmInterpretor.Exceptions;
+﻿using CmmInterpretor.Interfaces;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
 using CmmInterpretor.Statements;
-using CmmInterpretor.Tokens;
 using CmmInterpretor.Variables;
 using System.Collections.Generic;
 
@@ -12,14 +11,10 @@ namespace CmmInterpretor.Values
     {
         public bool Async { get; set; }
         public List<string> Names { get; set; } = new();
-        public List<Statement> Code { get; set; }
-        public Scope Captures { get; set; }
+        public List<Statement> Code { get; set; } = new();
+        public Scope Captures { get; set; } = new(null);
 
-        public override VariableType Type => VariableType.Function;
-
-        public Function() => Code = new List<Statement>();
-        public Function(List<Statement> code) => Code = code;
-        public Function(List<Token> expression) => Code = new() { new ReturnStatement(expression) };
+        public override ValueType Type => ValueType.Function;
 
         public override Value Copy() => new Function()
         {
@@ -61,55 +56,34 @@ namespace CmmInterpretor.Values
             return true;
         }
 
-        public override bool Implicit<T>(out T value)
+        public override T Implicit<T>()
         {
             if (typeof(T) == typeof(Bool))
-            {
-                value = Bool.True as T;
-                return true;
-            }
+                return (Bool.True as T)!;
 
             if (typeof(T) == typeof(String))
-            {
-                value = new String(ToString()) as T;
-                return true;
-            }
+                return (new String(ToString()) as T)!;
 
             if (typeof(T) == typeof(Function))
-            {
-                value = this as T;
-                return true;
-            }
+                return (this as T)!;
 
-            value = null;
-            return false;
+            throw new Throw($"Cannot implicitly cast function as {typeof(T).Name.ToLower()}");
         }
 
-        public override IResult Implicit(VariableType type)
+        public override IValue Explicit(ValueType type)
         {
             return type switch
             {
-                VariableType.Bool => Bool.True,
-                VariableType.String => new String(ToString()),
-                VariableType.Function => this,
-                _ => new Throw($"Cannot implicitly cast function as {type.ToString().ToLower()}")
-            };
-        }
-
-        public override IResult Explicit(VariableType type)
-        {
-            return type switch
-            {
-                VariableType.Bool => Bool.True,
-                VariableType.String => new String(ToString()),
-                VariableType.Function => this,
-                _ => new Throw($"Cannot cast function as {type.ToString().ToLower()}")
+                ValueType.Bool => Bool.True,
+                ValueType.String => new String(ToString()),
+                ValueType.Function => this,
+                _ => throw new Throw($"Cannot cast function as {type.ToString().ToLower()}")
             };
         }
 
         public override string ToString(int _) => $"{(Async ? "async" : "")}({ string.Join(", ", Names) }) {{...}}";
 
-        public IResult Invoke(List<Value> values, Call parent)
+        public IValue Invoke(List<Value> values, Call parent)
         {
             if (Async)
             {
@@ -132,33 +106,30 @@ namespace CmmInterpretor.Values
 
                 for (int i = 0; i < Code.Count; i++)
                     if (Code[i].Label is not null)
-                        labels.Add(Code[i].Label, i);
+                        labels.Add(Code[i].Label!, i);
 
                 for (int i = 0; i < Code.Count; i++)
                 {
                     var result = Code[i].Execute(call); ;
 
-                    if (result is not IValue)
+                    if (result is Return r)
                     {
-                        if (result is Continue or Break)
-                        {
-                            throw new SyntaxError("No loop");
-                        }
-                        else if (result is Return r)
-                        {
-                            return r.value;
-                        }
-                        else if (result is Goto g)
-                        {
-                            if (labels.TryGetValue(g.label, out int index))
-                                i = index - 1;
-                            else
-                                throw new SyntaxError("No such label in scope");
-                        }
+                        return r.value;
+                    }
+                    else if (result is Throw t)
+                    {
+                        throw t;
+                    }
+                    else if (result is Continue or Break)
+                    {
+                        throw new Throw("No loop");
+                    }
+                    else if (result is Goto g)
+                    {
+                        if (labels.TryGetValue(g.label, out int index))
+                            i = index - 1;
                         else
-                        {
-                            return result;
-                        }
+                            throw new Throw("No such label in scope");
                     }
                 }
 

@@ -1,27 +1,31 @@
-﻿using CmmInterpretor.Data;
+﻿using CmmInterpretor.Memory;
+using CmmInterpretor.Expressions;
 using CmmInterpretor.Results;
-using CmmInterpretor.Tokens;
-using System.Collections.Generic;
 
 namespace CmmInterpretor.Statements
 {
     public class ReturnStatement : Statement
     {
-        private readonly List<Token> _tokens;
+        private readonly IExpression? _expression;
 
-        public ReturnStatement(List<Token> tokens) => _tokens = tokens;
+        public ReturnStatement() { }
+        public ReturnStatement(IExpression expression) => _expression = expression;
 
-        public override IResult Execute(Call call)
+        public override Result Execute(Call call)
         {
-            if (_tokens.Count == 0)
-                return new Return();
+            try
+            {
+                if (_expression is null)
+                    return new Return();
 
-            var result = Evaluator.Evaluate(_tokens, call);
+                var value = _expression.Evaluate(call);
 
-            if (result is IValue value)
                 return new Return(value.Value);
-
-            return result;
+            }
+            catch (Result result)
+            {
+                return result;
+            }
         }
     }
 }

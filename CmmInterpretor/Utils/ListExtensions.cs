@@ -7,13 +7,16 @@ namespace CmmInterpretor.Extensions
     {
         public static List<List<T>> Split<T>(this List<T> list, T separator)
         {
+            if (separator is null)
+                throw new ArgumentNullException(nameof(separator));
+
             var result = new List<List<T>>();
 
             int start = 0;
 
             for (int i = 0; i <= list.Count; i++)
             {
-                if (i == list.Count || list[i].Equals(separator))
+                if (i == list.Count || separator.Equals(list[i]))
                 {
                     result.Add(list.GetRange(start..i));
                     start = i + 1;

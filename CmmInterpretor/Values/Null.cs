@@ -1,5 +1,4 @@
-﻿using CmmInterpretor.Data;
-using CmmInterpretor.Results;
+﻿using CmmInterpretor.Results;
 
 namespace CmmInterpretor.Values
 {
@@ -7,7 +6,7 @@ namespace CmmInterpretor.Values
     {
         public static Null Value { get; } = new();
 
-        public override VariableType Type => VariableType.Null;
+        public override ValueType Type => ValueType.Null;
 
         private Null() { }
 
@@ -18,41 +17,24 @@ namespace CmmInterpretor.Values
             return other.Value is Null;
         }
 
-        public override bool Implicit<T>(out T value)
+        public override T Implicit<T>()
         {
             if (typeof(T) == typeof(Bool))
-            {
-                value = Bool.False as T;
-                return true;
-            }
+                return (Bool.False as T)!;
 
             if (typeof(T) == typeof(String))
-            {
-                value = String.Empty as T;
-                return true;
-            }
+                return (String.Empty as T)!;
 
-            value = null;
-            return false;
+            throw new Throw($"Cannot implicitly cast null as {typeof(T).Name.ToLower()}");
         }
 
-        public override IResult Implicit(VariableType type)
+        public override IValue Explicit(ValueType type)
         {
             return type switch
             {
-                VariableType.Bool => Bool.False,
-                VariableType.String => String.Empty,
-                _ => new Throw($"Cannot implicitly cast null as {type.ToString().ToLower()}")
-            };
-        }
-
-        public override IResult Explicit(VariableType type)
-        {
-            return type switch
-            {
-                VariableType.Bool => Bool.False,
-                VariableType.String => String.Empty,
-                _ => new Throw($"Cannot cast null as {type.ToString().ToLower()}")
+                ValueType.Bool => Bool.False,
+                ValueType.String => String.Empty,
+                _ => throw new Throw($"Cannot cast null as {type.ToString().ToLower()}")
             };
         }
 

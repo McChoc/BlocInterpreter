@@ -1,15 +1,14 @@
-﻿using CmmInterpretor.Data;
-using CmmInterpretor.Results;
+﻿using CmmInterpretor.Results;
 
 namespace CmmInterpretor.Values
 {
     public class Complex : Value
     {
-        public object Value { get; }
+        public object? Value { get; }
 
-        public override VariableType Type => VariableType.Complex;
+        public override ValueType Type => ValueType.Complex;
 
-        public Complex(object value) => Value = value;
+        public Complex(object? value) => Value = value;
 
         public override Value Copy() => this;
 
@@ -21,49 +20,28 @@ namespace CmmInterpretor.Values
             return false;
         }
 
-        public override bool Implicit<T>(out T value)
+        public override T Implicit<T>()
         {
             if (typeof(T) == typeof(Bool))
-            {
-                value = Bool.True as T;
-                return true;
-            }
+                return (Bool.True as T)!;
 
             if (typeof(T) == typeof(String))
-            {
-                value = new String(ToString()) as T;
-                return true;
-            }
+                return (new String(ToString()) as T)!;
 
             if (typeof(T) == typeof(Complex))
-            {
-                value = this as T;
-                return true;
-            }
+                return (this as T)!;
 
-            value = null;
-            return false;
+            throw new Throw($"Cannot implicitly cast complex as {typeof(T).Name.ToLower()}");
         }
 
-        public override IResult Implicit(VariableType type)
+        public override IValue Explicit(ValueType type)
         {
             return type switch
             {
-                VariableType.Bool => Bool.True,
-                VariableType.String => new String(ToString()),
-                VariableType.Complex => this,
-                _ => new Throw($"Cannot implicitly cast complex as {type.ToString().ToLower()}")
-            };
-        }
-
-        public override IResult Explicit(VariableType type)
-        {
-            return type switch
-            {
-                VariableType.Bool => Bool.True,
-                VariableType.String => new String(ToString()),
-                VariableType.Complex => this,
-                _ => new Throw($"Cannot cast complex as {type.ToString().ToLower()}")
+                ValueType.Bool => Bool.True,
+                ValueType.String => new String(ToString()),
+                ValueType.Complex => this,
+                _ => throw new Throw($"Cannot cast complex as {type.ToString().ToLower()}")
             };
         }
 

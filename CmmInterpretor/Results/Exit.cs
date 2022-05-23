@@ -1,9 +1,8 @@
-﻿using CmmInterpretor.Data;
-using CmmInterpretor.Values;
+﻿using CmmInterpretor.Values;
 
 namespace CmmInterpretor.Results
 {
-    public class Exit : IResult
+    public class Exit : Result
     {
         public Value value;
 

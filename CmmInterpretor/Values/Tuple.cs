@@ -1,5 +1,4 @@
-﻿using CmmInterpretor.Data;
-using CmmInterpretor.Results;
+﻿using CmmInterpretor.Results;
 using CmmInterpretor.Variables;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +9,7 @@ namespace CmmInterpretor.Values
     {
         public List<IValue> Values { get; }
 
-        public override VariableType Type => VariableType.Tuple;
+        public override ValueType Type => ValueType.Tuple;
 
         public Tuple(List<IValue> value) => Values = value;
 
@@ -39,52 +38,33 @@ namespace CmmInterpretor.Values
             return true;
         }
 
-        public override bool Implicit<T>(out T value)
+        public override T Implicit<T>()
         {
             if (typeof(T) == typeof(Bool))
             {
-                value = Bool.True as T;
-
                 foreach (var variable in Values)
-                {
-                    if (variable.Implicit(out Bool b))
-                    {
-                        if (!b.Value)
-                            value = Bool.False as T;
-                    }
-                    else
-                    {
-                        value = null;
-                        return false;
-                    }
-                }
+                    if (!variable.Implicit<Bool>().Value)
+                        return (Bool.False as T)!;
 
-                return true;
+                return (Bool.True as T)!;
             }
 
             if (typeof(T) == typeof(String))
-            {
-                value = new String(ToString()) as T;
-                return true;
-            }
+                return (new String(ToString()) as T)!;
 
             if (typeof(T) == typeof(Tuple))
-            {
-                value = this as T;
-                return true;
-            }
+                return (this as T)!;
 
-            value = null;
-            return false;
+            throw new Throw($"Cannot implicitly cast tuple as {typeof(T).Name.ToLower()}");
         }
 
-        public override IResult Implicit(VariableType type)
+        public override IValue Explicit(ValueType type)
         {
-            if (type == VariableType.Bool)
+            if (type == ValueType.Bool)
             {
                 foreach (var variable in Values)
                 {
-                    var result = variable.Implicit(VariableType.Bool);
+                    var result = variable.Explicit(ValueType.Bool);
 
                     if (result is not IValue v || !((Bool)v.Value).Value)
                         return result;
@@ -95,33 +75,10 @@ namespace CmmInterpretor.Values
 
             return type switch
             {
-                VariableType.String => new String(ToString()),
-                VariableType.Tuple => this,
-                _ => new Throw($"Cannot implicitly cast tuple as {type.ToString().ToLower()}")
-            };
-        }
-
-        public override IResult Explicit(VariableType type)
-        {
-            if (type == VariableType.Bool)
-            {
-                foreach (var variable in Values)
-                {
-                    var result = variable.Explicit(VariableType.Bool);
-
-                    if (result is not IValue v || !((Bool)v.Value).Value)
-                        return result;
-                }
-
-                return Bool.True;
-            }
-
-            return type switch
-            {
-                VariableType.String => new String(ToString()),
-                VariableType.Array => new Array(Values.Select(v => v.Copy()).ToList<IValue>()),
-                VariableType.Tuple => this,
-                _ => new Throw($"Cannot cast tuple as {type.ToString().ToLower()}")
+                ValueType.String => new String(ToString()),
+                ValueType.Array => new Array(Values.Select(v => v.Copy()).ToList<IValue>()),
+                ValueType.Tuple => this,
+                _ => throw new Throw($"Cannot cast tuple as {type.ToString().ToLower()}")
             };
         }
 

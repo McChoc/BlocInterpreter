@@ -1,11 +1,10 @@
-﻿using CmmInterpretor.Data;
-using CmmInterpretor.Results;
+﻿using CmmInterpretor.Results;
 
 namespace CmmInterpretor.Values
 {
     public class Task : Value
     {
-        public override VariableType Type => VariableType.Task;
+        public override ValueType Type => ValueType.Task;
 
         public override Value Copy() => this;
 
@@ -19,49 +18,28 @@ namespace CmmInterpretor.Values
             return true;
         }
 
-        public override bool Implicit<T>(out T value)
+        public override T Implicit<T>()
         {
             if (typeof(T) == typeof(Bool))
-            {
-                value = Bool.True as T;
-                return true;
-            }
+                return (Bool.True as T)!;
 
             if (typeof(T) == typeof(String))
-            {
-                value = new String(ToString()) as T;
-                return true;
-            }
+                return (new String(ToString()) as T)!;
 
             if (typeof(T) == typeof(Task))
-            {
-                value = this as T;
-                return true;
-            }
+                return (this as T)!;
 
-            value = null;
-            return false;
+            throw new Throw($"Cannot implicitly cast task as {typeof(T).Name.ToLower()}");
         }
 
-        public override IResult Implicit(VariableType type)
+        public override IValue Explicit(ValueType type)
         {
             return type switch
             {
-                VariableType.Bool => Bool.True,
-                VariableType.String => new String(ToString()),
-                VariableType.Task => this,
-                _ => new Throw($"Cannot implicitly cast task as {type.ToString().ToLower()}")
-            };
-        }
-
-        public override IResult Explicit(VariableType type)
-        {
-            return type switch
-            {
-                VariableType.Bool => Bool.True,
-                VariableType.String => new String(ToString()),
-                VariableType.Task => this,
-                _ => new Throw($"Cannot cast task as {type.ToString().ToLower()}")
+                ValueType.Bool => Bool.True,
+                ValueType.String => new String(ToString()),
+                ValueType.Task => this,
+                _ => throw new Throw($"Cannot cast task as {type.ToString().ToLower()}")
             };
         }
 

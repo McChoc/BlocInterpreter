@@ -1,8 +1,7 @@
 ﻿using CmmInterpretor;
 using CmmInterpretor.Commands;
-using CmmInterpretor.Data;
-using CmmInterpretor.Exceptions;
 using CmmInterpretor.Results;
+using CmmInterpretor.Utils.Exceptions;
 using CmmInterpretor.Values;
 using System.Collections.Generic;
 using Console = System.Console;
@@ -26,7 +25,7 @@ while (true)
 
         while (true)
         {
-            Console.Write("> ");
+            Console.Write(lines.Count == 0 ? ">>> " : "... ");
             string line = Console.ReadLine();
 
             lines.Add(line);
@@ -48,33 +47,33 @@ while (true)
 
         if (code.Length > 0)
         {
-            var result = engine.Execute(code);
+            var variant = engine.Execute(code);
 
-            if (result is IValue value)
+            if (variant is not null)
             {
-                if (value.Value is not Void)
-                    Console.WriteLine(value.Value.ToString());
-            }
-            else if (result is Return || result is Exit)
-            {
-                break;
-            }
-            else if (result is Throw t)
-            {
-                ConsoleColor.SetColor(ORANGE);
-                Console.WriteLine($"An exception was thrown : {t.value}");
-                Console.WriteLine();
-                Console.ResetColor();
+                if (variant.Is(out Value value))
+                {
+                    if (value is not Void)
+                        Console.WriteLine(value.ToString());
+                }
+                else if (variant.Is(out Result result))
+                {
+                    if (result is Throw t)
+                    {
+                        ConsoleColor.SetColor(ORANGE);
+                        Console.WriteLine($"An exception was thrown : {t.value}");
+                        Console.ResetColor();
+                    }
+                }
             }
         }
-
-        Console.WriteLine();
     }
     catch (SyntaxError e)
     {
         ConsoleColor.SetColor(RED);
         Console.WriteLine($"Syntax error : {e.Message}");
-        Console.WriteLine();
         Console.ResetColor();
     }
+
+    Console.WriteLine();
 }

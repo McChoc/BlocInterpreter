@@ -1,5 +1,4 @@
-﻿using CmmInterpretor.Data;
-using CmmInterpretor.Results;
+﻿using CmmInterpretor.Results;
 using CmmInterpretor.Values;
 using CmmInterpretor.Variables;
 using System.Linq;
@@ -31,10 +30,10 @@ namespace CmmInterpretor.Commands
                            string.Join("\n", call.Engine.Commands.Select(p => p.Value.Name))
                         );
 
-                    if (!input.Implicit(out String str))
+                    if (!input.Is(out String? str))
                         return new String("The input could not be converted to a string.");
 
-                    if (!call.Engine.Commands.TryGetValue(str.Value, out Command command))
+                    if (!call.Engine.Commands.TryGetValue(str!.Value, out Command command))
                         return new String("Unknown command.");
 
                     return new String(command.Description);
@@ -66,10 +65,10 @@ namespace CmmInterpretor.Commands
                     if (input is Void)
                         return new String($"The input was empty.");
 
-                    if (!input.Implicit(out String str))
+                    if (!input.Is(out String? str))
                         return new String("The input could not be converted to a string.");
 
-                    return str;
+                    return str!;
                 }
                 
                 if (args.Length == 1)
@@ -109,21 +108,21 @@ namespace CmmInterpretor.Commands
                     if (input is Void)
                         return new String($"The input was empty.");
 
-                    if (!input.Implicit(out String str))
+                    if (!input.Is(out String? str))
                         return new String("The input could not be converted to a string.");
 
-                    if (!call.TryGet(str.Value, out Variable var))
+                    if (!call.TryGet(str!.Value, out Variable? var))
                         return new String("The variable was not defined.");
 
-                    return var.Value;
+                    return var!.Value;
                 }
 
                 if (args.Length == 1)
                 {
-                    if (!call.TryGet(args[0], out Variable var))
+                    if (!call.TryGet(args[0], out Variable? var))
                         return new String("The variable was not defined.");
 
-                    return var.Value;
+                    return var!.Value;
                 }
 
                 return new String($"'get' does not take {args.Length} arguments.\nType '/help get' to see its usage.");
@@ -183,21 +182,31 @@ namespace CmmInterpretor.Commands
                 var name = args[0];
                 var variables = args[1..].Select(a => new String(a)).ToList<Value>();
 
-                if (!call.TryGet(name, out Variable var))
+                if (!call.TryGet(name, out Variable? var))
                     return new String("The variable was not defined.");
 
-                if (!var.Value.Implicit(out Function func))
+                if (!var!.Value.Is(out Function? func))
                     return new String("The variable could not be converted to a function.");
 
-                var result = func.Invoke(variables, call);
+                return func!.Invoke(variables, call).Value;
+            }
+        );
 
-                if (result is IValue value)
-                    return value.Value;
+        public static Command Delete => new(
+            "delete_global",
 
-                if (result is Throw t)
-                    return t.value;
+            "delete_global\n" +
+            "Deletes all global variables",
 
-                return new String("Cannot exit the program from a command.");
+            (args, _, call) =>
+            {
+                if (args.Length != 0)
+                    return new String($"'delete_global' does not take arguments.\nType '/help clear' to see its usage.");
+
+                foreach(var variable in call.Engine.Global.Variables.Values)
+                    variable.Destroy();
+
+                return Void.Value;
             }
         );
 

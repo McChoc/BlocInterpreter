@@ -1,6 +1,6 @@
 ﻿namespace CmmInterpretor.Results
 {
-    public class Goto : IResult
+    public class Goto : Result
     {
         public string label;
 

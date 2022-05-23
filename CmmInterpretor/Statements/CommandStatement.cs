@@ -1,31 +1,34 @@
-﻿using CmmInterpretor.Data;
+﻿using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
 using CmmInterpretor.Tokens;
 using CmmInterpretor.Values;
+using CmmInterpretor.Variables;
 using System.Collections.Generic;
 
 namespace CmmInterpretor.Statements
 {
     public class CommandStatement : Statement
     {
-        public List<List<Token>> commands = new();
+        public List<List<Token>> Commands { get; } = new();
 
-        public override IResult Execute(Call call)
+        public override Result? Execute(Call call)
         {
             Value output = Void.Value;
 
-            foreach (var command in commands)
+            foreach (var command in Commands)
             {
                 var words = new List<string>();
 
                 foreach (var token in command)
                 {
-                    var result = GetText(token, call);
-
-                    if (result is not IValue value)
+                    try
+                    {
+                        words.Add(GetText(token, call));
+                    }
+                    catch (Result result)
+                    {
                         return result;
-
-                    words.Add(((String)value.Value).Value);
+                    }
                 }
 
                 string name = words[0];
@@ -37,44 +40,40 @@ namespace CmmInterpretor.Statements
                     output = new String("Unknown command.");
             }
 
-            if (output.Implicit(out String str))
-                call.Engine.Log(str.Value);
+            if (output.Is(out String? str))
+                call.Engine.Log(str!.Value);
 
-            return Void.Value;
+            return null;
         }
 
-        private static IResult GetText(Token token, Call call)
+        private static string GetText(Token token, Call call)
         {
             if (token.type == TokenType.Command)
-                return new String(token.Text);
+                return token.Text;
 
             if (token.type == TokenType.Literal)
-                return (String)token.value;
+                return ((String)token.value).Value;
 
             if (token.type == TokenType.Interpolated)
             {
-                var result = Evaluator.Interpolate(token, call);
+                var expression = ExpressionParser.ParseInterpolatedString(token);
 
-                if (result is not IValue value)
-                    return result;
+                var value = expression.Evaluate(call);
 
-                if (!value.Implicit(out String str))
-                    return new Throw("Cannot implicitly convert to string");
-
-                return str;
+                return ((String)value).Value;
             }
 
             if (token.type == TokenType.Identifier)
             {
                 string identifier = token.Text;
 
-                if (!call.TryGet(identifier, out Variable var))
-                    return new Throw($"Variable '{identifier}' was not defined in scope");
+                if (!call.TryGet(identifier, out Variable? variable))
+                    throw new Throw($"Variable '{identifier}' was not defined in scope");
 
-                if (!var.Value.Implicit(out String str))
-                    return new Throw("Cannot implicitly convert to string");
+                if (!variable!.Value.Is(out String? str))
+                    throw new Throw("Cannot implicitly cast to string");
 
-                return str;
+                return str!.Value;
             }
 
             throw new System.Exception();

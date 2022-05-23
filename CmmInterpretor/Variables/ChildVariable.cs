@@ -1,21 +1,25 @@
-﻿using CmmInterpretor.Data;
+﻿using CmmInterpretor.Values;
 
 namespace CmmInterpretor.Variables
 {
     public class ChildVariable : Variable
     {
-        private readonly object _accessor;
-        private readonly Value _parent;
+        //private readonly object? _accessor;
+        //private readonly Value _parent;
 
-        public ChildVariable(Value value, object accessor, Value parent) : base(value)
+        public override Value Value { get; set; }
+
+        public ChildVariable(Value value, object? accessor, Value parent)
         {
-            _accessor = accessor;
-            _parent = parent;
+            Value = value;
+            //_accessor = accessor;
+            //_parent = parent;
         }
 
         public override void Destroy()
         {
-            _parent.Remove(_accessor);
+            //if (_accessor is not null)
+            //    _parent.Remove(_accessor);
 
             foreach (var reference in References)
                 reference.Invalidate();

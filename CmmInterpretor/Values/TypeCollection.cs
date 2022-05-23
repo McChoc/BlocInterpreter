@@ -1,4 +1,5 @@
-﻿using CmmInterpretor.Data;
+﻿using CmmInterpretor.Interfaces;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,15 +8,15 @@ namespace CmmInterpretor.Values
 {
     public class TypeCollection : Value, IInvokable
     {
-        public static TypeCollection None { get; } = new(new HashSet<VariableType>());
-        public static TypeCollection Any { get; } = new(System.Enum.GetValues(typeof(VariableType)).Cast<VariableType>().ToHashSet());
+        public static TypeCollection None { get; } = new(new HashSet<ValueType>());
+        public static TypeCollection Any { get; } = new(System.Enum.GetValues(typeof(ValueType)).Cast<ValueType>().ToHashSet());
 
-        public HashSet<VariableType> Value { get; }
+        public HashSet<ValueType> Value { get; }
 
-        public override VariableType Type => VariableType.Type;
+        public override ValueType Type => ValueType.Type;
 
-        public TypeCollection(VariableType type) => Value = new HashSet<VariableType>() { type };
-        public TypeCollection(HashSet<VariableType> types) => Value = types;
+        public TypeCollection(ValueType type) => Value = new HashSet<ValueType>() { type };
+        public TypeCollection(HashSet<ValueType> types) => Value = types;
 
         public override Value Copy() => this;
 
@@ -27,49 +28,28 @@ namespace CmmInterpretor.Values
             return false;
         }
 
-        public override bool Implicit<T>(out T value)
+        public override T Implicit<T>()
         {
             if (typeof(T) == typeof(Bool))
-            {
-                value = Bool.True as T;
-                return true;
-            }
+                return (Bool.True as T)!;
 
             if (typeof(T) == typeof(String))
-            {
-                value = new String(ToString()) as T;
-                return true;
-            }
+                return (new String(ToString()) as T)!;
 
             if (typeof(T) == typeof(TypeCollection))
-            {
-                value = this as T;
-                return true;
-            }
+                return (this as T)!;
 
-            value = null;
-            return false;
+            throw new Throw($"Cannot implicitly cast type as {typeof(T).Name.ToLower()}");
         }
 
-        public override IResult Implicit(VariableType type)
+        public override IValue Explicit(ValueType type)
         {
             return type switch
             {
-                VariableType.Bool => Bool.True,
-                VariableType.String => new String(ToString()),
-                VariableType.Type => this,
-                _ => new Throw($"Cannot implicitly cast type as {type.ToString().ToLower()}")
-            };
-        }
-
-        public override IResult Explicit(VariableType type)
-        {
-            return type switch
-            {
-                VariableType.Bool => Bool.True,
-                VariableType.String => new String(ToString()),
-                VariableType.Type => this,
-                _ => new Throw($"Cannot cast type as {type.ToString().ToLower()}")
+                ValueType.Bool => Bool.True,
+                ValueType.String => new String(ToString()),
+                ValueType.Type => this,
+                _ => throw new Throw($"Cannot cast type as {type.ToString().ToLower()}")
             };
         }
 
@@ -77,33 +57,33 @@ namespace CmmInterpretor.Values
         {
             if (Value.Count == 0)
                 return "type()";
-            else if (Value.Count == System.Enum.GetValues(typeof(VariableType)).Length)
+            else if (Value.Count == System.Enum.GetValues(typeof(ValueType)).Length)
                 return "any";
             else
                 return string.Join(" | ", Value).ToLower();
         }
 
-        public IResult Invoke(List<Value> _0, Call _1)
+        public IValue Invoke(List<Value> _0, Call _1)
         {
             if (Value.Count != 1)
-                return new Throw("Cannot instantiate a composite type");
+                throw new Throw("Cannot instantiate a composite type");
 
             return Value.Single() switch
             {
-                VariableType.Void => Void.Value,
-                VariableType.Null => Null.Value,
-                VariableType.Bool => Bool.False,
-                VariableType.Number => new Number(0),
-                VariableType.Range => new Range(null, null),
-                VariableType.String => String.Empty,
-                VariableType.Array => Array.Empty,
-                VariableType.Struct => Struct.Empty,
-                VariableType.Tuple => new Tuple(new()),
-                VariableType.Function => new Function(),
-                VariableType.Task => new Task(),
-                VariableType.Reference => new Reference(null),
-                VariableType.Complex => new Complex(null),
-                VariableType.Type => None,
+                ValueType.Void => Void.Value,
+                ValueType.Null => Null.Value,
+                ValueType.Bool => Bool.False,
+                ValueType.Number => new Number(0),
+                ValueType.Range => new Range(null, null),
+                ValueType.String => String.Empty,
+                ValueType.Array => Array.Empty,
+                ValueType.Struct => Struct.Empty,
+                ValueType.Tuple => new Tuple(new()),
+                ValueType.Function => new Function(),
+                ValueType.Task => new Task(),
+                ValueType.Reference => new Reference(null),
+                ValueType.Complex => new Complex(null),
+                ValueType.Type => None,
                 _ => throw new System.Exception()
             };
         }

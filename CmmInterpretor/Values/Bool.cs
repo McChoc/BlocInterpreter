@@ -1,5 +1,4 @@
-﻿using CmmInterpretor.Data;
-using CmmInterpretor.Results;
+﻿using CmmInterpretor.Results;
 
 namespace CmmInterpretor.Values
 {
@@ -10,7 +9,7 @@ namespace CmmInterpretor.Values
 
         public bool Value { get; }
 
-        public override VariableType Type => VariableType.Bool;
+        public override ValueType Type => ValueType.Bool;
 
         public Bool(bool value) => Value = value;
 
@@ -24,49 +23,28 @@ namespace CmmInterpretor.Values
             return false;
         }
 
-        public override bool Implicit<T>(out T value)
+        public override T Implicit<T>()
         {
             if (typeof(T) == typeof(Bool))
-            {
-                value = this as T;
-                return true;
-            }
+                return (this as T)!;
 
             if (typeof(T) == typeof(Number))
-            {
-                value = Value ? new Number(1) as T : new Number(0) as T;
-                return true;
-            }
+                return (new Number(Value ? 1 : 0) as T)!;
 
             if (typeof(T) == typeof(String))
-            {
-                value = new String(ToString()) as T;
-                return true;
-            }
+                return (new String(ToString()) as T)!;
 
-            value = null;
-            return false;
+            throw new Throw($"Cannot implicitly cast bool as {typeof(T).Name.ToLower()}");
         }
 
-        public override IResult Implicit(VariableType type)
+        public override IValue Explicit(ValueType type)
         {
             return type switch
             {
-                VariableType.Bool => this,
-                VariableType.Number => new Number(Value ? 1 : 0),
-                VariableType.String => new String(ToString()),
-                _ => new Throw($"Cannot implicitly cast bool as {type.ToString().ToLower()}")
-            };
-        }
-
-        public override IResult Explicit(VariableType type)
-        {
-            return type switch
-            {
-                VariableType.Bool => this,
-                VariableType.Number => new Number(Value ? 1 : 0),
-                VariableType.String => new String(ToString()),
-                _ => new Throw($"Cannot cast bool as {type.ToString().ToLower()}")
+                ValueType.Bool => this,
+                ValueType.Number => new Number(Value ? 1 : 0),
+                ValueType.String => new String(ToString()),
+                _ => throw new Throw($"Cannot cast bool as {type.ToString().ToLower()}")
             };
         }
 

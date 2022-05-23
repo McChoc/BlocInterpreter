@@ -1,4 +1,5 @@
-﻿using CmmInterpretor.Data;
+﻿using CmmInterpretor.Interfaces;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
 using CmmInterpretor.Variables;
 using System.Collections.Generic;
@@ -12,11 +13,12 @@ namespace CmmInterpretor.Values
 
         public List<IValue> Values { get; private set; }
 
-        public override VariableType Type => VariableType.Array;
+        public override ValueType Type => ValueType.Array;
 
         public Array(List<IValue> value) => Values = value;
 
         public override Value Copy() => new Array(Values.Select(v => v.Copy()).ToList<IValue>());
+
         public override void Assign()
         {
             for (int i = 0; i < Values.Count; i++)
@@ -25,6 +27,7 @@ namespace CmmInterpretor.Values
                 Values[i].Assign();
             }
         }
+
         public override void Destroy()
         {
             foreach (var value in Values)
@@ -46,50 +49,29 @@ namespace CmmInterpretor.Values
             return true;
         }
 
-        public override bool Implicit<T>(out T value)
+        public override T Implicit<T>()
         {
             if (typeof(T) == typeof(Bool))
-            {
-                value = Bool.True as T;
-                return true;
-            }
+                return (Bool.True as T)!;
 
             if (typeof(T) == typeof(String))
-            {
-                value = new String(ToString()) as T;
-                return true;
-            }
+                return (new String(ToString()) as T)!;
 
             if (typeof(T) == typeof(Array))
-            {
-                value = this as T;
-                return true;
-            }
+                return (this as T)!;
 
-            value = null;
-            return false;
+            throw new Throw($"Cannot implicitly cast array as {typeof(T).Name.ToLower()}");
         }
 
-        public override IResult Implicit(VariableType type)
+        public override IValue Explicit(ValueType type)
         {
             return type switch
             {
-                VariableType.Bool => Bool.True,
-                VariableType.String => new String(ToString()),
-                VariableType.Array => this,
-                _ => new Throw($"Cannot implicitly cast array as {type.ToString().ToLower()}")
-            };
-        }
-
-        public override IResult Explicit(VariableType type)
-        {
-            return type switch
-            {
-                VariableType.Bool => Bool.True,
-                VariableType.String => new String(ToString()),
-                VariableType.Tuple => new Tuple(Values.Select(v => v.Copy()).ToList<IValue>()),
-                VariableType.Array => this,
-                _ => new Throw($"Cannot cast array as {type.ToString().ToLower()}")
+                ValueType.Bool => Bool.True,
+                ValueType.String => new String(ToString()),
+                ValueType.Tuple => new Tuple(Values.Select(v => v.Copy()).ToList<IValue>()),
+                ValueType.Array => this,
+                _ => throw new Throw($"Cannot cast array as {type.ToString().ToLower()}")
             };
         }
 
@@ -109,16 +91,16 @@ namespace CmmInterpretor.Values
                 yield return value.Value;
         }
 
-        public IResult Index(Value val, Call call)
+        public IValue Index(Value val, Call call)
         {
             if (val is Number num)
             {
                 int index = num.ToInt() >= 0 ? num.ToInt() : Values.Count + num.ToInt();
 
                 if (index >= 0 && index < Values.Count)
-                    return (IResult)Values[index];
+                    return Values[index];
 
-                return new Throw("Index out of range");
+                throw new Throw("Index out of range");
             }
             
             if (val is Range rng)
@@ -164,7 +146,7 @@ namespace CmmInterpretor.Values
                 return new Array(list);
             }
 
-            return new Throw("It should be a number, a range or a function.");
+            throw new Throw("It should be a number, a range or a function.");
         }
     }
 }

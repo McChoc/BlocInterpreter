@@ -1,0 +1,11 @@
+﻿using CmmInterpretor.Memory;
+using CmmInterpretor.Values;
+using System.Collections.Generic;
+
+namespace CmmInterpretor.Interfaces
+{
+    public interface IInvokable
+    {
+        IValue Invoke(List<Value> values, Call call);
+    }
+}

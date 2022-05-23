@@ -1,22 +1,22 @@
 ﻿using CmmInterpretor.Commands;
-using CmmInterpretor.Data;
-using CmmInterpretor.Exceptions;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
+using CmmInterpretor.Scanners;
 using CmmInterpretor.Statements;
-using CmmInterpretor.Tokens;
+using CmmInterpretor.Utils;
+using CmmInterpretor.Values;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Void = CmmInterpretor.Values.Void;
 
 namespace CmmInterpretor
 {
     public class Engine
     {
-        internal Dictionary<string, Command> Commands { get; set; }
+        internal Dictionary<string, Command> Commands { get; set; } = default!;
 
-        public Action<string> Log { get; private set; }
-        public Action Clear { get; private set; }
+        public Action<string> Log { get; private set; } = default!;
+        public Action Clear { get; private set; } = default!;
 
         internal int StackLimit { get; set; }
         internal int LoopLimit { get; set; }
@@ -25,57 +25,61 @@ namespace CmmInterpretor
 
         internal Scope Global { get; }
 
+        private readonly List<Statement> _statements = new();
+        private Dictionary<string, int> _labels = new();
+
         private Engine()
         {
             var root = new Call(this);
             Global = root.Scopes.First();
         }
 
-        public IResult Execute(string code)
+        public Variant<Value, Result>? Execute(string code)
         {
-            var labels = new Dictionary<string, int>();
-            var statements = new List<Statement>();
+            var statements = StatementScanner.GetStatements(code);
 
-            var statementScanner = new StatementScanner(new TokenScanner(code));
+            int start = _statements.Count;
 
-            for (int i = 0; statementScanner.HasNextStatement(); i++)
+            _statements.AddRange(statements);
+            _labels = GetLabels(_statements);
+
+            if (statements.Count == 1 && statements[0] is ExpressionStatement expression)
+                return expression.Evaluate(Global.Call!);
+
+            for (int i = start; i < _statements.Count; i++)
             {
-                var statement = statementScanner.GetNextStatement();
+                var result = _statements[i].Execute(Global.Call!);
 
-                statements.Add(statement);
+                if (result is Throw t)
+                    return t;
 
-                if (statement.Label is not null)
-                    labels.Add(statement.Label, i);
-            }
+                if (result is Return)
+                    return new Throw("No function");
 
-            Value output = null;
+                if (result is Continue || result is Break)
+                    return new Throw("No loop");
 
-            for (int i = 0; i < statements.Count; i++)
-            {
-                var result = statements[i].Execute(Global.Call);
-
-                if (result is IValue value)
+                if (result is Goto g)
                 {
-                    output = value.Value;
-                }
-                else if (result is Goto g)
-                {
-                    if (labels.TryGetValue(g.label, out int index))
+                    if (_labels.TryGetValue(g.label, out int index))
                         i = index - 1;
                     else
-                        throw new SyntaxError($"Label '{g.label}' does not exist in scope.");
-                }
-                else if (result is Continue || result is Break)
-                {
-                    throw new SyntaxError("No loop");
-                }
-                else
-                {
-                    return result;
+                        return new Throw($"Label '{g.label}' does not exist in scope.");
                 }
             }
 
-            return statements.Count == 1 ? output : Void.Value;
+            return null;
+        }
+
+        private static Dictionary<string, int> GetLabels(List<Statement> statements)
+        {
+            var labels = new Dictionary<string, int>();
+
+            for (int i = 0; i < statements.Count; i++)
+                if (statements[i].Label is not null)
+                    labels.Add(statements[i].Label!, i);
+
+            return labels;
         }
 
         public class Builder

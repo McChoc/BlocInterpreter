@@ -1,40 +1,46 @@
-﻿using CmmInterpretor.Data;
+﻿using CmmInterpretor.Memory;
+using CmmInterpretor.Expressions;
 using CmmInterpretor.Results;
-using CmmInterpretor.Tokens;
 using CmmInterpretor.Values;
-using System.Collections.Generic;
+using CmmInterpretor.Variables;
 
 namespace CmmInterpretor.Statements
 {
     public class DeleteStatement : Statement
     {
-        private readonly List<Token> _tokens;
+        private readonly IExpression _expression;
 
-        public DeleteStatement(List<Token> token) => _tokens = token;
+        public DeleteStatement(IExpression expression) => _expression = expression;
 
-        public override IResult Execute(Call call)
+        public override Result? Execute(Call call)
         {
-            var result = Evaluator.Evaluate(_tokens, call);
-
-            if (result is not IValue val)
+            try
+            {
+                return Delete(_expression.Evaluate(call));
+            }
+            catch (Result result)
+            {
                 return result;
-
-            Delete(val);
-
-            return Void.Value;
+            }
         }
 
-        private void Delete(IValue val)
+        private Result? Delete(IValue val)
         {
-            if (val is Variable var)
+            if (val is StackVariable or HeapVariable)
             {
-                var.Destroy();
+                val.Destroy();
+                return null;
             }
-            else if (val is Tuple tpl)
+
+            if (val is Tuple tpl)
             {
                 foreach (var item in tpl.Values)
                     Delete(item);
+
+                return null;
             }
+
+            return new Throw("You can only delete a variable");
         }
     }
 }
