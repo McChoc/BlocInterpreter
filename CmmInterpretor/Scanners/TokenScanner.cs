@@ -36,13 +36,14 @@ namespace CmmInterpretor.Scanners
             "not", "in", "is", "as",
             "val", "ref", "new",
             "nameof", "typeof",
+            "await", "async",
             "pass", "def", "delete",
             "if", "else", "lock",
             "do", "while", "until",
             "loop", "repeat", "for",
             "try", "catch", "finally",
-            "throw", "return", "goto",
-            "continue", "break"
+            "throw", "return", "exit",
+            "continue", "break", "goto"
         };
 
         private int _index;

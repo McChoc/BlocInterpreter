@@ -25,7 +25,7 @@
 
 ### Values
 
-#### void
+#### Void
 
 You can use the `void` literal to create an instance of type void. It cannot be assigned to a variable and is only used when a function returns nothing. However void is implicitly returned when the end of a function is reached or when no value is provided for a return statement, so the `void` literal is rarely used.
 
@@ -48,7 +48,7 @@ typeof void; # evaluates to void
 
 ---
 
-#### null
+#### Null
 
 You can use the `null` literal to create an instance of type null. This is used when a variable contains nothing and is the default value of any variable.
 
@@ -63,7 +63,7 @@ typeof null; # evaluates to null
 
 ---
 
-#### bool
+#### Bool
 
 You can use the `true` and `false` literals to create an instance of type bool. They represent a boolean value and are mainly used as conditions inside `if` statements and loops.
 
@@ -79,7 +79,7 @@ typeof false;   # evaluates to bool
 
 ---
 
-#### number
+#### Number
 
 A number is used to represent both integers and floating-point numbers. To create an integer, you can simply write a decimal number with digits from 0 to 9 or you can prefix it with `0b`, `0o` or `0x` to write a number in binary, octal or hexadecimal respectivly. To create a floating point number, you can simply add a dot `.` to separate its integral and fractional parts. Floating point numbers have to be decimal, but you can use the scientific notation by adding an `e` and an exponent. Both integers and floating-point literals can contain any number of underscores `_` to separate digits. You can also use the `infinity` and `nan` literals to create a number.
 
@@ -100,7 +100,7 @@ typeof -infinity;   # evaluates to number
 
 ---
 
-#### range
+#### Range
 
 You can create a range using the [range operator](#range-operator)  `..` and optionaly numbers. Ranges can be used to get a slice of a [string](#string) or [array](#array). They can also be used in a [for..in](#forin-statement) loop to iterate over all the integers inside that range. When iterating over a range, if the first number is omited, it defaults to 0. The second number defaults to `infinity` or `-infinity` depending on the sign of the step. The default step is 1, but you can change it by adding a second range operator `..`. A step of 2 for example will iterate over every second iteger inside the range. A negative step will reverse the iteration. For more information on getting a slice of a string or array, see [indexer]().
 
@@ -117,7 +117,7 @@ typeof(..); # evaluates to range
 
 ---
 
-#### string
+#### String
 
 A string is used to represent text. You can create one by putting a chain of characters between single `'` or double quotes `"`. Whether you use single or double quotes does no change anything at runtime, but using one allows you to create a string containing the other one. A string literal has to be on a single line.
 
@@ -191,7 +191,7 @@ inside a multi-line string:
 
 ---
 
-#### array
+#### Array
 
 An array is used to represent a list of ordered values. You can create one by putting a list of coma `,` separated values inside braces `{}`. The values can be of any type and you are allowed to leave a trailing comma `,` after the last value. You cannot make an empty array literal because it would be ambiguus with an empty [struct](#struct). If you want to create an empty array, use the default constructor for `array`.
 
@@ -203,7 +203,7 @@ def emptyArray = array();
 
 ---
 
-#### struct
+#### Struct
 
 A struct is used to represent a set of key-value pairs. You can create one by putting a list of coma `,` separated key-value pairs  inside braces `{}`. A key-value pair is formed by a name, the equal symbol `=` and a value. The values can be of any type and the keys have to be valid variable names. You are allowed to leave a trailing comma `,` after the last key-value pair. You cannot make an empty struct literal because it would be ambiguus with an empty [array](#array). If you want to create an empty struct, use the default constructor for `struct`.
 
@@ -219,7 +219,7 @@ def emptyStruct = struct();
 
 ---
 
-#### tuple
+#### Tuple
 
 You can create a tuple by separating two or more expressions with the coma operator `,`. Tuples are also usualy surouned by parentheses `()` because of the [operator precedence](#operators). Tuples are useful to perform an operation on multiple values at the same time. You can perform an operation between all the values of a tuple and a single value or between all the values of two tuples. If the tuple don't have the same size, an exception is thrown.
 
@@ -238,7 +238,7 @@ You can create a tuple by separating two or more expressions with the coma opera
 
 ---
 
-#### function
+#### Function
 
 A function is used to hold statements that you want to execute at more than one place and allows you to reuse code. You can generalize a function by using parameters, allowing you to use that function in even more places. There are two syntax you can use to create a function.
 
@@ -258,9 +258,43 @@ def add = (a, b) => a + b;
 def toString = x => x as string; 
 ```
 
+Both syntaxes can be used to create asynchronous function by prefixing them with the `async` keyword. Asynchronous functions allows you to run multiple functions at the same time. When calling an asynchronous function, it instantly returns a [task](#task) and starts executing its body in the background. The task returned can be used to retreive the result of the function later. If the function throws an exception, the exception will be stored inside the task.
+
+```python
+def foo = async () {
+    def sum = 0;
+    
+    for (i in ..1000)
+        sum += i;
+
+    return sum;
+}; 
+
+def bar = async () => await foo(); 
+```
+
 ---
 
-#### reference
+#### Task
+
+Tasks cannot be directly created, they are returned by [asynchronous functions](#function) and can be used to wait for the function to finish and to retreive the result of the function using the [await operator](#await-operator-await).
+
+```python
+def myAsyncFunc = async () {
+    def sum = 0;
+
+    for (i in ..1000)
+        sum += i;
+
+    return sum;
+}; 
+
+def myTask = myAsyncFunc(); 
+```
+
+---
+
+#### Reference
 
 You can create a reference to a variable by using the `ref` operator on it. You can also use the `new` operator to simultaniously create a variable on the heap and return a reference to it. References are useful if you want multiple variables to point to the same value.
 
@@ -274,13 +308,13 @@ def ref2 = new { 1, 2 };    # ref2 is a reference to an array stored on the heap
 
 ---
 
-#### complex
+#### Complex
 
 Complexes cannot be directly created. They are returned by some command and are essentialy references to objects that lives outside of C--. You cannot modify them in any way, you can only store them and pass them to an other command.
 
 ---
 
-#### type
+#### Type
 
 You can create a type by using any of the following literals : `bool`,  `number`,  `range`,  `string`,  `array`,  `struct`,  `tuple`,  `function`,  `reference`,  `complex`,  `type` and  `any`. You can also use the `typeof` operator to get the type of a value. You have to use the `typeof` operator to get the void or null type since they don't have literals. Types can be used to check if a value is of a certain type with the `is` or `is not` operator. Types can be combined into composit types using bitwise operators or the [nullable type operator](#nullable-type-operator) `?`. This allows you to check if a value is of any of the types within a composit type. `any` is the composite type of every types. Types can also be used to cast a value from its type to another with the `as` operator. A value cannot be casted to a composite type.
 
@@ -394,7 +428,7 @@ The following table shows the precedence of all operators. The operators at the 
 | Operators                                                                                | Description          | Associativity                     |
 |------------------------------------------------------------------------------------------|----------------------|-----------------------------------|
 | [`.`](#member-access-operator), [`[]`](#indexer-operator), [`()`](#invocation-operator)  | Primary              | Left&#8209;to&#8209;right&nbsp;🡲 |
-| [`+`](#unary-plus-operator), [`-`](#unary-minus-operator-), [`~`](#complement-operator-), [`!`](#negation-operator), [`++`](#increment-operator), [`--`](#decrement-operator-), [`~~`](#variable-complement-operator-), [`!!`](#variable-negation-operator), [`?`](#nullable-type-operator), [`len`](#length-operator-len), [`chr`](#character-operator-chr), [`ord`](#ordinal-operator-ord), [`val`](#value-operator-val), [`ref`](#reference-operator-ref), [`new`](#allocation-operator-new), [`nameof`](#nameof-operator-nameof), [`typeof`](#typeof-operator-typeof) | Unary | Right&#8209;to&#8209;left&nbsp;🡰 |
+| [`+`](#unary-plus-operator), [`-`](#unary-minus-operator-), [`~`](#complement-operator-), [`!`](#negation-operator), [`++`](#increment-operator), [`--`](#decrement-operator-), [`~~`](#variable-complement-operator-), [`!!`](#variable-negation-operator), [`?`](#nullable-type-operator), [`len`](#length-operator-len), [`chr`](#character-operator-chr), [`ord`](#ordinal-operator-ord), [`val`](#value-operator-val), [`ref`](#reference-operator-ref), [`new`](#allocation-operator-new), [`await`](#await-operator-await) [`nameof`](#nameof-operator-nameof), [`typeof`](#typeof-operator-typeof) | Unary | Right&#8209;to&#8209;left&nbsp;🡰 |
 | [`..`](#range-operator)                                                                  | Range                | N/A                               |
 | [`**`](#power-operator), [`//`](#root-operator), [`%%`](#logarithm-operator)             | Exponential          | Left&#8209;to&#8209;right&nbsp;🡲 |
 | [`*`](#multiplication-operator), [`/`](#division-operator), [`%`](#remainder-operator)   | Multiplicative       | Left&#8209;to&#8209;right&nbsp;🡲 |
@@ -1418,6 +1452,29 @@ def foo = new {
 
 ---
 
+#### Await operator `await`
+
+This operator waits for the end of the operation associated with a task to finish and then returns its result. If the operation threw an exception, the await operator will throw that same exception.
+
+```python
+def addAsync = async (a, b) {
+    if (a is not number || b is not number)
+        throw "The parameters must be numbers";
+
+    return a + b;
+}; 
+
+def task1 = addAsync(1, 2); 
+
+await task1(); # evaluates to 3
+
+def task2 = addAsync("", ""); # no exception is thrown 
+
+await task2();  # throws the exception
+```
+
+---
+
 #### Nameof operator `nameof`
 
 This operator returns a [string](#string) containing the name of its operand. Its operand has to be a variable. This operator is especialy useful in combination with the [value operator](#value-operator-val) to know the variable at which a reference is pointing.
@@ -1491,18 +1548,6 @@ By default, the output of a command is displayed on the standard output. This op
 
 ---
 
-#### try statement
-
----
-
-#### lock statement
-
----
-
-#### loop statement
-
----
-
 #### while, do..while, until and do..until statements
 
 ---
@@ -1516,6 +1561,18 @@ By default, the output of a command is displayed on the standard output. This op
 ---
 
 #### repeat statement
+
+---
+
+#### loop statement
+
+---
+
+#### try statement
+
+---
+
+#### lock statement
 
 ---
 

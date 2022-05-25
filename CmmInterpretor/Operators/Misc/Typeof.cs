@@ -2,7 +2,7 @@
 using CmmInterpretor.Expressions;
 using CmmInterpretor.Values;
 
-namespace CmmInterpretor.Operators.Info
+namespace CmmInterpretor.Operators.Misc
 {
     public class Typeof : IExpression
     {

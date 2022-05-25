@@ -89,7 +89,7 @@ namespace CmmInterpretor
             private Action<string> _log = _ => { };
             private Action _clear = () => { };
 
-            private int _stackLimit = 50;
+            private int _stackLimit = 1000;
             private int _loopLimit = 1000;
             private int _jumpLimit = 1000;
             private int _hopLimit = 100;

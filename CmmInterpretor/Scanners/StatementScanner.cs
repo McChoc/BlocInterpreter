@@ -46,6 +46,7 @@ namespace CmmInterpretor.Scanners
                 { type: TokenType.Keyword, value: "loop" } => GetLoopStatement(scanner),
                 { type: TokenType.Keyword, value: "repeat" } => GetRepeatStatement(scanner),
                 { type: TokenType.Keyword, value: "for" } => GetForStatement(scanner),
+                { type: TokenType.Keyword, value: "lock" } => GetLockStatement(scanner),
                 { type: TokenType.Keyword, value: "try" } => GetTryStatement(scanner),
                 { type: TokenType.Keyword, value: "throw" } => GetThrowStatement(scanner),
                 { type: TokenType.Keyword, value: "return" } => GetReturnStatement(scanner),
@@ -360,6 +361,31 @@ namespace CmmInterpretor.Scanners
 
                 return statement;
             }
+        }
+
+        private static Statement GetLockStatement(TokenScanner scanner)
+        {
+            var statement = new LockStatement();
+
+            // if
+            scanner.GetNextToken();
+            if (!scanner.HasNextToken())
+                throw new SyntaxError("");
+            Token expression = scanner.GetNextToken();
+            if (expression.type != TokenType.Parentheses)
+                throw new SyntaxError("");
+            statement.Expression = ExpressionParser.Parse((List<Token>)expression.value);
+
+            // body
+            if (!scanner.HasNextToken())
+                throw new SyntaxError("");
+            Token body = scanner.Peek();
+            if (body.type == TokenType.Block)
+                statement.Statements = GetStatements(scanner.GetNextToken().Text);
+            else
+                statement.Statements = new() { GetStatement(scanner) };
+
+            return statement;
         }
 
         private static Statement GetTryStatement(TokenScanner scanner)

@@ -20,6 +20,11 @@ namespace CmmInterpretor
                     if (i == 0)
                         throw new SyntaxError("Missing identifiers");
 
+                    bool async = false;
+
+                    if (i >= 2 && tokens[i - 2] is { type: TokenType.Keyword, value: "async" })
+                        async = true;
+
                     List<string> names;
 
                     if (tokens[i - 1].type == TokenType.Identifier)
@@ -45,9 +50,9 @@ namespace CmmInterpretor
 
                     var statement = new ReturnStatement(Parse(tokens.GetRange((i + 1)..)));
 
-                    var function = new FunctionLiteral(false, names, new() { statement });
+                    var function = new FunctionLiteral(async, names, new() { statement });
 
-                    var expression = tokens.GetRange(..(i - 1));
+                    var expression = tokens.GetRange(..(i - (async ? 2 : 1)));
                     expression.Add(new Token(TokenType.Literal, function));
 
                     return Parse(expression, precedence - 1);
@@ -61,13 +66,27 @@ namespace CmmInterpretor
                     if (names.Count != names.Distinct().Count())
                         throw new SyntaxError("Some parameters are duplicates.");
 
+                    bool async = false;
+
+                    if (i >= 1 && tokens[i - 1] is { type: TokenType.Keyword, value: "async" })
+                        async = true;
+
                     var statements = StatementScanner.GetStatements(tokens[i + 1].Text);
 
-                    var function = new FunctionLiteral(false, names, statements);
+                    var function = new FunctionLiteral(async, names, statements);
 
                     var expression = tokens;
-                    expression.RemoveRange(i, 2);
-                    expression.Insert(i, new Token(TokenType.Literal, function));
+
+                    if (async)
+                    {
+                        expression.RemoveRange(i - 1, 3);
+                        expression.Insert(i - 1, new Token(TokenType.Literal, function));
+                    }
+                    else
+                    {
+                        expression.RemoveRange(i, 2);
+                        expression.Insert(i, new Token(TokenType.Literal, function));
+                    }
 
                     return Parse(expression, precedence - 1);
                 }

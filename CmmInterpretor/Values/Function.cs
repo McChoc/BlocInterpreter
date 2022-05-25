@@ -81,15 +81,18 @@ namespace CmmInterpretor.Values
             };
         }
 
-        public override string ToString(int _) => $"{(Async ? "async" : "")}({ string.Join(", ", Names) }) {{...}}";
+        public override string ToString(int _) => $"{(Async ? "async " : "")}({ string.Join(", ", Names) }) {{...}}";
 
         public IValue Invoke(List<Value> values, Call parent)
         {
-            if (Async)
-            {
-                return new Task();
-            }
+            if (!Async)
+                return Call(values, parent);
+            else
+                return new Task(System.Threading.Tasks.Task.Run(() => Call(values, parent)));
+        }
 
+        private Value Call(List<Value> values, Call parent)
+        {
             var call = new Call(parent, Captures, this, values);
 
             try

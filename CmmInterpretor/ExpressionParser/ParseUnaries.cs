@@ -6,7 +6,7 @@ using CmmInterpretor.Operators.Bitwise;
 using CmmInterpretor.Operators.Boolean;
 using CmmInterpretor.Operators.Character;
 using CmmInterpretor.Operators.Collection;
-using CmmInterpretor.Operators.Info;
+using CmmInterpretor.Operators.Misc;
 using CmmInterpretor.Operators.Reference;
 using CmmInterpretor.Operators.Type;
 using CmmInterpretor.Tokens;
@@ -21,7 +21,7 @@ namespace CmmInterpretor
             if (tokens.Count == 0)
                 throw new SyntaxError("Missing value");
 
-            if (tokens[0] is { type: TokenType.Operator or TokenType.Keyword, value: "+" or "-" or "~" or "!" or "++" or "--" or "~~" or "!!" or "len" or "chr" or "ord" or "val" or "ref" or "new" or "nameof" or "typeof" })
+            if (tokens[0] is { type: TokenType.Operator or TokenType.Keyword, value: "+" or "-" or "~" or "!" or "++" or "--" or "~~" or "!!" or "len" or "chr" or "ord" or "val" or "ref" or "new" or "await" or "nameof" or "typeof" })
             {
                 var operand = ParseUnaries(tokens.GetRange(1..), precedence);
 
@@ -41,6 +41,7 @@ namespace CmmInterpretor
                     "val" => new Value(operand),
                     "ref" => new Reference(operand),
                     "new" => new Allocation(operand),
+                    "await" => new Await(operand),
                     "nameof" => new Nameof(operand),
                     "typeof" => new Typeof(operand),
                     _ => throw new System.Exception(),

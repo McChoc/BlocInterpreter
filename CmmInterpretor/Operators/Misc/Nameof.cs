@@ -4,7 +4,7 @@ using CmmInterpretor.Results;
 using CmmInterpretor.Values;
 using CmmInterpretor.Variables;
 
-namespace CmmInterpretor.Operators.Info
+namespace CmmInterpretor.Operators.Misc
 {
     public class Nameof : IExpression
     {

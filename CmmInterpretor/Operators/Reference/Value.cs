@@ -17,7 +17,7 @@ namespace CmmInterpretor.Operators.Reference
 
             for (int i = 1; value.Is(out Values.Reference? reference); i++)
             {
-                if (i >= call.Engine.HopLimit)
+                if (i > call.Engine.HopLimit)
                     throw new Throw("The hop limit was reached");
 
                 if (reference!.Variable is null)

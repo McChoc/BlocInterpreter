@@ -4,7 +4,13 @@ namespace CmmInterpretor.Values
 {
     public class Task : Value
     {
+        public System.Threading.Tasks.Task<Value> Value { get; }
+
         public override ValueType Type => ValueType.Task;
+
+        public Task() => Value = System.Threading.Tasks.Task.Run(() => (Value)Void.Value);
+
+        public Task(System.Threading.Tasks.Task<Value> task) => Value = task;
 
         public override Value Copy() => this;
 
@@ -13,7 +19,8 @@ namespace CmmInterpretor.Values
             if (other.Value is not Task task)
                 return false;
             
-            // TODO
+            if (Value != task.Value)
+                return false;
 
             return true;
         }

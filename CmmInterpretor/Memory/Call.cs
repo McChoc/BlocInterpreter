@@ -1,4 +1,5 @@
-﻿using CmmInterpretor.Values;
+﻿using CmmInterpretor.Results;
+using CmmInterpretor.Values;
 using CmmInterpretor.Variables;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,8 +18,12 @@ namespace CmmInterpretor.Memory
 
         public List<Scope> Scopes { get; }
 
+        private readonly int _stack;
+
         public Call(Engine engine)
         {
+            _stack = 0;
+
             Engine = engine;
             Scopes = new();
             Push();
@@ -27,6 +32,11 @@ namespace CmmInterpretor.Memory
         public Call(Call parent, Scope captures, Function recall, List<Value> @params)
             : this(parent.Engine)
         {
+            _stack = parent._stack + 1;
+
+            if (_stack > Engine.StackLimit)
+                throw new Throw("The stack limit was reached");
+
             Parent = parent;
             Captures = captures;
 
