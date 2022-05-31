@@ -3,8 +3,8 @@ using CmmInterpretor.Results;
 
 namespace CmmInterpretor.Statements
 {
-    public class ContinueStatement : Statement
+    internal class ContinueStatement : Statement
     {
-        public override Result Execute(Call call) => new Continue();
+        internal override Result Execute(Call call) => new Continue();
     }
 }

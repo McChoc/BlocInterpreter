@@ -6,11 +6,11 @@ using CmmInterpretor.Variables;
 
 namespace CmmInterpretor.Operators.Misc
 {
-    public class Nameof : IExpression
+    internal class Nameof : IExpression
     {
         private readonly IExpression _operand;
 
-        public Nameof(IExpression operand) => _operand = operand;
+        internal Nameof(IExpression operand) => _operand = operand;
 
         public IValue Evaluate(Call call)
         {

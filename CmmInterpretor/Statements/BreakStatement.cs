@@ -3,8 +3,8 @@ using CmmInterpretor.Results;
 
 namespace CmmInterpretor.Statements
 {
-    public class BreakStatement : Statement
+    internal class BreakStatement : Statement
     {
-        public override Result Execute(Call call) => new Break();
+        internal override Result Execute(Call call) => new Break();
     }
 }

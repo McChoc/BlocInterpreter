@@ -7,26 +7,24 @@ using System.Collections.Generic;
 
 namespace CmmInterpretor
 {
-    public static partial class ExpressionParser
+    internal static partial class ExpressionParser
     {
         private static IExpression ParseAssignments(List<Token> tokens, int precedence)
         {
             for (int i = 0; i < tokens.Count; i++)
             {
-                if (tokens[i] is { type: TokenType.Operator, value: "=" or "+=" or "-=" or "*=" or "/=" or "%=" or "**=" or "//=" or "%%=" or "&&=" or "||=" or "^^=" or "&=" or "|=" or "^=" or "<<=" or ">>=" })
+                if (tokens[i] is (TokenType.Operator, "=" or "+=" or "-=" or "*=" or "/=" or "%=" or "**=" or "//=" or "%%=" or "&&=" or "||=" or "^^=" or "&=" or "|=" or "^=" or "<<=" or ">>=") op)
                 {
-                    string op = tokens[i].Text;
-
                     if (i == 0)
-                        throw new SyntaxError("Missing the left part of assignment");
+                        throw new SyntaxError(op.Start, op.End, "Missing the left part of assignment");
 
                     if (i > tokens.Count - 1)
-                        throw new SyntaxError("Missing the right part of assignment");
+                        throw new SyntaxError(op.Start, op.End, "Missing the right part of assignment");
 
                     var a = Parse(tokens.GetRange(..i), precedence - 1);
                     var b = ParseAssignments(tokens.GetRange((i + 1)..), precedence);
 
-                    return op switch
+                    return op.Text switch
                     {
                         "=" => new Assignment(a, b),
                         "+=" => new AdditionAssignment(a, b),

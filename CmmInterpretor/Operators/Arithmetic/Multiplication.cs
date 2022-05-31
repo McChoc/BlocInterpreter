@@ -8,12 +8,12 @@ using CmmInterpretor.Utils;
 
 namespace CmmInterpretor.Operators.Arithmetic
 {
-    public class Multiplication : IExpression
+    internal class Multiplication : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
 
-        public Multiplication(IExpression left, IExpression right)
+        internal Multiplication(IExpression left, IExpression right)
         {
             _left = left;
             _right = right;

@@ -2,14 +2,14 @@
 
 namespace CmmInterpretor.Variables
 {
-    public class ChildVariable : Variable
+    internal class ChildVariable : Variable
     {
         //private readonly object? _accessor;
         //private readonly Value _parent;
 
         public override Value Value { get; set; }
 
-        public ChildVariable(Value value, object? accessor, Value parent)
+        internal ChildVariable(Value value, object? accessor, Value parent)
         {
             Value = value;
             //_accessor = accessor;

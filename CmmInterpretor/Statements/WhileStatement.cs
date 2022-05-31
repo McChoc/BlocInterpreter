@@ -6,14 +6,14 @@ using System.Collections.Generic;
 
 namespace CmmInterpretor.Statements
 {
-    public class WhileStatement : Statement
+    internal class WhileStatement : Statement
     {
-        public bool Do { get; set; }
-        public bool Until { get; set; }
-        public IExpression Condition { get; set; } = default!;
-        public List<Statement> Statements { get; set; } = default!;
+        internal bool Do { get; set; }
+        internal bool Until { get; set; }
+        internal IExpression Condition { get; set; } = default!;
+        internal List<Statement> Statements { get; set; } = default!;
 
-        public override Result? Execute(Call call)
+        internal override Result? Execute(Call call)
         {
             int loopCount = 0;
             var labels = GetLabels(Statements);

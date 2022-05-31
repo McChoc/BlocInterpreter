@@ -8,19 +8,19 @@ namespace CmmInterpretor.Memory
 {
     public class Call
     {
-        public Engine Engine { get; }
+        internal Engine Engine { get; }
 
-        public Call? Parent { get; }
-        public Scope? Captures { get; }
+        internal Call? Parent { get; }
+        internal Scope? Captures { get; }
 
-        public Variable? Recall { get; }
-        public Variable? Params { get; }
+        internal Variable? Recall { get; }
+        internal Variable? Params { get; }
 
-        public List<Scope> Scopes { get; }
+        internal List<Scope> Scopes { get; }
 
         private readonly int _stack;
 
-        public Call(Engine engine)
+        internal Call(Engine engine)
         {
             _stack = 0;
 
@@ -29,7 +29,7 @@ namespace CmmInterpretor.Memory
             Push();
         }
 
-        public Call(Call parent, Scope captures, Function recall, List<Value> @params)
+        internal Call(Call parent, Scope captures, Function recall, List<Value> @params)
             : this(parent.Engine)
         {
             _stack = parent._stack + 1;
@@ -45,15 +45,15 @@ namespace CmmInterpretor.Memory
             Params.Value.Assign();
         }
 
-        public void Push() => Scopes.Add(new Scope(this));
+        internal void Push() => Scopes.Add(new Scope(this));
 
-        public void Pop()
+        internal void Pop()
         {
             Scopes[^1].Destroy();
             Scopes.RemoveAt(Scopes.Count - 1);
         }
 
-        public void Destroy()
+        internal void Destroy()
         {
             Recall?.Destroy();
             Params?.Destroy();
@@ -62,7 +62,7 @@ namespace CmmInterpretor.Memory
                 scope.Destroy();
         }
 
-        public bool TryAdd(StackVariable variable)
+        internal bool TryAdd(StackVariable variable)
         {
             if (Scopes[^1].Variables.ContainsKey(variable.Name))
                 return false;
@@ -71,7 +71,7 @@ namespace CmmInterpretor.Memory
             return true;
         }
 
-        public bool TryGet (string name, out Variable? var)
+        internal bool TryGet (string name, out Variable? var)
         {
             for (int i = Scopes.Count - 1; i >= 0; i--)
             {
@@ -92,12 +92,12 @@ namespace CmmInterpretor.Memory
             return false;
         }
 
-        public void Set(string name, Variable variable)
+        internal void Set(string name, Variable variable)
         {
             Scopes[^1].Variables[name] = variable;
         }
 
-        public Scope Capture()
+        internal Scope Capture()
         {
             var captures = new Scope(null);
 

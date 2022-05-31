@@ -57,10 +57,8 @@ namespace CmmInterpretor.Values
         {
             if (Value.Count == 0)
                 return "type()";
-            else if (Value.Count == System.Enum.GetValues(typeof(ValueType)).Length)
-                return "any";
-            else
-                return string.Join(" | ", Value).ToLower();
+
+            return string.Join(" | ", Value).ToLower();
         }
 
         public IValue Invoke(List<Value> _0, Call _1)

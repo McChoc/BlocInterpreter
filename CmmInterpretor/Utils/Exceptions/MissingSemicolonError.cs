@@ -2,6 +2,6 @@
 {
     public class MissingSemicolonError : SyntaxError
     {
-        public MissingSemicolonError() : base("Missing semicolon") { }
+        public MissingSemicolonError(int start, int end) : base(start, end, "Missing semicolon") { }
     }
 }

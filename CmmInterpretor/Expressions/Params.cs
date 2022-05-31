@@ -3,7 +3,7 @@ using CmmInterpretor.Values;
 
 namespace CmmInterpretor.Expressions
 {
-    public class Params : IExpression
+    internal class Params : IExpression
     {
         public IValue Evaluate(Call call) => call.Params!;
     }

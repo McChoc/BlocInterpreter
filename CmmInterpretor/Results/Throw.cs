@@ -8,8 +8,8 @@ namespace CmmInterpretor.Results
 
         public Throw() => value = Void.Value;
 
-        public Throw(string text) => value = new String(text);
-
         public Throw(Value value) => this.value = value;
+
+        public Throw(string text) => value = new String(text);
     }
 }

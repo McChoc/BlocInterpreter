@@ -5,11 +5,11 @@ using CmmInterpretor.Values;
 
 namespace CmmInterpretor.Operators.Boolean
 {
-    public class Negation : IExpression
+    internal class Negation : IExpression
     {
         private readonly IExpression _operand;
 
-        public Negation(IExpression operand) => _operand = operand;
+        internal Negation(IExpression operand) => _operand = operand;
 
         public IValue Evaluate(Call call)
         {

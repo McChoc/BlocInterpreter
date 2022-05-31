@@ -6,12 +6,12 @@ using CmmInterpretor.Results;
 
 namespace CmmInterpretor.Operators.Assignment
 {
-    public class BooleanOrAssignment : IExpression
+    internal class BooleanOrAssignment : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
 
-        public BooleanOrAssignment(IExpression left, IExpression right)
+        internal BooleanOrAssignment(IExpression left, IExpression right)
         {
             _left = left;
             _right = right;

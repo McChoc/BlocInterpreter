@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace CmmInterpretor.Interfaces
 {
-    public interface IInvokable
+    internal interface IInvokable
     {
         IValue Invoke(List<Value> values, Call call);
     }

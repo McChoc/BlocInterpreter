@@ -7,12 +7,12 @@ using static System.Math;
 
 namespace CmmInterpretor.Operators.Arithmetic
 {
-    public class Root : IExpression
+    internal class Root : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
 
-        public Root(IExpression left, IExpression right)
+        internal Root(IExpression left, IExpression right)
         {
             _left = left;
             _right = right;

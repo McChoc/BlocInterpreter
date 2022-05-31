@@ -6,12 +6,12 @@ using System.Linq;
 
 namespace CmmInterpretor.Operators.Collection
 {
-    public class NotIn : IExpression
+    internal class NotIn : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
 
-        public NotIn(IExpression left, IExpression right)
+        internal NotIn(IExpression left, IExpression right)
         {
             _left = left;
             _right = right;
@@ -23,7 +23,7 @@ namespace CmmInterpretor.Operators.Collection
             var rightValue = _right.Evaluate(call);
 
             if (rightValue.Is(out Array? array))
-                return new Bool(!array!.Values.Any(v => v.Equals(leftValue!)));
+                return new Bool(!array!.Values.Any(v => v.Equals(leftValue)));
 
             if (leftValue.Is(out String? sub) && rightValue.Is(out String? str))
                 return new Bool(!str!.Value.Contains(sub!.Value));

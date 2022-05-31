@@ -6,12 +6,12 @@ using CmmInterpretor.Utils;
 
 namespace CmmInterpretor.Operators.Bitwise
 {
-    public class RightShift : IExpression
+    internal class RightShift : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
 
-        public RightShift(IExpression left, IExpression right)
+        internal RightShift(IExpression left, IExpression right)
         {
             _left = left;
             _right = right;

@@ -7,11 +7,11 @@ using System.Collections.Generic;
 
 namespace CmmInterpretor.Statements
 {
-    public class CommandStatement : Statement
+    internal class CommandStatement : Statement
     {
-        public List<List<Token>> Commands { get; } = new();
+        internal List<List<Token>> Commands { get; } = new();
 
-        public override Result? Execute(Call call)
+        internal override Result? Execute(Call call)
         {
             Value output = Void.Value;
 
@@ -23,7 +23,7 @@ namespace CmmInterpretor.Statements
                 {
                     try
                     {
-                        words.Add(GetText(token, call));
+                        words.AddRange(GetText(token, call));
                     }
                     catch (Result result)
                     {
@@ -46,37 +46,28 @@ namespace CmmInterpretor.Statements
             return null;
         }
 
-        private static string GetText(Token token, Call call)
+        private static string[] GetText(Token token, Call call)
         {
-            if (token.type == TokenType.Command)
-                return token.Text;
-
-            if (token.type == TokenType.Literal)
-                return ((String)token.value).Value;
-
-            if (token.type == TokenType.Interpolated)
+            switch (token)
             {
-                var expression = ExpressionParser.ParseInterpolatedString(token);
+                case Literal literal:
+                    return new[] { ((String)literal.Expression.Evaluate(call)).Value };
 
-                var value = expression.Evaluate(call);
+                case { Type: TokenType.Keyword }:
+                    return new[] { token.Text };
 
-                return ((String)value).Value;
+                case { Type: TokenType.Identifier, Text: string identifier }:
+                    if (!call.TryGet(identifier, out Variable? variable))
+                        throw new Throw($"Variable '{identifier}' was not defined in scope");
+
+                    if (!variable!.Value.Is(out String? str))
+                        throw new Throw("Cannot implicitly cast to string");
+
+                    return str!.Value.Split(' ');
+
+                default:
+                    throw new System.Exception();
             }
-
-            if (token.type == TokenType.Identifier)
-            {
-                string identifier = token.Text;
-
-                if (!call.TryGet(identifier, out Variable? variable))
-                    throw new Throw($"Variable '{identifier}' was not defined in scope");
-
-                if (!variable!.Value.Is(out String? str))
-                    throw new Throw("Cannot implicitly cast to string");
-
-                return str!.Value;
-            }
-
-            throw new System.Exception();
         }
     }
 }

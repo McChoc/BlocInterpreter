@@ -6,12 +6,12 @@ using System.Collections.Generic;
 
 namespace CmmInterpretor.Statements
 {
-    public class RepeatStatement : Statement
+    internal class RepeatStatement : Statement
     {
-        public IExpression Count { get; set; } = default!;
-        public List<Statement> Statements { get; set; } = default!;
+        internal IExpression Count { get; set; } = default!;
+        internal List<Statement> Statements { get; set; } = default!;
 
-        public override Result? Execute(Call call)
+        internal override Result? Execute(Call call)
         {
             try
             {

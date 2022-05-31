@@ -6,41 +6,41 @@ using CmmInterpretor.Variables;
 
 namespace CmmInterpretor.Statements
 {
-    public class DeleteStatement : Statement
+    internal class DeleteStatement : Statement
     {
         private readonly IExpression _expression;
 
-        public DeleteStatement(IExpression expression) => _expression = expression;
+        internal DeleteStatement(IExpression expression) => _expression = expression;
 
-        public override Result? Execute(Call call)
+        internal override Result? Execute(Call call)
         {
             try
             {
-                return Delete(_expression.Evaluate(call));
+                Delete(_expression.Evaluate(call));
             }
             catch (Result result)
             {
                 return result;
             }
+
+            return null;
         }
 
-        private Result? Delete(IValue val)
+        private void Delete(IValue val)
         {
             if (val is StackVariable or HeapVariable)
             {
                 val.Destroy();
-                return null;
             }
-
-            if (val is Tuple tpl)
+            else if (val is Tuple tpl)
             {
                 foreach (var item in tpl.Values)
                     Delete(item);
-
-                return null;
             }
-
-            return new Throw("You can only delete a variable");
+            else
+            {
+                throw new Throw("You can only delete a variable");
+            }
         }
     }
 }

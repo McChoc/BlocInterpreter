@@ -7,13 +7,13 @@ using CmmInterpretor.Interfaces;
 
 namespace CmmInterpretor.Statements
 {
-    public class ForInStatement : Statement
+    internal class ForInStatement : Statement
     {
-        public string VariableName { get; set; } = default!;
-        public IExpression Iterable { get; set; } = default!;
-        public List<Statement> Statements { get; set; } = default!;
+        internal string VariableName { get; set; } = default!;
+        internal IExpression Iterable { get; set; } = default!;
+        internal List<Statement> Statements { get; set; } = default!;
 
-        public override Result? Execute(Call call)
+        internal override Result? Execute(Call call)
         {
             try
             {

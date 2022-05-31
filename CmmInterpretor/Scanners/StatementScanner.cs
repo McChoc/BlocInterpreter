@@ -3,12 +3,14 @@ using CmmInterpretor.Extensions;
 using CmmInterpretor.Tokens;
 using System.Collections.Generic;
 using CmmInterpretor.Statements;
+using System.Linq;
+using CmmInterpretor.Expressions;
 
 namespace CmmInterpretor.Scanners
 {
-    public static class StatementScanner
+    internal static class StatementScanner
     {
-        public static List<Statement> GetStatements(string text)
+        internal static List<Statement> GetStatements(string text)
         {
             var scanner = new TokenScanner(text);
 
@@ -26,7 +28,9 @@ namespace CmmInterpretor.Scanners
 
             var tokens = scanner.Peek(2);
 
-            if (tokens.Count >= 2 && tokens[0].type == TokenType.Identifier && tokens[1] is { type: TokenType.Operator, value: "::" })
+            if (tokens.Count >= 2 &&
+                tokens[0].Type == TokenType.Identifier &&
+                tokens[1] is (TokenType.Operator, "::"))
             {
                 scanner.GetNextToken();
                 scanner.GetNextToken();
@@ -36,24 +40,27 @@ namespace CmmInterpretor.Scanners
 
             var statement = scanner.Peek() switch
             {
-                { type: TokenType.Block } => GetBlockStatement(scanner),
-                { type: TokenType.Operator, value: ";" } => GetEmptyStatement(scanner),
-                { type: TokenType.Operator, value: "/" } => GetCommandStatement(scanner),
-                { type: TokenType.Keyword, value: "def" } => GetDefStatement(scanner),
-                { type: TokenType.Keyword, value: "delete" } => GetDeleteStatement(scanner),
-                { type: TokenType.Keyword, value: "if" } => GetIfStatement(scanner),
-                { type: TokenType.Keyword, value: "do" or "while" or "until" } => GetWhileStatement(scanner),
-                { type: TokenType.Keyword, value: "loop" } => GetLoopStatement(scanner),
-                { type: TokenType.Keyword, value: "repeat" } => GetRepeatStatement(scanner),
-                { type: TokenType.Keyword, value: "for" } => GetForStatement(scanner),
-                { type: TokenType.Keyword, value: "lock" } => GetLockStatement(scanner),
-                { type: TokenType.Keyword, value: "try" } => GetTryStatement(scanner),
-                { type: TokenType.Keyword, value: "throw" } => GetThrowStatement(scanner),
-                { type: TokenType.Keyword, value: "return" } => GetReturnStatement(scanner),
-                { type: TokenType.Keyword, value: "continue" } => GetContinueStatement(scanner),
-                { type: TokenType.Keyword, value: "break" } => GetBreakStatement(scanner),
-                { type: TokenType.Keyword, value: "goto" } => GetGotoStatement(scanner),
-                { type: TokenType.Keyword, value: "pass" } => GetPassStatement(scanner),
+                { Type: TokenType.Braces } => GetStatementBlock(scanner),
+                (TokenType.Operator, ";") => GetEmptyStatement(scanner),
+                (TokenType.Operator, "/") => GetCommandStatement(scanner),
+                (TokenType.Keyword, "def") => GetDefStatement(scanner),
+                (TokenType.Keyword, "delete") => GetDeleteStatement(scanner),
+                (TokenType.Keyword, "if") => GetIfStatement(scanner),
+                (TokenType.Keyword, "do") => GetDoStatement(scanner),
+                (TokenType.Keyword, "while") => GetWhileStatement(scanner),
+                (TokenType.Keyword, "until") => GetWhileStatement(scanner),
+                (TokenType.Keyword, "for") => GetForStatement(scanner),
+                (TokenType.Keyword, "repeat") => GetRepeatStatement(scanner),
+                (TokenType.Keyword, "loop") => GetLoopStatement(scanner),
+                (TokenType.Keyword, "lock") => GetLockStatement(scanner),
+                (TokenType.Keyword, "try") => GetTryStatement(scanner),
+                (TokenType.Keyword, "throw") => GetThrowStatement(scanner),
+                (TokenType.Keyword, "return") => GetReturnStatement(scanner),
+                (TokenType.Keyword, "exit") => GetExitStatement(scanner),
+                (TokenType.Keyword, "continue") => GetContinueStatement(scanner),
+                (TokenType.Keyword, "break") => GetBreakStatement(scanner),
+                (TokenType.Keyword, "goto") => GetGotoStatement(scanner),
+                (TokenType.Keyword, "pass") => GetPassStatement(scanner),
                 _ => GetExpressionStatement(scanner)
             };
 
@@ -62,23 +69,18 @@ namespace CmmInterpretor.Scanners
             return statement;
         }
 
+        private static Statement GetStatementBlock(TokenScanner scanner)
+        {
+            return new StatementBlock
+            {
+                Statements = GetStatements(scanner.GetNextToken().Text)
+            };
+        }
+
         private static Statement GetExpressionStatement(TokenScanner scanner)
         {
             return new ExpressionStatement(ExpressionParser.Parse(GetLine(scanner)));
         }
-
-#pragma warning disable IDE0017
-
-        private static Statement GetBlockStatement(TokenScanner scanner)
-        {
-            var statement = new ScopeStatement();
-
-            statement.Statements = GetStatements(scanner.GetNextToken().Text);
-
-            return statement;
-        }
-
-#pragma warning restore IDE0017
 
         private static Statement GetEmptyStatement(TokenScanner scanner)
         {
@@ -91,7 +93,7 @@ namespace CmmInterpretor.Scanners
             var line = GetLine(scanner).GetRange(1..);
 
             if (line.Count != 0)
-                throw new SyntaxError("");
+                throw new SyntaxError(line[0].Start, line[^1].End, "unexpected token");
 
             return new EmptyStatement();
         }
@@ -100,16 +102,16 @@ namespace CmmInterpretor.Scanners
         {
             var statement = new DefStatement();
 
-            scanner.GetNextToken();
+            var keyword = scanner.GetNextToken();
 
-            var definitions = GetLine(scanner).Split(Token.Comma);
+            var definitions = GetLine(scanner).Split(x => x is (TokenType.Operator, ","));
 
             foreach (var definition in definitions)
             {
                 if (definition.Count == 0)
-                    throw new SyntaxError("Missing identifier");
+                    throw new SyntaxError(keyword.Start, keyword.End, "Missing identifier");
 
-                var parts = definition.Split(new Token(TokenType.Operator, "="));
+                var parts = definition.Split(x => x is (TokenType.Operator, "="));
 
                 var identifier = ExpressionParser.Parse(parts[0]);
 
@@ -123,234 +125,122 @@ namespace CmmInterpretor.Scanners
 
         private static Statement GetDeleteStatement(TokenScanner scanner)
         {
-            var line = GetLine(scanner).GetRange(1..);
+            var keyword = scanner.GetNextToken();
+
+            var line = GetLine(scanner);
 
             if (line.Count == 0)
-                throw new SyntaxError("");
+                throw new SyntaxError(keyword.Start, keyword.End, "Missing expression");
 
             return new DeleteStatement(ExpressionParser.Parse(line));
         }
 
         private static Statement GetIfStatement(TokenScanner scanner)
         {
-            var statement = new IfStatement();
+            var @if = scanner.GetNextToken();
 
-            // if
-            scanner.GetNextToken();
-            if (!scanner.HasNextToken())
-                throw new SyntaxError("");
-            Token condition = scanner.GetNextToken();
-            if (condition.type != TokenType.Parentheses)
-                throw new SyntaxError("");
-            statement.Condition = ExpressionParser.Parse((List<Token>)condition.value);
+            var statement = new IfStatement
+            {
+                Condition = GetExpression(@if, scanner),
+                IfBody = GetBody(@if, scanner)
+            };
 
-            // body
-            if (!scanner.HasNextToken())
-                throw new SyntaxError("");
-            Token ifBody = scanner.Peek();
-            if (ifBody.type == TokenType.Block)
-                statement.IfBody = GetStatements(scanner.GetNextToken().Text);
-            else
-                statement.IfBody = new() { GetStatement(scanner) };
-
-            // else
-            if (!scanner.HasNextToken())
-                return statement;
-            Token @else = scanner.Peek();
-            if (@else is not { type: TokenType.Keyword, value: "else" })
-                return statement;
-            scanner.GetNextToken();
-
-            // body
-            if (!scanner.HasNextToken())
-                throw new SyntaxError("");
-            Token elseBody = scanner.Peek();
-            if (elseBody.type == TokenType.Block)
-                statement.ElseBody = GetStatements(scanner.GetNextToken().Text);
-            else
-                statement.ElseBody = new() { GetStatement(scanner) };
-
-            return statement;
-        }
-
-        private static Statement GetLoopStatement(TokenScanner scanner)
-        {
-            var statement = new LoopStatement();
-
-            scanner.GetNextToken();
-
-            // body
-            if (!scanner.HasNextToken())
-                throw new SyntaxError("");
-            Token body = scanner.Peek();
-            if (body.type == TokenType.Block)
-                statement.Statements = GetStatements(scanner.GetNextToken().Text);
-            else
-                statement.Statements = new() { GetStatement(scanner) };
-
-            return statement;
-        }
-
-        private static Statement GetRepeatStatement(TokenScanner scanner)
-        {
-            var statement = new RepeatStatement();
-
-            scanner.GetNextToken();
-
-            // count
-            if (!scanner.HasNextToken())
-                throw new SyntaxError("");
-            Token count = scanner.GetNextToken();
-            if (count.type != TokenType.Parentheses)
-                throw new SyntaxError("");
-            statement.Count = ExpressionParser.Parse((List<Token>)count.value);
-
-            // body
-            if (!scanner.HasNextToken())
-                throw new SyntaxError("");
-            Token body = scanner.Peek();
-            if (body.type == TokenType.Block)
-                statement.Statements = GetStatements(scanner.GetNextToken().Text);
-            else
-                statement.Statements = new() { GetStatement(scanner) };
+            if (scanner.HasNextToken() && scanner.Peek() is (TokenType.Keyword, "else"))
+            {
+                var @else = scanner.GetNextToken();
+                statement.ElseBody = GetBody(@else, scanner);
+            }
 
             return statement;
         }
 
         private static Statement GetWhileStatement(TokenScanner scanner)
         {
-            var statement = new WhileStatement();
+            var keyword = scanner.GetNextToken();
 
-            Token token = scanner.GetNextToken();
-
-            if (token.Text == "do")
+            return new WhileStatement
             {
-                // do
-                statement.Do = true;
+                Until = keyword.Text == "until",
+                Condition = GetExpression(keyword, scanner),
+                Statements = GetBody(keyword, scanner)
+            };
+        }
 
-                // body
-                if (!scanner.HasNextToken())
-                    throw new SyntaxError("");
-                Token body = scanner.Peek();
-                if (body.type == TokenType.Block)
-                    statement.Statements = GetStatements(scanner.GetNextToken().Text);
-                else
-                    statement.Statements = new() { GetStatement(scanner) };
+        private static Statement GetDoStatement(TokenScanner scanner)
+        {
+            var @do = scanner.GetNextToken();
 
-                // keyword
-                if (!scanner.HasNextToken())
-                    throw new SyntaxError("");
-                Token keyword = scanner.GetNextToken();
-                if (keyword is not { type: TokenType.Keyword, value: "while" or "until" })
-                    throw new SyntaxError("");
-                statement.Until = keyword.Text == "until";
-
-                // condition
-                if (!scanner.HasNextToken())
-                    throw new SyntaxError("");
-                Token condition = scanner.GetNextToken();
-                if (condition.type != TokenType.Parentheses)
-                    throw new SyntaxError("");
-                statement.Condition = ExpressionParser.Parse((List<Token>)condition.value);
-
-                if (!scanner.HasNextToken())
-                    throw new SyntaxError("");
-                Token semicolon = scanner.GetNextToken();
-                if (semicolon is not { type: TokenType.Operator, value: ";" })
-                    throw new MissingSemicolonError();
-            }
-            else
+            var statement = new WhileStatement
             {
-                // keyword
-                statement.Until = token.Text == "until";
+                Do = true,
+                Statements = GetBody(@do, scanner)
+            };
 
-                // condition
-                if (!scanner.HasNextToken())
-                    throw new SyntaxError("");
-                Token condition = scanner.GetNextToken();
-                if (condition.type != TokenType.Parentheses)
-                    throw new SyntaxError("");
-                statement.Condition = ExpressionParser.Parse((List<Token>)condition.value);
+            // keyword
+            if (!scanner.HasNextToken() || scanner.GetNextToken() is not (TokenType.Keyword, "while" or "until") keyword)
+                throw new SyntaxError(@do.Start, @do.End, "Missing 'while' or 'until'");
 
-                // body
-                if (!scanner.HasNextToken())
-                    throw new SyntaxError("");
-                Token body = scanner.Peek();
-                if (body.type == TokenType.Block)
-                    statement.Statements = GetStatements(scanner.GetNextToken().Text);
-                else
-                    statement.Statements = new() { GetStatement(scanner) };
-            }
+            statement.Until = keyword.Text == "until";
+            statement.Condition = GetExpression(keyword, scanner);
+
+            // semicolon
+            if (!scanner.HasNextToken() || scanner.GetNextToken() is not (TokenType.Operator, ";"))
+                throw new MissingSemicolonError(keyword.Start, keyword.End);
 
             return statement;
         }
 
         private static Statement GetForStatement(TokenScanner scanner)
         {
-            //dynamic statement;
+            var keyword = scanner.GetNextToken();
 
-            scanner.GetNextToken();
+            if (!scanner.HasNextToken() || scanner.GetNextToken() is not { Type: TokenType.Parentheses } expression)
+                throw new SyntaxError(keyword.Start, keyword.End, "Missing '('");
 
-            if (!scanner.HasNextToken())
-                throw new SyntaxError("");
-            Token token = scanner.GetNextToken();
-            if (token.type != TokenType.Parentheses)
-                throw new SyntaxError("");
+            var tokens = TokenScanner.Scan(expression).ToList();
+            var parts = tokens.Split(x => x is (TokenType.Operator, ";"));
 
-            var tokens = (List<Token>)token.value;
-
-            if (tokens.Contains(new(TokenType.Operator, ";")))
+            if (parts.Count > 1)
             {
-                var parts = tokens.Split(new Token(TokenType.Operator, ";"));
+                if (parts.Count != 3)
+                    throw new SyntaxError(expression.Start, expression.End, "Missing ')'");
 
-                var statement = new ForStatement
+                return new ForStatement
                 {
                     Initialisation = parts[0].Count > 0 ? GetInitialisation(parts[0]) : null,
                     Condition = parts[1].Count > 0 ? ExpressionParser.Parse(parts[1]) : null,
-                    Increment = parts[2].Count > 0 ? ExpressionParser.Parse(parts[2]) : null
+                    Increment = parts[2].Count > 0 ? ExpressionParser.Parse(parts[2]) : null,
+                    Statements = GetBody(keyword, scanner)
                 };
-
-                if (!scanner.HasNextToken())
-                    throw new SyntaxError("");
-                Token body = scanner.Peek();
-                if (body.type == TokenType.Block)
-                    statement.Statements = GetStatements(scanner.GetNextToken().Text);
-                else
-                    statement.Statements = new() { GetStatement(scanner) };
-
-                return statement;
             }
             else
             {
-                var statement = new ForInStatement
+                if (tokens.Count < 1 || tokens[0].Type != TokenType.Identifier)
+                    throw new SyntaxError(tokens[0].Start, tokens[0].End, "Missing identifier");
+
+                if (tokens.Count < 2 || tokens[1] is not (TokenType.Keyword, "in"))
+                    throw new SyntaxError(tokens[0].Start, tokens[0].End, "Missing 'in'");
+
+                return new ForInStatement
                 {
                     VariableName = tokens[0].Text,
-                    Iterable = ExpressionParser.Parse(tokens.GetRange(2..))
+                    Iterable = ExpressionParser.Parse(tokens.GetRange(2..)),
+                    Statements = GetBody(keyword, scanner)
                 };
-
-                if (!scanner.HasNextToken())
-                    throw new SyntaxError("");
-                Token body = scanner.Peek();
-                if (body.type == TokenType.Block)
-                    statement.Statements = GetStatements(scanner.GetNextToken().Text);
-                else
-                    statement.Statements = new() { GetStatement(scanner) };
-
-                return statement;
             }
 
-            static DefStatement GetInitialisation(List<Token> tokens)
+            DefStatement GetInitialisation(List<Token> tokens)
             {
                 var statement = new DefStatement();
 
-                var definitions = tokens.Split(Token.Comma);
+                var definitions = tokens.Split(x => x is (TokenType.Operator, ","));
 
                 foreach (var definition in definitions)
                 {
                     if (definition.Count == 0)
-                        throw new SyntaxError("Missing identifier");
+                        throw new SyntaxError(keyword.Start, keyword.End, "Missing identifier");
 
-                    var parts = definition.Split(new Token(TokenType.Operator, "="));
+                    var parts = definition.Split(x => x is (TokenType.Operator, "="));
 
                     var identifier = ExpressionParser.Parse(parts[0]);
 
@@ -363,79 +253,58 @@ namespace CmmInterpretor.Scanners
             }
         }
 
+        private static Statement GetRepeatStatement(TokenScanner scanner)
+        {
+            var keyword = scanner.GetNextToken();
+
+            return new RepeatStatement
+            {
+                Count = GetExpression(keyword, scanner),
+                Statements = GetBody(keyword, scanner)
+            };
+        }
+
+        private static Statement GetLoopStatement(TokenScanner scanner)
+        {
+            var keyword = scanner.GetNextToken();
+
+            return new LoopStatement
+            {
+                Statements = GetBody(keyword, scanner)
+            };
+        }
+
         private static Statement GetLockStatement(TokenScanner scanner)
         {
-            var statement = new LockStatement();
+            var keyword = scanner.GetNextToken();
 
-            // if
-            scanner.GetNextToken();
-            if (!scanner.HasNextToken())
-                throw new SyntaxError("");
-            Token expression = scanner.GetNextToken();
-            if (expression.type != TokenType.Parentheses)
-                throw new SyntaxError("");
-            statement.Expression = ExpressionParser.Parse((List<Token>)expression.value);
-
-            // body
-            if (!scanner.HasNextToken())
-                throw new SyntaxError("");
-            Token body = scanner.Peek();
-            if (body.type == TokenType.Block)
-                statement.Statements = GetStatements(scanner.GetNextToken().Text);
-            else
-                statement.Statements = new() { GetStatement(scanner) };
-
-            return statement;
+            return new LockStatement
+            {
+                Expression = GetExpression(keyword, scanner),
+                Statements = GetBody(keyword, scanner)
+            };
         }
 
         private static Statement GetTryStatement(TokenScanner scanner)
         {
-            var statement = new TryStatement();
-
-            // try
-            scanner.GetNextToken();
-
-            if (!scanner.HasNextToken())
-                throw new SyntaxError("");
-            Token mainBody = scanner.Peek();
-            if (mainBody.type == TokenType.Block)
-                statement.Try = GetStatements(scanner.GetNextToken().Text);
-            else
-                statement.Try = new() { GetStatement(scanner) };
+            var statement = new TryStatement()
+            {
+                Try = GetBody(scanner.GetNextToken(), scanner)
+            };
 
             // catch
             if (!scanner.HasNextToken())
                 return statement;
-            Token @catch = scanner.Peek();
-            if (@catch is { type: TokenType.Keyword, value: "catch" })
-            {
-                scanner.GetNextToken();
 
-                if (!scanner.HasNextToken())
-                    throw new SyntaxError("");
-                Token body = scanner.Peek();
-                if (body.type == TokenType.Block)
-                    statement.Catch = GetStatements(scanner.GetNextToken().Text);
-                else
-                    statement.Catch = new() { GetStatement(scanner) };
-            }
+            if (scanner.Peek() is (TokenType.Keyword, "catch"))
+                statement.Catch = GetBody(scanner.GetNextToken(), scanner);
 
             // finally
             if (!scanner.HasNextToken())
                 return statement;
-            Token @finally = scanner.Peek();
-            if (@finally is { type: TokenType.Keyword, value: "finally" })
-            {
-                scanner.GetNextToken();
 
-                if (!scanner.HasNextToken())
-                    throw new SyntaxError("");
-                Token body = scanner.Peek();
-                if (body.type == TokenType.Block)
-                    statement.Finally = GetStatements(scanner.GetNextToken().Text);
-                else
-                    statement.Finally = new() { GetStatement(scanner) };
-            }
+            if (scanner.Peek() is (TokenType.Keyword, "finally"))
+                statement.Finally = GetBody(scanner.GetNextToken(), scanner);
 
             return statement;
         }
@@ -448,6 +317,16 @@ namespace CmmInterpretor.Scanners
                 return new ReturnStatement();
             else
                 return new ReturnStatement(ExpressionParser.Parse(line));
+        }
+
+        private static Statement GetExitStatement(TokenScanner scanner)
+        {
+            var line = GetLine(scanner).GetRange(1..);
+
+            if (line.Count == 0)
+                return new ExitStatement();
+            else
+                return new ExitStatement(ExpressionParser.Parse(line));
         }
 
         private static Statement GetThrowStatement(TokenScanner scanner)
@@ -465,7 +344,7 @@ namespace CmmInterpretor.Scanners
             var line = GetLine(scanner).GetRange(1..);
 
             if (line.Count != 0)
-                throw new SyntaxError("");
+                throw new SyntaxError(line[0].Start, line[^1].End, "Unexpected expression");
 
             return new ContinueStatement();
         }
@@ -475,30 +354,31 @@ namespace CmmInterpretor.Scanners
             var line = GetLine(scanner).GetRange(1..);
 
             if (line.Count != 0)
-                throw new SyntaxError("");
+                throw new SyntaxError(line[0].Start, line[^1].End, "Unexpected expression");
 
             return new ContinueStatement();
         }
 
         private static Statement GetGotoStatement(TokenScanner scanner)
         {
-            var line = GetLine(scanner).GetRange(1..);
+            var keyword = scanner.GetNextToken();
+            var line = GetLine(scanner);
 
             if (line.Count == 0)
-                throw new SyntaxError("Missing label.");
+                throw new SyntaxError(keyword.Start, keyword.End, "Missing label.");
 
             if (line.Count > 1)
-                throw new SyntaxError("Unexpected symbol.");
+                throw new SyntaxError(line[1].Start, line[^1].End, "Unexpected symbol.");
 
-            if (line[0].type != TokenType.Identifier)
-                throw new SyntaxError("Unexpected symbol.");
+            if (line[0].Type != TokenType.Identifier)
+                throw new SyntaxError(line[0].Start, line[0].End, "Unexpected symbol.");
 
             return new GotoStatement(line[0].Text);
         }
 
-        private static Statement GetCommandStatement(TokenScanner scanner) // TODO
+        private static Statement GetCommandStatement(TokenScanner scanner)
         {
-            scanner.GetNextToken();
+            var slash = scanner.GetNextToken();
 
             var statement = new CommandStatement();
             statement.Commands.Add(new());
@@ -507,27 +387,24 @@ namespace CmmInterpretor.Scanners
             {
                 Token token = scanner.GetNextCommandToken();
 
-                if (token is { type: TokenType.Operator, value: ";" })
+                if (token is (TokenType.Operator, ";"))
                 {
                     if (statement.Commands[^1].Count == 0)
-                        throw new SyntaxError("Missing command");
+                        throw new SyntaxError(token.Start, token.End, "Missing command");
 
                     return statement;
                 }
-                else if (token is { type: TokenType.Operator, value: "|>" })
-                {
+                
+                if (token is (TokenType.Operator, "|>"))
                     statement.Commands.Add(new());
-                }
                 else
-                {
                     statement.Commands[^1].Add(token);
-                }
             }
 
             if (statement.Commands[^1].Count == 0)
-                throw new SyntaxError("Missing command");
+                throw new SyntaxError(slash.Start, slash.End, "Missing command");
 
-            throw new MissingSemicolonError();
+            throw new MissingSemicolonError(slash.Start, slash.End);
         }
 
         private static List<Token> GetLine(TokenScanner scanner)
@@ -538,13 +415,32 @@ namespace CmmInterpretor.Scanners
             {
                 Token token = scanner.GetNextToken();
 
-                if (token is { type: TokenType.Operator, value: ";" })
+                if (token is (TokenType.Operator, ";"))
                     return line;
 
                 line.Add(token);
             }
 
-            throw new MissingSemicolonError();
+            throw new MissingSemicolonError(0, 0);
+        }
+
+        private static IExpression GetExpression(Token keyword, TokenScanner scanner)
+        {
+            if (!scanner.HasNextToken() || scanner.GetNextToken() is not { Type: TokenType.Parentheses } expression)
+                throw new SyntaxError(keyword.Start, keyword.End, "Missing '('");
+
+            return ExpressionParser.Parse(TokenScanner.Scan(expression).ToList());
+        }
+
+        private static List<Statement> GetBody(Token keyword, TokenScanner scanner)
+        {
+            if (!scanner.HasNextToken())
+                throw new MissingSemicolonError(keyword.Start, keyword.End);
+
+            if (scanner.Peek().Type == TokenType.Braces)
+                return GetStatements(scanner.GetNextToken().Text);
+            else
+                return new() { GetStatement(scanner) };
         }
     }
 }

@@ -4,13 +4,13 @@ using CmmInterpretor.Values;
 
 namespace CmmInterpretor.Operators.Boolean
 {
-    public class Conditional : IExpression
+    internal class Conditional : IExpression
     {
         private readonly IExpression _condition;
         private readonly IExpression _consequent;
         private readonly IExpression _alternative;
 
-        public Conditional(IExpression condition, IExpression consequent, IExpression alternative)
+        internal Conditional(IExpression condition, IExpression consequent, IExpression alternative)
         {
             _condition = condition;
             _consequent = consequent;

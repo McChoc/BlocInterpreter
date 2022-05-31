@@ -7,11 +7,11 @@ using CmmInterpretor.Utils;
 
 namespace CmmInterpretor.Operators.Arithmetic
 {
-    public class PreDecrement : IExpression
+    internal class PreDecrement : IExpression
     {
         private readonly IExpression _operand;
 
-        public PreDecrement(IExpression operand) => _operand = operand;
+        internal PreDecrement(IExpression operand) => _operand = operand;
 
         public IValue Evaluate(Call call)
         {

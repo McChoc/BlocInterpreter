@@ -7,12 +7,12 @@ using System.Collections.Generic;
 
 namespace CmmInterpretor.Operators.Bitwise
 {
-    public class BitwiseOr : IExpression
+    internal class BitwiseOr : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
 
-        public BitwiseOr(IExpression left, IExpression right)
+        internal BitwiseOr(IExpression left, IExpression right)
         {
             _left = left;
             _right = right;

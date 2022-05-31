@@ -3,14 +3,14 @@ using CmmInterpretor.Values;
 
 namespace CmmInterpretor.Variables
 {
-    public class StackVariable : Variable
+    internal class StackVariable : Variable
     {
         private readonly Scope _scope;
 
         public override Value Value { get; set; }
-        public string Name { get; }
+        internal string Name { get; }
 
-        public StackVariable(Value value, string name, Scope scope)
+        internal StackVariable(Value value, string name, Scope scope)
         {
             Value = value;
             Name = name;

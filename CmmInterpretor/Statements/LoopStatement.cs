@@ -4,11 +4,11 @@ using System.Collections.Generic;
 
 namespace CmmInterpretor.Statements
 {
-    public class LoopStatement : Statement
+    internal class LoopStatement : Statement
     {
-        public List<Statement> Statements { get; set; } = default!;
+        internal List<Statement> Statements { get; set; } = default!;
 
-        public override Result? Execute(Call call)
+        internal override Result? Execute(Call call)
         {
             int loopCount = 0;
             var labels = GetLabels(Statements);

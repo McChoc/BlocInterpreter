@@ -4,11 +4,11 @@ using System.Collections.Generic;
 
 namespace CmmInterpretor.Expressions
 {
-    public class StrucLiteral : IExpression
+    internal class StrucLiteral : IExpression
     {
         private readonly Dictionary<string, IExpression> _lines;
 
-        public StrucLiteral(Dictionary<string, IExpression> lines)
+        internal StrucLiteral(Dictionary<string, IExpression> lines)
         {
             _lines = lines;
         }
@@ -17,8 +17,8 @@ namespace CmmInterpretor.Expressions
         {
             var values = new Dictionary<string, IValue>();
 
-            foreach (var pair in _lines)
-                values.Add(pair.Key, pair.Value.Evaluate(call).Value);
+            foreach (var (key, value) in _lines)
+                values.Add(key, value.Evaluate(call).Value);
 
             return new Struct(values);
         }

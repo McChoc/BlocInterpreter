@@ -1,16 +1,13 @@
 ﻿namespace CmmInterpretor.Tokens
 {
-    public enum TokenType
+    internal enum TokenType
     {
+        Literal,
+        Identifier,
         Operator,
         Keyword,
-        Identifier,
-        Literal,
-        Interpolated,
         Parentheses,
         Brackets,
-        Block,
-        CodeBlock,
-        Command
+        Braces
     }
 }

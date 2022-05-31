@@ -6,12 +6,12 @@ using CmmInterpretor.Values;
 
 namespace CmmInterpretor.Operators.Primary
 {
-    public class Indexer : IExpression
+    internal class Indexer : IExpression
     {
         private readonly IExpression _expression;
         private readonly IExpression _index;
 
-        public Indexer(IExpression expression, IExpression index)
+        internal Indexer(IExpression expression, IExpression index)
         {
             _expression = expression;
             _index = index;

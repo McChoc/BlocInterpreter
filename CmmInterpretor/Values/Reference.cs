@@ -5,11 +5,11 @@ namespace CmmInterpretor.Values
 {
     public class Reference : Value
     {
-        public Variable? Variable { get; private set; }
+        internal Variable? Variable { get; private set; }
 
         public override ValueType Type => ValueType.Reference;
 
-        public Reference(Variable? variable) => Variable = variable;
+        internal Reference(Variable? variable) => Variable = variable;
 
         public override Value Copy()
         {

@@ -5,9 +5,6 @@ namespace CmmInterpretor.Values
 {
     public class Number : Value
     {
-        public static Number NaN { get; } = new(double.NaN);
-        public static Number Infinity { get; } = new(double.PositiveInfinity);
-
         public double Value { get; }
 
         public override ValueType Type => ValueType.Number;

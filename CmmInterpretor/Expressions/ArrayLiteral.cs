@@ -4,11 +4,11 @@ using System.Collections.Generic;
 
 namespace CmmInterpretor.Expressions
 {
-    public class ArrayLiteral : IExpression
+    internal class ArrayLiteral : IExpression
     {
         private readonly List<IExpression> _expressions;
 
-        public ArrayLiteral(List<IExpression> expressions)
+        internal ArrayLiteral(List<IExpression> expressions)
         {
             _expressions = expressions;
         }

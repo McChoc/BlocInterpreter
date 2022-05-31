@@ -4,14 +4,14 @@ using CmmInterpretor.Results;
 
 namespace CmmInterpretor.Statements
 {
-    public class ThrowStatement : Statement
+    internal class ThrowStatement : Statement
     {
         private readonly IExpression? _expression;
 
-        public ThrowStatement() { }
-        public ThrowStatement(IExpression expression) => _expression = expression;
+        internal ThrowStatement() { }
+        internal ThrowStatement(IExpression expression) => _expression = expression;
 
-        public override Result Execute(Call call)
+        internal override Result Execute(Call call)
         {
             try
             {

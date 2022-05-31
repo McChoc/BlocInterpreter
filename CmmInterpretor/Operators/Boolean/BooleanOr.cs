@@ -5,12 +5,12 @@ using CmmInterpretor.Values;
 
 namespace CmmInterpretor.Operators.Boolean
 {
-    public class BooleanOr : IExpression
+    internal class BooleanOr : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
 
-        public BooleanOr(IExpression left, IExpression right)
+        internal BooleanOr(IExpression left, IExpression right)
         {
             _left = left;
             _right = right;

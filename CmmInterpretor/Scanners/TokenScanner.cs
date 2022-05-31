@@ -1,13 +1,14 @@
-﻿using CmmInterpretor.Values;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 using System.Globalization;
 using CmmInterpretor.Utils.Exceptions;
 using CmmInterpretor.Tokens;
+using CmmInterpretor.Expressions;
+using System.Linq;
 
 namespace CmmInterpretor.Scanners
 {
-    public class TokenScanner
+    internal class TokenScanner
     {
         private static readonly HashSet<char> symbols = new()
         {
@@ -31,7 +32,6 @@ namespace CmmInterpretor.Scanners
 
         private static readonly HashSet<string> keyWords = new()
         {
-            "recall", "params",
             "chr", "ord", "len",
             "not", "in", "is", "as",
             "val", "ref", "new",
@@ -43,22 +43,45 @@ namespace CmmInterpretor.Scanners
             "loop", "repeat", "for",
             "try", "catch", "finally",
             "throw", "return", "exit",
-            "continue", "break", "goto"
+            "continue", "break", "goto",
+            "recall", "params",
+            "void", "null",
+            "false", "true",
+            "infinity", "nan",
+            "bool", "number", "range",
+            "string", "array", "struct",
+            "tuple", "function", "task",
+            "reference", "complex", "type"
         };
 
-        private int _index;
+        private int _index = 0;
+        private readonly int _offset;
         private readonly string _code;
 
-        public TokenScanner(string code) => _code = code;
+        internal TokenScanner(string code, int offset = 0)
+        {
+            _offset = offset;
+            _code = code;
+        }
 
-        public bool HasNextToken()
+        internal static IEnumerable<Token> Scan(Token token) => Scan(token.Text, token.Start);
+
+        private static IEnumerable<Token> Scan(string code, int offset)
+        {
+            var scanner = new TokenScanner(code, offset);
+
+            while (scanner.HasNextToken())
+                yield return scanner.GetNextToken();
+        }
+
+        internal bool HasNextToken()
         {
             SkipWhiteSpace();
 
             return _index < _code.Length;
         }
 
-        public Token Peek()
+        internal Token Peek()
         {
             int previousIndex = _index;
 
@@ -69,7 +92,7 @@ namespace CmmInterpretor.Scanners
             return token;
         }
 
-        public List<Token> Peek(int count)
+        internal List<Token> Peek(int count)
         {
             int previousIndex = _index;
 
@@ -83,7 +106,7 @@ namespace CmmInterpretor.Scanners
             return tokens;
         }
 
-        public Token GetNextToken()
+        internal Token GetNextToken()
         {
             if (_index >= _code.Length)
                 throw new System.Exception();
@@ -104,22 +127,16 @@ namespace CmmInterpretor.Scanners
 
             var word = GetWord();
 
-            if (word is { type: TokenType.Keyword, value: "not" } && HasNextToken() && Peek() is { type: TokenType.Keyword, value: "in" })
-            {
-                GetNextToken();
-                return new Token(TokenType.Keyword, "not in");
-            }
+            if (word is (TokenType.Keyword, "not") && HasNextToken() && Peek() is (TokenType.Keyword, "in"))
+                return new(word.Start, GetNextToken().End, TokenType.Keyword, "not in");
 
-            if (word is { type: TokenType.Keyword, value: "is" } && HasNextToken() && Peek() is { type: TokenType.Keyword, value: "not" })
-            {
-                GetNextToken();
-                return new Token(TokenType.Keyword, "is not");
-            }
+            if (word is (TokenType.Keyword, "is") && HasNextToken() && Peek() is (TokenType.Keyword, "not"))
+                return new(word.Start, GetNextToken().End, TokenType.Keyword, "is not");
 
             return word;
         }
 
-        public Token GetNextCommandToken()
+        internal Token GetNextCommandToken()
         {
             if (_index >= _code.Length)
                 throw new System.Exception();
@@ -127,31 +144,23 @@ namespace CmmInterpretor.Scanners
             SkipWhiteSpace();
 
             if (_index < _code.Length - 1 && _code.Substring(_index, 2) == "|>")
-            {
-                _index += 2;
-                return new Token(TokenType.Operator, "|>");
-            }
-            else if (_code[_index] == ';')
-            {
-                _index++;
-                return new Token(TokenType.Operator, ";");
-            }
-            else if (_code[_index] == '$')
-            {
+                return new(_index + _offset, (_index += 2) + _offset, TokenType.Operator, "|>");
+
+            if (_code[_index] == ';')
+                return new(_index + _offset, ++_index + _offset, TokenType.Operator, ";");
+
+            if (_code[_index] == '$')
                 return GetWord();
-            }
-            else if (_code[_index] is '\'' or '"' or '`')
-            {
+
+            if (_code[_index] is '\'' or '"' or '`')
                 return GetString();
-            }
-            else
-            {
-                return GetCommand();
-            }
+
+            return GetCommand();
         }
 
         private void SkipWhiteSpace()
         {
+            int start = _index;
             bool skip;
 
             do
@@ -167,7 +176,7 @@ namespace CmmInterpretor.Scanners
                     while (true)
                     {
                         if (_index >= _code.Length - 1)
-                            throw new SyntaxError("missing '*#'");
+                            throw new SyntaxError(start, start + 2, "missing '*#'");
 
                         if (_code.Substring(_index, 2) == "*#")
                         {
@@ -227,36 +236,12 @@ namespace CmmInterpretor.Scanners
             string word = _code[start.._index];
 
             if (word == "$")
-                throw new SyntaxError("Missing variable name.");
+                throw new SyntaxError(start + _offset, _index + _offset, "Missing variable name.");
 
             if (keyWords.Contains(word))
-                return new Token(TokenType.Keyword, word);
+                return new(start + _offset, _index + _offset, TokenType.Keyword, word);
 
-            return word switch
-            {
-                "void" => new Token(TokenType.Literal, Void.Value),
-                "null" => new Token(TokenType.Literal, Null.Value),
-                "false" => new Token(TokenType.Literal, Bool.False),
-                "true" => new Token(TokenType.Literal, Bool.True),
-                "nan" => new Token(TokenType.Literal, Number.NaN),
-                "infinity" => new Token(TokenType.Literal, Number.Infinity),
-
-                "bool" => new Token(TokenType.Literal, new TypeCollection(ValueType.Bool)),
-                "number" => new Token(TokenType.Literal, new TypeCollection(ValueType.Number)),
-                "range" => new Token(TokenType.Literal, new TypeCollection(ValueType.Range)),
-                "string" => new Token(TokenType.Literal, new TypeCollection(ValueType.String)),
-                "tuple" => new Token(TokenType.Literal, new TypeCollection(ValueType.Tuple)),
-                "array" => new Token(TokenType.Literal, new TypeCollection(ValueType.Array)),
-                "struct" => new Token(TokenType.Literal, new TypeCollection(ValueType.Struct)),
-                "function" => new Token(TokenType.Literal, new TypeCollection(ValueType.Function)),
-                "task" => new Token(TokenType.Literal, new TypeCollection(ValueType.Task)),
-                "reference" => new Token(TokenType.Literal, new TypeCollection(ValueType.Reference)),
-                "complex" => new Token(TokenType.Literal, new TypeCollection(ValueType.Complex)),
-                "type" => new Token(TokenType.Literal, new TypeCollection(ValueType.Type)),
-                "any" => new Token(TokenType.Literal, TypeCollection.Any),
-
-                _ => new Token(TokenType.Identifier, word.TrimStart('$')),
-            };
+            return new Token(start + _offset, _index + _offset, TokenType.Identifier, word.TrimStart('$'));
         }
 
         private Token GetNumber()
@@ -318,29 +303,29 @@ namespace CmmInterpretor.Scanners
             }
 
             if (num[^1] == '_')
-                throw new SyntaxError("Invalid number");
+                throw new SyntaxError(start + _offset, _index + _offset, "Invalid number");
 
             num = num.Replace("_", "");
 
             try
             {
-                if (@base == 10)
-                    return new Token(TokenType.Literal, new Number(double.Parse(num, CultureInfo.InvariantCulture)));
-                else
-                    return new Token(TokenType.Literal, new Number(System.Convert.ToInt32(num, @base)));
+                double number = @base == 10 ? double.Parse(num, CultureInfo.InvariantCulture) : System.Convert.ToInt32(num, @base);
+                return new Literal(start + _offset, _index + _offset, new NumberLiteral(number));
             }
             catch
             {
-                throw new SyntaxError("Invalid number");
+                throw new SyntaxError(start + _offset, _index + _offset, "Invalid number");
             }
         }
 
         private Token GetString()
         {
+            int start = _index;
+
             char symbol = _code[_index];
             bool IsRaw = _index <= _code.Length - 3 && _code[_index + 1] == symbol && _code[_index + 2] == symbol;
 
-            var expressions = new List<(int, List<Token>)>();
+            var expressions = new List<(int, IExpression)>();
 
             _index += IsRaw ? 3 : 1;
 
@@ -349,10 +334,10 @@ namespace CmmInterpretor.Scanners
             while (true)
             {
                 if (_index == _code.Length)
-                    throw new SyntaxError("Missing closing quote");
+                    throw new SyntaxError(start + _offset, _index + _offset, "Missing closing quote");
 
                 if (!IsRaw && _code[_index] == '\n')
-                    throw new SyntaxError("Missing closing quote");
+                    throw new SyntaxError(start + _offset, _index + _offset, "Missing closing quote");
 
                 if (_code[_index] == symbol)
                 {
@@ -372,7 +357,7 @@ namespace CmmInterpretor.Scanners
                         }
 
                         if (count == 1)
-                            throw new SyntaxError("");
+                            throw new SyntaxError(_index + _offset, _index + _offset + 1, "unexpected quote");
 
                         if (count % 2 == 0)
                         {
@@ -387,7 +372,7 @@ namespace CmmInterpretor.Scanners
                 }
                 else if (!IsRaw && _code[_index] == '\\')
                 {
-                    var c = _code[_index + 1] switch
+                    var character = _code[_index + 1] switch
                     {
                         '\"' => '\"',
                         '\'' => '\'',
@@ -401,37 +386,32 @@ namespace CmmInterpretor.Scanners
                         'r' => '\r',
                         't' => '\t',
                         'v' => '\v',
-                        _ => throw new SyntaxError(""),
+                        _ => throw new SyntaxError(_index + _offset, _index + _offset + 2, "unknown escape sequence"),
                     };
 
-                    str.Append(c);
-
+                    str.Append(character);
                     _index += 2;
                 }
                 else if (symbol == '`' && _code[_index] == '{')
                 {
-                    if (_code[_index + 1] == '{')
+                    if (_code[_index + 1] != '{')
+                    {
+                        var tokens = GetExpression();
+                        expressions.Add((str.Length, ExpressionParser.Parse(tokens)));
+                    }
+                    else
                     {
                         str.Append("{");
                         _index += 2;
                     }
-                    else
-                    {
-                        var tokens = (List<Token>)GetBlock(true).value;
-                        expressions.Add((str.Length, tokens));
-                    }
                 }
                 else if (symbol == '`' && _code[_index] == '}')
                 {
-                    if (_code[_index + 1] == '}')
-                    {
-                        str.Append("}}");
-                        _index += 2;
-                    }
-                    else
-                    {
-                        throw new SyntaxError("");
-                    }
+                    if (_code[_index + 1] != '}')
+                        throw new SyntaxError(start + _offset, _index + _offset, "unexpected brace");
+
+                    str.Append("}");
+                    _index += 2;
                 }
                 else
                 {
@@ -440,13 +420,36 @@ namespace CmmInterpretor.Scanners
                 }
             }
 
-            if (symbol == '`')
-                return new Token(TokenType.Interpolated, (str.ToString(), expressions));
+            return new Literal(start + _offset, _index + _offset, new StringLiteral(str.ToString(), expressions));
 
-            return new Token(TokenType.Literal, new String(str.ToString()));
+            List<Token> GetExpression()
+            {
+                int depth = 0;
+                int start = _index;
+
+                while (true)
+                {
+                    if (_index == _code.Length)
+                        throw new SyntaxError(start + _offset, _index + _offset, "Missing '}'");
+
+                    if (_code[_index] == '{')
+                        depth++;
+                    else if (_code[_index] == '}')
+                        depth--;
+
+                    _index++;
+
+                    if (depth == 0)
+                        break;
+                }
+
+                var text = _code[(start + 1)..(_index - 1)];
+
+                return Scan(text, _offset).ToList();
+            }
         }
 
-        private Token GetBlock(bool expression = false)
+        private Token GetBlock()
         {
             char[] symbols = _code[_index] switch
             {
@@ -462,7 +465,7 @@ namespace CmmInterpretor.Scanners
             while (true)
             {
                 if (_index == _code.Length)
-                    throw new SyntaxError("");
+                    throw new SyntaxError(_index + _offset - 1, _index + _offset, "Missing closing " + symbols[1]);
 
                 if (_code[_index] == symbols[0])
                     depth++;
@@ -477,19 +480,13 @@ namespace CmmInterpretor.Scanners
 
             string text = _code.Substring(start + 1, _index - start - 2);
 
-            var scanner = new TokenScanner(text);
-            var tokens = new List<Token>();
-
-            while (scanner.HasNextToken())
-                tokens.Add(scanner.GetNextToken());
-
-            return symbols[0] switch
+            return new(start + _offset, _index + _offset, symbols[0] switch
             {
-                '(' => new Token(TokenType.Parentheses, tokens),
-                '[' => new Token(TokenType.Brackets, tokens),
-                '{' => new Token(TokenType.Block, expression ? tokens : text),
+                '(' => TokenType.Parentheses,
+                '[' => TokenType.Brackets,
+                '{' => TokenType.Braces,
                 _ => throw new System.Exception()
-            };
+            }, text);
         }
 
         private Token GetOperator()
@@ -508,9 +505,9 @@ namespace CmmInterpretor.Scanners
             }
 
             if (start == _index)
-                throw new SyntaxError("unknown symbol");
+                throw new SyntaxError(start + _offset, start + _offset + 1, "unknown operator");
 
-            return new Token(TokenType.Operator, _code[start.._index]);
+            return new(start + _offset, _index + _offset, TokenType.Operator, _code[start.._index]);
         }
 
         private Token GetCommand()
@@ -536,7 +533,7 @@ namespace CmmInterpretor.Scanners
 
             string word = _code[start.._index];
 
-            return new Token(TokenType.Command, word);
+            return new(start + _offset, _index + _offset, TokenType.Keyword, word);
         }
     }
 }

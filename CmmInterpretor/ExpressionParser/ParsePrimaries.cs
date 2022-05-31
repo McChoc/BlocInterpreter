@@ -4,62 +4,85 @@ using CmmInterpretor.Extensions;
 using CmmInterpretor.Operators.Primary;
 using CmmInterpretor.Tokens;
 using System.Collections.Generic;
+using CmmInterpretor.Scanners;
+using System.Linq;
+using CmmInterpretor.Values;
 
 namespace CmmInterpretor
 {
-    public static partial class ExpressionParser
+    internal static partial class ExpressionParser
     {
         private static IExpression ParsePrimaries(List<Token> tokens, int precedence)
         {
             IExpression expression = tokens[0] switch
             {
-                { type: TokenType.Keyword, value: "recall" } => new Recall(),
-                { type: TokenType.Keyword, value: "params" } => new Params(),
-                { type: TokenType.Literal } => (IExpression)tokens[0].value,
-                { type: TokenType.Interpolated } => ParseInterpolatedString(tokens[0]),
-                { type: TokenType.Block } => ParseBlock(tokens[0]),
-                { type: TokenType.Parentheses } => Parse((List<Token>)tokens[0].value),
-                { type: TokenType.Identifier, value: string identifier } => new Identifier(identifier),
-                _ => throw new SyntaxError("Unexpected symbol"),
+                Literal literal => literal.Expression,
+
+                (TokenType.Keyword, "void") => new VoidLiteral(),
+                (TokenType.Keyword, "null") => new NullLiteral(),
+                (TokenType.Keyword, "false") => new BoolLiteral(false),
+                (TokenType.Keyword, "true") => new BoolLiteral(true),
+                (TokenType.Keyword, "nan") => new NumberLiteral(double.NaN),
+                (TokenType.Keyword, "infinity") => new NumberLiteral(double.PositiveInfinity),
+
+                (TokenType.Keyword, "bool") => new TypeLiteral(ValueType.Bool),
+                (TokenType.Keyword, "number") => new TypeLiteral(ValueType.Number),
+                (TokenType.Keyword, "range") => new TypeLiteral(ValueType.Range),
+                (TokenType.Keyword, "string") => new TypeLiteral(ValueType.String),
+                (TokenType.Keyword, "tuple") => new TypeLiteral(ValueType.Tuple),
+                (TokenType.Keyword, "array") => new TypeLiteral(ValueType.Array),
+                (TokenType.Keyword, "struct") => new TypeLiteral(ValueType.Struct),
+                (TokenType.Keyword, "function") => new TypeLiteral(ValueType.Function),
+                (TokenType.Keyword, "task") => new TypeLiteral(ValueType.Task),
+                (TokenType.Keyword, "reference") => new TypeLiteral(ValueType.Reference),
+                (TokenType.Keyword, "complex") => new TypeLiteral(ValueType.Complex),
+                (TokenType.Keyword, "type") => new TypeLiteral(ValueType.Type),
+
+                (TokenType.Keyword, "recall") => new Recall(),
+                (TokenType.Keyword, "params") => new Params(),
+
+                { Type: TokenType.Identifier } => new Identifier(tokens[0].Text),
+                { Type: TokenType.Braces } => ParseBlock(tokens[0]),
+                { Type: TokenType.Parentheses } => Parse(TokenScanner.Scan(tokens[0]).ToList()),
+
+                _ => throw new SyntaxError(tokens[0].Start, tokens[0].End, "Unexpected symbol"),
             };
 
             for (int i = 1; i < tokens.Count; i++)
             {
-                if (tokens[i] is { type : TokenType.Operator, Text : "." })
+                if (tokens[i] is (TokenType.Operator, "."))
                 {
                     if (tokens.Count <= i)
-                        throw new SyntaxError("Missing identifier");
+                        throw new SyntaxError(tokens[i].Start, tokens[i].End, "Missing identifier");
 
-                    Token identifier = tokens[i + 1];
+                    if (tokens[i + 1].Type != TokenType.Identifier)
+                        throw new SyntaxError(tokens[i].Start, tokens[i].End, "Missing identifier");
 
-                    if (identifier.type != TokenType.Identifier)
-                        throw new SyntaxError("Missing identifier");
-
-                    expression = new MemberAccess(expression, identifier.Text);
+                    expression = new MemberAccess(expression, tokens[i + 1].Text);
 
                     i++;
                 }
-                else if (tokens[i].type == TokenType.Brackets)
+                else if (tokens[i].Type == TokenType.Brackets)
                 {
-                    var index = Parse((List<Token>)tokens[i].value);
+                    var index = Parse(TokenScanner.Scan(tokens[i]).ToList());
 
                     expression = new Indexer(expression, index);
                 }
-                else if (tokens[i].type == TokenType.Parentheses)
+                else if (tokens[i].Type == TokenType.Parentheses)
                 {
-                    var content = (List<Token>)tokens[i].value;
+                    var content = TokenScanner.Scan(tokens[i]).ToList();
 
                     var parameters = new List<IExpression>();
 
                     if (content.Count > 0)
-                        foreach (var part in content.Split(Token.Comma))
+                        foreach (var part in content.Split(x => x is (TokenType.Operator, ",")))
                             parameters.Add(Parse(part));
 
                     expression = new Invocation(expression, parameters);
                 }
                 else
                 {
-                    throw new SyntaxError("Unexpected symbol");
+                    throw new SyntaxError(tokens[i].Start, tokens[i].End, "Unexpected symbol");
                 }
             }
 

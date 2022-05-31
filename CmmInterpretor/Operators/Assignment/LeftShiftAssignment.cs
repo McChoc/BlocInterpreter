@@ -6,12 +6,12 @@ using CmmInterpretor.Utils;
 
 namespace CmmInterpretor.Operators.Assignment
 {
-    public class LeftShiftAssignment : IExpression
+    internal class LeftShiftAssignment : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
 
-        public LeftShiftAssignment(IExpression left, IExpression right)
+        internal LeftShiftAssignment(IExpression left, IExpression right)
         {
             _left = left;
             _right = right;

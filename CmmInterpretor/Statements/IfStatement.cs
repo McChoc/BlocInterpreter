@@ -6,13 +6,13 @@ using System.Collections.Generic;
 
 namespace CmmInterpretor.Statements
 {
-    public class IfStatement : Statement
+    internal class IfStatement : Statement
     {
-        public IExpression Condition { get; set; } = default!;
-        public List<Statement> IfBody { get; set; } = default!;
-        public List<Statement> ElseBody { get; set; } = new();
+        internal IExpression Condition { get; set; } = default!;
+        internal List<Statement> IfBody { get; set; } = default!;
+        internal List<Statement> ElseBody { get; set; } = new();
 
-        public override Result? Execute(Call call)
+        internal override Result? Execute(Call call)
         {
             try
             {

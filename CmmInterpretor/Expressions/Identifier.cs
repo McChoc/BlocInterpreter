@@ -4,11 +4,11 @@ using CmmInterpretor.Variables;
 
 namespace CmmInterpretor.Expressions
 {
-    public class Identifier : IExpression
+    internal class Identifier : IExpression
     {
         private readonly string _name;
 
-        public Identifier(string name) => _name = name;
+        internal Identifier(string name) => _name = name;
 
         public IValue Evaluate(Call call)
         {

@@ -9,43 +9,43 @@ using CmmInterpretor.Scanners;
 
 namespace CmmInterpretor
 {
-    public static partial class ExpressionParser
+    internal static partial class ExpressionParser
     {
         private static IExpression ParseFunctions(List<Token> tokens, int precedence)
         {
             for (int i = 0; i < tokens.Count; i++)
             {
-                if (tokens[i] is { type: TokenType.Operator, value: "=>" })
+                if (tokens[i] is (TokenType.Operator, "=>") op)
                 {
                     if (i == 0)
-                        throw new SyntaxError("Missing identifiers");
+                        throw new SyntaxError(op.Start, op.End, "Missing identifiers");
 
                     bool async = false;
 
-                    if (i >= 2 && tokens[i - 2] is { type: TokenType.Keyword, value: "async" })
+                    if (i >= 2 && tokens[i - 2] is (TokenType.Keyword, "async"))
                         async = true;
 
                     List<string> names;
 
-                    if (tokens[i - 1].type == TokenType.Identifier)
+                    if (tokens[i - 1].Type == TokenType.Identifier)
                     {
                         names = new()
                         {
                             tokens[i - 1].Text
                         };
                     }
-                    else if (tokens[i - 1].type == TokenType.Parentheses)
+                    else if (tokens[i - 1].Type == TokenType.Parentheses)
                     {
-                        var parameters = (List<Token>)tokens[i - 1].value;
+                        var parameters = TokenScanner.Scan(tokens[i - 1]).ToList();
 
-                        names = parameters.Count > 0 ? parameters.Split(Token.Comma).Select(x => x.Single().Text).ToList() : new List<string>();
+                        names = parameters.Count > 0 ? parameters.Split(x => x is (TokenType.Operator, ",")).Select(x => x.Single().Text).ToList() : new List<string>();
 
                         if (names.Count != names.Distinct().Count())
-                            throw new SyntaxError("Some parameters are duplicates.");
+                            throw new SyntaxError(tokens[i - 1].Start, tokens[i - 1].End, "Some parameters are duplicates.");
                     }
                     else
                     {
-                        throw new SyntaxError("Unexpected symbol");
+                        throw new SyntaxError(tokens[i - 1].Start, tokens[i - 1].End, "Unexpected symbol");
                     }
 
                     var statement = new ReturnStatement(Parse(tokens.GetRange((i + 1)..)));
@@ -53,22 +53,22 @@ namespace CmmInterpretor
                     var function = new FunctionLiteral(async, names, new() { statement });
 
                     var expression = tokens.GetRange(..(i - (async ? 2 : 1)));
-                    expression.Add(new Token(TokenType.Literal, function));
+                    expression.Add(new Literal(0, 0, function));
 
                     return Parse(expression, precedence - 1);
                 }
-                else if (i < tokens.Count - 1 && tokens[i].type == TokenType.Parentheses && tokens[i + 1].type == TokenType.Block)
+                else if (i < tokens.Count - 1 && tokens[i].Type == TokenType.Parentheses && tokens[i + 1].Type == TokenType.Braces)
                 {
-                    var parameters = (List<Token>)tokens[i].value;
+                    var parameters = TokenScanner.Scan(tokens[i]).ToList();
 
-                    var names = parameters.Count > 0 ? parameters.Split(Token.Comma).Select(x => x.Single().Text).ToList() : new List<string>();
+                    var names = parameters.Count > 0 ? parameters.Split(x => x is (TokenType.Operator, ",")).Select(x => x.Single().Text).ToList() : new List<string>();
 
                     if (names.Count != names.Distinct().Count())
-                        throw new SyntaxError("Some parameters are duplicates.");
+                        throw new SyntaxError(tokens[i].Start, tokens[i].End, "Some parameters are duplicates.");
 
                     bool async = false;
 
-                    if (i >= 1 && tokens[i - 1] is { type: TokenType.Keyword, value: "async" })
+                    if (i >= 1 && tokens[i - 1] is (TokenType.Keyword, "async"))
                         async = true;
 
                     var statements = StatementScanner.GetStatements(tokens[i + 1].Text);
@@ -80,12 +80,12 @@ namespace CmmInterpretor
                     if (async)
                     {
                         expression.RemoveRange(i - 1, 3);
-                        expression.Insert(i - 1, new Token(TokenType.Literal, function));
+                        expression.Insert(i - 1, new Literal(0, 0, function));
                     }
                     else
                     {
                         expression.RemoveRange(i, 2);
-                        expression.Insert(i, new Token(TokenType.Literal, function));
+                        expression.Insert(i, new Literal(0, 0, function));
                     }
 
                     return Parse(expression, precedence - 1);

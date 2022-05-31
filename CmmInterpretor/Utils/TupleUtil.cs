@@ -5,13 +5,13 @@ using System.Linq;
 
 namespace CmmInterpretor.Utils
 {
-    public static class TupleUtil
+    internal delegate IValue UnaryOperation(IValue value);
+
+    internal delegate IValue BinaryOperation(IValue left, IValue right);
+
+    internal static class TupleUtil
     {
-        public delegate IValue UnaryOperation(IValue value);
-
-        public delegate IValue BinaryOperation(IValue left, IValue right);
-
-        public static IValue RecursivelyCall(IValue value, UnaryOperation operation)
+        internal static IValue RecursivelyCall(IValue value, UnaryOperation operation)
         {
             if (value.Value is Tuple tuple)
                 return new Tuple(tuple.Values.Select(x => RecursivelyCall(x, operation)).ToList());
@@ -19,7 +19,7 @@ namespace CmmInterpretor.Utils
             return operation(value);
         }
 
-        public static IValue RecursivelyCall(IValue left, IValue right, BinaryOperation operation)
+        internal static IValue RecursivelyCall(IValue left, IValue right, BinaryOperation operation)
         {
             if (left.Value is Tuple leftTuple && right.Value is Tuple rightTuple)
             {
@@ -42,7 +42,7 @@ namespace CmmInterpretor.Utils
             return operation(left, right);
         }
 
-        public static IValue RecursivelyAssign(IValue left, IValue right)
+        internal static IValue RecursivelyAssign(IValue left, IValue right)
         {
             if (left is Tuple leftTuple && right.Value is Tuple rightTuple)
             {
@@ -58,7 +58,7 @@ namespace CmmInterpretor.Utils
             return Assign(left, right);
         }
 
-        private static IValue Assign(IValue left, IValue right)
+        internal static IValue Assign(IValue left, IValue right)
         {
             if (left is not Variable variable)
                 throw new Throw("You cannot assign a value to a literal");
@@ -70,7 +70,7 @@ namespace CmmInterpretor.Utils
             return variable.Value = value;
         }
 
-        public static IValue RecursivelyCompoundAssign(IValue left, IValue right, BinaryOperation operation)
+        internal static IValue RecursivelyCompoundAssign(IValue left, IValue right, BinaryOperation operation)
         {
             if (left is Tuple leftTuple && right.Value is Tuple rightTuple)
             {

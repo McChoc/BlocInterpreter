@@ -6,14 +6,14 @@ using System.Collections.Generic;
 
 namespace CmmInterpretor.Statements
 {
-    public class ForStatement : Statement
+    internal class ForStatement : Statement
     {
-        public DefStatement? Initialisation { get; set; }
-        public IExpression? Condition { get; set; }
-        public IExpression? Increment { get; set; }
-        public List<Statement> Statements { get; set; } = default!;
+        internal DefStatement? Initialisation { get; set; }
+        internal IExpression? Condition { get; set; }
+        internal IExpression? Increment { get; set; }
+        internal List<Statement> Statements { get; set; } = default!;
 
-        public override Result? Execute(Call call)
+        internal override Result? Execute(Call call)
         {
             try
             {

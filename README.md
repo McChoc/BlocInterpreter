@@ -2,6 +2,8 @@
 
 ## Table of content
 
+- [Introduction](#introduction)
+- [Interpretor](#interpretor)
 - [Example project](#example-project)
 - [Fundamentals](#fundamentals)
 - [Language reference](#language-reference)
@@ -12,6 +14,14 @@
     - [Statements](#statements)
     - [Commands](#commands)
     - [Comments](#comments)
+
+## Introduction
+
+//TODO
+
+## Interpretor
+
+//TODO
 
 ## Example project
 
@@ -24,6 +34,8 @@
 ## Language reference
 
 ### Values
+
+---
 
 #### Void
 
@@ -387,6 +399,8 @@ $bar; # evaluates to 42
 ### Access keywords
 
 Most keywords are used as literals or operators or used to initiate a statements, but there are two keywords which can be used as variables. These keywords are `params` and `recall`.
+
+---
 
 #### params
 
@@ -948,7 +962,7 @@ val foo == val bar; # evaluates to true
 
 #### Inequality operators `!=`, `<>`
 
-These operators both return `true` if their operands are **not** equal and return `false` otherwise. It does the oposite of the [equality operator](#equality-operator).
+These operators both return `true` if their operands are **not** equal and return `false` otherwise. It does the oposite of the [equality operator](#equality-operator). Both inequality operators can be used, but you should only use one of them per project.
 
 ```python
 # they all evaluates to true
@@ -1513,95 +1527,490 @@ By default, the output of a command is displayed on the standard output. This op
 
 ### Statements
 
-##### Statements
-##### Statement blocks
-##### Embedded statements
-##### Labeled statements
+Statements represent the actions that the program will perform. By default, statements are executed from top to bottom, but some statements allow you to change the order in which they get executed or whether or not they get executeted at all. Most statements start with a keyword and end with a semicolon `;`. Here is an example of a [def statement](#def-statement):
+
+```python
+def foo = 'Hello world'; 
+```
+
+Statements can also be grouped together in a statement block using braces `{}`. [Stack variables](#variables) can only be accessed within the block they were declared in.
+
+```python
+{
+    def foo = 'Hello world'; 
+    /echo $foo; 
+}
+
+/echo $foo; # throws an exception
+```
+
+Some statements require an embedded statement. This statement can either be a single statement or a statement block.
+
+```python
+if (true) {
+    def foo = 'Hello world'; 
+    /echo $foo; 
+}
+
+if (true)
+    /echo 'Hello world'; 
+
+```
+
+You can also label statements by prefixing them with a label and the label identifier `::`. The label has to be a valid [variable name](#variables). A label and a variable can have the same name and won't interfere with each other. Labels can be used with [goto statements](#goto-statement) to jump to a certain statement and start executing from there.
+
+```python
+Loop :: /echo 'Hello world'; 
+goto Loop; 
+```
 
 ---
 
 #### Expression statement
 
+The expression statement is the most common type of statement. It only consists of an expression followed by a semicolon `;`. This type of statement is usefull to assing a value to a variable or to invoke a function.
+
+```python
+def print; 
+
+# Expression statement assinging a function to a variable
+print = (text) {
+    /echo &text;
+}; 
+
+# Expression statement invoking a function
+print('Hello world'); 
+```
+
 ---
 
 #### Command statement
+
+Command statements allow you to run commands. It consists of a slash `/` followed by one or more commands and ends with a semicolon `;`. Each command of a command statement must be separated by the [pipe operator](#pipe-operator).
+
+```python
+/random 10 |> set value; 
+```
 
 ---
 
 #### Empty statement
 
+The empty statement only consists of a semicolon `;` and does nothing. It can be usefull were a statement is required but you dont need one in your use case.
+
+```python
+while (proccessData()); 
+```
+
 ---
 
 #### pass statement
+
+The pass statement consists of the `pass` keyword followed by a semicolon `;`. It acts the same as an [empty statement](#empty-statement), but is more explicit.
+
+```python
+while (proccessData())
+    pass; 
+```
 
 ---
 
 #### def statement
 
+The def statement allows you to declare [variables](#variables). It consists of the `def` keyword followed by a list of comma `,` separeated declarations and ends with a semicolon `;`. There must be at leat 1 declaration in a def statement. A declaration starts with a single identifier or a [tuple](#tuple) of identifiers. You can also nest tuples. Optionaly, you can add an initial assignement by adding an equal symbol `=` and an expresion on the right which will be assigned to the left part of the declaration. When assigning a tuple to a tuple of identifiers, both tuple must have the same size, otherwise an exception is thrown. If an initial assignement is provided, the expression is evaluated first, then the variable gets declared and finally it gets assigned the value. Declarations are evaluates from left to right.
+
+```python
+# Simple declaration
+def a; 
+
+# Declaration with initial assignement
+def b = 2; 
+
+# Multiple declarations
+def c = 3, d = 4, e = 5; 
+
+# Single declararion using tuples
+def (f, g, h) = (6, 7, 8); 
+
+# Complex declarations (you probably shouldn't do this)
+def ((i, j), k, l) = (1, 2, (3, 4)), m = 5; 
+# i = 1
+# j = 1
+# k = 2
+# l = (3, 4)
+# m = 5
+```
+
 ---
 
 #### delete statement
+
+The delete statement allows you to delete variable previously declared. It consists of the `delete` keyword followed by an expression and ens with a semicolon `;`. The expression can be a single variable or a tuple of variables. You can also delete heap variables by combining the delete statement with the [val operator](#value-operator-val). You cannot delete elements of an array or struct.
+
+```python
+def foo; 
+delete foo; # The variable foo no longer exists
+
+def bar = new { 1, 2, 3 }; 
+delete val bar; # The variable bar contains an invalid reference
+
+def a, b, c; 
+delete (a, b, c); 
+```
 
 ---
 
 #### if statement
 
+The if statement allows you to perform or not a certain operations based on a condition. It consists of the `if` keyword, parentheses `()` containing an expression and an embeded statement. It starts by evaluating the expression and implicitly casts the result as a [bool](#bool). If an implicit conversion does not exists, an exception is thrown. If the expression evaluates to `true`, the embeded statement is executed. You can also add the `else` keyword followed by a second embeded statement. This second statement is executed if the expresion evaluated to `false`. You can also nest multiple if..else statements to check multiple conditions. The [ternary conditional operator](#ternary-conditional-operator) can also be used as an inline if.
+
+```python
+def temperature = 15; 
+
+# if statement
+if (temperature < 25)
+    /echo 'cold'; 
+
+# if..else statement
+if (temperature < 25)
+    /echo 'cold'; 
+else
+    /echo 'hot'; 
+
+def character = 'A'; 
+
+# 3 nested if..else statements
+if (ord character in (ord 'A')..(ord 'Z' + 1)) {
+    /echo 'uppercase letter'; 
+} else if (ord character in (ord 'a')..(ord 'z' + 1)) {
+    /echo 'lowercase letter'; 
+} else if (ord character in (ord '0')..(ord '9' + 1)) {
+    /echo 'digit'; 
+} else {
+    /echo 'symbol'; 
+}
+```
+
 ---
 
-#### while, do..while, until and do..until statements
+#### while, until, do..while and do..until statements
+
+The while statement allows you to repetedly perform an operation as long as a condition is true. It consists of the `while` keyword, parentheses `()` containing an expression and an embeded statement. It starts by evaluating the expression like an if statement. If the expression evaluated to `true`, the embeded statement is executed. Then it starts over again as long as the expression evaluates to true. If the expression is false to begin with, the operation is never executed. The until statement is the oposite of the while statement. It will repetedly perform an operation as long as its condition is false. Its syntax is the same as the while statement but with the `until` keyword.
+
+```python
+def i = 0; 
+while (i < 5) {
+    /echo $i;
+    i++;
+}
+
+def j = 0
+until (j == 5) {
+    /echo $j;
+    j++;
+}
+```
+
+Both while and until statements can be combined with the `do` keyword to make a do..while or do..until statement respectively. These statements act the same as their counterpart, except that their condition is evaluated after the operation. This means that their operation will always be executed at least once. These statements consists of the `do` keyword, an embeded statement, either the `while` or `until` keyword, parentheses `()` containing an expression and finally a semicolon `;`.
+
+```python
+def i = 5; 
+do { # executed once
+    /echo $i;
+    i++;
+} while (i < 5); 
+
+def j = 5; 
+do { # executed once
+    /echo $j;
+    j++;
+} until (j == 5); 
+```
 
 ---
 
 #### for statement
 
+The for statement is similar to the while statement, but provides additional functionalities which are especialy usefull for iterating over a range of numbers with a given increment. It consists of the `for` keyword, parentheses `()` and an embeded statement. Inside the parentheses, there are 3 parts which are separated by 2 semicolons `;`.
+
+The first part is the initializer and is essentially an implicit [def statement](#def-statement). You can declare variables separeated by commas `,` and give them an initial assignment with the equal symbol `=`. You have to ommit the `def` keyword.
+
+The second part is the condition and acts like the condition of a [while statement](#while-until-dowhile-and-dountil-statements). The operation defined by the embeded statement will be executed as long as this expression is true.
+
+The third part is the increment and is just an expression which will be evaluated after each iteration. This is usualy used to increment the variable declared inside the initializer.
+
+All 3 parts are optionnal and the condition defaults to `true` if it is ommited.
+
+```python
+def arr = { 1, 2, 3, 4, 5, 6, 7, 8, 9 }; 
+
+for (i = 0; i < len arr; i++) {
+    def item = arr[i];
+    /echo $item;
+}
+
+for(;;); # Infinite loop
+```
+
 ---
 
 #### for..in statement
+
+The for..in statement allows you to execute an operation for each element of a collection. It consists of the `for` keyword, parentheses `()` and an embeded statement. Inside the parentheses, there are 2 parts separated by the `in` keyword. On the left, you have to provide an identifier or a tuple of identifiers. At each iteration, theses identifiers will be assigned the next value inside the collection. On the right, you have to provide an expression which will be evaluated once. This expression should be an array, a string or a range. You are allowed to modify the collection during an iteration, but the changes will not directly affect the for..in statement, since the collection gets only evaluated once. Generally, this is cleaner than a [for statement](#for-statement) for iterating over a collection.
+
+```python
+def arr = { 1, 2, 3, 4, 5, 6, 7, 8, 9 }; 
+
+for (item in arr)
+    /echo $item; 
+```
 
 ---
 
 #### repeat statement
 
+The repeat statement allows you to repeat an operation a given amount of times. It consists of the `repeat` keyword, parentheses `()` containing an expression and an embeded statement. It evaluates the expression once and implicitly casts the result as a number. If an implicit conversion does not exists, an exception is thrown. The embeded statement is executed a number of time equivalent to that number.
+
+```python
+repeat (10)
+    /echo 'Hello world'; 
+```
+
 ---
 
 #### loop statement
+
+The loop statement allows you to repeat an operation an infinite amount of times. It consists of the `loop` keyword and an embeded statement. The only way to stop a loop statement is with a [break](#break-statement), [return](#return-statement), [exit](#exit-statement) or [throw](#throw-statement) statement.
+
+```python
+# These 3 statements are infinite loops
+loop; 
+for (;;); 
+while (true);
+```
 
 ---
 
 #### try statement
 
+The try statement allows you to execute an operation and catch any exceptions that could be thrown. It consists of the `try` keyword and an embeded statement. It Starts by trying to execute its embeded statement. If an exception is thrown, it catches it and the program resume its execution after the try statement.
+
+```python
+# trys to declare variable foo
+try def foo = { 1, 2, 3 }; 
+```
+
+You can add the `catch` keyword and an other embeded statement which will be executed only if an exception is thrown. Between the `catch` keyword and its embeded statement, you can optionally add parentheses `()` containing an identifier. This identifier can then be used to retreive the exception thrown from the catch's embeded statement.
+
+```python
+def tryParseNumber = (input, output) {
+    try {
+        val output = input as number; 
+        return true;
+    } catch {
+        val output = null;
+        return false;
+    }
+}; 
+```
+
+You can also add the `finally` keyword and an other embeded statement which will be executed no matter what. You can use it if something needs to be executed whether an exception is thrown or not. You can also use it to overwrite a return or exit statement.
+
+```python
+def someFunction = () {
+    exit;
+}; 
+
+try {
+    try
+        someFunction(); 
+    finally
+        throw; # overwrites the exit with an exception that is instantly caught preventing the programm from exiting
+}
+```
+
+If both a `catch` and a `finally` are provided, the catch has to be before the finally.
+
+```python
+/file text open read '''c:\users\public\test.txt''' |> set file; 
+
+try
+    /get file |> file text read_to_end |> echo; 
+catch
+    /echo 'Error reading file'; 
+finally
+    /get file |> file text close; 
+```
+
 ---
 
 #### lock statement
+
+The lock statement allows you to lock variables, so that other asynchronous functions can't access it while you use it. It consists of the `lock` keyword, parentheses `()` containing an expression and an embeded statement. If you have multiple asynchronous functions modifying a shared variable, it is imperative that you use a lock statement to prevent them from modifying the same variable at the same time. Failling to do so will produce undefined behaviour.
+
+```python
+def (input, output) = array(); 
+
+def workerThread = async () {
+    while (true) {
+        def value
+
+        lock (input) {
+            if (len input == 0)
+                continue;
+
+            value = intput[^1];
+            input = input[..^1];
+        }
+
+        # proccess the value;
+
+        lock (output)
+            output += value;
+    }
+}; 
+
+repeat(5)
+    workerThread(); 
+
+lock (input)
+    input = { 1, 2, 3, 4, 5 }; 
+
+# The 5 worker threads are now proccessing the data
+```
 
 ---
 
 #### continue statement
 
+The continue statement allows you to end the current iteration of a loop and continue to the next one.
+
+```python
+for (i in ..5) {
+    if (i == 2)
+        continue;
+
+    /echo $i;
+}
+# Output
+# 0
+# 1
+# 3
+# 4
+```
+
 ---
 
 #### break statement
+
+The break statement allows you to end an entire loop.
+
+```python
+for (i in ..5) {
+    if (i == 2)
+        continue;
+
+    /echo $i;
+}
+# Output
+# 0
+# 1
+```
 
 ---
 
 #### return statement
 
+The return statement allows you to end the execution of a function and specify the value the function should return.
+
+```python
+def add = (a, b) {
+    return a + b;
+}; 
+```
+
 ---
 
 #### exit statement
+
+The exit statement allows you to end the execution of the entire program and specify the value it should return.
+
+```python
+def stopProgramm = () {
+    # clean up
+    exit 0;
+}; 
+```
 
 ---
 
 #### throw statement
 
+The throw statement allows you to throw an exception, stoping the execution of everything until it is caught by a try statement or crashes the program.
+
+```python
+def add = (a, b) {
+    if (a is not number || b is not number)
+        throw `{nameof a} and {nameof b} must be numbers`;
+
+    return a + b;
+}; 
+```
+
 ---
 
 #### goto statement
+
+The goto statement allows you to jump to a statement with a given label and continue executing a function from there.
+
+```python
+def arr = {
+    { 1, 2, 3 },
+    { 4, 5, 6 },
+    { 7, 8, 9 }
+}; 
+
+def target; 
+
+for (i = 0; i < len arr; i++) {
+    for (j = 0; j < len arr[0]; j++) {
+        if (arr[i][j] == 5) {
+            target = (i, j);
+            goto End;
+        }
+    }
+}
+
+End :: ;
+```
 
 ---
 
 ### Commands
 
+Commands are the only way to interact with resources outside of C--. They are not standardized and can be different in each implement and each platform. You should refer to the implementors website to know all available commands. Commands do not follow the same syntax as the rest of the language. They are defined by a name and a list of arguments separated by spaces. If you want an argument to contain spaces, you have to suround it with quotes to make a `string`. Every types of string literal can be used inside of commands. You can pass variables as arguments to command with the variable identifier `$`. They will be implicitly casted as strings. A variable can be interpreted as more than one argument if it contains spaces. You should use interpolated strings to guarentee that a variable will be a single argument.
+
+```python
+/echo Hello; 
+
+/echo 'Hello world'; 
+
+def command = 'echo Hello'; 
+/$command; 
+
+def text = 'Hello world'; 
+/echo `{text}`; 
+```
+
 ---
 
 ### Comments
+
+You can use comments to write text that will not be evaluated. You can use this to explain code or to temporarely prevent the execution of a part of the code. A single line comment with a `#` and ends at the end of the line. A multi line comment starts with a `#*` and end with a `*#`.
+
+```python
+/echo 'Hello world'; # This is a comment
+
+#* This is a multi
+line comment *#
+```

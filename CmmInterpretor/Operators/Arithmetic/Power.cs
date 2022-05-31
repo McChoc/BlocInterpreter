@@ -7,12 +7,12 @@ using static System.Math;
 
 namespace CmmInterpretor.Operators.Arithmetic
 {
-    public class Power : IExpression
+    internal class Power : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
 
-        public Power(IExpression left, IExpression right)
+        internal Power(IExpression left, IExpression right)
         {
             _left = left;
             _right = right;

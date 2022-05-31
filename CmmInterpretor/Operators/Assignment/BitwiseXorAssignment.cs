@@ -6,12 +6,12 @@ using CmmInterpretor.Utils;
 
 namespace CmmInterpretor.Operators.Assignment
 {
-    public class BitwiseXorAssignment : IExpression
+    internal class BitwiseXorAssignment : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
 
-        public BitwiseXorAssignment(IExpression left, IExpression right)
+        internal BitwiseXorAssignment(IExpression left, IExpression right)
         {
             _left = left;
             _right = right;

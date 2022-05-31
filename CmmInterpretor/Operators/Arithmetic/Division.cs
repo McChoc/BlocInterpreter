@@ -6,12 +6,12 @@ using CmmInterpretor.Utils;
 
 namespace CmmInterpretor.Operators.Arithmetic
 {
-    public class Division : IExpression
+    internal class Division : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
 
-        public Division(IExpression left, IExpression right)
+        internal Division(IExpression left, IExpression right)
         {
             _left = left;
             _right = right;

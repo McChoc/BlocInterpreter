@@ -26,7 +26,7 @@ namespace CmmInterpretor.Extensions
             return result;
         }
 
-        public static List<List<T>> Split<T>(this List<T> list, Func<T,bool> predicate)
+        public static List<List<T>> Split<T>(this List<T> list, Predicate<T> predicate)
         {
             var result = new List<List<T>>();
 

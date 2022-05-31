@@ -4,11 +4,11 @@ using CmmInterpretor.Values;
 
 namespace CmmInterpretor.Operators.Misc
 {
-    public class Typeof : IExpression
+    internal class Typeof : IExpression
     {
         private readonly IExpression _operand;
 
-        public Typeof(IExpression operand) => _operand = operand;
+        internal Typeof(IExpression operand) => _operand = operand;
 
         public IValue Evaluate(Call call)
         {

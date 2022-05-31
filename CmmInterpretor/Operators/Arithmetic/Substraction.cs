@@ -6,12 +6,12 @@ using CmmInterpretor.Values;
 
 namespace CmmInterpretor.Operators.Arithmetic
 {
-    public class Substraction : IExpression
+    internal class Substraction : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
 
-        public Substraction(IExpression left, IExpression right)
+        internal Substraction(IExpression left, IExpression right)
         {
             _left = left;
             _right = right;

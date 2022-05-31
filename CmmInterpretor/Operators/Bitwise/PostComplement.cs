@@ -8,11 +8,11 @@ using CmmInterpretor.Utils;
 
 namespace CmmInterpretor.Operators.Bitwise
 {
-    public class PostComplement : IExpression
+    internal class PostComplement : IExpression
     {
         private readonly IExpression _operand;
 
-        public PostComplement(IExpression operand) => _operand = operand;
+        internal PostComplement(IExpression operand) => _operand = operand;
 
         public IValue Evaluate(Call call)
         {

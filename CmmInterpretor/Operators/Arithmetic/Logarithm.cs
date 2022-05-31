@@ -7,12 +7,12 @@ using CmmInterpretor.Utils;
 
 namespace CmmInterpretor.Operators.Arithmetic
 {
-    public class Logarithm : IExpression
+    internal class Logarithm : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
 
-        public Logarithm(IExpression left, IExpression right)
+        internal Logarithm(IExpression left, IExpression right)
         {
             _left = left;
             _right = right;

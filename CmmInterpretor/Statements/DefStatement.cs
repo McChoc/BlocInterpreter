@@ -1,5 +1,4 @@
 ﻿using CmmInterpretor.Memory;
-using CmmInterpretor.Utils.Exceptions;
 using CmmInterpretor.Expressions;
 using CmmInterpretor.Results;
 using CmmInterpretor.Values;
@@ -9,11 +8,11 @@ using System.Linq;
 
 namespace CmmInterpretor.Statements
 {
-    public class DefStatement : Statement
+    internal class DefStatement : Statement
     {
-        public List<(IExpression, IExpression?)> Definitions { get; set; } = new();
+        internal List<(IExpression, IExpression?)> Definitions { get; set; } = new();
 
-        public override Result? Execute(Call call)
+        internal override Result? Execute(Call call)
         {
             foreach (var definition in Definitions)
             {
@@ -64,7 +63,7 @@ namespace CmmInterpretor.Statements
             }
             else
             {
-                throw new SyntaxError("The left part of an assignement must be a variable");
+                throw new Throw("The left part of an assignement must be a variable");
             }
         }
     }

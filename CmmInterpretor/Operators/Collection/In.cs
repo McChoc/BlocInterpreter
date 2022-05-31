@@ -6,12 +6,12 @@ using System.Linq;
 
 namespace CmmInterpretor.Operators.Collection
 {
-    public class In : IExpression
+    internal class In : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
 
-        public In(IExpression left, IExpression right)
+        internal In(IExpression left, IExpression right)
         {
             _left = left;
             _right = right;

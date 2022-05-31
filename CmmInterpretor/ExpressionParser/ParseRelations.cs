@@ -9,24 +9,24 @@ using System.Collections.Generic;
 
 namespace CmmInterpretor
 {
-    public static partial class ExpressionParser
+    internal static partial class ExpressionParser
     {
         private static IExpression ParseRelations(List<Token> tokens, int precedence)
         {
             for (int i = tokens.Count - 1; i >= 0; i--)
             {
-                if (tokens[i] is { type: TokenType.Operator or TokenType.Keyword, value: "<" or "<=" or ">" or ">=" or "in" or "not in" or "is" or "is not" or "as" })
+                if (tokens[i] is (TokenType.Operator or TokenType.Keyword, "<" or "<=" or ">" or ">=" or "in" or "not in" or "is" or "is not" or "as") op)
                 {
                     if (i == 0)
-                        throw new SyntaxError("Missing the left part of relation");
+                        throw new SyntaxError(op.Start, op.End, "Missing the left part of relation");
 
                     if (i > tokens.Count - 1)
-                        throw new SyntaxError("Missing the right part of relation");
+                        throw new SyntaxError(op.Start, op.End, "Missing the right part of relation");
 
                     var a = ParseRelations(tokens.GetRange(..i), precedence);
                     var b = Parse(tokens.GetRange((i + 1)..), precedence - 1);
 
-                    return tokens[i].value switch
+                    return op.Text switch
                     {
                         "<" => new Less(a, b),
                         "<=" => new LessEqual(a, b),

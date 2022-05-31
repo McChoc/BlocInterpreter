@@ -4,13 +4,13 @@ using System.Collections.Generic;
 
 namespace CmmInterpretor.Statements
 {
-    public class TryStatement : Statement
+    internal class TryStatement : Statement
     {
-        public List<Statement> Try { get; set; } = default!;
-        public List<Statement> Catch { get; set; } = new();
-        public List<Statement> Finally { get; set; } = new();
+        internal List<Statement> Try { get; set; } = default!;
+        internal List<Statement> Catch { get; set; } = new();
+        internal List<Statement> Finally { get; set; } = new();
 
-        public override Result? Execute(Call call)
+        internal override Result? Execute(Call call)
         {
             var result = ExecuteBlock(Try, call);
             

@@ -5,12 +5,12 @@ using CmmInterpretor.Values;
 
 namespace CmmInterpretor.Operators.Primary
 {
-    public class MemberAccess : IExpression
+    internal class MemberAccess : IExpression
     {
         private readonly IExpression _expression;
         private readonly string _member;
 
-        public MemberAccess(IExpression expression, string member)
+        internal MemberAccess(IExpression expression, string member)
         {
             _expression = expression;
             _member = member;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace CmmInterpretor.Interfaces
 {
-    public interface IIterable
+    internal interface IIterable
     {
         IEnumerable<Value> Iterate();
     }

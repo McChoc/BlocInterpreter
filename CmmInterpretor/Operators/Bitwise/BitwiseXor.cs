@@ -7,12 +7,12 @@ using CmmInterpretor.Utils;
 
 namespace CmmInterpretor.Operators.Bitwise
 {
-    public class BitwiseXor : IExpression
+    internal class BitwiseXor : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
 
-        public BitwiseXor(IExpression left, IExpression right)
+        internal BitwiseXor(IExpression left, IExpression right)
         {
             _left = left;
             _right = right;

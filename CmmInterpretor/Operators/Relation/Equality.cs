@@ -4,12 +4,12 @@ using CmmInterpretor.Values;
 
 namespace CmmInterpretor.Operators.Relation
 {
-    public class Equality : IExpression
+    internal class Equality : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
 
-        public Equality(IExpression left, IExpression right)
+        internal Equality(IExpression left, IExpression right)
         {
             _left = left;
             _right = right;
@@ -20,7 +20,7 @@ namespace CmmInterpretor.Operators.Relation
             var leftValue = _left.Evaluate(call);
             var rightValue = _right.Evaluate(call);
 
-            return new Bool(leftValue!.Equals(rightValue!));
+            return new Bool(leftValue.Equals(rightValue));
         }
     }
 }

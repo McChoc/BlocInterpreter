@@ -9,10 +9,10 @@ namespace CmmInterpretor.Values
 {
     public class Function : Value, IInvokable
     {
-        public bool Async { get; set; }
-        public List<string> Names { get; set; } = new();
-        public List<Statement> Code { get; set; } = new();
-        public Scope Captures { get; set; } = new(null);
+        internal bool Async { get; set; }
+        internal List<string> Names { get; set; } = new();
+        internal List<Statement> Code { get; set; } = new();
+        internal Scope Captures { get; set; } = new(null);
 
         public override ValueType Type => ValueType.Function;
 
@@ -116,18 +116,15 @@ namespace CmmInterpretor.Values
                     var result = Code[i].Execute(call); ;
 
                     if (result is Return r)
-                    {
                         return r.value;
-                    }
-                    else if (result is Throw t)
-                    {
-                        throw t;
-                    }
-                    else if (result is Continue or Break)
-                    {
+
+                    if (result is Throw or Exit)
+                        throw result;
+
+                    if (result is Continue or Break)
                         throw new Throw("No loop");
-                    }
-                    else if (result is Goto g)
+
+                    if (result is Goto g)
                     {
                         if (labels.TryGetValue(g.label, out int index))
                             i = index - 1;

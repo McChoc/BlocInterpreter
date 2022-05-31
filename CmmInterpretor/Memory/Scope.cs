@@ -3,15 +3,15 @@ using System.Collections.Generic;
 
 namespace CmmInterpretor.Memory
 {
-    public class Scope
+    internal class Scope
     {
-        public Call? Call { get; }
+        internal Call? Call { get; }
 
-        public Dictionary<string, Variable> Variables { get; } = new();
+        internal Dictionary<string, Variable> Variables { get; } = new();
 
-        public Scope(Call? call) => Call = call;
+        internal Scope(Call? call) => Call = call;
 
-        public void Destroy()
+        internal void Destroy()
         {
             foreach (var variable in Variables.Values)
                 variable.Destroy();

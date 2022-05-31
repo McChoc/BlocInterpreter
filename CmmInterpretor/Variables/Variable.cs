@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace CmmInterpretor.Variables
 {
-    public abstract class Variable : IValue, IExpression
+    internal abstract class Variable : IValue, IExpression
     {
         public List<Reference> References { get; } = new();
 

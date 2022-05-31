@@ -1,16 +1,14 @@
 ﻿using CmmInterpretor.Memory;
-using CmmInterpretor.Results;
-using CmmInterpretor.Utils;
 using CmmInterpretor.Values;
 using System.Collections.Generic;
 
 namespace CmmInterpretor.Expressions
 {
-    public class TupleLiteral : IExpression
+    internal class TupleLiteral : IExpression
     {
         private readonly List<IExpression> _expressions;
 
-        public TupleLiteral(List<IExpression> expressions)
+        internal TupleLiteral(List<IExpression> expressions)
         {
             _expressions = expressions;
         }

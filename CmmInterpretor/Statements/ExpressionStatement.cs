@@ -6,13 +6,13 @@ using CmmInterpretor.Values;
 
 namespace CmmInterpretor.Statements
 {
-    public class ExpressionStatement : Statement
+    internal class ExpressionStatement : Statement
     {
-        public IExpression Expression { get; }
+        internal IExpression Expression { get; }
 
-        public ExpressionStatement(IExpression expression) => Expression = expression;
+        internal ExpressionStatement(IExpression expression) => Expression = expression;
 
-        public override Result? Execute(Call call)
+        internal override Result? Execute(Call call)
         {
             try
             {
@@ -26,7 +26,7 @@ namespace CmmInterpretor.Statements
             return null;
         }
 
-        public Variant<Value, Result> Evaluate(Call call)
+        internal Variant<Value, Result> Evaluate(Call call)
         {
             try
             {

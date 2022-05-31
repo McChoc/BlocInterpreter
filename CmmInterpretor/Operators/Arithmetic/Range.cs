@@ -5,13 +5,13 @@ using CmmInterpretor.Values;
 
 namespace CmmInterpretor.Operators.Arithmetic
 {
-    public class Range : IExpression
+    internal class Range : IExpression
     {
         private readonly IExpression? _start;
         private readonly IExpression? _end;
         private readonly IExpression? _step;
 
-        public Range(IExpression? start, IExpression? end, IExpression? step)
+        internal Range(IExpression? start, IExpression? end, IExpression? step)
         {
             _start = start;
             _end = end;

@@ -2,11 +2,11 @@
 
 namespace CmmInterpretor.Variables
 {
-    public class HeapVariable : Variable
+    internal class HeapVariable : Variable
     {
         public override Value Value { get; set; }
 
-        public HeapVariable(Value value) => Value = value;
+        internal HeapVariable(Value value) => Value = value;
 
         public override void Destroy()
         {

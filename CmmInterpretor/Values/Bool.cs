@@ -11,7 +11,7 @@ namespace CmmInterpretor.Values
 
         public override ValueType Type => ValueType.Bool;
 
-        public Bool(bool value) => Value = value;
+        internal Bool(bool value) => Value = value;
 
         public override Value Copy() => this;
 

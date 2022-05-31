@@ -3,7 +3,7 @@ using CmmInterpretor.Values;
 
 namespace CmmInterpretor.Interfaces
 {
-    public interface IIndexable
+    internal interface IIndexable
     {
         IValue Index(Value value, Call call);
     }

@@ -6,11 +6,11 @@ using CmmInterpretor.Variables;
 
 namespace CmmInterpretor.Operators.Boolean
 {
-    public class PreNegation : IExpression
+    internal class PreNegation : IExpression
     {
         private readonly IExpression _operand;
 
-        public PreNegation(IExpression operand) => _operand = operand;
+        internal PreNegation(IExpression operand) => _operand = operand;
 
         public IValue Evaluate(Call call)
         {

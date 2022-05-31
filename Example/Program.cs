@@ -3,30 +3,38 @@ using CmmInterpretor.Commands;
 using CmmInterpretor.Results;
 using CmmInterpretor.Utils.Exceptions;
 using CmmInterpretor.Values;
+using System;
 using System.Collections.Generic;
-using Console = System.Console;
+using Void = CmmInterpretor.Values.Void;
 
 const byte RED = 9;
 const byte ORANGE = 208;
 
 Engine engine = new Engine.Builder(args)
-    .OnLog(msg => Console.WriteLine(msg))
-    .OnClear(() => Console.Clear())
+    .OnLog(Console.WriteLine)
+    .OnClear(Console.Clear)
     .AddDefaultCommands()
     .Build();
-
 
 while (true)
 {
     try
     {
+        bool cancel = false;
         int depth = 0;
         var lines = new List<string>();
 
         while (true)
         {
             Console.Write(lines.Count == 0 ? ">>> " : "... ");
+
             string line = Console.ReadLine();
+
+            if (line[^1] == '\x4')
+            {
+                cancel = true;
+                break;
+            }
 
             lines.Add(line);
 
@@ -40,29 +48,35 @@ while (true)
                 break;
         }
 
-        string code = string.Join("\n", lines);
-
-        if (code.Length > 0 && code[^1] != ';')
-            code += ';';
-
-        if (code.Length > 0)
+        if (!cancel)
         {
-            var variant = engine.Execute(code);
+            string code = string.Join("\n", lines);
 
-            if (variant is not null)
+            if (code.Length > 0 && code[^1] != ';')
+                code += ';';
+
+            if (code.Length > 0)
             {
-                if (variant.Is(out Value value))
+                var variant = engine.Execute(code);
+
+                if (variant is not null)
                 {
-                    if (value is not Void)
-                        Console.WriteLine(value.ToString());
-                }
-                else if (variant.Is(out Result result))
-                {
-                    if (result is Throw t)
+                    if (variant.Is(out Value value))
                     {
-                        ConsoleColor.SetColor(ORANGE);
-                        Console.WriteLine($"An exception was thrown : {t.value}");
-                        Console.ResetColor();
+                        if (value is not Void)
+                            Console.WriteLine(value.ToString());
+                    }
+                    else if (variant.Is(out Result result))
+                    {
+                        if (result is Exit)
+                            break;
+
+                        if (result is Throw t)
+                        {
+                            ConsoleColor.SetColor(ORANGE);
+                            Console.WriteLine($"An exception was thrown : {t.value}");
+                            Console.ResetColor();
+                        }
                     }
                 }
             }

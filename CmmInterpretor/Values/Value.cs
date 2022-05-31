@@ -1,12 +1,8 @@
-﻿using CmmInterpretor.Expressions;
-using CmmInterpretor.Memory;
-
-namespace CmmInterpretor.Values
+﻿namespace CmmInterpretor.Values
 {
-    public abstract class Value : IValue, IExpression
+    public abstract class Value : IValue
     {
         Value IValue.Value => this;
-        IValue IExpression.Evaluate(Call _) => this;
 
         public abstract ValueType Type { get; }
 

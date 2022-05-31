@@ -5,11 +5,11 @@ using CmmInterpretor.Values;
 
 namespace CmmInterpretor.Operators.Character
 {
-    public class Character : IExpression
+    internal class Character : IExpression
     {
         private readonly IExpression _operand;
 
-        public Character(IExpression operand) => _operand = operand;
+        internal Character(IExpression operand) => _operand = operand;
 
         public IValue Evaluate(Call call)
         {

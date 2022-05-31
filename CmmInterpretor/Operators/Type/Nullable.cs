@@ -6,11 +6,11 @@ using System.Collections.Generic;
 
 namespace CmmInterpretor.Operators.Type
 {
-    public class Nullable : IExpression
+    internal class Nullable : IExpression
     {
         private readonly IExpression _operand;
 
-        public Nullable(IExpression operand) => _operand = operand;
+        internal Nullable(IExpression operand) => _operand = operand;
 
         public IValue Evaluate(Call call)
         {

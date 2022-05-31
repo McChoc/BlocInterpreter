@@ -7,11 +7,11 @@ using System.Collections.Generic;
 
 namespace CmmInterpretor.Operators.Bitwise
 {
-    public class Complement : IExpression
+    internal class Complement : IExpression
     {
         private readonly IExpression _operand;
 
-        public Complement(IExpression operand) => _operand = operand;
+        internal Complement(IExpression operand) => _operand = operand;
 
         public IValue Evaluate(Call call)
         {

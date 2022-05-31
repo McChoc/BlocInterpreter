@@ -1,18 +1,49 @@
-﻿namespace CmmInterpretor.Tokens
+﻿using System;
+
+namespace CmmInterpretor.Tokens
 {
-    public struct Token
+    internal class Token
     {
-        public static Token Comma => new(TokenType.Operator, ",");
+        internal int Start { get; }
+        internal int End { get; }
+        internal virtual TokenType Type { get; }
+        internal virtual string Text { get; }
 
-        public string Text => (string)value;
-
-        public TokenType type;
-        public object value;
-
-        public Token(TokenType type, object value)
+        private protected Token(int start, int end)
         {
-            this.type = type;
-            this.value = value;
+            Start = start;
+            End = end;
+            Text = "";
+        }
+
+        internal Token(int start, int end, TokenType type, string text)
+        {
+            if (type == TokenType.Literal)
+                throw new Exception();
+
+            Start = start;
+            End = end;
+            Type = type;
+            Text = text;
+        }
+
+        internal void Deconstruct(out TokenType type, out string text)
+        {
+            type = Type;
+            text = Text;
+        }
+
+        public override bool Equals(object other)
+        {
+            if (other is not Token token)
+                return false;
+
+            return Type == token.Type && Text == token.Text;
+        }
+
+        public override int GetHashCode()
+        {
+            return System.HashCode.Combine(Type, Text);
         }
     }
 }

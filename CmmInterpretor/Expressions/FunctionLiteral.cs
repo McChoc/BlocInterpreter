@@ -5,13 +5,13 @@ using System.Collections.Generic;
 
 namespace CmmInterpretor.Expressions
 {
-    public class FunctionLiteral : IExpression
+    internal class FunctionLiteral : IExpression
     {
         private readonly bool async;
         private readonly List<string> parameters;
         private readonly List<Statement> statements;
 
-        public FunctionLiteral(bool async, List<string> parameters, List<Statement> statements)
+        internal FunctionLiteral(bool async, List<string> parameters, List<Statement> statements)
         {
             this.async = async;
             this.parameters = parameters;

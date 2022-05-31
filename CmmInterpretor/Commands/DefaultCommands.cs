@@ -1,5 +1,4 @@
-﻿using CmmInterpretor.Results;
-using CmmInterpretor.Values;
+﻿using CmmInterpretor.Values;
 using CmmInterpretor.Variables;
 using System.Linq;
 using System.Reflection;
@@ -192,7 +191,7 @@ namespace CmmInterpretor.Commands
             }
         );
 
-        public static Command Delete => new(
+        public static Command DeleteGlobal => new(
             "delete_global",
 
             "delete_global\n" +
@@ -219,29 +218,62 @@ namespace CmmInterpretor.Commands
         //    (args, pipe, call) => new Null()
         //);
 
-        //public static Command Random => new Command(
-        //    "random",
+        public static Command Random => new Command(
+            "random",
 
-        //    "random\n" +
-        //    "Returns a pseudo-random number between 0 and 1.\n" +
-        //    "\n" +
-        //    "random <max>\n" +
-        //    "Returns a pseudo-random integer between 0 and max, the max value is excluded.\n" +
-        //    "\n" +
-        //    "random <min> <max>\n" +
-        //    "Returns a pseudo-random integer between min and max, the max value is excluded.",
+            "random\n" +
+            "Returns a pseudo-random number between 0 and 1.\n" +
+            "\n" +
+            "random <max>\n" +
+            "Returns a pseudo-random integer between 0 and max, the max value is excluded.\n" +
+            "\n" +
+            "random <min> <max>\n" +
+            "Returns a pseudo-random integer between min and max, the max value is excluded.",
 
-        //    (args, pipe, _) => new Number(rng.NextDouble())
-        //);
+            (args, pipe, _) =>
+            {
+                new Number(rng.NextDouble());
 
-        //public static Command Time => new Command(
-        //    "time",
+                if (args.Length == 0)
+                    return new Number(rng.NextDouble());
 
-        //    "time\n" +
-        //    "Returns the current time.",
+                if (args.Length == 1)
+                {
+                    if (!int.TryParse(args[0], out int max))
+                        return new String($"Cannot parse '{args[0]}' has number.");
 
-        //    (args, pipe, _) => new String(System.DateTime.Now.ToString())
-        //);
+                    return new Number(rng.Next(max));
+                }
+
+                if (args.Length == 2)
+                {
+                    if (!int.TryParse(args[0], out int min))
+                        return new String($"Cannot parse '{args[0]}' has number.");
+
+                    if (!int.TryParse(args[1], out int max))
+                        return new String($"Cannot parse '{args[1]}' has number.");
+
+                    return new Number(rng.Next(min, max));
+                }
+
+                return new String($"'random' does not take {args.Length} arguments.\nType '/help random' to see its usage.");
+            }
+        );
+
+        public static Command Time => new Command(
+            "time",
+
+            "time\n" +
+            "Returns the current time.",
+
+            (args, pipe, _) =>
+            {
+                if (args.Length == 0)
+                    return new String(System.DateTime.UtcNow.ToString());
+
+                return new String($"'time' does not take arguments.\nType '/help time' to see its usage.");
+            }
+        );
 
         public static Engine.Builder AddDefaultCommands (this Engine.Builder engineBuilder)
         {

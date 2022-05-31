@@ -50,8 +50,8 @@ namespace CmmInterpretor
             {
                 var result = _statements[i].Execute(Global.Call!);
 
-                if (result is Throw t)
-                    return t;
+                if (result is Throw or Exit)
+                    return result;
 
                 if (result is Return)
                     return new Throw("No function");

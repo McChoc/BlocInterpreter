@@ -5,12 +5,12 @@ using CmmInterpretor.Values;
 
 namespace CmmInterpretor.Operators.Type
 {
-    public class IsNot : IExpression
+    internal class IsNot : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
 
-        public IsNot(IExpression left, IExpression right)
+        internal IsNot(IExpression left, IExpression right)
         {
             _left = left;
             _right = right;

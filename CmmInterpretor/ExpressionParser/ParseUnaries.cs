@@ -14,14 +14,14 @@ using System.Collections.Generic;
 
 namespace CmmInterpretor
 {
-    public static partial class ExpressionParser
+    internal static partial class ExpressionParser
     {
         private static IExpression ParseUnaries(List<Token> tokens, int precedence)
         {
             if (tokens.Count == 0)
-                throw new SyntaxError("Missing value");
+                throw new SyntaxError(0, 0, "Missing value");
 
-            if (tokens[0] is { type: TokenType.Operator or TokenType.Keyword, value: "+" or "-" or "~" or "!" or "++" or "--" or "~~" or "!!" or "len" or "chr" or "ord" or "val" or "ref" or "new" or "await" or "nameof" or "typeof" })
+            if (tokens[0] is (TokenType.Operator or TokenType.Keyword, "+" or "-" or "~" or "!" or "++" or "--" or "~~" or "!!" or "len" or "chr" or "ord" or "val" or "ref" or "new" or "await" or "nameof" or "typeof"))
             {
                 var operand = ParseUnaries(tokens.GetRange(1..), precedence);
 
@@ -48,7 +48,7 @@ namespace CmmInterpretor
                 };
             }
 
-            if (tokens[^1] is { type: TokenType.Operator, value: "++" or "--" or "~~" or "!!" or "?" })
+            if (tokens[^1] is (TokenType.Operator, "++" or "--" or "~~" or "!!" or "?"))
             {
                 var operand = ParseUnaries(tokens.GetRange(..^1), precedence);
 

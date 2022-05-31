@@ -6,11 +6,11 @@ using CmmInterpretor.Utils;
 
 namespace CmmInterpretor.Operators.Arithmetic
 {
-    public class Plus : IExpression
+    internal class Plus : IExpression
     {
         private readonly IExpression _operand;
 
-        public Plus(IExpression operand) => _operand = operand;
+        internal Plus(IExpression operand) => _operand = operand;
 
         public IValue Evaluate(Call call)
         {

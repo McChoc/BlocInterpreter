@@ -8,12 +8,12 @@ using System.Linq;
 
 namespace CmmInterpretor.Operators.Primary
 {
-    public class Invocation : IExpression
+    internal class Invocation : IExpression
     {
         private readonly IExpression _expression;
         private readonly List<IExpression> _parameters;
 
-        public Invocation(IExpression expression, List<IExpression> parameters)
+        internal Invocation(IExpression expression, List<IExpression> parameters)
         {
             _expression = expression;
             _parameters = parameters;

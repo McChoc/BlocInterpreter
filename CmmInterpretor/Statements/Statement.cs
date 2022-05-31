@@ -4,13 +4,13 @@ using System.Collections.Generic;
 
 namespace CmmInterpretor.Statements
 {
-    public abstract class Statement
+    internal abstract class Statement
     {
-        public string? Label { get; set; }
+        internal string? Label { get; set; }
 
-        public abstract Result? Execute(Call call);
+        internal abstract Result? Execute(Call call);
 
-        protected static Result? ExecuteBlock(List<Statement> statements, Call call)
+        private protected static Result? ExecuteBlock(List<Statement> statements, Call call)
         {
             var labels = GetLabels(statements);
 
@@ -43,7 +43,7 @@ namespace CmmInterpretor.Statements
             return null;
         }
 
-        protected static Result? ExecuteBlockInLoop(List<Statement> statements, Dictionary<string, int> labels, Call call)
+        private protected static Result? ExecuteBlockInLoop(List<Statement> statements, Dictionary<string, int> labels, Call call)
         {
             for (int i = 0; i < statements.Count; i++)
             {
@@ -65,7 +65,7 @@ namespace CmmInterpretor.Statements
             return null;
         }
 
-        protected static Dictionary<string, int> GetLabels(List<Statement> statements)
+        private protected static Dictionary<string, int> GetLabels(List<Statement> statements)
         {
             var labels = new Dictionary<string, int>();
 

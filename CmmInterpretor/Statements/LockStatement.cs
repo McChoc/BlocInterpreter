@@ -1,20 +1,24 @@
 ﻿using CmmInterpretor.Expressions;
 using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
+using CmmInterpretor.Variables;
 using System.Collections.Generic;
 
 namespace CmmInterpretor.Statements
 {
-    public class LockStatement : Statement
+    internal class LockStatement : Statement
     {
-        public IExpression Expression { get; set; } = default!;
-        public List<Statement> Statements { get; set; } = default!;
+        internal IExpression Expression { get; set; } = default!;
+        internal List<Statement> Statements { get; set; } = default!;
 
-        public override Result? Execute(Call call)
+        internal override Result? Execute(Call call)
         {
             try
             {
                 var value = Expression.Evaluate(call);
+
+                if (value is not Variable)
+                    return new Throw("You can only lock a variable");
 
                 lock (value)
                 {

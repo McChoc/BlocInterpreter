@@ -5,12 +5,12 @@ using CmmInterpretor.Values;
 
 namespace CmmInterpretor.Operators.Relation
 {
-    public class Greater : IExpression
+    internal class Greater : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
 
-        public Greater(IExpression left, IExpression right)
+        internal Greater(IExpression left, IExpression right)
         {
             _left = left;
             _right = right;

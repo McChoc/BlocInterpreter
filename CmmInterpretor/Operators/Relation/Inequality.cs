@@ -4,12 +4,12 @@ using CmmInterpretor.Values;
 
 namespace CmmInterpretor.Operators.Relation
 {
-    public class Inequality : IExpression
+    internal class Inequality : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
 
-        public Inequality(IExpression left, IExpression right)
+        internal Inequality(IExpression left, IExpression right)
         {
             _left = left;
             _right = right;

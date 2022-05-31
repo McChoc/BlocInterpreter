@@ -7,14 +7,11 @@ using System.Collections.Generic;
 
 namespace CmmInterpretor
 {
-    public static partial class ExpressionParser
+    internal static partial class ExpressionParser
     {
         private static IExpression ParseRanges(List<Token> tokens, int precedence)
         {
-            var parts = tokens.Split(new Token(TokenType.Operator, ".."));
-
-            if (parts.Count == 0)
-                throw new SyntaxError("Missing expression");
+            var parts = tokens.Split(x => x is (TokenType.Operator, ".."));
 
             if (parts.Count == 1)
                 return Parse(parts[0], precedence - 1);
@@ -36,7 +33,7 @@ namespace CmmInterpretor
                 return new Range(start, end, step);
             }
 
-            throw new SyntaxError("Unexpected symbol '..'");
+            throw new SyntaxError(tokens[0].Start, tokens[^1].End, "Unexpected symbol '..'");
         }
     }
 }
