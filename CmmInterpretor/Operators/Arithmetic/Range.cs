@@ -1,5 +1,5 @@
-﻿using CmmInterpretor.Memory;
-using CmmInterpretor.Expressions;
+﻿using CmmInterpretor.Expressions;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
 using CmmInterpretor.Values;
 
@@ -7,8 +7,8 @@ namespace CmmInterpretor.Operators.Arithmetic
 {
     internal class Range : IExpression
     {
-        private readonly IExpression? _start;
         private readonly IExpression? _end;
+        private readonly IExpression? _start;
         private readonly IExpression? _step;
 
         internal Range(IExpression? start, IExpression? end, IExpression? step)
@@ -21,7 +21,7 @@ namespace CmmInterpretor.Operators.Arithmetic
         public IValue Evaluate(Call call)
         {
             int? start = null, end = null;
-            int step = 1;
+            var step = 1;
 
             if (_start is not null)
             {

@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Text;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
-using CmmInterpretor.Utils.Exceptions;
-using CmmInterpretor.Tokens;
-using CmmInterpretor.Expressions;
 using System.Linq;
+using System.Text;
+using CmmInterpretor.Expressions;
+using CmmInterpretor.Tokens;
+using CmmInterpretor.Utils.Exceptions;
 
 namespace CmmInterpretor.Scanners
 {
@@ -54,9 +55,10 @@ namespace CmmInterpretor.Scanners
             "reference", "complex", "type"
         };
 
-        private int _index = 0;
-        private readonly int _offset;
         private readonly string _code;
+        private readonly int _offset;
+
+        private int _index;
 
         internal TokenScanner(string code, int offset = 0)
         {
@@ -64,7 +66,10 @@ namespace CmmInterpretor.Scanners
             _code = code;
         }
 
-        internal static IEnumerable<Token> Scan(Token token) => Scan(token.Text, token.Start);
+        internal static IEnumerable<Token> Scan(Token token)
+        {
+            return Scan(token.Text, token.Start);
+        }
 
         private static IEnumerable<Token> Scan(string code, int offset)
         {
@@ -83,7 +88,7 @@ namespace CmmInterpretor.Scanners
 
         internal Token Peek()
         {
-            int previousIndex = _index;
+            var previousIndex = _index;
 
             var token = GetNextToken();
 
@@ -94,11 +99,11 @@ namespace CmmInterpretor.Scanners
 
         internal List<Token> Peek(int count)
         {
-            int previousIndex = _index;
+            var previousIndex = _index;
 
             var tokens = new List<Token>();
 
-            for (int i = 0; i < count && HasNextToken(); i++)
+            for (var i = 0; i < count && HasNextToken(); i++)
                 tokens.Add(GetNextToken());
 
             _index = previousIndex;
@@ -109,11 +114,12 @@ namespace CmmInterpretor.Scanners
         internal Token GetNextToken()
         {
             if (_index >= _code.Length)
-                throw new System.Exception();
+                throw new Exception();
 
             SkipWhiteSpace();
 
-            if (char.IsDigit(_code[_index]) || _code[_index] == '.' && _index < _code.Length - 1 && char.IsDigit(_code[_index + 1]))
+            if (char.IsDigit(_code[_index]) ||
+                (_code[_index] == '.' && _index < _code.Length - 1 && char.IsDigit(_code[_index + 1])))
                 return GetNumber();
 
             if (_code[_index] is '\'' or '"' or '`')
@@ -128,10 +134,10 @@ namespace CmmInterpretor.Scanners
             var word = GetWord();
 
             if (word is (TokenType.Keyword, "not") && HasNextToken() && Peek() is (TokenType.Keyword, "in"))
-                return new(word.Start, GetNextToken().End, TokenType.Keyword, "not in");
+                return new Token(word.Start, GetNextToken().End, TokenType.Keyword, "not in");
 
             if (word is (TokenType.Keyword, "is") && HasNextToken() && Peek() is (TokenType.Keyword, "not"))
-                return new(word.Start, GetNextToken().End, TokenType.Keyword, "is not");
+                return new Token(word.Start, GetNextToken().End, TokenType.Keyword, "is not");
 
             return word;
         }
@@ -139,15 +145,15 @@ namespace CmmInterpretor.Scanners
         internal Token GetNextCommandToken()
         {
             if (_index >= _code.Length)
-                throw new System.Exception();
+                throw new Exception();
 
             SkipWhiteSpace();
 
             if (_index < _code.Length - 1 && _code.Substring(_index, 2) == "|>")
-                return new(_index + _offset, (_index += 2) + _offset, TokenType.Operator, "|>");
+                return new Token(_index + _offset, (_index += 2) + _offset, TokenType.Operator, "|>");
 
             if (_code[_index] == ';')
-                return new(_index + _offset, ++_index + _offset, TokenType.Operator, ";");
+                return new Token(_index + _offset, ++_index + _offset, TokenType.Operator, ";");
 
             if (_code[_index] == '$')
                 return GetWord();
@@ -160,7 +166,7 @@ namespace CmmInterpretor.Scanners
 
         private void SkipWhiteSpace()
         {
-            int start = _index;
+            var start = _index;
             bool skip;
 
             do
@@ -214,13 +220,12 @@ namespace CmmInterpretor.Scanners
                     skip = true;
                     _index++;
                 }
-            }
-            while (skip);
+            } while (skip);
         }
 
         private Token GetWord()
         {
-            int start = _index++;
+            var start = _index++;
 
             while (true)
             {
@@ -233,35 +238,42 @@ namespace CmmInterpretor.Scanners
                 _index++;
             }
 
-            string word = _code[start.._index];
+            var word = _code[start.._index];
 
             if (word == "$")
                 throw new SyntaxError(start + _offset, _index + _offset, "Missing variable name.");
 
             if (keyWords.Contains(word))
-                return new(start + _offset, _index + _offset, TokenType.Keyword, word);
+                return new Token(start + _offset, _index + _offset, TokenType.Keyword, word);
 
             return new Token(start + _offset, _index + _offset, TokenType.Identifier, word.TrimStart('$'));
         }
 
         private Token GetNumber()
         {
-            bool hasPeriod = false;
-            bool hasExp = false;
+            var hasPeriod = false;
+            var hasExp = false;
 
             byte @base = 10;
 
             if (_code[_index] == '0' && _index < _code.Length - 1)
-            {
                 switch (_code[_index + 1])
                 {
-                    case 'b': @base = 2; _index += 2; break;
-                    case 'o': @base = 8; _index += 2; break;
-                    case 'x': @base = 16; _index += 2; break;
+                    case 'b':
+                        @base = 2;
+                        _index += 2;
+                        break;
+                    case 'o':
+                        @base = 8;
+                        _index += 2;
+                        break;
+                    case 'x':
+                        @base = 16;
+                        _index += 2;
+                        break;
                 }
-            }
 
-            int start = _index;
+            var start = _index;
 
             while (true)
             {
@@ -282,7 +294,8 @@ namespace CmmInterpretor.Scanners
                     continue;
                 }
 
-                if ((_code[_index] == '+' || _code[_index] == '-') && _index > 0 && char.ToUpper(_code[_index - 1]) == 'E' && @base == 10)
+                if ((_code[_index] == '+' || _code[_index] == '-') && _index > 0 &&
+                    char.ToUpper(_code[_index - 1]) == 'E' && @base == 10)
                 {
                     _index++;
                     continue;
@@ -294,7 +307,7 @@ namespace CmmInterpretor.Scanners
                     break;
             }
 
-            string num = _code[start.._index];
+            var num = _code[start.._index];
 
             if (num[^1] == '.')
             {
@@ -309,7 +322,9 @@ namespace CmmInterpretor.Scanners
 
             try
             {
-                double number = @base == 10 ? double.Parse(num, CultureInfo.InvariantCulture) : System.Convert.ToInt32(num, @base);
+                var number = @base == 10
+                    ? double.Parse(num, CultureInfo.InvariantCulture)
+                    : Convert.ToInt32(num, @base);
                 return new Literal(start + _offset, _index + _offset, new NumberLiteral(number));
             }
             catch
@@ -320,10 +335,10 @@ namespace CmmInterpretor.Scanners
 
         private Token GetString()
         {
-            int start = _index;
+            var start = _index;
 
-            char symbol = _code[_index];
-            bool IsRaw = _index <= _code.Length - 3 && _code[_index + 1] == symbol && _code[_index + 2] == symbol;
+            var symbol = _code[_index];
+            var IsRaw = _index <= _code.Length - 3 && _code[_index + 1] == symbol && _code[_index + 2] == symbol;
 
             var expressions = new List<(int, IExpression)>();
 
@@ -346,28 +361,26 @@ namespace CmmInterpretor.Scanners
                         _index++;
                         break;
                     }
+
+                    var count = 0;
+
+                    while (_index < _code.Length && _code[_index] == symbol)
+                    {
+                        count++;
+                        _index++;
+                    }
+
+                    if (count == 1)
+                        throw new SyntaxError(_index + _offset, _index + _offset + 1, "unexpected quote");
+
+                    if (count % 2 == 0)
+                    {
+                        str.Append(symbol, count / 2);
+                    }
                     else
                     {
-                        int count = 0;
-
-                        while (_index < _code.Length && _code[_index] == symbol)
-                        {
-                            count++;
-                            _index++;
-                        }
-
-                        if (count == 1)
-                            throw new SyntaxError(_index + _offset, _index + _offset + 1, "unexpected quote");
-
-                        if (count % 2 == 0)
-                        {
-                            str.Append(symbol, count / 2);
-                        }
-                        else
-                        {
-                            str.Append(symbol, (count - 3) / 2);
-                            break;
-                        }
+                        str.Append(symbol, (count - 3) / 2);
+                        break;
                     }
                 }
                 else if (!IsRaw && _code[_index] == '\\')
@@ -386,7 +399,7 @@ namespace CmmInterpretor.Scanners
                         'r' => '\r',
                         't' => '\t',
                         'v' => '\v',
-                        _ => throw new SyntaxError(_index + _offset, _index + _offset + 2, "unknown escape sequence"),
+                        _ => throw new SyntaxError(_index + _offset, _index + _offset + 2, "unknown escape sequence")
                     };
 
                     str.Append(character);
@@ -424,8 +437,8 @@ namespace CmmInterpretor.Scanners
 
             List<Token> GetExpression()
             {
-                int depth = 0;
-                int start = _index;
+                var depth = 0;
+                var start = _index;
 
                 while (true)
                 {
@@ -451,16 +464,16 @@ namespace CmmInterpretor.Scanners
 
         private Token GetBlock()
         {
-            char[] symbols = _code[_index] switch
+            var symbols = _code[_index] switch
             {
                 '(' => new[] { '(', ')' },
                 '[' => new[] { '[', ']' },
                 '{' => new[] { '{', '}' },
-                _ => throw new System.Exception()
+                _ => throw new Exception()
             };
 
-            int depth = 0;
-            int start = _index;
+            var depth = 0;
+            var start = _index;
 
             while (true)
             {
@@ -478,20 +491,20 @@ namespace CmmInterpretor.Scanners
                     break;
             }
 
-            string text = _code.Substring(start + 1, _index - start - 2);
+            var text = _code.Substring(start + 1, _index - start - 2);
 
-            return new(start + _offset, _index + _offset, symbols[0] switch
+            return new Token(start + _offset, _index + _offset, symbols[0] switch
             {
                 '(' => TokenType.Parentheses,
                 '[' => TokenType.Brackets,
                 '{' => TokenType.Braces,
-                _ => throw new System.Exception()
+                _ => throw new Exception()
             }, text);
         }
 
         private Token GetOperator()
         {
-            int start = _index;
+            var start = _index;
 
             while (true)
             {
@@ -507,12 +520,12 @@ namespace CmmInterpretor.Scanners
             if (start == _index)
                 throw new SyntaxError(start + _offset, start + _offset + 1, "unknown operator");
 
-            return new(start + _offset, _index + _offset, TokenType.Operator, _code[start.._index]);
+            return new Token(start + _offset, _index + _offset, TokenType.Operator, _code[start.._index]);
         }
 
         private Token GetCommand()
         {
-            int start = _index++;
+            var start = _index++;
 
             while (true)
             {
@@ -531,9 +544,9 @@ namespace CmmInterpretor.Scanners
                 _index++;
             }
 
-            string word = _code[start.._index];
+            var word = _code[start.._index];
 
-            return new(start + _offset, _index + _offset, TokenType.Keyword, word);
+            return new Token(start + _offset, _index + _offset, TokenType.Keyword, word);
         }
     }
 }

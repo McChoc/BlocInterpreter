@@ -1,9 +1,9 @@
-﻿using CmmInterpretor.Memory;
+﻿using System.Collections.Generic;
 using CmmInterpretor.Expressions;
+using CmmInterpretor.Interfaces;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
 using CmmInterpretor.Variables;
-using System.Collections.Generic;
-using CmmInterpretor.Interfaces;
 
 namespace CmmInterpretor.Statements
 {
@@ -22,7 +22,7 @@ namespace CmmInterpretor.Statements
                 if (value.Value is not IIterable iter)
                     return new Throw("You can only iterate over a range, a string or an array.");
 
-                int loopCount = 0;
+                var loopCount = 0;
                 var labels = GetLabels(Statements);
 
                 foreach (var item in iter.Iterate())

@@ -1,11 +1,11 @@
-﻿using CmmInterpretor.Utils.Exceptions;
+﻿using System.Collections.Generic;
+using System.Linq;
 using CmmInterpretor.Expressions;
 using CmmInterpretor.Extensions;
+using CmmInterpretor.Scanners;
 using CmmInterpretor.Statements;
 using CmmInterpretor.Tokens;
-using System.Collections.Generic;
-using System.Linq;
-using CmmInterpretor.Scanners;
+using CmmInterpretor.Utils.Exceptions;
 
 namespace CmmInterpretor
 {
@@ -13,14 +13,14 @@ namespace CmmInterpretor
     {
         private static IExpression ParseFunctions(List<Token> tokens, int precedence)
         {
-            for (int i = 0; i < tokens.Count; i++)
+            for (var i = 0; i < tokens.Count; i++)
             {
                 if (tokens[i] is (TokenType.Operator, "=>") op)
                 {
                     if (i == 0)
                         throw new SyntaxError(op.Start, op.End, "Missing identifiers");
 
-                    bool async = false;
+                    var async = false;
 
                     if (i >= 2 && tokens[i - 2] is (TokenType.Keyword, "async"))
                         async = true;
@@ -29,7 +29,7 @@ namespace CmmInterpretor
 
                     if (tokens[i - 1].Type == TokenType.Identifier)
                     {
-                        names = new()
+                        names = new List<string>
                         {
                             tokens[i - 1].Text
                         };
@@ -38,7 +38,9 @@ namespace CmmInterpretor
                     {
                         var parameters = TokenScanner.Scan(tokens[i - 1]).ToList();
 
-                        names = parameters.Count > 0 ? parameters.Split(x => x is (TokenType.Operator, ",")).Select(x => x.Single().Text).ToList() : new List<string>();
+                        names = parameters.Count > 0
+                            ? parameters.Split(x => x is (TokenType.Operator, ",")).Select(x => x.Single().Text).ToList()
+                            : new List<string>();
 
                         if (names.Count != names.Distinct().Count())
                             throw new SyntaxError(tokens[i - 1].Start, tokens[i - 1].End, "Some parameters are duplicates.");
@@ -50,7 +52,7 @@ namespace CmmInterpretor
 
                     var statement = new ReturnStatement(Parse(tokens.GetRange((i + 1)..)));
 
-                    var function = new FunctionLiteral(async, names, new() { statement });
+                    var function = new FunctionLiteral(async, names, new List<Statement> { statement });
 
                     var expression = tokens.GetRange(..(i - (async ? 2 : 1)));
                     expression.Add(new Literal(0, 0, function));
@@ -61,12 +63,14 @@ namespace CmmInterpretor
                 {
                     var parameters = TokenScanner.Scan(tokens[i]).ToList();
 
-                    var names = parameters.Count > 0 ? parameters.Split(x => x is (TokenType.Operator, ",")).Select(x => x.Single().Text).ToList() : new List<string>();
+                    var names = parameters.Count > 0
+                        ? parameters.Split(x => x is (TokenType.Operator, ",")).Select(x => x.Single().Text).ToList()
+                        : new List<string>();
 
                     if (names.Count != names.Distinct().Count())
                         throw new SyntaxError(tokens[i].Start, tokens[i].End, "Some parameters are duplicates.");
 
-                    bool async = false;
+                    var async = false;
 
                     if (i >= 1 && tokens[i - 1] is (TokenType.Keyword, "async"))
                         async = true;

@@ -4,8 +4,8 @@ namespace CmmInterpretor.Utils
 {
     public class Variant<T1, T2>
     {
-        private readonly object _value;
         private readonly Type _type;
+        private readonly object _value;
 
         public Variant(T1 value)
         {
@@ -32,18 +32,16 @@ namespace CmmInterpretor.Utils
             return _type == typeof(T);
         }
 
-        public bool Is<T>(out T? result) 
+        public bool Is<T>(out T? result)
         {
             if (_type == typeof(T))
             {
                 result = (T)_value;
                 return true;
             }
-            else
-            {
-                result = default;
-                return false;
-            }
+
+            result = default;
+            return false;
         }
 
         public static Variant<T1, T2> Coales(T1? t1, T2 t2)
@@ -54,7 +52,14 @@ namespace CmmInterpretor.Utils
             return new Variant<T1, T2>(t2);
         }
 
-        public static implicit operator Variant<T1, T2>(T1 value) => new(value);
-        public static implicit operator Variant<T1, T2>(T2 value) => new(value);
+        public static implicit operator Variant<T1, T2>(T1 value)
+        {
+            return new(value);
+        }
+
+        public static implicit operator Variant<T1, T2>(T2 value)
+        {
+            return new(value);
+        }
     }
 }

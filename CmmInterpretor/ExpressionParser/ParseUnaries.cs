@@ -1,4 +1,5 @@
-﻿using CmmInterpretor.Utils.Exceptions;
+﻿using System;
+using System.Collections.Generic;
 using CmmInterpretor.Expressions;
 using CmmInterpretor.Extensions;
 using CmmInterpretor.Operators.Arithmetic;
@@ -8,9 +9,9 @@ using CmmInterpretor.Operators.Character;
 using CmmInterpretor.Operators.Collection;
 using CmmInterpretor.Operators.Misc;
 using CmmInterpretor.Operators.Reference;
-using CmmInterpretor.Operators.Type;
 using CmmInterpretor.Tokens;
-using System.Collections.Generic;
+using CmmInterpretor.Utils.Exceptions;
+using Nullable = CmmInterpretor.Operators.Type.Nullable;
 
 namespace CmmInterpretor
 {
@@ -21,7 +22,9 @@ namespace CmmInterpretor
             if (tokens.Count == 0)
                 throw new SyntaxError(0, 0, "Missing value");
 
-            if (tokens[0] is (TokenType.Operator or TokenType.Keyword, "+" or "-" or "~" or "!" or "++" or "--" or "~~" or "!!" or "len" or "chr" or "ord" or "val" or "ref" or "new" or "await" or "nameof" or "typeof"))
+            if (tokens[0] is (TokenType.Operator or TokenType.Keyword,
+                "+" or "-" or "~" or "!" or "++" or "--" or "~~" or "!!" or "len" or
+                "chr" or "ord" or "val" or "ref" or "new" or "await" or "nameof" or "typeof"))
             {
                 var operand = ParseUnaries(tokens.GetRange(1..), precedence);
 
@@ -44,7 +47,7 @@ namespace CmmInterpretor
                     "await" => new Await(operand),
                     "nameof" => new Nameof(operand),
                     "typeof" => new Typeof(operand),
-                    _ => throw new System.Exception(),
+                    _ => throw new Exception()
                 };
             }
 
@@ -59,7 +62,7 @@ namespace CmmInterpretor
                     "~~" => new PostComplement(operand),
                     "!!" => new PostNegation(operand),
                     "?" => new Nullable(operand),
-                    _ => throw new System.Exception(),
+                    _ => throw new Exception()
                 };
             }
 

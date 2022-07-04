@@ -4,11 +4,6 @@ namespace CmmInterpretor.Utils.Exceptions
 {
     public class SyntaxError : Exception
     {
-        public int Start { get; }
-        public int End { get; }
-        public string Text { get; }
-        public virtual bool Fatal => true;
-
         [Obsolete]
         public SyntaxError()
         {
@@ -23,5 +18,10 @@ namespace CmmInterpretor.Utils.Exceptions
             End = end;
             Text = text;
         }
+
+        public int Start { get; }
+        public int End { get; }
+        public string Text { get; }
+        public virtual bool Fatal => true;
     }
 }

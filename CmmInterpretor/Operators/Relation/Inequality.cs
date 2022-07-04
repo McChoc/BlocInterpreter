@@ -1,5 +1,5 @@
-﻿using CmmInterpretor.Memory;
-using CmmInterpretor.Expressions;
+﻿using CmmInterpretor.Expressions;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Values;
 
 namespace CmmInterpretor.Operators.Relation

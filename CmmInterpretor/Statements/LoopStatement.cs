@@ -1,6 +1,6 @@
-﻿using CmmInterpretor.Memory;
+﻿using System.Collections.Generic;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
-using System.Collections.Generic;
 
 namespace CmmInterpretor.Statements
 {
@@ -10,7 +10,7 @@ namespace CmmInterpretor.Statements
 
         internal override Result? Execute(Call call)
         {
-            int loopCount = 0;
+            var loopCount = 0;
             var labels = GetLabels(Statements);
 
             while (true)

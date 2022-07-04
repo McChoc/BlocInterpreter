@@ -1,8 +1,8 @@
-﻿using CmmInterpretor.Memory;
-using CmmInterpretor.Expressions;
+﻿using CmmInterpretor.Expressions;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
-using CmmInterpretor.Values;
 using CmmInterpretor.Utils;
+using CmmInterpretor.Values;
 
 namespace CmmInterpretor.Operators.Arithmetic
 {
@@ -10,7 +10,10 @@ namespace CmmInterpretor.Operators.Arithmetic
     {
         private readonly IExpression _operand;
 
-        internal Minus(IExpression operand) => _operand = operand;
+        internal Minus(IExpression operand)
+        {
+            _operand = operand;
+        }
 
         public IValue Evaluate(Call call)
         {

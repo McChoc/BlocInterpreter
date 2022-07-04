@@ -1,8 +1,8 @@
-﻿using CmmInterpretor.Memory;
+﻿using System.Collections.Generic;
+using System.Text;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
 using CmmInterpretor.Values;
-using System.Collections.Generic;
-using System.Text;
 
 namespace CmmInterpretor.Expressions
 {

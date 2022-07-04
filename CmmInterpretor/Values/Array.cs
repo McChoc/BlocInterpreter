@@ -1,27 +1,97 @@
-﻿using CmmInterpretor.Interfaces;
+﻿using System.Collections.Generic;
+using System.Linq;
+using CmmInterpretor.Interfaces;
 using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
 using CmmInterpretor.Variables;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace CmmInterpretor.Values
 {
     public class Array : Value, IIterable, IIndexable
     {
-        public static Array Empty { get; } = new(new());
+        public Array(List<IValue> value)
+        {
+            Values = value;
+        }
 
-        public List<IValue> Values { get; private set; }
+        public static Array Empty { get; } = new(new List<IValue>());
+
+        public List<IValue> Values { get; }
 
         public override ValueType Type => ValueType.Array;
 
-        public Array(List<IValue> value) => Values = value;
+        public IValue Index(Value val, Call call)
+        {
+            if (val is Number num)
+            {
+                var index = num.ToInt() >= 0 ? num.ToInt() : Values.Count + num.ToInt();
 
-        public override Value Copy() => new Array(Values.Select(v => v.Copy()).ToList<IValue>());
+                if (index >= 0 && index < Values.Count)
+                    return Values[index];
+
+                throw new Throw("Index out of range");
+            }
+
+            if (val is Range rng)
+            {
+                var variables = new List<IValue>();
+
+                var start = (int)(rng.Start != null
+                    ? rng.Start >= 0
+                        ? rng.Start
+                        : Values.Count + rng.Start
+                    : rng.Step >= 0
+                        ? 0
+                        : Values.Count - 1);
+
+                var end = (int)(rng.End != null
+                    ? rng.End >= 0
+                        ? rng.End
+                        : Values.Count + rng.End
+                    : rng.Step >= 0
+                        ? Values.Count
+                        : -1);
+
+                for (var i = start; i != end && end - i > 0 == rng.Step > 0; i += rng.Step)
+                    variables.Add(Values[i].Value);
+
+                return new Array(variables);
+            }
+
+            if (val is Function func)
+            {
+                var list = new List<IValue>();
+
+                foreach (var value in Values)
+                {
+                    var result = func.Invoke(new List<Value> { value.Value }, call);
+
+                    if (result is IValue v)
+                        list.Add(v.Value);
+                    else
+                        return result;
+                }
+
+                return new Array(list);
+            }
+
+            throw new Throw("It should be a number, a range or a function.");
+        }
+
+        public IEnumerable<Value> Iterate()
+        {
+            foreach (var value in Values)
+                yield return value.Value;
+        }
+
+        public override Value Copy()
+        {
+            return new Array(Values.Select(v => v.Copy()).ToList<IValue>());
+        }
 
         public override void Assign()
         {
-            for (int i = 0; i < Values.Count; i++)
+            for (var i = 0; i < Values.Count; i++)
             {
                 Values[i] = new ChildVariable((Value)Values[i], i, this);
                 Values[i].Assign();
@@ -42,7 +112,7 @@ namespace CmmInterpretor.Values
             if (Values.Count != arr.Values.Count)
                 return false;
 
-            for (int i = 0; i < Values.Count; i++)
+            for (var i = 0; i < Values.Count; i++)
                 if (!Values[i].Equals(arr.Values[i]))
                     return false;
 
@@ -79,74 +149,13 @@ namespace CmmInterpretor.Values
         {
             if (Values.Count == 0)
                 return "array()";
-            else if (!Values.Any(v => v.Value is Array or Struct or Tuple))
+
+            if (!Values.Any(v => v.Value is Array or Struct or Tuple))
                 return "{ " + string.Join(", ", Values.Select(v => v.Value.ToString())) + " }";
-            else
-                return "{\n" + string.Join(",\n", Values.Select(v => new string(' ', (depth + 1) * 4) + v.ToString(depth + 1))) + "\n" + new string(' ', depth * 4) + "}";
-        }
 
-        public IEnumerable<Value> Iterate()
-        {
-            foreach (var value in Values)
-                yield return value.Value;
-        }
-
-        public IValue Index(Value val, Call call)
-        {
-            if (val is Number num)
-            {
-                int index = num.ToInt() >= 0 ? num.ToInt() : Values.Count + num.ToInt();
-
-                if (index >= 0 && index < Values.Count)
-                    return Values[index];
-
-                throw new Throw("Index out of range");
-            }
-            
-            if (val is Range rng)
-            {
-                var variables = new List<IValue>();
-
-                int start = (int)(rng.Start != null
-                    ? (rng.Start >= 0
-                        ? rng.Start
-                        : Values.Count + rng.Start)
-                    : (rng.Step >= 0
-                        ? 0
-                        : Values.Count - 1));
-
-                int end = (int)(rng.End != null
-                    ? (rng.End >= 0
-                        ? rng.End
-                        : Values.Count + rng.End)
-                    : (rng.Step >= 0
-                        ? Values.Count
-                        : -1));
-
-                for (int i = start; i != end && end - i > 0 == rng.Step > 0; i += rng.Step)
-                    variables.Add(Values[i].Value);
-
-                return new Array(variables);
-            }
-            
-            if (val is Function func)
-            {
-                var list = new List<IValue>();
-
-                foreach (var value in Values)
-                {
-                    var result = func.Invoke(new() { value.Value }, call);
-
-                    if (result is IValue v)
-                        list.Add(v.Value);
-                    else
-                        return result;
-                }
-
-                return new Array(list);
-            }
-
-            throw new Throw("It should be a number, a range or a function.");
+            return "{\n" +
+                   string.Join(",\n", Values.Select(v => new string(' ', (depth + 1) * 4) + v.ToString(depth + 1))) + "\n" +
+                   new string(' ', depth * 4) + "}";
         }
     }
 }

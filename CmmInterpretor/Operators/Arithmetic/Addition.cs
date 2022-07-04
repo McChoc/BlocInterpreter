@@ -1,9 +1,9 @@
-﻿using CmmInterpretor.Memory;
+﻿using System.Collections.Generic;
 using CmmInterpretor.Expressions;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
-using CmmInterpretor.Values;
-using System.Collections.Generic;
 using CmmInterpretor.Utils;
+using CmmInterpretor.Values;
 
 namespace CmmInterpretor.Operators.Arithmetic
 {

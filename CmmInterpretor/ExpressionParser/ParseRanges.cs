@@ -1,9 +1,9 @@
-﻿using CmmInterpretor.Utils.Exceptions;
+﻿using System.Collections.Generic;
 using CmmInterpretor.Expressions;
 using CmmInterpretor.Extensions;
 using CmmInterpretor.Operators.Arithmetic;
 using CmmInterpretor.Tokens;
-using System.Collections.Generic;
+using CmmInterpretor.Utils.Exceptions;
 
 namespace CmmInterpretor
 {

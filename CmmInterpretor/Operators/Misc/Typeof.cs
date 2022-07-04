@@ -1,5 +1,5 @@
-﻿using CmmInterpretor.Memory;
-using CmmInterpretor.Expressions;
+﻿using CmmInterpretor.Expressions;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Values;
 
 namespace CmmInterpretor.Operators.Misc
@@ -8,7 +8,10 @@ namespace CmmInterpretor.Operators.Misc
     {
         private readonly IExpression _operand;
 
-        internal Typeof(IExpression operand) => _operand = operand;
+        internal Typeof(IExpression operand)
+        {
+            _operand = operand;
+        }
 
         public IValue Evaluate(Call call)
         {

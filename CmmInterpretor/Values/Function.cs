@@ -1,9 +1,9 @@
-﻿using CmmInterpretor.Interfaces;
+﻿using System.Collections.Generic;
+using CmmInterpretor.Interfaces;
 using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
 using CmmInterpretor.Statements;
 using CmmInterpretor.Variables;
-using System.Collections.Generic;
 
 namespace CmmInterpretor.Values
 {
@@ -16,13 +16,24 @@ namespace CmmInterpretor.Values
 
         public override ValueType Type => ValueType.Function;
 
-        public override Value Copy() => new Function()
+        public IValue Invoke(List<Value> values, Call parent)
         {
-            Async = Async,
-            Names = Names,
-            Code = Code,
-            Captures = Captures
-        };
+            if (!Async)
+                return Call(values, parent);
+
+            return new Task(System.Threading.Tasks.Task.Run(() => Call(values, parent)));
+        }
+
+        public override Value Copy()
+        {
+            return new Function
+            {
+                Async = Async,
+                Names = Names,
+                Code = Code,
+                Captures = Captures
+            };
+        }
 
         public override bool Equals(IValue other)
         {
@@ -41,15 +52,15 @@ namespace CmmInterpretor.Values
             if (Captures.Variables.Count != func.Captures.Variables.Count)
                 return false;
 
-            for (int i = 0; i < Names.Count; i++)
+            for (var i = 0; i < Names.Count; i++)
                 if (Names[i] != func.Names[i])
                     return false;
 
-            for (int i = 0; i < Code.Count; i++)
+            for (var i = 0; i < Code.Count; i++)
                 if (Code[i] != func.Code[i])
                     return false;
 
-            foreach (string key in Captures.Variables.Keys)
+            foreach (var key in Captures.Variables.Keys)
                 if (!Captures.Variables[key].Equals(func.Captures.Variables[key]))
                     return false;
 
@@ -81,14 +92,9 @@ namespace CmmInterpretor.Values
             };
         }
 
-        public override string ToString(int _) => $"{(Async ? "async " : "")}({ string.Join(", ", Names) }) {{...}}";
-
-        public IValue Invoke(List<Value> values, Call parent)
+        public override string ToString(int _)
         {
-            if (!Async)
-                return Call(values, parent);
-            else
-                return new Task(System.Threading.Tasks.Task.Run(() => Call(values, parent)));
+            return $"{(Async ? "async " : "")}({string.Join(", ", Names)}) {{...}}";
         }
 
         private Value Call(List<Value> values, Call parent)
@@ -97,7 +103,7 @@ namespace CmmInterpretor.Values
 
             try
             {
-                for (int i = 0; i < Names.Count; i++)
+                for (var i = 0; i < Names.Count; i++)
                 {
                     var name = Names[i];
                     var value = i < values.Count && values[i] != Void.Value ? values[i] : Null.Value;
@@ -107,13 +113,13 @@ namespace CmmInterpretor.Values
 
                 var labels = new Dictionary<string, int>();
 
-                for (int i = 0; i < Code.Count; i++)
+                for (var i = 0; i < Code.Count; i++)
                     if (Code[i].Label is not null)
                         labels.Add(Code[i].Label!, i);
 
-                for (int i = 0; i < Code.Count; i++)
+                for (var i = 0; i < Code.Count; i++)
                 {
-                    var result = Code[i].Execute(call); ;
+                    var result = Code[i].Execute(call);
 
                     if (result is Return r)
                         return r.value;
@@ -126,7 +132,7 @@ namespace CmmInterpretor.Values
 
                     if (result is Goto g)
                     {
-                        if (labels.TryGetValue(g.label, out int index))
+                        if (labels.TryGetValue(g.label, out var index))
                             i = index - 1;
                         else
                             throw new Throw("No such label in scope");

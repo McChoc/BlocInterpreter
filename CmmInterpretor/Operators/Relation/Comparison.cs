@@ -1,5 +1,5 @@
-﻿using CmmInterpretor.Memory;
-using CmmInterpretor.Expressions;
+﻿using CmmInterpretor.Expressions;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
 using CmmInterpretor.Values;
 using static System.Math;

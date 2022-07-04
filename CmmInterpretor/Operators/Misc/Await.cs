@@ -1,4 +1,5 @@
-﻿using CmmInterpretor.Expressions;
+﻿using System;
+using CmmInterpretor.Expressions;
 using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
 using CmmInterpretor.Values;
@@ -9,7 +10,10 @@ namespace CmmInterpretor.Operators.Misc
     {
         private readonly IExpression _operand;
 
-        internal Await(IExpression operand) => _operand = operand;
+        internal Await(IExpression operand)
+        {
+            _operand = operand;
+        }
 
         public IValue Evaluate(Call call)
         {
@@ -21,7 +25,7 @@ namespace CmmInterpretor.Operators.Misc
                 {
                     return task!.Value.Result;
                 }
-                catch (System.AggregateException e)
+                catch (AggregateException e)
                 {
                     throw e.InnerException;
                 }

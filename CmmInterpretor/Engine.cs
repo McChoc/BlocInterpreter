@@ -1,18 +1,27 @@
-﻿using CmmInterpretor.Commands;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using CmmInterpretor.Commands;
 using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
 using CmmInterpretor.Scanners;
 using CmmInterpretor.Statements;
 using CmmInterpretor.Utils;
 using CmmInterpretor.Values;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace CmmInterpretor
 {
     public class Engine
     {
+        private readonly List<Statement> _statements = new();
+        private Dictionary<string, int> _labels = new();
+
+        private Engine()
+        {
+            var root = new Call(this);
+            Global = root.Scopes.First();
+        }
+
         internal Dictionary<string, Command> Commands { get; set; } = default!;
 
         public Action<string> Log { get; private set; } = default!;
@@ -25,20 +34,11 @@ namespace CmmInterpretor
 
         internal Scope Global { get; }
 
-        private readonly List<Statement> _statements = new();
-        private Dictionary<string, int> _labels = new();
-
-        private Engine()
-        {
-            var root = new Call(this);
-            Global = root.Scopes.First();
-        }
-
         public Variant<Value, Result>? Execute(string code)
         {
             var statements = StatementScanner.GetStatements(code);
 
-            int start = _statements.Count;
+            var start = _statements.Count;
 
             _statements.AddRange(statements);
             _labels = GetLabels(_statements);
@@ -46,7 +46,7 @@ namespace CmmInterpretor
             if (statements.Count == 1 && statements[0] is ExpressionStatement expression)
                 return expression.Evaluate(Global.Call!);
 
-            for (int i = start; i < _statements.Count; i++)
+            for (var i = start; i < _statements.Count; i++)
             {
                 var result = _statements[i].Execute(Global.Call!);
 
@@ -61,7 +61,7 @@ namespace CmmInterpretor
 
                 if (result is Goto g)
                 {
-                    if (_labels.TryGetValue(g.label, out int index))
+                    if (_labels.TryGetValue(g.label, out var index))
                         i = index - 1;
                     else
                         return new Throw($"Label '{g.label}' does not exist in scope.");
@@ -75,7 +75,7 @@ namespace CmmInterpretor
         {
             var labels = new Dictionary<string, int>();
 
-            for (int i = 0; i < statements.Count; i++)
+            for (var i = 0; i < statements.Count; i++)
                 if (statements[i].Label is not null)
                     labels.Add(statements[i].Label!, i);
 
@@ -85,16 +85,18 @@ namespace CmmInterpretor
         public class Builder
         {
             private readonly Dictionary<string, Command> _commands = new();
+            private Action _clear = () => { };
+            private int _hopLimit = 100;
+            private int _jumpLimit = 1000;
 
             private Action<string> _log = _ => { };
-            private Action _clear = () => { };
+            private int _loopLimit = 1000;
 
             private int _stackLimit = 1000;
-            private int _loopLimit = 1000;
-            private int _jumpLimit = 1000;
-            private int _hopLimit = 100;
 
-            public Builder(params string[] _) { }
+            public Builder(params string[] _)
+            {
+            }
 
             public Builder SetStackLimit(int limit)
             {
@@ -138,16 +140,19 @@ namespace CmmInterpretor
                 return this;
             }
 
-            public Engine Build() => new()
+            public Engine Build()
             {
-                Commands = _commands,
-                Log = _log,
-                Clear = _clear,
-                StackLimit = _stackLimit,
-                LoopLimit = _loopLimit,
-                JumpLimit = _jumpLimit,
-                HopLimit = _hopLimit
-            };
+                return new()
+                {
+                    Commands = _commands,
+                    Log = _log,
+                    Clear = _clear,
+                    StackLimit = _stackLimit,
+                    LoopLimit = _loopLimit,
+                    JumpLimit = _jumpLimit,
+                    HopLimit = _hopLimit
+                };
+            }
         }
     }
 }

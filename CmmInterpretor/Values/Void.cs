@@ -4,11 +4,11 @@ namespace CmmInterpretor.Values
 {
     public class Void : Value
     {
+        private Void() { }
+
         public static Void Value { get; } = new();
 
         public override ValueType Type => ValueType.Void;
-
-        private Void() { }
 
         public override Value Copy() => this;
 

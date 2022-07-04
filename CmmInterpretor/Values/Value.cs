@@ -9,14 +9,11 @@
         public abstract Value Copy();
         public virtual void Assign() { }
         public virtual void Destroy() { }
-        public virtual void Remove(object accessor) { }
 
         public abstract bool Equals(IValue other);
 
         public abstract T Implicit<T>() where T : Value;
         public abstract IValue Explicit(ValueType type);
-
-        public override string ToString() => ToString(0);
         public abstract string ToString(int depth);
 
         public bool Is<T>(out T? value) where T : Value
@@ -32,5 +29,9 @@
                 return false;
             }
         }
+
+        public virtual void Remove(object accessor) { }
+
+        public override string ToString() => ToString(0);
     }
 }

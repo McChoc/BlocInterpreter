@@ -1,11 +1,12 @@
-﻿using CmmInterpretor.Utils.Exceptions;
+﻿using System;
+using System.Collections.Generic;
 using CmmInterpretor.Expressions;
 using CmmInterpretor.Extensions;
 using CmmInterpretor.Operators.Collection;
 using CmmInterpretor.Operators.Relation;
 using CmmInterpretor.Operators.Type;
 using CmmInterpretor.Tokens;
-using System.Collections.Generic;
+using CmmInterpretor.Utils.Exceptions;
 
 namespace CmmInterpretor
 {
@@ -13,9 +14,10 @@ namespace CmmInterpretor
     {
         private static IExpression ParseRelations(List<Token> tokens, int precedence)
         {
-            for (int i = tokens.Count - 1; i >= 0; i--)
+            for (var i = tokens.Count - 1; i >= 0; i--)
             {
-                if (tokens[i] is (TokenType.Operator or TokenType.Keyword, "<" or "<=" or ">" or ">=" or "in" or "not in" or "is" or "is not" or "as") op)
+                if (tokens[i] is (TokenType.Operator or TokenType.Keyword,
+                    "<" or "<=" or ">" or ">=" or "in" or "not in" or "is" or "is not" or "as") op)
                 {
                     if (i == 0)
                         throw new SyntaxError(op.Start, op.End, "Missing the left part of relation");
@@ -37,7 +39,7 @@ namespace CmmInterpretor
                         "is" => new Is(a, b),
                         "is not" => new IsNot(a, b),
                         "as" => new As(a, b),
-                        _ => throw new System.Exception()
+                        _ => throw new Exception()
                     };
                 }
             }

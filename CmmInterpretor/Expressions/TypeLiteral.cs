@@ -7,7 +7,10 @@ namespace CmmInterpretor.Expressions
     {
         private readonly ValueType _type;
 
-        internal TypeLiteral(ValueType type) => _type = type;
+        internal TypeLiteral(ValueType type)
+        {
+            _type = type;
+        }
 
         public IValue Evaluate(Call _) => new TypeCollection(_type);
     }

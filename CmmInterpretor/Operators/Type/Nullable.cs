@@ -1,8 +1,8 @@
-﻿using CmmInterpretor.Memory;
+﻿using System.Collections.Generic;
 using CmmInterpretor.Expressions;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
 using CmmInterpretor.Values;
-using System.Collections.Generic;
 
 namespace CmmInterpretor.Operators.Type
 {
@@ -10,7 +10,10 @@ namespace CmmInterpretor.Operators.Type
     {
         private readonly IExpression _operand;
 
-        internal Nullable(IExpression operand) => _operand = operand;
+        internal Nullable(IExpression operand)
+        {
+            _operand = operand;
+        }
 
         public IValue Evaluate(Call call)
         {
@@ -23,7 +26,7 @@ namespace CmmInterpretor.Operators.Type
                     ValueType.Null
                 };
 
-                foreach (ValueType t in type!.Value)
+                foreach (var t in type!.Value)
                     types.Add(t);
 
                 return new TypeCollection(types);

@@ -1,7 +1,7 @@
-﻿using CmmInterpretor.Results;
+﻿using System.Linq;
+using CmmInterpretor.Results;
 using CmmInterpretor.Values;
 using CmmInterpretor.Variables;
-using System.Linq;
 
 namespace CmmInterpretor.Utils
 {
@@ -77,7 +77,8 @@ namespace CmmInterpretor.Utils
                 if (leftTuple.Values.Count != rightTuple.Values.Count)
                     throw new Throw("Miss mathch number of elements inside the tuples");
 
-                return new Tuple(leftTuple.Values.Zip(rightTuple.Values, (a, b) => RecursivelyCompoundAssign(a, b, operation)).ToList());
+                return new Tuple(leftTuple.Values
+                    .Zip(rightTuple.Values, (a, b) => RecursivelyCompoundAssign(a, b, operation)).ToList());
             }
 
             if (left is Tuple tuple)

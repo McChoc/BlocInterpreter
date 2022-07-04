@@ -1,14 +1,14 @@
-﻿using CmmInterpretor.Memory;
-using CmmInterpretor.Expressions;
+﻿using CmmInterpretor.Expressions;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Values;
 
 namespace CmmInterpretor.Operators.Boolean
 {
     internal class Conditional : IExpression
     {
+        private readonly IExpression _alternative;
         private readonly IExpression _condition;
         private readonly IExpression _consequent;
-        private readonly IExpression _alternative;
 
         internal Conditional(IExpression condition, IExpression consequent, IExpression alternative)
         {
@@ -23,9 +23,7 @@ namespace CmmInterpretor.Operators.Boolean
 
             var @bool = value.Implicit<Bool>();
 
-            return @bool!.Value ?
-                _consequent.Evaluate(call) :
-                _alternative.Evaluate(call);
+            return @bool!.Value ? _consequent.Evaluate(call) : _alternative.Evaluate(call);
         }
     }
 }

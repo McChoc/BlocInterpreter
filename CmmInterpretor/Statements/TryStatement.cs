@@ -1,6 +1,6 @@
-﻿using CmmInterpretor.Memory;
+﻿using System.Collections.Generic;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
-using System.Collections.Generic;
 
 namespace CmmInterpretor.Statements
 {
@@ -13,7 +13,7 @@ namespace CmmInterpretor.Statements
         internal override Result? Execute(Call call)
         {
             var result = ExecuteBlock(Try, call);
-            
+
             if (result is Throw)
             {
                 result = null;

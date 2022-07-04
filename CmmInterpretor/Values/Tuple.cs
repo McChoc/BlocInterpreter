@@ -1,22 +1,29 @@
-﻿using CmmInterpretor.Results;
-using CmmInterpretor.Variables;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using CmmInterpretor.Results;
+using CmmInterpretor.Variables;
 
 namespace CmmInterpretor.Values
 {
     public class Tuple : Value
     {
+        public Tuple(List<IValue> value)
+        {
+            Values = value;
+        }
+
         public List<IValue> Values { get; }
 
         public override ValueType Type => ValueType.Tuple;
 
-        public Tuple(List<IValue> value) => Values = value;
+        public override Value Copy()
+        {
+            return new Tuple(Values.Select(v => v.Copy()).ToList<IValue>());
+        }
 
-        public override Value Copy() => new Tuple(Values.Select(v => v.Copy()).ToList<IValue>());
         public override void Assign()
         {
-            for (int i = 0; i < Values.Count; i++)
+            for (var i = 0; i < Values.Count; i++)
             {
                 Values[i] = new ChildVariable(Values[i].Value, null, this);
                 Values[i].Assign();
@@ -31,7 +38,7 @@ namespace CmmInterpretor.Values
             if (Values.Count != tpl.Values.Count)
                 return false;
 
-            for (int i = 0; i < Values.Count; i++)
+            for (var i = 0; i < Values.Count; i++)
                 if (!Values[i].Equals(tpl.Values[i]))
                     return false;
 
@@ -86,8 +93,10 @@ namespace CmmInterpretor.Values
         {
             if (!Values.Any(v => v.Value is Array or Struct or Tuple))
                 return "(" + string.Join(", ", Values.Select(v => v.Value)) + ")";
-            else
-                return "(\n" + string.Join(",\n", Values.Select(v => new string(' ', (depth + 1) * 4) + v.Value.ToString(depth + 1))) + "\n" + new string(' ', depth * 4) + ")";
+
+            return "(\n" +
+                   string.Join(",\n", Values.Select(v => new string(' ', (depth + 1) * 4) + v.Value.ToString(depth + 1))) + "\n" +
+                   new string(' ', depth * 4) + ")";
         }
     }
 }

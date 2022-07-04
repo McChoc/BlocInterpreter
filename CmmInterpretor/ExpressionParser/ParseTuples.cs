@@ -1,8 +1,7 @@
-﻿using CmmInterpretor.Utils.Exceptions;
+﻿using System.Collections.Generic;
 using CmmInterpretor.Expressions;
 using CmmInterpretor.Extensions;
 using CmmInterpretor.Tokens;
-using System.Collections.Generic;
 
 namespace CmmInterpretor
 {
@@ -14,7 +13,7 @@ namespace CmmInterpretor
 
             if (parts.Count == 1)
                 return Parse(tokens, precedence - 1);
-            
+
             var expressions = new List<IExpression>();
 
             foreach (var part in parts)

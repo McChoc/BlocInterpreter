@@ -1,9 +1,11 @@
-﻿using CmmInterpretor.Expressions;
+﻿using System;
+using System.Collections.Generic;
+using CmmInterpretor.Expressions;
 using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
 using CmmInterpretor.Utils;
 using CmmInterpretor.Values;
-using System.Collections.Generic;
+using ValueType = CmmInterpretor.Values.ValueType;
 
 namespace CmmInterpretor.Operators.Bitwise
 {
@@ -11,7 +13,10 @@ namespace CmmInterpretor.Operators.Bitwise
     {
         private readonly IExpression _operand;
 
-        internal Complement(IExpression operand) => _operand = operand;
+        internal Complement(IExpression operand)
+        {
+            _operand = operand;
+        }
 
         public IValue Evaluate(Call call)
         {
@@ -29,7 +34,7 @@ namespace CmmInterpretor.Operators.Bitwise
             {
                 var types = new HashSet<ValueType>();
 
-                foreach (ValueType t in System.Enum.GetValues(typeof(ValueType)))
+                foreach (ValueType t in Enum.GetValues(typeof(ValueType)))
                     if (!type!.Value.Contains(t))
                         types.Add(t);
 

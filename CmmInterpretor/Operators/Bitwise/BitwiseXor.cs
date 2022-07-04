@@ -1,9 +1,11 @@
-﻿using CmmInterpretor.Memory;
-using CmmInterpretor.Expressions;
-using CmmInterpretor.Results;
-using CmmInterpretor.Values;
+﻿using System;
 using System.Collections.Generic;
+using CmmInterpretor.Expressions;
+using CmmInterpretor.Memory;
+using CmmInterpretor.Results;
 using CmmInterpretor.Utils;
+using CmmInterpretor.Values;
+using ValueType = CmmInterpretor.Values.ValueType;
 
 namespace CmmInterpretor.Operators.Bitwise
 {
@@ -35,7 +37,7 @@ namespace CmmInterpretor.Operators.Bitwise
             {
                 var types = new HashSet<ValueType>();
 
-                foreach (ValueType type in System.Enum.GetValues(typeof(ValueType)))
+                foreach (ValueType type in Enum.GetValues(typeof(ValueType)))
                     if (leftType!.Value.Contains(type) != rightType!.Value.Contains(type))
                         types.Add(type);
 

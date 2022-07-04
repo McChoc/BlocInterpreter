@@ -1,11 +1,11 @@
-﻿using CmmInterpretor.Utils.Exceptions;
+﻿using System.Collections.Generic;
+using System.Linq;
 using CmmInterpretor.Expressions;
 using CmmInterpretor.Extensions;
 using CmmInterpretor.Operators.Primary;
-using CmmInterpretor.Tokens;
-using System.Collections.Generic;
 using CmmInterpretor.Scanners;
-using System.Linq;
+using CmmInterpretor.Tokens;
+using CmmInterpretor.Utils.Exceptions;
 using CmmInterpretor.Values;
 
 namespace CmmInterpretor
@@ -14,7 +14,7 @@ namespace CmmInterpretor
     {
         private static IExpression ParsePrimaries(List<Token> tokens, int precedence)
         {
-            IExpression expression = tokens[0] switch
+            var expression = tokens[0] switch
             {
                 Literal literal => literal.Expression,
 
@@ -45,10 +45,10 @@ namespace CmmInterpretor
                 { Type: TokenType.Braces } => ParseBlock(tokens[0]),
                 { Type: TokenType.Parentheses } => Parse(TokenScanner.Scan(tokens[0]).ToList()),
 
-                _ => throw new SyntaxError(tokens[0].Start, tokens[0].End, "Unexpected symbol"),
+                _ => throw new SyntaxError(tokens[0].Start, tokens[0].End, "Unexpected symbol")
             };
 
-            for (int i = 1; i < tokens.Count; i++)
+            for (var i = 1; i < tokens.Count; i++)
             {
                 if (tokens[i] is (TokenType.Operator, "."))
                 {

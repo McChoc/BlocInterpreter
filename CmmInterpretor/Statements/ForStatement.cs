@@ -1,8 +1,8 @@
-﻿using CmmInterpretor.Memory;
+﻿using System.Collections.Generic;
 using CmmInterpretor.Expressions;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
 using CmmInterpretor.Values;
-using System.Collections.Generic;
 
 namespace CmmInterpretor.Statements
 {
@@ -21,7 +21,7 @@ namespace CmmInterpretor.Statements
 
                 Initialisation?.Execute(call);
 
-                int loopCount = 0;
+                var loopCount = 0;
 
                 var labels = GetLabels(Statements);
 
@@ -72,7 +72,7 @@ namespace CmmInterpretor.Statements
             {
                 call.Pop();
             }
-            
+
             return null;
         }
     }

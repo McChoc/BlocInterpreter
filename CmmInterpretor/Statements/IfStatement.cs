@@ -1,8 +1,8 @@
-﻿using CmmInterpretor.Memory;
+﻿using System.Collections.Generic;
 using CmmInterpretor.Expressions;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
 using CmmInterpretor.Values;
-using System.Collections.Generic;
 
 namespace CmmInterpretor.Statements
 {
@@ -23,8 +23,7 @@ namespace CmmInterpretor.Statements
 
                 if (@bool!.Value)
                     return ExecuteBlock(IfBody, call);
-                else
-                    return ExecuteBlock(ElseBody, call);
+                return ExecuteBlock(ElseBody, call);
             }
             catch (Result result)
             {

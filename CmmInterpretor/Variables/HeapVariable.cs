@@ -4,9 +4,9 @@ namespace CmmInterpretor.Variables
 {
     internal class HeapVariable : Variable
     {
-        public override Value Value { get; set; }
-
         internal HeapVariable(Value value) => Value = value;
+
+        public override Value Value { get; set; }
 
         public override void Destroy()
         {

@@ -1,23 +1,76 @@
-﻿using CmmInterpretor.Interfaces;
-using CmmInterpretor.Memory;
-using CmmInterpretor.Results;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using CmmInterpretor.Interfaces;
+using CmmInterpretor.Memory;
+using CmmInterpretor.Results;
 
 namespace CmmInterpretor.Values
 {
     public class String : Value, IIterable, IIndexable
     {
+        public String(string value)
+        {
+            Value = value;
+        }
+
         public static String Empty { get; } = new("");
 
         public string Value { get; }
 
         public override ValueType Type => ValueType.String;
 
-        public String(string value) => Value = value;
+        public IValue Index(Value val, Call _)
+        {
+            if (val is Number num)
+            {
+                var index = num.ToInt() >= 0 ? num.ToInt() : Value.Length + num.ToInt();
 
-        public override Value Copy() => this;
+                if (index < 0 || index >= Value.Length)
+                    throw new Throw("Index out of range");
+
+                return new String(Value[index].ToString());
+            }
+
+            if (val is Range rng)
+            {
+                var builder = new StringBuilder();
+
+                var start = (int)(rng.Start != null
+                    ? rng.Start >= 0
+                        ? rng.Start
+                        : Value.Length + rng.Start
+                    : rng.Step >= 0
+                        ? 0
+                        : Value.Length - 1);
+
+                var end = (int)(rng.End != null
+                    ? rng.End >= 0
+                        ? rng.End
+                        : Value.Length + rng.End
+                    : rng.Step >= 0
+                        ? Value.Length
+                        : -1);
+
+                for (var i = start; i != end && end - i > 0 == rng.Step > 0; i += rng.Step)
+                    builder.Append(Value[i]);
+
+                return new String(builder.ToString());
+            }
+
+            throw new Throw("It should be a number or a range.");
+        }
+
+        public IEnumerable<Value> Iterate()
+        {
+            foreach (var @char in Value)
+                yield return new String(@char.ToString());
+        }
+
+        public override Value Copy()
+        {
+            return this;
+        }
 
         public override bool Equals(IValue other)
         {
@@ -50,53 +103,9 @@ namespace CmmInterpretor.Values
             };
         }
 
-        public override string ToString(int _) => $"'{Value}'";
-
-        public IEnumerable<Value> Iterate()
+        public override string ToString(int _)
         {
-            foreach (var @char in Value)
-                yield return new String(@char.ToString());
-        }
-
-        public IValue Index(Value val, Call _)
-        {
-            if (val is Number num)
-            {
-                int index = num.ToInt() >= 0 ? num.ToInt() : Value.Length + num.ToInt();
-
-                if (index < 0 || index >= Value.Length)
-                    throw new Throw("Index out of range");
-
-                return new String(Value[index].ToString());
-            }
-
-            if (val is Range rng)
-            {
-                var builder = new StringBuilder();
-
-                int start = (int)(rng.Start != null
-                    ? (rng.Start >= 0
-                        ? rng.Start
-                        : Value.Length + rng.Start)
-                    : (rng.Step >= 0
-                        ? 0
-                        : Value.Length - 1));
-
-                int end = (int)(rng.End != null
-                    ? (rng.End >= 0
-                        ? rng.End
-                        : Value.Length + rng.End)
-                    : (rng.Step >= 0
-                        ? Value.Length
-                        : -1));
-
-                for (int i = start; i != end && end - i > 0 == rng.Step > 0; i += rng.Step)
-                    builder.Append(Value[i]);
-
-                return new String(builder.ToString());
-            }
-            
-            throw new Throw("It should be a number or a range.");
+            return $"'{Value}'";
         }
     }
 }

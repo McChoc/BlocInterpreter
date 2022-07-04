@@ -4,11 +4,6 @@ namespace CmmInterpretor.Tokens
 {
     internal class Token
     {
-        internal int Start { get; }
-        internal int End { get; }
-        internal virtual TokenType Type { get; }
-        internal virtual string Text { get; }
-
         private protected Token(int start, int end)
         {
             Start = start;
@@ -27,6 +22,11 @@ namespace CmmInterpretor.Tokens
             Text = text;
         }
 
+        internal int Start { get; }
+        internal int End { get; }
+        internal virtual TokenType Type { get; }
+        internal virtual string Text { get; }
+
         internal void Deconstruct(out TokenType type, out string text)
         {
             type = Type;
@@ -43,7 +43,7 @@ namespace CmmInterpretor.Tokens
 
         public override int GetHashCode()
         {
-            return System.HashCode.Combine(Type, Text);
+            return HashCode.Combine(Type, Text);
         }
     }
 }

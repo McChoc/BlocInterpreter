@@ -1,6 +1,6 @@
-﻿using CmmInterpretor.Memory;
+﻿using System.Collections.Generic;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Values;
-using System.Collections.Generic;
 
 namespace CmmInterpretor.Expressions
 {

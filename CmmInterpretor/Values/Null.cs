@@ -4,13 +4,16 @@ namespace CmmInterpretor.Values
 {
     public class Null : Value
     {
+        private Null() { }
+
         public static Null Value { get; } = new();
 
         public override ValueType Type => ValueType.Null;
 
-        private Null() { }
-
-        public override Value Copy() => this;
+        public override Value Copy()
+        {
+            return this;
+        }
 
         public override bool Equals(IValue other)
         {
@@ -38,6 +41,9 @@ namespace CmmInterpretor.Values
             };
         }
 
-        public override string ToString(int _) => "null";
+        public override string ToString(int _)
+        {
+            return "null";
+        }
     }
 }

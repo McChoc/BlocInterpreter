@@ -1,8 +1,8 @@
-﻿using CmmInterpretor.Memory;
+﻿using System.Linq;
 using CmmInterpretor.Expressions;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
 using CmmInterpretor.Values;
-using System.Linq;
 
 namespace CmmInterpretor.Operators.Type
 {
@@ -23,10 +23,11 @@ namespace CmmInterpretor.Operators.Type
             var rightValue = _right.Evaluate(call);
 
             if (!rightValue.Is(out TypeCollection? type))
-                throw new Throw($"Cannot apply operator 'as' on operands of types {leftValue.Type.ToString().ToLower()} and {rightValue.Type.ToString().ToLower()}");
+                throw new Throw(
+                    $"Cannot apply operator 'as' on operands of types {leftValue.Type.ToString().ToLower()} and {rightValue.Type.ToString().ToLower()}");
 
             if (type!.Value.Count != 1)
-                throw new Throw($"Cannot apply operator 'as' on a composite type");
+                throw new Throw("Cannot apply operator 'as' on a composite type");
 
             return type.Value.Single() switch
             {

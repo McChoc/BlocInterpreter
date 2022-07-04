@@ -1,23 +1,13 @@
-﻿using CmmInterpretor.Results;
+﻿using System.Collections.Generic;
+using System.Linq;
+using CmmInterpretor.Results;
 using CmmInterpretor.Values;
 using CmmInterpretor.Variables;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace CmmInterpretor.Memory
 {
     public class Call
     {
-        internal Engine Engine { get; }
-
-        internal Call? Parent { get; }
-        internal Scope? Captures { get; }
-
-        internal Variable? Recall { get; }
-        internal Variable? Params { get; }
-
-        internal List<Scope> Scopes { get; }
-
         private readonly int _stack;
 
         internal Call(Engine engine)
@@ -25,7 +15,7 @@ namespace CmmInterpretor.Memory
             _stack = 0;
 
             Engine = engine;
-            Scopes = new();
+            Scopes = new List<Scope>();
             Push();
         }
 
@@ -45,7 +35,20 @@ namespace CmmInterpretor.Memory
             Params.Value.Assign();
         }
 
-        internal void Push() => Scopes.Add(new Scope(this));
+        internal Engine Engine { get; }
+
+        internal Call? Parent { get; }
+        internal Scope? Captures { get; }
+
+        internal Variable? Recall { get; }
+        internal Variable? Params { get; }
+
+        internal List<Scope> Scopes { get; }
+
+        internal void Push()
+        {
+            Scopes.Add(new(this));
+        }
 
         internal void Pop()
         {
@@ -58,7 +61,7 @@ namespace CmmInterpretor.Memory
             Recall?.Destroy();
             Params?.Destroy();
 
-            foreach (Scope scope in Scopes)
+            foreach (var scope in Scopes)
                 scope.Destroy();
         }
 
@@ -71,16 +74,14 @@ namespace CmmInterpretor.Memory
             return true;
         }
 
-        internal bool TryGet (string name, out Variable? var)
+        internal bool TryGet(string name, out Variable? var)
         {
-            for (int i = Scopes.Count - 1; i >= 0; i--)
-            {
+            for (var i = Scopes.Count - 1; i >= 0; i--)
                 if (Scopes[i].Variables.ContainsKey(name))
                 {
                     var = Scopes[i].Variables[name];
                     return true;
                 }
-            }
 
             if (Captures is not null && Captures.Variables.ContainsKey(name))
             {
@@ -102,8 +103,8 @@ namespace CmmInterpretor.Memory
             var captures = new Scope(null);
 
             foreach (var scope in Scopes)
-                foreach (var pair in scope.Variables)
-                    captures.Variables[pair.Key] = pair.Value;
+            foreach (var pair in scope.Variables)
+                captures.Variables[pair.Key] = pair.Value;
 
             return captures;
         }

@@ -1,5 +1,6 @@
-﻿using CmmInterpretor.Memory;
+﻿using System;
 using CmmInterpretor.Expressions;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
 using CmmInterpretor.Values;
 
@@ -37,7 +38,7 @@ namespace CmmInterpretor.Operators.Boolean
             if (rightBool.Value)
                 return rightValue;
 
-            throw new System.Exception();
+            throw new Exception();
         }
     }
 }

@@ -4,13 +4,19 @@ namespace CmmInterpretor.Values
 {
     public class Complex : Value
     {
+        public Complex(object? value)
+        {
+            Value = value;
+        }
+
         public object? Value { get; }
 
         public override ValueType Type => ValueType.Complex;
 
-        public Complex(object? value) => Value = value;
-
-        public override Value Copy() => this;
+        public override Value Copy()
+        {
+            return this;
+        }
 
         public override bool Equals(IValue other)
         {
@@ -45,6 +51,9 @@ namespace CmmInterpretor.Values
             };
         }
 
-        public override string ToString(int _) => "[complex]";
+        public override string ToString(int _)
+        {
+            return "[complex]";
+        }
     }
 }

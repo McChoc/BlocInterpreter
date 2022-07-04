@@ -1,6 +1,6 @@
-﻿using CmmInterpretor.Memory;
+﻿using System.Collections.Generic;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
-using System.Collections.Generic;
 
 namespace CmmInterpretor.Statements
 {
@@ -18,13 +18,13 @@ namespace CmmInterpretor.Statements
             {
                 call.Push();
 
-                for (int i = 0; i < statements.Count; i++)
+                for (var i = 0; i < statements.Count; i++)
                 {
                     var result = statements[i].Execute(call);
 
                     if (result is Goto g)
                     {
-                        if (labels.TryGetValue(g.label, out int index))
+                        if (labels.TryGetValue(g.label, out var index))
                             i = index - 1;
                         else
                             return result;
@@ -45,13 +45,13 @@ namespace CmmInterpretor.Statements
 
         private protected static Result? ExecuteBlockInLoop(List<Statement> statements, Dictionary<string, int> labels, Call call)
         {
-            for (int i = 0; i < statements.Count; i++)
+            for (var i = 0; i < statements.Count; i++)
             {
                 var result = statements[i].Execute(call);
 
                 if (result is Goto g)
                 {
-                    if (labels.TryGetValue(g.label, out int index))
+                    if (labels.TryGetValue(g.label, out var index))
                         i = index - 1;
                     else
                         return result;
@@ -69,7 +69,7 @@ namespace CmmInterpretor.Statements
         {
             var labels = new Dictionary<string, int>();
 
-            for (int i = 0; i < statements.Count; i++)
+            for (var i = 0; i < statements.Count; i++)
                 if (statements[i].Label is not null)
                     labels.Add(statements[i].Label!, i);
 

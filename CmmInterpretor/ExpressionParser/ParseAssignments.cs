@@ -1,9 +1,10 @@
-﻿using CmmInterpretor.Utils.Exceptions;
+﻿using System;
+using System.Collections.Generic;
 using CmmInterpretor.Expressions;
 using CmmInterpretor.Extensions;
 using CmmInterpretor.Operators.Assignment;
 using CmmInterpretor.Tokens;
-using System.Collections.Generic;
+using CmmInterpretor.Utils.Exceptions;
 
 namespace CmmInterpretor
 {
@@ -11,9 +12,11 @@ namespace CmmInterpretor
     {
         private static IExpression ParseAssignments(List<Token> tokens, int precedence)
         {
-            for (int i = 0; i < tokens.Count; i++)
+            for (var i = 0; i < tokens.Count; i++)
             {
-                if (tokens[i] is (TokenType.Operator, "=" or "+=" or "-=" or "*=" or "/=" or "%=" or "**=" or "//=" or "%%=" or "&&=" or "||=" or "^^=" or "&=" or "|=" or "^=" or "<<=" or ">>=") op)
+                if (tokens[i] is (TokenType.Operator,
+                    "=" or "+=" or "-=" or "*=" or "/=" or "%=" or "**=" or "//=" or "%%=" or
+                    "&&=" or "||=" or "^^=" or "&=" or "|=" or "^=" or "<<=" or ">>=") op)
                 {
                     if (i == 0)
                         throw new SyntaxError(op.Start, op.End, "Missing the left part of assignment");
@@ -43,7 +46,7 @@ namespace CmmInterpretor
                         "^=" => new BitwiseXorAssignment(a, b),
                         "<<=" => new LeftShiftAssignment(a, b),
                         ">>=" => new RightShiftAssignment(a, b),
-                        _ => throw new System.Exception()
+                        _ => throw new Exception()
                     };
                 }
             }

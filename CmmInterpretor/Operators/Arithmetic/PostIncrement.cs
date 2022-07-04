@@ -1,9 +1,9 @@
-﻿using CmmInterpretor.Memory;
-using CmmInterpretor.Expressions;
+﻿using CmmInterpretor.Expressions;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
+using CmmInterpretor.Utils;
 using CmmInterpretor.Values;
 using CmmInterpretor.Variables;
-using CmmInterpretor.Utils;
 
 namespace CmmInterpretor.Operators.Arithmetic
 {
@@ -11,7 +11,10 @@ namespace CmmInterpretor.Operators.Arithmetic
     {
         private readonly IExpression _operand;
 
-        internal PostIncrement(IExpression operand) => _operand = operand;
+        internal PostIncrement(IExpression operand)
+        {
+            _operand = operand;
+        }
 
         public IValue Evaluate(Call call)
         {

@@ -1,8 +1,8 @@
-﻿using CmmInterpretor.Memory;
-using CmmInterpretor.Expressions;
+﻿using CmmInterpretor.Expressions;
+using CmmInterpretor.Memory;
+using CmmInterpretor.Results;
 using CmmInterpretor.Values;
 using CmmInterpretor.Variables;
-using CmmInterpretor.Results;
 
 namespace CmmInterpretor.Operators.Assignment
 {

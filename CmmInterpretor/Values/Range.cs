@@ -1,20 +1,40 @@
-﻿using CmmInterpretor.Interfaces;
+﻿using System.Collections.Generic;
+using CmmInterpretor.Interfaces;
 using CmmInterpretor.Results;
-using System.Collections.Generic;
 
 namespace CmmInterpretor.Values
 {
     public class Range : Value, IIterable
     {
+        public Range(int? start, int? end, int step = 1)
+        {
+            (Start, End, Step) = (start, end, step);
+        }
+
         public int? Start { get; }
         public int? End { get; }
         public int Step { get; }
 
         public override ValueType Type => ValueType.Range;
 
-        public Range(int? start, int? end, int step = 1) => (Start, End, Step) = (start, end, step);
+        public IEnumerable<Value> Iterate()
+        {
+            double start = Start ?? (Step >= 0 ? 0 : -1);
+            var end = End ?? (Step >= 0 ? double.PositiveInfinity : double.NegativeInfinity);
 
-        public override Value Copy() => this;
+            if (Step > 0)
+                for (var i = start; i < end; i += Step)
+                    yield return new Number(i);
+
+            if (Step < 0)
+                for (var i = start; i > end; i += Step)
+                    yield return new Number(i);
+        }
+
+        public override Value Copy()
+        {
+            return this;
+        }
 
         public override bool Equals(IValue other)
         {
@@ -58,22 +78,9 @@ namespace CmmInterpretor.Values
             };
         }
 
-        public override string ToString(int _) => $"{Start}..{End}{(Step != 1 ? $"..{Step}" : "")}";
-
-        public IEnumerable<Value> Iterate()
+        public override string ToString(int _)
         {
-            double start = Start ?? (Step >= 0 ? 0 : -1);
-            double end = End ?? (Step >= 0 ? double.PositiveInfinity : double.NegativeInfinity);
-
-            if (Step > 0)
-                for (double i = start; i < end; i += Step)
-                    yield return new Number(i);
-
-            if (Step < 0)
-                for (double i = start; i > end; i += Step)
-                    yield return new Number(i);
-
-            yield break;
+            return $"{Start}..{End}{(Step != 1 ? $"..{Step}" : "")}";
         }
     }
 }

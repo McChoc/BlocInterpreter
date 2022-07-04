@@ -1,9 +1,9 @@
-﻿using CmmInterpretor.Utils.Exceptions;
+﻿using System.Collections.Generic;
 using CmmInterpretor.Expressions;
 using CmmInterpretor.Extensions;
 using CmmInterpretor.Operators.Relation;
 using CmmInterpretor.Tokens;
-using System.Collections.Generic;
+using CmmInterpretor.Utils.Exceptions;
 
 namespace CmmInterpretor
 {
@@ -11,7 +11,7 @@ namespace CmmInterpretor
     {
         private static IExpression ParseComparisons(List<Token> tokens, int precedence)
         {
-            for (int i = tokens.Count - 1; i >= 0; i--)
+            for (var i = tokens.Count - 1; i >= 0; i--)
             {
                 if (tokens[i] is (TokenType.Operator, "<=>") op)
                 {

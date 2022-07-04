@@ -1,15 +1,18 @@
-﻿using CmmInterpretor.Variables;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using CmmInterpretor.Variables;
 
 namespace CmmInterpretor.Memory
 {
     internal class Scope
     {
+        internal Scope(Call? call)
+        {
+            Call = call;
+        }
+
         internal Call? Call { get; }
 
         internal Dictionary<string, Variable> Variables { get; } = new();
-
-        internal Scope(Call? call) => Call = call;
 
         internal void Destroy()
         {

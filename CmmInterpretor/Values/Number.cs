@@ -1,17 +1,23 @@
-﻿using CmmInterpretor.Results;
-using System.Globalization;
+﻿using System.Globalization;
+using CmmInterpretor.Results;
 
 namespace CmmInterpretor.Values
 {
     public class Number : Value
     {
+        public Number(double value)
+        {
+            Value = value;
+        }
+
         public double Value { get; }
 
         public override ValueType Type => ValueType.Number;
 
-        public Number(double value) => Value = value;
-
-        public override Value Copy() => this;
+        public override Value Copy()
+        {
+            return this;
+        }
 
         public override bool Equals(IValue other)
         {
@@ -46,16 +52,20 @@ namespace CmmInterpretor.Values
             };
         }
 
-        public int ToInt() => (int)Value;
+        public int ToInt()
+        {
+            return (int)Value;
+        }
 
         public override string ToString(int _)
         {
             if (double.IsPositiveInfinity(Value))
                 return "infinity";
-            else if (double.IsNegativeInfinity(Value))
+
+            if (double.IsNegativeInfinity(Value))
                 return "-infinity";
-            else
-                return Value.ToString(CultureInfo.InvariantCulture).ToLower();
+
+            return Value.ToString(CultureInfo.InvariantCulture).ToLower();
         }
     }
 }

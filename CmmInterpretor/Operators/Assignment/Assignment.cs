@@ -1,7 +1,7 @@
-﻿using CmmInterpretor.Memory;
-using CmmInterpretor.Expressions;
-using CmmInterpretor.Values;
+﻿using CmmInterpretor.Expressions;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Utils;
+using CmmInterpretor.Values;
 
 namespace CmmInterpretor.Operators.Assignment
 {

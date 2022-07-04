@@ -1,10 +1,10 @@
-﻿using CmmInterpretor.Utils.Exceptions;
-using CmmInterpretor.Extensions;
-using CmmInterpretor.Tokens;
-using System.Collections.Generic;
-using CmmInterpretor.Statements;
+﻿using System.Collections.Generic;
 using System.Linq;
 using CmmInterpretor.Expressions;
+using CmmInterpretor.Extensions;
+using CmmInterpretor.Statements;
+using CmmInterpretor.Tokens;
+using CmmInterpretor.Utils.Exceptions;
 
 namespace CmmInterpretor.Scanners
 {
@@ -115,7 +115,9 @@ namespace CmmInterpretor.Scanners
 
                 var identifier = ExpressionParser.Parse(parts[0]);
 
-                var value = parts.Count > 1 ? ExpressionParser.Parse(definition.GetRange((parts[0].Count + 1)..)) : null;
+                var value = parts.Count > 1
+                    ? ExpressionParser.Parse(definition.GetRange((parts[0].Count + 1)..))
+                    : null;
 
                 statement.Definitions.Add((identifier, value));
             }
@@ -177,7 +179,8 @@ namespace CmmInterpretor.Scanners
             };
 
             // keyword
-            if (!scanner.HasNextToken() || scanner.GetNextToken() is not (TokenType.Keyword, "while" or "until") keyword)
+            if (!scanner.HasNextToken() ||
+                scanner.GetNextToken() is not (TokenType.Keyword, "while" or "until") keyword)
                 throw new SyntaxError(@do.Start, @do.End, "Missing 'while' or 'until'");
 
             statement.Until = keyword.Text == "until";
@@ -213,21 +216,19 @@ namespace CmmInterpretor.Scanners
                     Statements = GetBody(keyword, scanner)
                 };
             }
-            else
+
+            if (tokens.Count < 1 || tokens[0].Type != TokenType.Identifier)
+                throw new SyntaxError(tokens[0].Start, tokens[0].End, "Missing identifier");
+
+            if (tokens.Count < 2 || tokens[1] is not (TokenType.Keyword, "in"))
+                throw new SyntaxError(tokens[0].Start, tokens[0].End, "Missing 'in'");
+
+            return new ForInStatement
             {
-                if (tokens.Count < 1 || tokens[0].Type != TokenType.Identifier)
-                    throw new SyntaxError(tokens[0].Start, tokens[0].End, "Missing identifier");
-
-                if (tokens.Count < 2 || tokens[1] is not (TokenType.Keyword, "in"))
-                    throw new SyntaxError(tokens[0].Start, tokens[0].End, "Missing 'in'");
-
-                return new ForInStatement
-                {
-                    VariableName = tokens[0].Text,
-                    Iterable = ExpressionParser.Parse(tokens.GetRange(2..)),
-                    Statements = GetBody(keyword, scanner)
-                };
-            }
+                VariableName = tokens[0].Text,
+                Iterable = ExpressionParser.Parse(tokens.GetRange(2..)),
+                Statements = GetBody(keyword, scanner)
+            };
 
             DefStatement GetInitialisation(List<Token> tokens)
             {
@@ -244,7 +245,9 @@ namespace CmmInterpretor.Scanners
 
                     var identifier = ExpressionParser.Parse(parts[0]);
 
-                    var value = parts.Count > 1 ? ExpressionParser.Parse(definition.GetRange((parts[0].Count + 1)..)) : null;
+                    var value = parts.Count > 1
+                        ? ExpressionParser.Parse(definition.GetRange((parts[0].Count + 1)..))
+                        : null;
 
                     statement.Definitions.Add((identifier, value));
                 }
@@ -287,7 +290,7 @@ namespace CmmInterpretor.Scanners
 
         private static Statement GetTryStatement(TokenScanner scanner)
         {
-            var statement = new TryStatement()
+            var statement = new TryStatement
             {
                 Try = GetBody(scanner.GetNextToken(), scanner)
             };
@@ -315,8 +318,8 @@ namespace CmmInterpretor.Scanners
 
             if (line.Count == 0)
                 return new ReturnStatement();
-            else
-                return new ReturnStatement(ExpressionParser.Parse(line));
+
+            return new ReturnStatement(ExpressionParser.Parse(line));
         }
 
         private static Statement GetExitStatement(TokenScanner scanner)
@@ -325,8 +328,8 @@ namespace CmmInterpretor.Scanners
 
             if (line.Count == 0)
                 return new ExitStatement();
-            else
-                return new ExitStatement(ExpressionParser.Parse(line));
+
+            return new ExitStatement(ExpressionParser.Parse(line));
         }
 
         private static Statement GetThrowStatement(TokenScanner scanner)
@@ -335,8 +338,8 @@ namespace CmmInterpretor.Scanners
 
             if (line.Count == 0)
                 return new ThrowStatement();
-            else
-                return new ThrowStatement(ExpressionParser.Parse(line));
+
+            return new ThrowStatement(ExpressionParser.Parse(line));
         }
 
         private static Statement GetContinueStatement(TokenScanner scanner)
@@ -381,11 +384,11 @@ namespace CmmInterpretor.Scanners
             var slash = scanner.GetNextToken();
 
             var statement = new CommandStatement();
-            statement.Commands.Add(new());
+            statement.Commands.Add(new List<Token>());
 
             while (scanner.HasNextToken())
             {
-                Token token = scanner.GetNextCommandToken();
+                var token = scanner.GetNextCommandToken();
 
                 if (token is (TokenType.Operator, ";"))
                 {
@@ -394,9 +397,9 @@ namespace CmmInterpretor.Scanners
 
                     return statement;
                 }
-                
+
                 if (token is (TokenType.Operator, "|>"))
-                    statement.Commands.Add(new());
+                    statement.Commands.Add(new List<Token>());
                 else
                     statement.Commands[^1].Add(token);
             }
@@ -413,7 +416,7 @@ namespace CmmInterpretor.Scanners
 
             while (scanner.HasNextToken())
             {
-                Token token = scanner.GetNextToken();
+                var token = scanner.GetNextToken();
 
                 if (token is (TokenType.Operator, ";"))
                     return line;
@@ -439,8 +442,8 @@ namespace CmmInterpretor.Scanners
 
             if (scanner.Peek().Type == TokenType.Braces)
                 return GetStatements(scanner.GetNextToken().Text);
-            else
-                return new() { GetStatement(scanner) };
+
+            return new List<Statement> { GetStatement(scanner) };
         }
     }
 }

@@ -1,9 +1,11 @@
-﻿using CmmInterpretor.Memory;
+﻿using System;
+using System.Collections.Generic;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
 using CmmInterpretor.Tokens;
 using CmmInterpretor.Values;
-using CmmInterpretor.Variables;
-using System.Collections.Generic;
+using String = CmmInterpretor.Values.String;
+using Void = CmmInterpretor.Values.Void;
 
 namespace CmmInterpretor.Statements
 {
@@ -31,8 +33,8 @@ namespace CmmInterpretor.Statements
                     }
                 }
 
-                string name = words[0];
-                string[] args = words.ToArray()[1..];
+                var name = words[0];
+                var args = words.ToArray()[1..];
 
                 if (call.Engine.Commands.TryGetValue(name, out var c))
                     output = c.Call(args, output, call);
@@ -57,7 +59,7 @@ namespace CmmInterpretor.Statements
                     return new[] { token.Text };
 
                 case { Type: TokenType.Identifier, Text: string identifier }:
-                    if (!call.TryGet(identifier, out Variable? variable))
+                    if (!call.TryGet(identifier, out var variable))
                         throw new Throw($"Variable '{identifier}' was not defined in scope");
 
                     if (!variable!.Value.Is(out String? str))
@@ -66,7 +68,7 @@ namespace CmmInterpretor.Statements
                     return str!.Value.Split(' ');
 
                 default:
-                    throw new System.Exception();
+                    throw new Exception();
             }
         }
     }

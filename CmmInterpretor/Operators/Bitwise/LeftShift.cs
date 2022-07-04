@@ -1,8 +1,8 @@
-﻿using CmmInterpretor.Memory;
-using CmmInterpretor.Expressions;
+﻿using CmmInterpretor.Expressions;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
-using CmmInterpretor.Values;
 using CmmInterpretor.Utils;
+using CmmInterpretor.Values;
 
 namespace CmmInterpretor.Operators.Bitwise
 {

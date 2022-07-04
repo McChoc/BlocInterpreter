@@ -1,7 +1,7 @@
-﻿using CmmInterpretor.Expressions;
+﻿using System.Collections.Generic;
+using CmmInterpretor.Expressions;
 using CmmInterpretor.Memory;
 using CmmInterpretor.Values;
-using System.Collections.Generic;
 
 namespace CmmInterpretor.Variables
 {
@@ -9,11 +9,11 @@ namespace CmmInterpretor.Variables
     {
         public List<Reference> References { get; } = new();
 
+        IValue IExpression.Evaluate(Call _) => this;
+
         public abstract Value Value { get; set; }
 
         public ValueType Type => Value.Type;
-
-        IValue IExpression.Evaluate(Call _) => this;
 
         Value IValue.Copy() => Value.Copy();
         void IValue.Assign() => Value.Assign();

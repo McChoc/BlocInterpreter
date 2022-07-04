@@ -1,9 +1,10 @@
-﻿using CmmInterpretor.Utils.Exceptions;
+﻿using System;
+using System.Collections.Generic;
 using CmmInterpretor.Expressions;
 using CmmInterpretor.Extensions;
 using CmmInterpretor.Operators.Arithmetic;
 using CmmInterpretor.Tokens;
-using System.Collections.Generic;
+using CmmInterpretor.Utils.Exceptions;
 
 namespace CmmInterpretor
 {
@@ -11,7 +12,7 @@ namespace CmmInterpretor
     {
         private static IExpression ParseExponentials(List<Token> tokens, int precedence)
         {
-            for (int i = tokens.Count - 1; i >= 0; i--)
+            for (var i = tokens.Count - 1; i >= 0; i--)
             {
                 if (tokens[i] is (TokenType.Operator, "**" or "//" or "%%") op)
                 {
@@ -29,7 +30,7 @@ namespace CmmInterpretor
                         "**" => new Power(a, b),
                         "//" => new Root(a, b),
                         "%%" => new Logarithm(a, b),
-                        _ => throw new System.Exception()
+                        _ => throw new Exception()
                     };
                 }
             }

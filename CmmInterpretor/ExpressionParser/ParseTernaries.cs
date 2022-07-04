@@ -1,8 +1,8 @@
-﻿using CmmInterpretor.Expressions;
+﻿using System.Collections.Generic;
+using CmmInterpretor.Expressions;
 using CmmInterpretor.Extensions;
 using CmmInterpretor.Operators.Boolean;
 using CmmInterpretor.Tokens;
-using System.Collections.Generic;
 
 namespace CmmInterpretor
 {
@@ -10,13 +10,13 @@ namespace CmmInterpretor
     {
         private static IExpression ParseTernaries(List<Token> tokens, int precedence)
         {
-            for (int i = 0; i < tokens.Count; i++)
+            for (var i = 0; i < tokens.Count; i++)
             {
                 if (tokens[i] is (TokenType.Operator, "?"))
                 {
-                    int depth = 0;
+                    var depth = 0;
 
-                    for (int j = i; j < tokens.Count; j++)
+                    for (var j = i; j < tokens.Count; j++)
                     {
                         if (tokens[j] is (TokenType.Operator, "?"))
                             depth++;

@@ -1,10 +1,10 @@
-﻿using CmmInterpretor.Memory;
+﻿using System.Collections.Generic;
+using System.Linq;
 using CmmInterpretor.Expressions;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
 using CmmInterpretor.Values;
 using CmmInterpretor.Variables;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace CmmInterpretor.Statements
 {
@@ -39,7 +39,8 @@ namespace CmmInterpretor.Statements
             {
                 throw new Throw($"Variable '{stackVariable.Name}' was already defined in scope");
             }
-            else if (identifier is UndefinedVariable undefined)
+
+            if (identifier is UndefinedVariable undefined)
             {
                 value.Assign();
 

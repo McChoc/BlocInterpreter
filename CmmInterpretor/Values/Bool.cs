@@ -4,6 +4,11 @@ namespace CmmInterpretor.Values
 {
     public class Bool : Value
     {
+        internal Bool(bool value)
+        {
+            Value = value;
+        }
+
         public static Bool False { get; } = new(false);
         public static Bool True { get; } = new(true);
 
@@ -11,9 +16,10 @@ namespace CmmInterpretor.Values
 
         public override ValueType Type => ValueType.Bool;
 
-        internal Bool(bool value) => Value = value;
-
-        public override Value Copy() => this;
+        public override Value Copy()
+        {
+            return this;
+        }
 
         public override bool Equals(IValue other)
         {
@@ -48,6 +54,9 @@ namespace CmmInterpretor.Values
             };
         }
 
-        public override string ToString(int _) => Value ? "true" : "false";
+        public override string ToString(int _)
+        {
+            return Value ? "true" : "false";
+        }
     }
 }

@@ -7,15 +7,15 @@ namespace CmmInterpretor.Variables
     {
         private readonly Scope _scope;
 
-        public override Value Value { get; set; }
-        internal string Name { get; }
-
         internal StackVariable(Value value, string name, Scope scope)
         {
             Value = value;
             Name = name;
             _scope = scope;
         }
+
+        public override Value Value { get; set; }
+        internal string Name { get; }
 
         public override void Destroy()
         {

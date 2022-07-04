@@ -1,10 +1,10 @@
-﻿using CmmInterpretor.Memory;
-using CmmInterpretor.Expressions;
-using CmmInterpretor.Results;
-using System.Collections.Generic;
-using CmmInterpretor.Interfaces;
-using CmmInterpretor.Values;
+﻿using System.Collections.Generic;
 using System.Linq;
+using CmmInterpretor.Expressions;
+using CmmInterpretor.Interfaces;
+using CmmInterpretor.Memory;
+using CmmInterpretor.Results;
+using CmmInterpretor.Values;
 
 namespace CmmInterpretor.Operators.Primary
 {

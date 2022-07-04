@@ -1,7 +1,7 @@
-﻿using CmmInterpretor.Memory;
-using CmmInterpretor.Expressions;
-using CmmInterpretor.Variables;
+﻿using CmmInterpretor.Expressions;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Values;
+using CmmInterpretor.Variables;
 
 namespace CmmInterpretor.Operators.Reference
 {
@@ -9,7 +9,10 @@ namespace CmmInterpretor.Operators.Reference
     {
         private readonly IExpression _operand;
 
-        internal Allocation(IExpression operand) => _operand = operand;
+        internal Allocation(IExpression operand)
+        {
+            _operand = operand;
+        }
 
         public IValue Evaluate(Call call)
         {

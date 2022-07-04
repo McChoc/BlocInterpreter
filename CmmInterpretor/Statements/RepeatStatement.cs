@@ -1,8 +1,8 @@
-﻿using CmmInterpretor.Memory;
+﻿using System.Collections.Generic;
 using CmmInterpretor.Expressions;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
 using CmmInterpretor.Values;
-using System.Collections.Generic;
 
 namespace CmmInterpretor.Statements
 {
@@ -20,10 +20,10 @@ namespace CmmInterpretor.Statements
                 if (!value.Is(out Number? number))
                     return new Throw("Cannot implicitly convert to number");
 
-                int loopCount = number!.ToInt();
+                var loopCount = number!.ToInt();
                 var labels = GetLabels(Statements);
 
-                for (int i = 0; i < loopCount; i++)
+                for (var i = 0; i < loopCount; i++)
                 {
                     if (i >= call.Engine.LoopLimit)
                         return new Throw("The loop limit was reached.");
@@ -51,7 +51,7 @@ namespace CmmInterpretor.Statements
             {
                 return result;
             }
-            
+
             return null;
         }
     }

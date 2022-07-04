@@ -1,5 +1,5 @@
-﻿using CmmInterpretor.Values;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using CmmInterpretor.Values;
 
 namespace CmmInterpretor.Interfaces
 {

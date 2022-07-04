@@ -1,16 +1,16 @@
-﻿using CmmInterpretor;
+﻿using System;
+using System.Collections.Generic;
+using CmmInterpretor;
 using CmmInterpretor.Commands;
 using CmmInterpretor.Results;
 using CmmInterpretor.Utils.Exceptions;
 using CmmInterpretor.Values;
-using System;
-using System.Collections.Generic;
 using Void = CmmInterpretor.Values.Void;
 
 const byte RED = 9;
 const byte ORANGE = 208;
 
-Engine engine = new Engine.Builder(args)
+var engine = new Engine.Builder(args)
     .OnLog(Console.WriteLine)
     .OnClear(Console.Clear)
     .AddDefaultCommands()
@@ -20,15 +20,15 @@ while (true)
 {
     try
     {
-        bool cancel = false;
-        int depth = 0;
+        var cancel = false;
+        var depth = 0;
         var lines = new List<string>();
 
         while (true)
         {
             Console.Write(lines.Count == 0 ? ">>> " : "... ");
 
-            string line = Console.ReadLine();
+            var line = Console.ReadLine();
 
             if (line[^1] == '\x4')
             {
@@ -50,7 +50,7 @@ while (true)
 
         if (!cancel)
         {
-            string code = string.Join("\n", lines);
+            var code = string.Join("\n", lines);
 
             if (code.Length > 0 && code[^1] != ';')
                 code += ';';

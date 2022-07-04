@@ -5,6 +5,8 @@ namespace CmmInterpretor.Variables
 {
     internal class UndefinedVariable : Variable
     {
+        internal UndefinedVariable(string name) => Name = name;
+
         public override Value Value
         {
             get => throw new Throw($"Variable {Name} was not defined in scope.");
@@ -12,8 +14,6 @@ namespace CmmInterpretor.Variables
         }
 
         internal string Name { get; }
-
-        internal UndefinedVariable(string name) => Name = name;
 
         public override void Destroy() { }
     }

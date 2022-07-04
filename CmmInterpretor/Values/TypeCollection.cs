@@ -1,24 +1,61 @@
-﻿using CmmInterpretor.Interfaces;
-using CmmInterpretor.Memory;
-using CmmInterpretor.Results;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using CmmInterpretor.Interfaces;
+using CmmInterpretor.Memory;
+using CmmInterpretor.Results;
 
 namespace CmmInterpretor.Values
 {
     public class TypeCollection : Value, IInvokable
     {
+        public TypeCollection(ValueType type)
+        {
+            Value = new HashSet<ValueType> { type };
+        }
+
+        public TypeCollection(HashSet<ValueType> types)
+        {
+            Value = types;
+        }
+
         public static TypeCollection None { get; } = new(new HashSet<ValueType>());
-        public static TypeCollection Any { get; } = new(System.Enum.GetValues(typeof(ValueType)).Cast<ValueType>().ToHashSet());
+
+        public static TypeCollection Any { get; } = new(Enum.GetValues(typeof(ValueType)).Cast<ValueType>().ToHashSet());
 
         public HashSet<ValueType> Value { get; }
 
         public override ValueType Type => ValueType.Type;
 
-        public TypeCollection(ValueType type) => Value = new HashSet<ValueType>() { type };
-        public TypeCollection(HashSet<ValueType> types) => Value = types;
+        public IValue Invoke(List<Value> _0, Call _1)
+        {
+            if (Value.Count != 1)
+                throw new Throw("Cannot instantiate a composite type");
 
-        public override Value Copy() => this;
+            return Value.Single() switch
+            {
+                ValueType.Void => Void.Value,
+                ValueType.Null => Null.Value,
+                ValueType.Bool => Bool.False,
+                ValueType.Number => new Number(0),
+                ValueType.Range => new Range(null, null),
+                ValueType.String => String.Empty,
+                ValueType.Array => Array.Empty,
+                ValueType.Struct => Struct.Empty,
+                ValueType.Tuple => new Tuple(new List<IValue>()),
+                ValueType.Function => new Function(),
+                ValueType.Task => new Task(),
+                ValueType.Reference => new Reference(null),
+                ValueType.Complex => new Complex(null),
+                ValueType.Type => None,
+                _ => throw new Exception()
+            };
+        }
+
+        public override Value Copy()
+        {
+            return this;
+        }
 
         public override bool Equals(IValue other)
         {
@@ -59,31 +96,6 @@ namespace CmmInterpretor.Values
                 return "type()";
 
             return string.Join(" | ", Value).ToLower();
-        }
-
-        public IValue Invoke(List<Value> _0, Call _1)
-        {
-            if (Value.Count != 1)
-                throw new Throw("Cannot instantiate a composite type");
-
-            return Value.Single() switch
-            {
-                ValueType.Void => Void.Value,
-                ValueType.Null => Null.Value,
-                ValueType.Bool => Bool.False,
-                ValueType.Number => new Number(0),
-                ValueType.Range => new Range(null, null),
-                ValueType.String => String.Empty,
-                ValueType.Array => Array.Empty,
-                ValueType.Struct => Struct.Empty,
-                ValueType.Tuple => new Tuple(new()),
-                ValueType.Function => new Function(),
-                ValueType.Task => new Task(),
-                ValueType.Reference => new Reference(null),
-                ValueType.Complex => new Complex(null),
-                ValueType.Type => None,
-                _ => throw new System.Exception()
-            };
         }
     }
 }

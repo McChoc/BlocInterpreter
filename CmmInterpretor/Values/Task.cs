@@ -1,24 +1,34 @@
-﻿using CmmInterpretor.Results;
+﻿using System.Threading.Tasks;
+using CmmInterpretor.Results;
 
 namespace CmmInterpretor.Values
 {
     public class Task : Value
     {
-        internal System.Threading.Tasks.Task<Value> Value { get; }
+        internal Task()
+        {
+            Value = System.Threading.Tasks.Task.Run(() => (Value)Void.Value);
+        }
+
+        internal Task(Task<Value> task)
+        {
+            Value = task;
+        }
+
+        internal Task<Value> Value { get; }
 
         public override ValueType Type => ValueType.Task;
 
-        internal Task() => Value = System.Threading.Tasks.Task.Run(() => (Value)Void.Value);
-
-        internal Task(System.Threading.Tasks.Task<Value> task) => Value = task;
-
-        public override Value Copy() => this;
+        public override Value Copy()
+        {
+            return this;
+        }
 
         public override bool Equals(IValue other)
         {
             if (other.Value is not Task task)
                 return false;
-            
+
             if (Value != task.Value)
                 return false;
 
@@ -50,6 +60,9 @@ namespace CmmInterpretor.Values
             };
         }
 
-        public override string ToString(int _) => "[task]";
+        public override string ToString(int _)
+        {
+            return "[task]";
+        }
     }
 }

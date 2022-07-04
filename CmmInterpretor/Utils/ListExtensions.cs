@@ -12,9 +12,9 @@ namespace CmmInterpretor.Extensions
 
             var result = new List<List<T>>();
 
-            int start = 0;
+            var start = 0;
 
-            for (int i = 0; i <= list.Count; i++)
+            for (var i = 0; i <= list.Count; i++)
             {
                 if (i == list.Count || separator.Equals(list[i]))
                 {
@@ -30,9 +30,9 @@ namespace CmmInterpretor.Extensions
         {
             var result = new List<List<T>>();
 
-            int start = 0;
+            var start = 0;
 
-            for (int i = 0; i <= list.Count; i++)
+            for (var i = 0; i <= list.Count; i++)
             {
                 if (i == list.Count || predicate(list[i]))
                 {

@@ -7,14 +7,14 @@ namespace CmmInterpretor.Variables
         //private readonly object? _accessor;
         //private readonly Value _parent;
 
-        public override Value Value { get; set; }
-
         internal ChildVariable(Value value, object? accessor, Value parent)
         {
             Value = value;
             //_accessor = accessor;
             //_parent = parent;
         }
+
+        public override Value Value { get; set; }
 
         public override void Destroy()
         {

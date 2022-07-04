@@ -5,6 +5,9 @@ namespace CmmInterpretor.Statements
 {
     internal class ContinueStatement : Statement
     {
-        internal override Result Execute(Call call) => new Continue();
+        internal override Result Execute(Call call)
+        {
+            return new Continue();
+        }
     }
 }

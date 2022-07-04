@@ -1,5 +1,5 @@
-﻿using CmmInterpretor.Memory;
-using CmmInterpretor.Expressions;
+﻿using CmmInterpretor.Expressions;
+using CmmInterpretor.Memory;
 using CmmInterpretor.Results;
 
 namespace CmmInterpretor.Statements
@@ -9,7 +9,11 @@ namespace CmmInterpretor.Statements
         private readonly IExpression? _expression;
 
         internal ThrowStatement() { }
-        internal ThrowStatement(IExpression expression) => _expression = expression;
+
+        internal ThrowStatement(IExpression expression)
+        {
+            _expression = expression;
+        }
 
         internal override Result Execute(Call call)
         {
