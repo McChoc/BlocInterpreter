@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using CmmInterpretor;
-using CmmInterpretor.Commands;
-using CmmInterpretor.Results;
-using CmmInterpretor.Utils.Exceptions;
-using CmmInterpretor.Values;
-using Void = CmmInterpretor.Values.Void;
+using Bloc;
+using Bloc.Commands;
+using Bloc.Results;
+using Bloc.Utils.Exceptions;
+using Bloc.Values;
+using Void = Bloc.Values.Void;
 
 const byte RED = 9;
 const byte ORANGE = 208;

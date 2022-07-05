@@ -1,11 +1,12 @@
-# C-- Interpretor
+![Logo](Logo/Logo.png)
+
+# Bloc Interpretor
 
 ## Table of content
 
 - [Introduction](#introduction)
 - [Interpretor](#interpretor)
 - [Example project](#example-project)
-- [Fundamentals](#fundamentals)
 - [Language reference](#language-reference)
     - [Values](#values)
     - [Variables](#variables)
@@ -17,19 +18,15 @@
 
 ## Introduction
 
-//TODO
+Bloc is a programming language originaly created for debuging and play testing games. It started of as just a set of commands you could execute in a console to perform certain actions such as teleporting the player or changing its health. Later, I decided to to expand it and make it a full on programming language by adding variables, if statements and loops. The language is now separated in two parts, each with a different syntax. The main part has a C like syntax and is used to handle all the logic. By starting a line with a slash `/`, you can use the second part of the language which consists of a set of commands which can be used to perform actions on objects living outside of Cube.
 
 ## Interpretor
 
-//TODO
+To use the interpretor inside of your projects, you have to import the librairy and create an engine with the Engine.Builder class which is inside the Bloc namespace. You can use this builder to specify where the engine should output text and how to clear the text. You can also give it a set of commands. Once you are done setting up the engine, you can use the Build() method to build it. This method will return an instance of the class Engine. You can then use the Execute() method an pass it a string containing the code to execute. Executing code can return a [Value](#values) if the code was only an expression or a result which can be an Exit or a Throw. If you receive an Exit, you should close the application. If you receive a Throw, it means an exception was thrown and never caught, you should display an error message. For more information, you can look at the example project.
 
 ## Example project
 
-//TODO
-
-## Fundamentals
-
-//TODO
+The example project is an interactive Cube console. It allows you to execute a programm statement by statement as you write it and allows you to test things quickly to learn the language. If you type a line and press enter, it will execute that line. If you miss a semicolon at the end of that line, this project will add it for you. If the line end with an opening brace `{`, it will not execute it right away, instead it will let you write as many lines as you want until you close that code block.
 
 ## Language reference
 
@@ -322,7 +319,7 @@ def ref2 = new { 1, 2 };    # ref2 is a reference to an array stored on the heap
 
 #### Complex
 
-Complexes cannot be directly created. They are returned by some command and are essentialy references to objects that lives outside of C--. You cannot modify them in any way, you can only store them and pass them to an other command.
+Complexes cannot be directly created. They are returned by some command and are essentialy references to objects that lives outside of Bloc. You cannot modify them in any way, you can only store them and pass them to an other command.
 
 ---
 
@@ -1988,7 +1985,7 @@ End :: ;
 
 ### Commands
 
-Commands are the only way to interact with resources outside of C--. They are not standardized and can be different in each implement and each platform. You should refer to the implementors website to know all available commands. Commands do not follow the same syntax as the rest of the language. They are defined by a name and a list of arguments separated by spaces. If you want an argument to contain spaces, you have to suround it with quotes to make a `string`. Every types of string literal can be used inside of commands. You can pass variables as arguments to command with the variable identifier `$`. They will be implicitly casted as strings. A variable can be interpreted as more than one argument if it contains spaces. You should use interpolated strings to guarentee that a variable will be a single argument.
+Commands are the only way to interact with resources outside of Bloc. They are not standardized and can be different in each implement and each platform. You should refer to the implementors website to know all available commands. Commands do not follow the same syntax as the rest of the language. They are defined by a name and a list of arguments separated by spaces. If you want an argument to contain spaces, you have to suround it with quotes to make a `string`. Every types of string literal can be used inside of commands. You can pass variables as arguments to command with the variable identifier `$`. They will be implicitly casted as strings. A variable can be interpreted as more than one argument if it contains spaces. You should use interpolated strings to guarentee that a variable will be a single argument.
 
 ```python
 /echo Hello; 
