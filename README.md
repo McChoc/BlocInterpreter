@@ -5,7 +5,7 @@
 ## Table of content
 
 - [Introduction](#introduction)
-- [interpreter](#interpreter)
+- [Interpreter](#interpreter)
 - [Example project](#example-project)
 - [Language reference](#language-reference)
     - [Values](#values)
@@ -20,7 +20,7 @@
 
 Bloc is a programming language I originally created for debugging and play testing my games. It started off as just a set of commands I could execute in a console to perform certain actions such as teleporting the player or changing its health. Later, I decided to expand it and make it a complete programming language by adding variables, operators and statements. The language is now separated in two parts, each with a different syntax. The main part has a C-like syntax and is used to handle all the logic. By starting a line with a slash `/`, you can use the second part of the language which consists of a set of commands which can be used to perform actions on objects living outside of Bloc.
 
-## interpreter
+## Interpreter
 
 To use the interpreter inside your projects, you have to import the library and create an engine with the Engine.Builder class which is inside the Bloc namespace. You can use this builder to specify where the engine should output text and how to clear the text. You can also give it a set of commands. Once you are done setting up the engine, you can use the Build() method to build it. This method will return an instance of the class Engine. You can then use the Execute() method and pass it a string containing the code to execute. Executing code can return a [Value](#values) if the code was only an expression or a result which can be an Exit or a Throw. If you receive an Exit, you should close the application. If you receive a Throw, it means an exception was thrown and never caught, you should display an error message. For more information, you can look at the example project.
 
