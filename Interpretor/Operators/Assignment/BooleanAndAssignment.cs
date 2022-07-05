@@ -21,7 +21,7 @@ namespace Bloc.Operators.Assignment
         {
             var value = _left.Evaluate(call);
 
-            if (value is not Variable variable)
+            if (value is not Variables.Variable variable)
                 throw new Throw("You cannot assign a value to a literal");
 
             if (!value.Is(out Bool? @bool))

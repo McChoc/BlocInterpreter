@@ -43,8 +43,7 @@ namespace Bloc.Scanners
                 { Type: TokenType.Braces } => GetStatementBlock(scanner),
                 (TokenType.Operator, ";") => GetEmptyStatement(scanner),
                 (TokenType.Operator, "/") => GetCommandStatement(scanner),
-                (TokenType.Keyword, "def") => GetDefStatement(scanner),
-                (TokenType.Keyword, "delete") => GetDeleteStatement(scanner),
+                (TokenType.Keyword, "var") => GetVarStatement(scanner),
                 (TokenType.Keyword, "if") => GetIfStatement(scanner),
                 (TokenType.Keyword, "do") => GetDoStatement(scanner),
                 (TokenType.Keyword, "while") => GetWhileStatement(scanner),
@@ -98,9 +97,9 @@ namespace Bloc.Scanners
             return new EmptyStatement();
         }
 
-        private static Statement GetDefStatement(TokenScanner scanner)
+        private static Statement GetVarStatement(TokenScanner scanner)
         {
-            var statement = new DefStatement();
+            var statement = new VarStatement();
 
             var keyword = scanner.GetNextToken();
 
@@ -123,18 +122,6 @@ namespace Bloc.Scanners
             }
 
             return statement;
-        }
-
-        private static Statement GetDeleteStatement(TokenScanner scanner)
-        {
-            var keyword = scanner.GetNextToken();
-
-            var line = GetLine(scanner);
-
-            if (line.Count == 0)
-                throw new SyntaxError(keyword.Start, keyword.End, "Missing expression");
-
-            return new DeleteStatement(ExpressionParser.Parse(line));
         }
 
         private static Statement GetIfStatement(TokenScanner scanner)
@@ -210,7 +197,7 @@ namespace Bloc.Scanners
 
                 return new ForStatement
                 {
-                    Initialisation = parts[0].Count > 0 ? GetInitialisation(parts[0]) : null,
+                    Initialisation = parts[0].Count > 0 ? ExpressionParser.Parse(parts[0]) : null,
                     Condition = parts[1].Count > 0 ? ExpressionParser.Parse(parts[1]) : null,
                     Increment = parts[2].Count > 0 ? ExpressionParser.Parse(parts[2]) : null,
                     Statements = GetBody(keyword, scanner)
@@ -229,31 +216,6 @@ namespace Bloc.Scanners
                 Iterable = ExpressionParser.Parse(tokens.GetRange(2..)),
                 Statements = GetBody(keyword, scanner)
             };
-
-            DefStatement GetInitialisation(List<Token> tokens)
-            {
-                var statement = new DefStatement();
-
-                var definitions = tokens.Split(x => x is (TokenType.Operator, ","));
-
-                foreach (var definition in definitions)
-                {
-                    if (definition.Count == 0)
-                        throw new SyntaxError(keyword.Start, keyword.End, "Missing identifier");
-
-                    var parts = definition.Split(x => x is (TokenType.Operator, "="));
-
-                    var identifier = ExpressionParser.Parse(parts[0]);
-
-                    var value = parts.Count > 1
-                        ? ExpressionParser.Parse(definition.GetRange((parts[0].Count + 1)..))
-                        : null;
-
-                    statement.Definitions.Add((identifier, value));
-                }
-
-                return statement;
-            }
         }
 
         private static Statement GetRepeatStatement(TokenScanner scanner)

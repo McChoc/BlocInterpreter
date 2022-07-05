@@ -19,7 +19,7 @@ namespace Bloc.Operators.Boolean
         {
             var value = _operand.Evaluate(call);
 
-            if (value is not Variable variable)
+            if (value is not Variables.Variable variable)
                 throw new Throw("The operand of an increment must be a variable");
 
             if (!variable.Value.Is(out Bool? @bool))

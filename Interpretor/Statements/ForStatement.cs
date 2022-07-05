@@ -8,7 +8,7 @@ namespace Bloc.Statements
 {
     internal class ForStatement : Statement
     {
-        internal DefStatement? Initialisation { get; set; }
+        internal IExpression? Initialisation { get; set; }
         internal IExpression? Condition { get; set; }
         internal IExpression? Increment { get; set; }
         internal List<Statement> Statements { get; set; } = default!;
@@ -19,7 +19,7 @@ namespace Bloc.Statements
             {
                 call.Push();
 
-                Initialisation?.Execute(call);
+                Initialisation?.Evaluate(call);
 
                 var loopCount = 0;
 

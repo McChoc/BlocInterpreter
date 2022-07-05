@@ -3,13 +3,13 @@ using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Values;
 
-namespace Bloc.Operators.Reference
+namespace Bloc.Operators.Variable
 {
-    internal class Value : IExpression
+    internal class Val : IExpression
     {
         private readonly IExpression _operand;
 
-        internal Value(IExpression operand)
+        internal Val(IExpression operand)
         {
             _operand = operand;
         }

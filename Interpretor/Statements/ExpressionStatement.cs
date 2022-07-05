@@ -33,7 +33,9 @@ namespace Bloc.Statements
         {
             try
             {
-                return Expression.Evaluate(call).Value;
+                var value = Expression.Evaluate(call).Value;
+                value.ToString(); // will throw an exception if a tuple contains an undefined variable
+                return value;
             }
             catch (Result result)
             {

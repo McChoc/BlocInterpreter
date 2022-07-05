@@ -8,7 +8,7 @@ using Bloc.Operators.Boolean;
 using Bloc.Operators.Character;
 using Bloc.Operators.Collection;
 using Bloc.Operators.Misc;
-using Bloc.Operators.Reference;
+using Bloc.Operators.Variable;
 using Bloc.Tokens;
 using Bloc.Utils.Exceptions;
 using Nullable = Bloc.Operators.Type.Nullable;
@@ -23,8 +23,8 @@ namespace Bloc
                 throw new SyntaxError(0, 0, "Missing value");
 
             if (tokens[0] is (TokenType.Operator or TokenType.Keyword,
-                "+" or "-" or "~" or "!" or "++" or "--" or "~~" or "!!" or "len" or
-                "chr" or "ord" or "val" or "ref" or "new" or "await" or "nameof" or "typeof"))
+                "+" or "-" or "~" or "!" or "++" or "--" or "~~" or "!!" or "len" or "chr" or "ord" or
+                "val" or "ref" or "let" or "new" or "delete" or "await" or "nameof" or "typeof"))
             {
                 var operand = ParseUnaries(tokens.GetRange(1..), precedence);
 
@@ -41,9 +41,11 @@ namespace Bloc
                     "len" => new Length(operand),
                     "chr" => new Character(operand),
                     "ord" => new Ordinal(operand),
-                    "val" => new Value(operand),
-                    "ref" => new Reference(operand),
-                    "new" => new Allocation(operand),
+                    "val" => new Val(operand),
+                    "ref" => new Ref(operand),
+                    "let" => new Let(operand),
+                    "new" => new New(operand),
+                    "delete" => new Delete(operand),
                     "await" => new Await(operand),
                     "nameof" => new Nameof(operand),
                     "typeof" => new Typeof(operand),

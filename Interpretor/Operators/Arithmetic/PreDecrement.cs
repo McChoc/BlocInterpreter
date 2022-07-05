@@ -25,7 +25,7 @@ namespace Bloc.Operators.Arithmetic
 
         private static IValue Operation(IValue value)
         {
-            if (value is not Variable variable)
+            if (value is not Variables.Variable variable)
                 throw new Throw("The operand of an increment must be a variable");
 
             if (!variable.Value.Is(out Number? number))

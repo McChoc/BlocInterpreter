@@ -8,7 +8,7 @@ using Bloc.Variables;
 
 namespace Bloc.Statements
 {
-    internal class DefStatement : Statement
+    internal class VarStatement : Statement
     {
         internal List<(IExpression, IExpression?)> Definitions { get; set; } = new();
 

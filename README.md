@@ -1,11 +1,11 @@
 ![Logo](Logo/Logo.png)
 
-# Bloc Interpretor
+# Bloc interpreter
 
 ## Table of content
 
 - [Introduction](#introduction)
-- [Interpretor](#interpretor)
+- [interpreter](#interpreter)
 - [Example project](#example-project)
 - [Language reference](#language-reference)
     - [Values](#values)
@@ -18,15 +18,15 @@
 
 ## Introduction
 
-Bloc is a programming language originaly created for debuging and play testing games. It started of as just a set of commands you could execute in a console to perform certain actions such as teleporting the player or changing its health. Later, I decided to to expand it and make it a full on programming language by adding variables, if statements and loops. The language is now separated in two parts, each with a different syntax. The main part has a C like syntax and is used to handle all the logic. By starting a line with a slash `/`, you can use the second part of the language which consists of a set of commands which can be used to perform actions on objects living outside of Cube.
+Bloc is a programming language I originally created for debugging and play testing my games. It started off as just a set of commands I could execute in a console to perform certain actions such as teleporting the player or changing its health. Later, I decided to expand it and make it a complete programming language by adding variables, operators and statements. The language is now separated in two parts, each with a different syntax. The main part has a C-like syntax and is used to handle all the logic. By starting a line with a slash `/`, you can use the second part of the language which consists of a set of commands which can be used to perform actions on objects living outside of Bloc.
 
-## Interpretor
+## interpreter
 
-To use the interpretor inside of your projects, you have to import the librairy and create an engine with the Engine.Builder class which is inside the Bloc namespace. You can use this builder to specify where the engine should output text and how to clear the text. You can also give it a set of commands. Once you are done setting up the engine, you can use the Build() method to build it. This method will return an instance of the class Engine. You can then use the Execute() method an pass it a string containing the code to execute. Executing code can return a [Value](#values) if the code was only an expression or a result which can be an Exit or a Throw. If you receive an Exit, you should close the application. If you receive a Throw, it means an exception was thrown and never caught, you should display an error message. For more information, you can look at the example project.
+To use the interpreter inside your projects, you have to import the library and create an engine with the Engine.Builder class which is inside the Bloc namespace. You can use this builder to specify where the engine should output text and how to clear the text. You can also give it a set of commands. Once you are done setting up the engine, you can use the Build() method to build it. This method will return an instance of the class Engine. You can then use the Execute() method and pass it a string containing the code to execute. Executing code can return a [Value](#values) if the code was only an expression or a result which can be an Exit or a Throw. If you receive an Exit, you should close the application. If you receive a Throw, it means an exception was thrown and never caught, you should display an error message. For more information, you can look at the example project.
 
 ## Example project
 
-The example project is an interactive Cube console. It allows you to execute a programm statement by statement as you write it and allows you to test things quickly to learn the language. If you type a line and press enter, it will execute that line. If you miss a semicolon at the end of that line, this project will add it for you. If the line end with an opening brace `{`, it will not execute it right away, instead it will let you write as many lines as you want until you close that code block.
+The example project is an interactive Bloc console. It allows you to execute a program statement by statement as you write it and allows you to test things quickly to learn the language. If you type a line and press enter, it will execute that line. If you miss a semicolon at the end of that line, this project will add it for you. If the line ends with an opening brace `{`, it will not execute it right away; instead it will let you write as many lines as you want until you close that code block.
 
 ## Language reference
 
@@ -38,19 +38,19 @@ The example project is an interactive Cube console. It allows you to execute a p
 
 You can use the `void` literal to create an instance of type void. It cannot be assigned to a variable and is only used when a function returns nothing. However void is implicitly returned when the end of a function is reached or when no value is provided for a return statement, so the `void` literal is rarely used.
 
-```python
+```csharp
 # The 3 functions return void
-def void_1 = () { }; 
+var void_1 = () { }; 
 
-def void_2 = () {
+var void_2 = () {
     return;
 }; 
 
-def void_3 = () {
+var void_3 = () {
     return void;
 }; 
 
-def foo = void; # throws an exception
+var foo = void; # throws an exception
 
 typeof void; # evaluates to void
 ```
@@ -61,11 +61,11 @@ typeof void; # evaluates to void
 
 You can use the `null` literal to create an instance of type null. This is used when a variable contains nothing and is the default value of any variable.
 
-```python
+```csharp
 # Both variables have a value of null
-def foo; 
+var foo; 
 
-def bar = null; 
+var bar = null; 
 
 typeof null; # evaluates to null
 ```
@@ -76,8 +76,8 @@ typeof null; # evaluates to null
 
 You can use the `true` and `false` literals to create an instance of type bool. They represent a boolean value and are mainly used as conditions inside `if` statements and loops.
 
-```python
-def condition = true; 
+```csharp
+var condition = true; 
 
 if (condition)
     /echo 'Hello world'; 
@@ -90,9 +90,9 @@ typeof false;   # evaluates to bool
 
 #### Number
 
-A number is used to represent both integers and floating-point numbers. To create an integer, you can simply write a decimal number with digits from 0 to 9 or you can prefix it with `0b`, `0o` or `0x` to write a number in binary, octal or hexadecimal respectivly. To create a floating point number, you can simply add a dot `.` to separate its integral and fractional parts. Floating point numbers have to be decimal, but you can use the scientific notation by adding an `e` and an exponent. Both integers and floating-point literals can contain any number of underscores `_` to separate digits. You can also use the `infinity` and `nan` literals to create a number.
+A number is used to represent both integers and floating-point numbers. To create an integer, you can simply write a decimal number with digits from 0 to 9 or you can prefix it with `0b`, `0o` or `0x` to write a number in binary, octal or hexadecimal respectively. To create a floating point number, you can simply add a dot `.` to separate its integral and fractional parts. Floating point numbers have to be decimal, but you can use the scientific notation by adding an `e` and an exponent. Both integers and floating-point literals can contain any number of underscores `_` to separate digits. You can also use the `infinity` and `nan` literals to create a number.
 
-```python
+```csharp
 # they all represent the same number
 42; 
 0b_0010_1010; 
@@ -111,10 +111,10 @@ typeof -infinity;   # evaluates to number
 
 #### Range
 
-You can create a range using the [range operator](#range-operator)  `..` and optionaly numbers. Ranges can be used to get a slice of a [string](#string) or [array](#array). They can also be used in a [for..in](#forin-statement) loop to iterate over all the integers inside that range. When iterating over a range, if the first number is omited, it defaults to 0. The second number defaults to `infinity` or `-infinity` depending on the sign of the step. The default step is 1, but you can change it by adding a second range operator `..`. A step of 2 for example will iterate over every second iteger inside the range. A negative step will reverse the iteration. For more information on getting a slice of a string or array, see [indexer]().
+You can create a range using the [range operator](#range-operator)  `..` and optionally numbers. Ranges can be used to get a slice of a [string](#string) or [array](#array). They can also be used in a [for..in](#forin-statement) loop to iterate over all the integers inside that range. When iterating over a range, if the first number is omitted, it defaults to 0. The second number defaults to `infinity` or `-infinity` depending on the sign of the step. The default step is 1, but you can change it by adding a second range operator `..`. A step of 2 for example will iterate over every second integer inside the range. A negative step will reverse the iteration. For more information on getting a slice of a string or array, see [indexer]().
 
-```python
-def arr = { 1, 2, 3 }; 
+```csharp
+var arr = { 1, 2, 3 }; 
 arr[..2];   # evaluates to { 1, 2 }
 
 # outputs the numbers from 0 to 9
@@ -144,7 +144,7 @@ A string is used to represent text. You can create one by putting a chain of cha
 
 If you want a string to include both single and double quotes or simply include special characters, you can use escape sequences with the backslash `\` symbol.
 
-| Escape sequance | Character name  | Unicode encoding |
+| Escape sequence | Character name  | Unicode encoding |
 |-----------------|-----------------|------------------|
 | \\'             | Single quote    | 0x0027           |
 | \\"             | Double quote    | 0x0022           |
@@ -168,14 +168,14 @@ You can also create a string with triple quotes (`'''` or `"""`). These types of
 
 '''
 This string contains new lines
-without using espace sequances.
+without using escape sequences.
 '''; 
 ```
 
-You can also create a string with back quotes ``` ` ```. These types of string are called interpolated string. They allow you to embed expressions inside braces `{}` within a string. The content of the braces will be evaluated and implicitly converted to a string before being concatenated to the rest of the string at runtime. This improves readability over concatenating multiple expressions with the [addition operator](#addition-operator) `+`. If you want to actualy have curly brackets inside an interpolated string, you have to double them.
+You can also create a string with back quotes ``` ` ```. These types of string are called interpolated string. They allow you to embed expressions inside braces `{}` within a string. The content of the braces will be evaluated and implicitly converted to a string before being concatenated to the rest of the string at runtime. This improves readability over concatenating multiple expressions with the [addition operator](#addition-operator) `+`. If you want to actually have curly brackets inside an interpolated string, you have to double them.
 
-```python
-def foo = 42; 
+```csharp
+var foo = 42; 
 
 # both evaluates to 'foo: 42'
 nameof foo + ': ' + foo; 
@@ -187,7 +187,7 @@ nameof foo + ': ' + foo;
 You can also combine raw strings and interpolated strings with triple back quotes ` ``` `.
 
 ````python
-def foo = 42; 
+var foo = 42; 
 
 ``` `` {{ ```; # evaluates to ' ` { '
 
@@ -202,37 +202,37 @@ inside a multi-line string:
 
 #### Array
 
-An array is used to represent a list of ordered values. You can create one by putting a list of coma `,` separated values inside braces `{}`. The values can be of any type and you are allowed to leave a trailing comma `,` after the last value. You cannot make an empty array literal because it would be ambiguus with an empty [struct](#struct). If you want to create an empty array, use the default constructor for `array`.
+An array is used to represent a list of ordered values. You can create one by putting a list of coma `,` separated values inside braces `{}`. The values can be of any type and you are allowed to leave a trailing comma `,` after the last value. You cannot make an empty array literal because it would be ambiguous with an empty [struct](#struct). If you want to create an empty array, use the default constructor for `array`.
 
-```python
-def myArray = { 1, 2, 3, }; 
+```csharp
+var myArray = { 1, 2, 3, }; 
 
-def emptyArray = array(); 
+var emptyArray = array(); 
 ```
 
 ---
 
 #### Struct
 
-A struct is used to represent a set of key-value pairs. You can create one by putting a list of coma `,` separated key-value pairs  inside braces `{}`. A key-value pair is formed by a name, the equal symbol `=` and a value. The values can be of any type and the keys have to be valid variable names. You are allowed to leave a trailing comma `,` after the last key-value pair. You cannot make an empty struct literal because it would be ambiguus with an empty [array](#array). If you want to create an empty struct, use the default constructor for `struct`.
+A struct is used to represent a set of key-value pairs. You can create one by putting a list of coma `,` separated key-value pairs  inside braces `{}`. A key-value pair is formed by a name, the equal symbol `=` and a value. The values can be of any type and the keys have to be valid variable names. You are allowed to leave a trailing comma `,` after the last key-value pair. You cannot make an empty struct literal because it would be ambiguous with an empty [array](#array). If you want to create an empty struct, use the default constructor for `struct`.
 
-```python
-def myStruct = {
+```csharp
+var myStruct = {
     a = 1,
     b = 2,
     c = 3,
 }; 
 
-def emptyStruct = struct(); 
+var emptyStruct = struct(); 
 ```
 
 ---
 
 #### Tuple
 
-You can create a tuple by separating two or more expressions with the coma operator `,`. Tuples are also usualy surouned by parentheses `()` because of the [operator precedence](#operators). Tuples are useful to perform an operation on multiple values at the same time. You can perform an operation between all the values of a tuple and a single value or between all the values of two tuples. If the tuple don't have the same size, an exception is thrown.
+You can create a tuple by separating two or more expressions with the coma operator `,`. Tuples also are usually surrounded by parentheses `()` because of the [operator precedence](#operators). Tuples are useful to perform an operation on multiple values at the same time. You can perform an operation between all the values of a tuple and a single value or between all the values of two tuples. If the tuples don't have the same size, an exception is thrown.
 
-```python
+```csharp
 1, 2, 3;        # evaluates to (1, 2, 3)
 
 `{1, 2, 3}`;    # evaluates to '(1, 2, 3)'
@@ -251,27 +251,27 @@ You can create a tuple by separating two or more expressions with the coma opera
 
 A function is used to hold statements that you want to execute at more than one place and allows you to reuse code. You can generalize a function by using parameters, allowing you to use that function in even more places. There are two syntax you can use to create a function.
 
-With the first syntax, you have to put a pair of parentheses `()` next to a pair of braces `{}`. The parentheses can contain a list of comma `,` separated identifiers. These are the parameters of the function. The braces can contain a list of statements to execute when the function is called. These statements can acces the parameters of the function directly by using the names of the parameters as variables or by using the `params` keyword.
+With the first syntax, you have to put a pair of parentheses `()` next to a pair of braces `{}`. The parentheses can contain a list of comma `,` separated identifiers. These are the parameters of the function. The braces can contain a list of statements to execute when the function is called. These statements can access the parameters of the function directly by using the names of the parameters as variables or by using the `params` keyword.
 
-```python
-def print = (text) {
+```csharp
+var print = (text) {
     /echo $text;
 }; 
 ```
 
-With the second syntax, you have to put a pair of parentheses next to the [lambda operator](#lambda-operator) `=>` next to an expression. The parentheses can be omited if there is exactly one parameter and it does not have an explicit default value. This type of function will evaluate its expression and return the result. This is prety useful for single line functions.
+With the second syntax, you have to put a pair of parentheses next to the [lambda operator](#lambda-operator) `=>` next to an expression. The parentheses can be omited if there is exactly one parameter and it does not have an explicit default value. This type of function will evaluate its expression and return the result. This is pretty useful for single line functions.
 
-```python
-def add = (a, b) => a + b; 
+```csharp
+var add = (a, b) => a + b; 
 
-def toString = x => x as string; 
+var toString = x => x as string; 
 ```
 
-Both syntaxes can be used to create asynchronous function by prefixing them with the `async` keyword. Asynchronous functions allows you to run multiple functions at the same time. When calling an asynchronous function, it instantly returns a [task](#task) and starts executing its body in the background. The task returned can be used to retreive the result of the function later. If the function throws an exception, the exception will be stored inside the task.
+Both syntax can be used to create asynchronous function by prefixing them with the `async` keyword. Asynchronous functions allow you to run multiple functions at the same time. When calling an asynchronous function, it instantly returns a [task](#task) and starts executing its body in the background. The task returned can be used to retrieve the result of the function later. If the function throws an exception, the exception will be stored inside the task.
 
-```python
-def foo = async () {
-    def sum = 0;
+```csharp
+var foo = async () {
+    var sum = 0;
     
     for (i in ..1000)
         sum += i;
@@ -279,7 +279,7 @@ def foo = async () {
     return sum;
 }; 
 
-def bar = async () => await foo(); 
+var bar = async () => await foo(); 
 ```
 
 ---
@@ -288,9 +288,9 @@ def bar = async () => await foo();
 
 Tasks cannot be directly created, they are returned by [asynchronous functions](#function) and can be used to wait for the function to finish and to retreive the result of the function using the [await operator](#await-operator-await).
 
-```python
-def myAsyncFunc = async () {
-    def sum = 0;
+```csharp
+var myAsyncFunc = async () {
+    var sum = 0;
 
     for (i in ..1000)
         sum += i;
@@ -298,36 +298,36 @@ def myAsyncFunc = async () {
     return sum;
 }; 
 
-def myTask = myAsyncFunc(); 
+var myTask = myAsyncFunc(); 
 ```
 
 ---
 
 #### Reference
 
-You can create a reference to a variable by using the `ref` operator on it. You can also use the `new` operator to simultaniously create a variable on the heap and return a reference to it. References are useful if you want multiple variables to point to the same value.
+You can create a reference to a variable by using the `ref` operator on it. You can also use the `new` operator to simultaneously create a variable on the heap and return a reference to it. References are useful if you want multiple variables to point to the same value.
 
-```python
-def foo = { 1, 2 }; 
+```csharp
+var foo = { 1, 2 }; 
 
-def ref1 = ref foo;         # ref1 is a reference to the variable foo
+var ref1 = ref foo;         # ref1 is a reference to the variable foo
 
-def ref2 = new { 1, 2 };    # ref2 is a reference to an array stored on the heap
+var ref2 = new { 1, 2 };    # ref2 is a reference to an array stored on the heap
 ```
 
 ---
 
 #### Complex
 
-Complexes cannot be directly created. They are returned by some command and are essentialy references to objects that lives outside of Bloc. You cannot modify them in any way, you can only store them and pass them to an other command.
+Complexes cannot be directly created. They are returned by some command and are essentially references to objects that live outside of Bloc. You cannot modify them in any way, you can only store them and pass them to another command.
 
 ---
 
 #### Type
 
-You can create a type by using any of the following literals : `bool`,  `number`,  `range`,  `string`,  `array`,  `struct`,  `tuple`,  `function`,  `reference`,  `complex`,  `type` and  `any`. You can also use the `typeof` operator to get the type of a value. You have to use the `typeof` operator to get the void or null type since they don't have literals. Types can be used to check if a value is of a certain type with the `is` or `is not` operator. Types can be combined into composit types using bitwise operators or the [nullable type operator](#nullable-type-operator) `?`. This allows you to check if a value is of any of the types within a composit type. `any` is the composite type of every types. Types can also be used to cast a value from its type to another with the `as` operator. A value cannot be casted to a composite type.
+You can create a type by using any of the following literals : `bool`,  `number`,  `range`,  `string`,  `array`,  `struct`,  `tuple`,  `function`,  `reference`,  `complex`,  `type` and  `any`. You can also use the `typeof` operator to get the type of a value. You have to use the `typeof` operator to get the void or null type since they don't have literals. Types can be used to check if a value is of a certain type with the `is` or `is not` operator. Types can be combined into composit types using bitwise operators or the [nullable type operator](#nullable-type-operator) `?`. This allows you to check if a value is of any of the types within a composite type. `any` is the composite type of every types. Types can also be used to cast a value from its type to another with the `as` operator. A value cannot be cast to a composite type.
 
-```python
+```csharp
 0 is number;            # evaluates to true
 0 is (array | struct);  # evaluates to false
 
@@ -342,44 +342,47 @@ true as (number | string) # throws an exception
 
 Variables allow you to store values in memory to use later. Values can be stored either on the stack or the heap.
 
-To store a value on the stack, you have to use a `def` statement. Variables stored on the stack can be accessed by their name but are automaticly deleted once you get out of the scope in which they were declared. A variable name can contain both lower and upper case characters, digits, uderscores `_` and any special character except for these : ```!"#$%&'()*+,-./:;<=>?@[\]^`{|}~```. A variable name cannot contain white spaces and cannot start with a digit.
+To store a value on the stack, you have to use a `var` statement or the `let` operator. Variables stored on the stack can be accessed by their name but are automatically deleted once you get out of the scope in which they were declared. A variable name can contain both lower and upper-case characters, digits, underscores `_` and any special character except for these : ```!"#$%&'()*+,-./:;<=>?@[\]^`{|}~```. A variable name cannot contain white spaces and cannot start with a digit.
 
-```python
-# declaring a variable foo
-def foo; 
+```csharp
+# declaring a variable with the let operator
+let foo; 
 
-# asigning it 'Hello world'
-foo = 'Hello world'; 
+# declaring a variable with a var statement
+var bar; 
 
-# retreiving its value
-foo; 
+# assigning it 'Hello world'
+bar = 'Hello world'; 
 
-# you can declare a variable and asign it a value at the same time
-def bar = 42; 
+# retrieving its value
+bar; 
+
+# you can declare a variable and assign it a value at the same time
+var baz = 42; 
 ```
 
-To store a value on the heap, you have to use the `new` operator. Variables stored on the heap can be accessed from outside their original scope but they do not have names and can only be accessed using [references](#reference). The `new` operator returns a reference to the newly created heap variable. Heap variable are automaticly deleted once all their references have been deleted.
+To store a value on the heap, you have to use the `new` operator. Variables stored on the heap can be accessed from outside their original scope but they do not have names and can only be accessed using [references](#reference). The `new` operator returns a reference to the newly created heap variable. Heap variables are automatically deleted once all their references have been deleted.
 
-```python
+```csharp
 # creating a string on the heap and
 # storing a reference to it in the variable foo
-def foo = new 'Hello world'; 
+var foo = new 'Hello world'; 
 
-# retreiving its value
+# retrieving its value
 val foo; 
 ```
 
-Some valid variable names can be ambiguous between a variable and a keyword. By default, the interpretor will interpret them as keywords, but you can use the variable identifier character `$` to force the interpretor to interpret them as variables. The `$` **is not** part of the variable name. This means that the `nameof` operator will return the name with out the `$` and when using indexers you have to ommit the `$`. You can use the variable identifier character with any variable even if they are not embiguus and you have to use it with every variable inside a command.
+Some valid variable names can be ambiguous between a variable and a keyword. By default, the interpreter will interpret them as keywords, but you can use the variable identifier character `$` to force the interpreter to interpret them as variables. The `$` **is not** part of the variable name. This means that the `nameof` operator will return the name with out the `$` and when using indexers you have to ommit the `$`. You can use the variable identifier character with any variable even if they are not ambiguous and you have to use it with every variable inside a command.
 
-```python
-def $for = { 'a', 'b', 'c' };
+```csharp
+var $for = { 'a', 'b', 'c' };
 
 for (item in $for)
     /echo $item;
 
 nameof $for; # evaluates to 'for'
 
-def foo = {
+var foo = {
     $if = true
 };
 
@@ -387,7 +390,7 @@ def foo = {
 foo.$if;
 foo['if'];
 
-def bar = 42;
+var bar = 42;
 
 $bar; # evaluates to 42
 ```
@@ -395,16 +398,16 @@ $bar; # evaluates to 42
 
 ### Access keywords
 
-Most keywords are used as literals or operators or used to initiate a statements, but there are two keywords which can be used as variables. These keywords are `params` and `recall`.
+Most keywords are used as literals or operators or used to initiate a statement, but there are two keywords which can be used as variables. These keywords are `params` and `recall`.
 
 ---
 
 #### params
 
-The `params` keyword can be used inside of a [function](#function) to access an [array](#array) containing all the parameters that were sent when invoking that function. This is usefull if a function has a variable number of arguments. The array is deleted once you exit out of the function.
+The `params` keyword can be used inside a [function](#function) to access an [array](#array) containing all the parameters that were sent when invoking that function. This is useful if a function has a variable number of arguments. The array is deleted once you exit out of the function.
 
-```python
-def print = () {
+```csharp
+var print = () {
     for (x in params)
         /echo $x;
 };
@@ -414,10 +417,10 @@ def print = () {
 
 #### recall
 
-The `recall` keyword can be used inside of a [function](#function) to access a copy of that function allowing you to *recall* it. This is the prefered way of doing recursion. You should not try to recursively call a function using its name. The copy is deleted once you exit out of the function.
+The `recall` keyword can be used inside a [function](#function) to access a copy of that function allowing you to *recall* it. This is the preferred way of doing recursion. You should not try to recursively call a function using its name. The copy is deleted once you exit out of the function.
 
-```python
-def fibonacci = (n) {
+```csharp
+var fibonacci = (n) {
     if (n == 0)
         return 0;
 
@@ -439,7 +442,7 @@ The following table shows the precedence of all operators. The operators at the 
 | Operators                                                                                | Description          | Associativity                     |
 |------------------------------------------------------------------------------------------|----------------------|-----------------------------------|
 | [`.`](#member-access-operator), [`[]`](#indexer-operator), [`()`](#invocation-operator)  | Primary              | Left&#8209;to&#8209;right&nbsp;🡲 |
-| [`+`](#unary-plus-operator), [`-`](#unary-minus-operator-), [`~`](#complement-operator-), [`!`](#negation-operator), [`++`](#increment-operator), [`--`](#decrement-operator-), [`~~`](#variable-complement-operator-), [`!!`](#variable-negation-operator), [`?`](#nullable-type-operator), [`len`](#length-operator-len), [`chr`](#character-operator-chr), [`ord`](#ordinal-operator-ord), [`val`](#value-operator-val), [`ref`](#reference-operator-ref), [`new`](#allocation-operator-new), [`await`](#await-operator-await) [`nameof`](#nameof-operator-nameof), [`typeof`](#typeof-operator-typeof) | Unary | Right&#8209;to&#8209;left&nbsp;🡰 |
+| [`+`](#unary-plus-operator), [`-`](#unary-minus-operator-), [`~`](#complement-operator-), [`!`](#negation-operator), [`++`](#increment-operator), [`--`](#decrement-operator-), [`~~`](#variable-complement-operator-), [`!!`](#variable-negation-operator), [`?`](#nullable-type-operator), [`len`](#length-operator-len), [`chr`](#character-operator-chr), [`ord`](#ordinal-operator-ord), [`val`](#value-operator-val), [`ref`](#reference-operator-ref), [`let`](#definition-operator-let), [`new`](#allocation-operator-new), [`delete`](#delete-operator-delete), [`await`](#await-operator-await) [`nameof`](#nameof-operator-nameof), [`typeof`](#typeof-operator-typeof) | Unary | Right&#8209;to&#8209;left&nbsp;🡰 |
 | [`..`](#range-operator)                                                                  | Range                | N/A                               |
 | [`**`](#power-operator), [`//`](#root-operator), [`%%`](#logarithm-operator)             | Exponential          | Left&#8209;to&#8209;right&nbsp;🡲 |
 | [`*`](#multiplication-operator), [`/`](#division-operator), [`%`](#remainder-operator)   | Multiplicative       | Left&#8209;to&#8209;right&nbsp;🡲 |
@@ -463,7 +466,7 @@ The pipe operator `|>` is not in that table because it can only be used inside a
 
 Unrelated to operator precedence and associativity, an operator will evaluate its operands from left to right.
 
-Note that the operands don't need to be exactly the type specified in a certain context, they only need to be [implicitly convertible]() to that type. In the case were the operands are implicitly convertible to multiple types and match more than one operator overload, the upper most one takes priority. In the case were the operands do not match any overload, an exception is thrown.
+Note that the operands don't need to be exactly the type specified in a certain context, they only need to be [implicitly convertible]() to that type. In the case where the operands are implicitly convertible to multiple types and match more than one operator overload, the upper most one takes priority. In the case where the operands do not match any overload, an exception is thrown.
 
 ---
 
@@ -471,31 +474,31 @@ Note that the operands don't need to be exactly the type specified in a certain 
 
 If both its operands are [numbers](#number), it will compute the sum of its operands.
 
-```python
+```csharp
 5 + 4.6; # evaluates to 9.6
 ```
 
 If both its operands are [arrays](#array), it will concatenate them.
 
-```python
+```csharp
 ({ 4, 4 } + { 2, 7 }); # evaluates to { 4, 4, 2, 7 }
 ```
 
 If its left operand is an [array](#array), but the right one is not, it will append the right operand to the [array](#array).
 
-```python
+```csharp
 ({ 2, 5 } + 2); # evaluates to { 2, 5, 2 }
 ```
 
 If its right operand is an [array](#array), but the left one is not, it will prepend the left operand to the [array](#array).
 
-```python
+```csharp
 2 + { 3, 8 }; # evaluates to { 2, 3, 8 }
 ```
 
 If both its operands are [strings](#string), it will concatenate them.
 
-```python
+```csharp
 'fizz' + 'buzz'; # evaluates to 'fizzbuzz'
 ```
 
@@ -507,7 +510,7 @@ Note that [string interpolation]() provides a more convenient way to format stri
 
 If both its operands are [numbers](#number), it will subtract its right operand from its left operand.
 
-```python
+```csharp
 5 - 3;      # evaluates to 2
 7 - 5.8;    # evaluates to 1.2
 5 - 9;      # evaluates to -4
@@ -519,22 +522,22 @@ If both its operands are [numbers](#number), it will subtract its right operand 
 
 If both its operands are [numbers](#number), it will compute the product of its operands.
 
-```python
+```csharp
 2 * 8.6; # evaluates to 17.2
 ```
 
-If one of its operands is an [array](#array) and the other is a [number](#number), it will concatenate an empty array with the given array a number of time equivalent to the floor of the given number.
+If one of its operands is an [array](#array) and the other is a [number](#number), it will concatenate an empty array with the given array a number of times equivalent to the floor of the given number.
 
-```python
+```csharp
 ({ 1, 2 } * 3);     # evaluates to { 1, 2, 1, 2, 1, 2 }
 ({ 1, 2 } * 0);     # evaluates to array()
 ({ 1, 2 } * 1.9);   # evaluates to { 1, 2 }
 ({ 1, 2 } * -2);    # throws an exception
 ```
 
-If one of its operands is a [string](#string) and the other is a [number](#number), it will concatenate an empty string with the given string a number of time equivalent to the floor of the given number.
+If one of its operands is a [string](#string) and the other is a [number](#number), it will concatenate an empty string with the given string a number of times equivalent to the floor of the given number.
 
-```python
+```csharp
 'ab' * 3;   # evaluates to 'ababab'
 'ab' * 0;   # evaluates to ''
 'ab' * 1.9; # evaluates to 'ab'
@@ -547,7 +550,7 @@ If one of its operands is a [string](#string) and the other is a [number](#numbe
 
 If both its operands are [numbers](#number), it will divide its left operand by its right operand. Dividing a positive number by zero will return `infinity`, dividing a negative number by zero will return `-infinity` and dividing zero by zero will return `nan`.
 
-```python
+```csharp
 6 / 4;  # evaluates to 1.5
 1 / 0;  # evaluates to infinity
 -1 / 0; # evaluates to -infinity
@@ -562,7 +565,7 @@ The `/` can also be used to make a [command statement]().
 
 If both its operands are [numbers](#number), it will compute the remainder after dividing its left operand by its right operand. Even though it is similar, this **is not** a modulus operator. It can be used as a modulus operator as long as its operands are positive, but with negative values the result will not be the same.
 
-```python
+```csharp
 8 % 3;      # evaluates to 2
 8.4 % 1;    # evaluates to 0.4
 ```
@@ -573,7 +576,7 @@ If both its operands are [numbers](#number), it will compute the remainder after
 
 If both its operands are [numbers](#number), it will raise its left operand to the power of its right operand.
 
-```python
+```csharp
 5 ** 4;     # evaluates to 625
 10 ** -1;   # evaluates to 0.1
 25 ** 0.5;  # evaluates to 5
@@ -585,7 +588,7 @@ If both its operands are [numbers](#number), it will raise its left operand to t
 
 If both its operands are [numbers](#number), it will compute the n^th^ root of its left operand, where n is the value of its right operand.
 
-```python
+```csharp
 25 // 2; # evaluates to 5 (the square root of 25)
 ```
 
@@ -595,7 +598,7 @@ If both its operands are [numbers](#number), it will compute the n^th^ root of i
 
 If both its operands are [numbers](#number), it will compute the logarithm of its left operand with its right operand as the base.
 
-```python
+```csharp
 100 %% 10; # evaluates to 2 (the logarithm base 10 of 100)
 ```
 
@@ -605,7 +608,7 @@ If both its operands are [numbers](#number), it will compute the logarithm of it
 
 If its operand is a [number](#number), it will return the value of that number. It can be used to [implicitly convert]() a value to a [number](#number).
 
-```python
+```csharp
 +4;     # evaluates to 4
 +true;  # evaluates to 1
 ```
@@ -616,7 +619,7 @@ If its operand is a [number](#number), it will return the value of that number. 
 
 If its operand is a [number](#number), it will compute the numeric negation of its operand.
 
-```python
+```csharp
 -4;     # evaluates to -4
 - -4;   # evaluates to 4
 ```
@@ -627,13 +630,13 @@ Note that there is a space between the two `-`. If we remove that space, they wi
 
 #### Increment operator `++`
 
-If its operand has a [number](#number) as its value, it will increment it by 1. The operand must be a variable. This operator can be used both as a prefix and a sufix. When used as a prefix, it returns the value of the variable *after* the increment. When used as a sufix, it returns the value of the variable *before* the increment, but after the implicit conversion.
+If its operand has a [number](#number) as its value, it will increment it by 1. The operand must be a variable. This operator can be used both as a prefix and a suffix. When used as a prefix, it returns the value of the variable *after* the increment. When used as a suffix, it returns the value of the variable *before* the increment, but after the implicit conversion.
 
-```python
-def foo = 0; 
+```csharp
+var foo = 0; 
 ++foo;          # evaluates to 1 and foo has a value of 1
 
-def bar = 0; 
+var bar = 0; 
 bar++;          # evaluates to 0, but bar has a value of 1
 
 0++;            # throws an exception
@@ -643,13 +646,13 @@ bar++;          # evaluates to 0, but bar has a value of 1
 
 #### Decrement operator `--`
 
-If its operand has a [number](#number) as its value, it will decrement it by 1. The operand must be a variable. This operator can be used both as a prefix and a sufix. When used as a prefix, it returns the value of the variable *after* the decrement. When used as a sufix, it returns the value of the variable *before* the decrement, but after the implicit conversion.
+If its operand has a [number](#number) as its value, it will decrement it by 1. The operand must be a variable. This operator can be used both as a prefix and a suffix. When used as a prefix, it returns the value of the variable *after* the decrement. When used as a suffix, it returns the value of the variable *before* the decrement, but after the implicit conversion.
 
-```python
-def foo = 0; 
+```csharp
+var foo = 0; 
 --foo;          # evaluates to -1 and foo has a value of -1
 
-def bar = 0; 
+var bar = 0; 
 bar--;          # evaluates to 0, but bar has a value of -1
 
 0--;            # throws an exception
@@ -659,12 +662,12 @@ bar--;          # evaluates to 0, but bar has a value of -1
 
 #### Boolean AND operator `&&`
 
-This operator will compute the logical AND of its operands. Its operands are implicitly converted to bools for the evaluation, but the result will not nececeraly be of type `bool`. The operator returns its left operand if it evaluates to `false` otherwise it returns its right operand. When using bools, the result is `true` if both its operands evaluate `true`. Otherwise the result is `false`. If its left operand evaluates to `false`, its right operand is not evaluated.
+This operator will compute the logical AND of its operands. Its operands are implicitly converted to bools for the evaluation, but the result will not necessarily be of type `bool`. The operator returns its left operand if it evaluates to `false` otherwise it returns its right operand. When using bools, the result is `true` if both its operands evaluate `true`. Otherwise the result is `false`. If its left operand evaluates to `false`, its right operand is not evaluated.
 
-```python
-def result;
+```csharp
+var result;
 
-def operand = (value, text) {
+var operand = (value, text) {
     /echo $text;
     return value;
 }; 
@@ -687,12 +690,12 @@ result = operand(true, 'left evaluated') && operand(true, 'right evaluated');
 
 #### Boolean OR operator `||`
 
-This operator will compute the logical OR of its operands. Its operands are implicitly converted to bools for the evaluation, but the result will not nececeraly be of type `bool`. The operator returns its left operand if it evaluates to `true` otherwise it returns its right operand. When using bools, the result is `true` if one of its operands evaluate `true`. The result is `false` if both its operands evaluate `false`. If its left operand evaluates to `true`, its right operand is not evaluated.
+This operator will compute the logical OR of its operands. Its operands are implicitly converted to bools for the evaluation, but the result will not necessarily be of type `bool`. The operator returns its left operand if it evaluates to `true` otherwise it returns its right operand. When using bools, the result is `true` if one of its operands evaluates `true`. The result is `false` if both its operands evaluate `false`. If its left operand evaluates to `true`, its right operand is not evaluated.
 
-```python
-def result;
+```csharp
+var result;
 
-def operand = (value, text) {
+var operand = (value, text) {
     /echo $text;
     return value;
 }; 
@@ -710,8 +713,8 @@ result = operand(true, 'left evaluated') || operand(true, 'right evaluated');
 # left evaluated
 # true
 
-def foo = null; 
-def bar = {
+var foo = null; 
+var bar = {
     a = 2
 }; 
 
@@ -727,12 +730,12 @@ result = foo || bar;
 
 #### Boolean XOR operator `^^`
 
-This operator will compute the logical XOR of its operands. Its operands are implicitly converted to bools for the evaluation, but the result will not nececeraly be of type `bool`. If one of its operands evaluate `true` and the other evaluates to `false`, the operator returns the one wich evaluated to true. If both its operands evaluate `true` or if both its operands evaluate `false`, the operator returns `null` which is implicitly convertible to `false`. Both operands are always evaluated.
+This operator will compute the logical XOR of its operands. Its operands are implicitly converted to bools for the evaluation, but the result will not necessarily be of type `bool`. If one of its operands evaluates `true` and the other evaluates to `false`, the operator returns the one which evaluated to true. If both its operands evaluate `true` or if both its operands evaluate `false`, the operator returns `null` which is implicitly convertible to `false`. Both operands are always evaluated.
 
-```python
-def foo, bar = { a = 2 }; 
+```csharp
+var foo, bar = { a = 2 }; 
 
-def result = foo ^^ bar; 
+var result = foo ^^ bar; 
 /echo $result; 
 # output:
 # {
@@ -754,7 +757,7 @@ result = foo ^^ bar;
 
 This operator will compute the logical negation of its operand.The result is `true`, if its operand evaluates to `false`, and `false`, if its operand evaluates to `true`.
 
-```python
+```csharp
 !true;  # evaluates to false
 !false; # evaluates to true
 ```
@@ -765,14 +768,14 @@ This operator will compute the logical negation of its operand.The result is `tr
 
 This operator will compute the logical negation of its operand and assign it the result. The operand must be a variable. This operator can be used both as a prefix and a sufix. When used as a prefix, it returns the value of the variable *after* the negation. When used as a sufix, it returns the value of the variable *before* the negation, but after the implicit conversion.
 
-```python
-def foo = false; 
+```csharp
+var foo = false; 
 !!foo;          # evaluates to true and foo has a value of true
 
-def bar = false; 
+var bar = false; 
 bar!!;          # evaluates to false, but bar has a value of true
 
-def num = 1; 
+var num = 1; 
 num!!;          # evaluates to true, but num has a value of false
 
 false!!;        # throws an exception
@@ -784,18 +787,18 @@ false!!;        # throws an exception
 
 If both its operands are [numbers](#number), it will compute the bitwise logical AND of its operands.
 
-```python
-def foo = 0b0011; 
-def bar = 0b1010; 
+```csharp
+var foo = 0b0011; 
+var bar = 0b1010; 
 
 foo & bar; # evaluates to 0b0010
 ```
 
 If both its operands are [types](#type), it will return a composite type whose types are in both operands
 
-```python
-def foo = array | struct; 
-def bar = array | tuple; 
+```csharp
+var foo = array | struct; 
+var bar = array | tuple; 
 
 foo & bar; # evaluates to array
 ```
@@ -806,18 +809,18 @@ foo & bar; # evaluates to array
 
 If both its operands are [numbers](#number), it will compute the bitwise logical OR of its operands.
 
-```python
-def foo = 0b0011; 
-def bar = 0b1010; 
+```csharp
+var foo = 0b0011; 
+var bar = 0b1010; 
 
 foo | bar; # evaluates to 0b1011
 ```
 
-If both its operands are [types](#type), it will return a composite type whose types are in either operands.
+If both its operands are [types](#type), it will return a composite type whose types are in either operand.
 
-```python
-def foo = array | struct; 
-def bar = array | tuple; 
+```csharp
+var foo = array | struct; 
+var bar = array | tuple; 
 
 foo | bar; # evaluates to array | struct | tuple
 ```
@@ -828,18 +831,18 @@ foo | bar; # evaluates to array | struct | tuple
 
 If both its operands are [numbers](#number), it will compute the bitwise logical XOR of its operands.
 
-```python
-def foo = 0b0011; 
-def bar = 0b1010; 
+```csharp
+var foo = 0b0011; 
+var bar = 0b1010; 
 
 foo ^ bar; # evaluates to 0b1001
 ```
 
 If both its operands are [types](#type), it will return a composite type whose types are in exactly one of its operands.
 
-```python
-def foo = array | struct; 
-def bar = array | tuple; 
+```csharp
+var foo = array | struct; 
+var bar = array | tuple; 
 
 foo ^ bar; # evaluates to struct | tuple
 ```
@@ -850,8 +853,8 @@ foo ^ bar; # evaluates to struct | tuple
 
 If both its operands are [numbers](#number), it will shift to the left its left operand by the number of bits defined by its right operand.
 
-```python
-def foo = 0b_1111_0000_0000_0000_0000_0000_0000_1111; 
+```csharp
+var foo = 0b_1111_0000_0000_0000_0000_0000_0000_1111; 
 
 foo << 4; # evaluates to 0b_0000_0000_0000_0000_0000_0000_1111_0000
 ```
@@ -862,8 +865,8 @@ foo << 4; # evaluates to 0b_0000_0000_0000_0000_0000_0000_1111_0000
 
 If both its operands are [numbers](#number), it will shift to the right its left operand by the number of bits defined by its right operand.
 
-```python
-def foo = 0b_1111_0000_0000_0000_0000_0000_0000_1111; 
+```csharp
+var foo = 0b_1111_0000_0000_0000_0000_0000_0000_1111; 
 
 foo >> 4; # evaluates to 0b_1111_1111_0000_0000_0000_0000_0000_0000
 ```
@@ -874,16 +877,16 @@ foo >> 4; # evaluates to 0b_1111_1111_0000_0000_0000_0000_0000_0000
 
 If both its operands are [numbers](#number), it will compute the bitwise complement of its operand by reversing each bit.
 
-```python
-def foo = 0b_1111_0000_0000_1111_1111_0000_0000_1111; 
+```csharp
+var foo = 0b_1111_0000_0000_1111_1111_0000_0000_1111; 
 
 ~foo; # evaluates to 0b_0000_1111_1111_0000_0000_1111_1111_0000
 ```
 
-If both its operands are [types](#type), it will return a composite type whose types are every types that were not in its operand.
+If both its operands are [types](#type), it will return a composite type whose types are all types that were not in its operand.
 
-```python
-def foo = string | array | struct | tuple | function | reference | complex; 
+```csharp
+var foo = string | array | struct | tuple | function | reference | complex; 
 
 ~foo; # evaluates to (void | null | bool | number | range | type)
 ```
@@ -894,13 +897,13 @@ def foo = string | array | struct | tuple | function | reference | complex;
 
 If its operand has a [number](#number) as its value, it will compute its bitwise complement and assign it the result. The operand must be a variable. This operator can be used both as a prefix and a sufix. When used as a prefix, it returns the value of the variable *after* the complement is assigned. When used as a sufix, it returns the value of the variable *before* the complement, but after the implicit conversion.
 
-```python
-def foo = 0b_1111_0000_0000_1111_1111_0000_0000_1111;  
+```csharp
+var foo = 0b_1111_0000_0000_1111_1111_0000_0000_1111;  
 ~~foo;
 # evaluates to 0b_0000_1111_1111_0000_0000_1111_1111_0000 and
 # foo has a value of 0b_0000_1111_1111_0000_0000_1111_1111_0000
 
-def bar = 0b_1111_0000_0000_1111_1111_0000_0000_1111; 
+var bar = 0b_1111_0000_0000_1111_1111_0000_0000_1111; 
 bar~~;
 # evaluates to 0b_1111_0000_0000_1111_1111_0000_0000_1111 but,
 # foo has a value of 0b_0000_1111_1111_0000_0000_1111_1111_0000
@@ -908,15 +911,15 @@ bar~~;
 0~~; # throws an exception
 ```
 
-If its operand has a [type](#type) as its value, it will return a composite type whose types are every types that were not in its operand and assign it the result. The operand must be a variable. This operator can be used both as a prefix and a sufix. When used as a prefix, it returns the value of the variable *after* the complement is assigned. When used as a sufix, it returns the value of the variable *before* the complement, but after the implicit conversion.
+If its operand has a [type](#type) as its value, it will return a composite type whose types are all types that were not in its operand and assign it the result. The operand must be a variable. This operator can be used both as a prefix and a sufix. When used as a prefix, it returns the value of the variable *after* the complement is assigned. When used as a sufix, it returns the value of the variable *before* the complement, but after the implicit conversion.
 
-```python
-def foo = string | array | struct | tuple | function | reference | complex;  
+```csharp
+var foo = string | array | struct | tuple | function | reference | complex;  
 ~~foo;
 # evaluates to (void | null | bool | number | range | type) and
 # foo has a value of (void | null | bool | number | range | type)
 
-def bar = string | array | struct | tuple | function | reference | complex; 
+var bar = string | array | struct | tuple | function | reference | complex; 
 bar~~;
 # evaluates to (string | array | struct | tuple | function | reference | complex) but,
 # foo has a value of (void | null | bool | number | range | type)
@@ -930,7 +933,7 @@ number~~; # throws an exception
 
 If its operand is a [type](#type), it will return a composite type whose types are the ones from its operand plus the null type.
 
-```python
+```csharp
 # Both evaluates to the same composite type
 number?; 
 number | typeof null; 
@@ -942,14 +945,14 @@ number | typeof null;
 
 This operator returns `true` if its operands are equal and returns `false` otherwise. If the operands don't have the same type, the result is `false`. If both operands are reference, it returns `true` if they both point to the same variable. If they point to different variables, the result is `false` even if both variables have the same value.
 
-```python
+```csharp
 "Hello" == "Hello"; # evaluates to true
 "Hello" == "World"; # evaluates to false
 
 1 == '1'; # evaluates to false
 
-def foo = new { a = 2 }; 
-def bar = new { a = 2 }; 
+var foo = new { a = 2 }; 
+var bar = new { a = 2 }; 
 
 foo == bar;         # evaluates to false
 val foo == val bar; # evaluates to true
@@ -959,9 +962,9 @@ val foo == val bar; # evaluates to true
 
 #### Inequality operators `!=`, `<>`
 
-These operators both return `true` if their operands are **not** equal and return `false` otherwise. It does the oposite of the [equality operator](#equality-operator). Both inequality operators can be used, but you should only use one of them per project.
+These operators both return `true` if their operands are **not** equal and return `false` otherwise. It does the opposite of the [equality operator](#equality-operator). Both inequality operators can be used, but you should only use one of them per project.
 
-```python
+```csharp
 # they all evaluates to true
 1 <> "1"; 
 1 != "1"; 
@@ -974,7 +977,7 @@ These operators both return `true` if their operands are **not** equal and retur
 
 If both its operands are [numbers](#number), it will return `true` if its left operand is less than its right operand and return `false` otherwise.
 
-```python
+```csharp
 2 < 1; # evaluates to false
 2 < 2; # evaluates to false
 2 < 5; # evaluates to true
@@ -986,7 +989,7 @@ If both its operands are [numbers](#number), it will return `true` if its left o
 
 If both its operands are [numbers](#number), it will return `true` if its left operand is greater than its right operand and return `false` otherwise.
 
-```python
+```csharp
 2 > 1; # evaluates to true
 2 > 2; # evaluates to false
 2 > 5; # evaluates to false
@@ -998,7 +1001,7 @@ If both its operands are [numbers](#number), it will return `true` if its left o
 
 If both its operands are [numbers](#number), it will return `true` if its left operand is less than or equal to its right operand and return `false` otherwise.
 
-```python
+```csharp
 2 <= 1; # evaluates to false
 2 <= 2; # evaluates to true
 2 <= 5; # evaluates to true
@@ -1010,7 +1013,7 @@ If both its operands are [numbers](#number), it will return `true` if its left o
 
 If both its operands are [numbers](#number), it will return `true` if its left operand is greater than or equal to its right operand and return `false` otherwise.
 
-```python
+```csharp
 2 >= 1; # evaluates to true
 2 >= 2; # evaluates to true
 2 >= 5; # evaluates to false
@@ -1022,7 +1025,7 @@ If both its operands are [numbers](#number), it will return `true` if its left o
 
 If both its operands are [numbers](#number), it will return `1` if its left operand is greater than its right operand, return `-1` if its left operand is less than its right operand and return `0` if both operands are equal.
 
-```python
+```csharp
 2 <=> 1; # evaluates to 1
 2 <=> 2; # evaluates to 0
 2 <=> 5; # evaluates to -1
@@ -1034,8 +1037,8 @@ If both its operands are [numbers](#number), it will return `1` if its left oper
 
 This operator assigns the value of its right operand to a variable or an element of an array or struct given by its left operand. It also returns the value assigned to the left operand.
 
-```python
-def a, b; 
+```csharp
+var a, b; 
 
 a = 2;      # assigns 2 to the variable a
 
@@ -1058,10 +1061,10 @@ Given a binary operator `op`, the expression `x op= y` is equivalent to `x = x o
 
 #### Member access operator `.`
 
-This operator is used to access a member of a struct. If the memeber does not exist, an exception is thrown.
+This operator is used to access a member of a struct. If the member does not exist, an exception is thrown.
 
-```python
-def foo = {
+```csharp
+var foo = {
     a = 2,
     b = {
         c = 5
@@ -1080,10 +1083,10 @@ foo.e;      # throws an exception
 
 This operator can be used to index elements of a string, an array or a struct. Inside the brackets, you have to provide exactly 1 parameter.
 
-If used on a [string](#string) with a [number](#number) as the parameter, it returns a string containing the single character from the original string at the index given by the parameter. Negative indices can be used to acces characters from the end of the string. If the index is outside the bounds of the string, an exception is thrown.
+If used on a [string](#string) with a [number](#number) as the parameter, it returns a string containing the single character from the original string at the index given by the parameter. Negative indices can be used to access characters from the end of the string. If the index is outside the bounds of the string, an exception is thrown.
 
-```python
-def foo = 'Hello'; 
+```csharp
+var foo = 'Hello'; 
 
 foo[0];     # evaluates to 'H'
 foo[1];     # evaluates to 'e'
@@ -1095,16 +1098,16 @@ foo[-6];    # throws an exception
 
 If used on a [string](#string) with a [range](#range) as the parameter, it returns a string containing a slice of the original string. If the slice goes outside the bounds of the string, an exception is thrown.
 
-```python
-def foo = 'Hello'; 
+```csharp
+var foo = 'Hello'; 
 
 foo[1..-1]; # evaluates to 'ell'
 ```
 
-If used on an [array](#array) with a [number](#number) as the parameter, it returns the element inside the array at the index given by the parameter. Negative indices can be used to acces elements from the end of the array. If the index is outside the bounds of the array, an exception is thrown.
+If used on an [array](#array) with a [number](#number) as the parameter, it returns the element inside the array at the index given by the parameter. Negative indices can be used to access elements from the end of the array. If the index is outside the bounds of the array, an exception is thrown.
 
-```python
-def foo = { 'a', 'b', 'c', 'd', 'e' }; 
+```csharp
+var foo = { 'a', 'b', 'c', 'd', 'e' }; 
 
 foo[0];     # evaluates to 'a'
 foo[1];     # evaluates to 'b'
@@ -1113,7 +1116,7 @@ foo[-1];    # evaluates to 'e'
 foo[5];     # throws an exception
 foo[-6];    # throws an exception
 
-def bar = {
+var bar = {
     { 1, 2, 3 },
     { 4, 5, 6 },
     { 7, 8, 9 }
@@ -1124,40 +1127,40 @@ bar[0][1]; # evaluates to 2
 
 If used on an [array](#array) with a [range](#range) as the parameter, it returns an array containing a slice of the original array. If the slice goes outside the bounds of the array, an exception is thrown.
 
-```python
-def foo = { 'a', 'b', 'c', 'd', 'e' }; 
+```csharp
+var foo = { 'a', 'b', 'c', 'd', 'e' }; 
 
 foo[1..-1]; # evaluates to { 'b', 'c', 'd' }
 ```
 
 If used on an [array](#array) with a [function](#function) as the parameter, for each element in the array, it calls the function and passes it the element as the only parameter and returns a array where each element is the result of the each of the function calls.
 
-```python
-def foo = { 1, 2, 3, 4, 5 }; 
+```csharp
+var foo = { 1, 2, 3, 4, 5 }; 
 
 foo[x => x + 1]; # evaluates to { 2, 3, 4, 5, 6 }
 ```
 
 If used on a [struct](#struct) with a [string](#string) as the parameter, it returns the member of the struct whose name is equal to the parameter. The string has to be a valid variable name. If the member does not exist, it is created.
 
-```python
-def foo = {
+```csharp
+var foo = {
     a = 2
 }; 
 
 foo['a']; # evaluates to 2
 ```
 
-Note that the prefered way to access a member of a struct is to use the [member access operator](#member-access-operator). You should only use an indexer to access a member whose name is determined at runtime.
+Note that the preferred way to access a member of a struct is to use the [member access operator](#member-access-operator). You should only use an indexer to access a member whose name is determined at runtime.
 
 ---
 
 #### Invocation operator `()`
 
-This operator can be used both to call a [function](#function) or to call the constructor of a [type](#type). You can provide parameters for the function or the constructor by putting a list of comma separated values inside the parentheses.
+This operator can be used both to call a [function](#function) or to call the constructor of a [type](#type). You can provide parameters for the function or the constructor by putting a list of comma-separated values inside the parentheses.
 
-```python
-def add = (a, b) => a + b; 
+```csharp
+var add = (a, b) => a + b; 
 
 add(1, 2);  # calls the function in the variable add with 1 and 2 as parameters
 
@@ -1168,10 +1171,10 @@ array();    # calls the array constructor without parameters
 
 #### Range operator `..`
 
-This operator is used to create [ranges](#range) which can be used to get a slice of a string or array or to iterate over all integers inside the range. The start of the range is given by the left operand and the end of the range is given gy the right operand. The start of the range is inclusive, but the end is exclusive. Negative indices can be used to reference indices from the end of a string or array. You can add a second range operator after the right operand and add a third operand to scecify the step of the range. Creating a range with a step of 0 will throw an exception.
+This operator is used to create [ranges](#range) which can be used to get a slice of a string or array or to iterate over all integers inside the range. The start of the range is given by the left operand and the end of the range is given by the right operand. The start of the range is inclusive, but the end is exclusive. Negative indices can be used to reference indices from the end of a string or array. You can add a second range operator after the right operand and add a third operand to specify the step of the range. Creating a range with a step of 0 will throw an exception.
 
-```python
-def foo = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }; 
+```csharp
+var foo = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }; 
 
 foo[1..4];      # evaluates to { 1, 2, 3 }
 foo[-4..-1];    # evaluates to { 6, 7, 8 }
@@ -1182,19 +1185,19 @@ foo[-2..1..-2]; # evaluates to { 8, 6, 4, 2 }
 foo[1..8..0];   # throws an exception
 ```
 
-All operands can be omited to use their default value. The step always default to 1, but the start and end will default to different values depending on the context.
+All operands can be omitted to use their default value. The step always defaults to 1, but the start and end will default to different values depending on the context.
 
 When used with the indexer operator, the start defaults to 0 if the step is positive or the last index if the step is negative. The end default to the size of the string or array if the step is positive or -1 if the step is negative.
 
-```python
-def foo = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }; 
+```csharp
+var foo = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }; 
 
 foo[..5];       # evaluates to { 0, 1, 2, 3, 4 }
 foo[..5..-1];   # evaluates to { 9, 8, 7, 6 }
 foo[5..];       # evaluates to { 5, 6, 7, 8, 9 }
 foo[5....-1];   # evaluates to { 5, 4, 3, 2, 1, 0 }
 
-def bar = { 0, 1, 2, 3, 4 }; 
+var bar = { 0, 1, 2, 3, 4 }; 
 
 bar[..];        # evaluates to { 0, 1, 2, 3, 4 }
 bar[....-1];    # evaluates to { 4, 3, 2, 1, 0 }
@@ -1202,7 +1205,7 @@ bar[....-1];    # evaluates to { 4, 3, 2, 1, 0 }
 
 When used inside a for..in loop, the start defaults to 0 if the step is positive or -1 if the step is negative. The end defaults to infinity if the step is positive or -infinity if the step is negative.
 
-```python
+```csharp
 for (i in ..5)
     /echo $i;
 # output
@@ -1227,12 +1230,12 @@ for (i in ..-5..-1)
 
 This operator has three operands : the condition, the consequent and the alternative. This is its syntax : `condition ? consequent : alternative`. The condition is always evaluated and must return a [bool](#bool). If the condition evaluates to `true`, the consequent is evaluated and its result is returned. If the condition evaluates to `false`, the alternative is evaluated and its result is returned. The consequent and the alternative cannot be both evaluated. If the condition cannot be implicitly converted to a [bool](#bool), an exception is thrown and none of the other two expressions are evaluated. This operator can be used as an inline [if statement](#if-statement).
 
-```python
-def print = (text) {
+```csharp
+var print = (text) {
     /echo $text;
 }; 
 
-def temperature; 
+var temperature; 
 
 temperature = 15; 
 print(temperature < 25 ? 'cold' : 'hot'); # outputs cold
@@ -1247,14 +1250,14 @@ print("") ? true : false; # throws an exception since print returns void
 
 #### Lambda operator `=>`
 
-This operator is used to create single line functions. On the left side of the operator, you can define the parameters of the function. If the function has exacly one parameter and this operator does not have an explicit default value, you can simply write its name. Otherwise, the parameters have to be between parantheses and separated by commas. On the right side of the operator, you have to give it an expression. The resulting function, will evaluate this expression and return its result.
+This operator is used to create single line functions. On the left side of the operator, you can define the parameters of the function. If the function has exactly one parameter and this operator does not have an explicit default value, you can simply write its name. Otherwise, the parameters have to be between parentheses and separated by commas. On the right side of the operator, you have to give it an expression. The resulting function will evaluate this expression and return its result.
 
-```python
-def toString = x => x as string; 
+```csharp
+var toString = x => x as string; 
 
-def add = (a, b) => a + b; 
+var add = (a, b) => a + b; 
 
-def foo = { 0, 1, 2, 3, 4 }; 
+var foo = { 0, 1, 2, 3, 4 }; 
 
 foo[x => x + 1]; # evaluates to { 1, 2, 3, 4, 5 }
 ```
@@ -1265,12 +1268,12 @@ foo[x => x + 1]; # evaluates to { 1, 2, 3, 4, 5 }
 
 Commas can be used to separate the values of an array, the values of a struct, the parameters of a function declaration or the parameters sent with the invocation operator. Outside of these contexts, a comma will be interpreted as the comma operator. This operator is used to create [tuples](#tuple).
 
-```python
+```csharp
 1, 2, 3; # evaluates to (1, 2, 3)
 
-def foo = (1, 2, 3); 
+var foo = (1, 2, 3); 
 
-def (a, b, c) = foo; 
+var (a, b, c) = foo; 
 
 a; # evaluates to 1
 b; # evaluates to 2
@@ -1283,7 +1286,7 @@ c; # evaluates to 3
 
 If its right operand is an [array](#array), it will return `true` if the array contains the value of its left operand, `false` otherwise.
 
-```python
+```csharp
 2 in { 1, 2, 3 }; # evaluates to true
 
 2 in { 4, 5, 6 }; # evaluates to false
@@ -1291,7 +1294,7 @@ If its right operand is an [array](#array), it will return `true` if the array c
 
 If both its operands are [strings](#string), it will return `true` the right string contains the left one, `false` otherwise. The search is case sensitive.
 
-```python
+```csharp
 "Hello" in "Hello world";   # evaluates to true
 
 "Asdf" in "Hello world";    # evaluates to false
@@ -1303,9 +1306,9 @@ If both its operands are [strings](#string), it will return `true` the right str
 
 #### Not in operator `not in`
 
-This operator does the oposite of the [in operator](#in-operator-in).
+This operator does the opposite of the [in operator](#in-operator-in).
 
-```python
+```csharp
 # both evaluate to true
 2 not in { 4, 5, 6 }; 
 !(2 in { 4, 5, 6 }); 
@@ -1321,7 +1324,7 @@ This operator does the oposite of the [in operator](#in-operator-in).
 
 This operator returns `true` if the type of the left operand is equal to the type given by its right operand and returns `false` otherwise. Its right operand has to be a [type](#type).
 
-```python
+```csharp
 2 is number; # evaluate to true
 
 2 is string; # evaluates to false
@@ -1329,9 +1332,9 @@ This operator returns `true` if the type of the left operand is equal to the typ
 type is type; # evaluates to true
 ```
 
-This operator can also be used with composite type. In which case, it returns `true` if the composite type contains the type of the left operand, `false` otherwise.
+This operator can also be used with composite types. In which case, it returns `true` if the composite type contains the type of the left operand, `false` otherwise.
 
-```python
+```csharp
 2 is (bool | number); # evaluate to true
 
 2 is (bool | string); # evaluates to false
@@ -1344,9 +1347,9 @@ This operator can also be used with composite type. In which case, it returns `t
 
 #### Is not operator `is not`
 
-This operator does the oposite of the [is operator](#is-operator-is).
+This operator does the opposite of the [is operator](#is-operator-is).
 
-```python
+```csharp
 # both evaluate to true
 2 is not string; 
 !(2 is string); 
@@ -1356,9 +1359,9 @@ This operator does the oposite of the [is operator](#is-operator-is).
 
 #### As operator `as`
 
-This operator performs an explicit conversion of the result of it left operand to the type given by its right operand. If its right operand is not a [type](#type), if the type is a composit type or if a conversion to that type does not exist, an exception is thrown.
+This operator performs an explicit conversion of the result of it left operand to the type given by its right operand. If its right operand is not a [type](#type), if the type is composite or if a conversion to that type does not exist, an exception is thrown.
 
-```python
+```csharp
 1 as bool; # evaluate to true
 
 1 as string; # evaluate to '1'
@@ -1372,16 +1375,16 @@ This operator performs an explicit conversion of the result of it left operand t
 
 #### Length operator `len`
 
-If its operand is an [array](#array), it returns the number of element inside that array.
+If its operand is an [array](#array), it returns the number of elements inside that array.
 
-```python
+```csharp
 len array();            # evaluates to 0
 len { 0, 1, 2, 3, 4 };  # evaluates to 5
 ```
 
-If its operand is a [string](#string), its return the number of character in that string.
+If its operand is a [string](#string), its return the number of characters in that string.
 
-```python
+```csharp
 len '';         # evaluates to 0
 len 'Hello';    # evaluates to 5
 ```
@@ -1392,7 +1395,7 @@ len 'Hello';    # evaluates to 5
 
 This operator returns a [string](#string) containing a single character whose character code is equal to the operand of the operator. Its operand has to be a [number](#number).
 
-```python
+```csharp
 chr 0;  # evaluates to '\0'
 chr 65; # evaluates to 'A'
 ```
@@ -1403,7 +1406,7 @@ chr 65; # evaluates to 'A'
 
 This operator returns a [number](#string) equal to the character code of the single character of its operand. If its operand is not a [string](#string) or contains more than 1 character, an exception is thrown.
 
-```python
+```csharp
 ord '\0';   # evaluates to 0
 ord 'A';    # evaluates to 65
 
@@ -1414,21 +1417,21 @@ ord 'AB'; # throws an exception
 
 #### Value operator `val`
 
-This operator will dereference every reference in a chain of references until it find a value and return this value. The result of this operator is guarentied to not be a reference. If its operand is not a reference, its value is simply returned. If too many references are dereferenced, an exception is thrown. This is the hop limit and prevents the program from freezing if two references are pointing at each other creating an infinite loop.
+This operator will dereference every reference in a chain of references until it finds a value and return this value. The result of this operator is guaranteed not to be a reference. If its operand is not a reference, its value is simply returned. If too many references are dereferenced, an exception is thrown. This is the hop limit and prevents the program from freezing if two references are pointing at each other creating an infinite loop.
 
-```python
+```csharp
 val 2; # evaluates to 2
 
-def value = 5; 
-def ref1 = ref value; 
-def ref2 = ref ref1; 
+var value = 5; 
+var ref1 = ref value; 
+var ref2 = ref ref1; 
 
 val value;  # evaluates to 5
 val ref1;   # evaluates to 5
 val ref2;   # evaluates to 5
 
-def foo; 
-def bar = ref foo; 
+var foo; 
+var bar = ref foo; 
 foo = ref bar; 
 
 val foo; # throws an exception
@@ -1440,12 +1443,50 @@ val foo; # throws an exception
 
 This operator returns a reference to its operand. Its operand has to be a variable.
 
-```python
-def foo = 2; 
-def bar = ref foo; # bar is a reference
+```csharp
+var foo = 2; 
+var bar = ref foo; # bar is a reference
 
 val bar;        # evaluates to 2
 nameof val bar; # evaluates to 'foo'
+```
+
+---
+
+#### Definition operator `let`
+
+This operator allows you to define variables. Its operand can be an identifier or a tuple of identifiers and it will return the declared variables. It is similar to a var statement, but it can be used inside expressions with some restrictions. Firstly, you cannot use initial assignments. A similar behaviour can be achieved by combining it with an assignment operator, but the variable will be defined before the right expression gets evaluated. Secondly, you cannot do multiple definitions with a single `let` operator, you have to use a tuple, or multiple `let` operators. This operator is mainly used inside for loops and with function returning values from their parameters.
+
+```csharp
+let foo; # defines a variable named foo
+
+var bar = ref bar; # throws an exception
+let bar = ref bar; # works fine
+
+# Declaring multiple variable with a var statement
+var a = 2, b = 5; 
+
+# Two ways to acheive the same thing with the let operator
+let (c, d) = (2, 5); 
+let e = 2, let f = 5; 
+
+# Using let inside a for loop
+for (let i = 0; i < 10; i++)
+    /echo $i;
+
+# Another example
+var tryParseNumber = (input, output) {
+    try {
+        val output = input as number; 
+        return true;
+    } catch {
+        val output = null;
+        return false;
+    }
+}; 
+
+if (tryParseNumber(5, ref let num))
+    /echo `The number was {num}`;
 ```
 
 ---
@@ -1454,11 +1495,28 @@ nameof val bar; # evaluates to 'foo'
 
 This operator creates a copy of its operand on the heap and returns a reference pointing to that copy. For more information on the heap, see [Variables](#variables).
 
-```python
-def foo = new {
+```csharp
+var foo = new {
     a = 2
 }; 
 # foo is a reference to a struct stored on the heap
+```
+
+---
+
+#### Delete operator `delete`
+
+The delete operator allows you to delete variable previously declared. Its operand can be a variable or a tuple of variables and it will return the value stored in the deleted variables. You can also delete heap variables by combining it with the [val operator](#value-operator-val). You cannot delete elements of an array or struct.
+
+```csharp
+var foo; 
+delete foo; # The variable foo no longer exists
+
+var bar = new { 1, 2, 3 }; 
+delete val bar; # The variable bar contains an invalid reference
+
+var a, b, c; 
+delete (a, b, c); 
 ```
 
 ---
@@ -1467,19 +1525,19 @@ def foo = new {
 
 This operator waits for the end of the operation associated with a task to finish and then returns its result. If the operation threw an exception, the await operator will throw that same exception.
 
-```python
-def addAsync = async (a, b) {
+```csharp
+var addAsync = async (a, b) {
     if (a is not number || b is not number)
         throw "The parameters must be numbers";
 
     return a + b;
 }; 
 
-def task1 = addAsync(1, 2); 
+var task1 = addAsync(1, 2); 
 
 await task1(); # evaluates to 3
 
-def task2 = addAsync("", ""); # no exception is thrown 
+var task2 = addAsync("", ""); # no exception is thrown 
 
 await task2();  # throws the exception
 ```
@@ -1488,10 +1546,10 @@ await task2();  # throws the exception
 
 #### Nameof operator `nameof`
 
-This operator returns a [string](#string) containing the name of its operand. Its operand has to be a variable. This operator is especialy useful in combination with the [value operator](#value-operator-val) to know the variable at which a reference is pointing.
+This operator returns a [string](#string) containing the name of its operand. Its operand has to be a variable. This operator is especially useful in combination with the [value operator](#value-operator-val) to know the variable at which a reference is pointing.
 
-```python
-def foo, bar = ref foo; 
+```csharp
+var foo, bar = ref foo; 
 
 nameof foo;     # 'foo'
 nameof bar;     # 'bar'
@@ -1504,7 +1562,7 @@ nameof val bar; # 'foo'
 
 This operator returns the [type](#type) of its operand.
 
-```python
+```csharp
 typeof 2;                   # evaluates to number
 typeof 'Hello';             # evaluates to string
 typeof { 0, 1, 2, 3 ,4 };   # evaluates to array
@@ -1516,7 +1574,7 @@ typeof { 0, 1, 2, 3 ,4 };   # evaluates to array
 
 By default, the output of a command is displayed on the standard output. This operator allows you to redirect the output of a command to the input of another command. The redirected output is not displayed on the standard output.
 
-```python
+```csharp
 
 ```
 
@@ -1524,17 +1582,17 @@ By default, the output of a command is displayed on the standard output. This op
 
 ### Statements
 
-Statements represent the actions that the program will perform. By default, statements are executed from top to bottom, but some statements allow you to change the order in which they get executed or whether or not they get executeted at all. Most statements start with a keyword and end with a semicolon `;`. Here is an example of a [def statement](#def-statement):
+Statements represent the actions that the program will perform. By default, statements are executed from top to bottom, but some statements allow you to change the order in which they get executed or whether or not they get executed at all. Most statements start with a keyword and end with a semicolon `;`. Here is an example of a [var statement](#var-statement):
 
-```python
-def foo = 'Hello world'; 
+```csharp
+var foo = 'Hello world'; 
 ```
 
 Statements can also be grouped together in a statement block using braces `{}`. [Stack variables](#variables) can only be accessed within the block they were declared in.
 
-```python
+```csharp
 {
-    def foo = 'Hello world'; 
+    var foo = 'Hello world'; 
     /echo $foo; 
 }
 
@@ -1543,9 +1601,9 @@ Statements can also be grouped together in a statement block using braces `{}`. 
 
 Some statements require an embedded statement. This statement can either be a single statement or a statement block.
 
-```python
+```csharp
 if (true) {
-    def foo = 'Hello world'; 
+    var foo = 'Hello world'; 
     /echo $foo; 
 }
 
@@ -1556,7 +1614,7 @@ if (true)
 
 You can also label statements by prefixing them with a label and the label identifier `::`. The label has to be a valid [variable name](#variables). A label and a variable can have the same name and won't interfere with each other. Labels can be used with [goto statements](#goto-statement) to jump to a certain statement and start executing from there.
 
-```python
+```csharp
 Loop :: /echo 'Hello world'; 
 goto Loop; 
 ```
@@ -1565,12 +1623,12 @@ goto Loop;
 
 #### Expression statement
 
-The expression statement is the most common type of statement. It only consists of an expression followed by a semicolon `;`. This type of statement is usefull to assing a value to a variable or to invoke a function.
+The expression statement is the most common type of statement. It only consists of an expression followed by a semicolon `;`. This type of statement is useful to assign a value to a variable or to invoke a function.
 
-```python
-def print; 
+```csharp
+var print; 
 
-# Expression statement assinging a function to a variable
+# Expression statement assigning a function to a variable
 print = (text) {
     /echo &text;
 }; 
@@ -1585,7 +1643,7 @@ print('Hello world');
 
 Command statements allow you to run commands. It consists of a slash `/` followed by one or more commands and ends with a semicolon `;`. Each command of a command statement must be separated by the [pipe operator](#pipe-operator).
 
-```python
+```csharp
 /random 10 |> set value; 
 ```
 
@@ -1593,9 +1651,9 @@ Command statements allow you to run commands. It consists of a slash `/` followe
 
 #### Empty statement
 
-The empty statement only consists of a semicolon `;` and does nothing. It can be usefull were a statement is required but you dont need one in your use case.
+The empty statement only consists of a semicolon `;` and does nothing. It can be useful where a statement is required but you don't need one in your use case.
 
-```python
+```csharp
 while (proccessData()); 
 ```
 
@@ -1605,32 +1663,32 @@ while (proccessData());
 
 The pass statement consists of the `pass` keyword followed by a semicolon `;`. It acts the same as an [empty statement](#empty-statement), but is more explicit.
 
-```python
+```csharp
 while (proccessData())
     pass; 
 ```
 
 ---
 
-#### def statement
+#### var statement
 
-The def statement allows you to declare [variables](#variables). It consists of the `def` keyword followed by a list of comma `,` separeated declarations and ends with a semicolon `;`. There must be at leat 1 declaration in a def statement. A declaration starts with a single identifier or a [tuple](#tuple) of identifiers. You can also nest tuples. Optionaly, you can add an initial assignement by adding an equal symbol `=` and an expresion on the right which will be assigned to the left part of the declaration. When assigning a tuple to a tuple of identifiers, both tuple must have the same size, otherwise an exception is thrown. If an initial assignement is provided, the expression is evaluated first, then the variable gets declared and finally it gets assigned the value. Declarations are evaluates from left to right.
+The var statement allows you to declare [variables](#variables). It consists of the `var` keyword followed by a list of comma `,` separated declarations and ends with a semicolon `;`. There must be at leat 1 declaration in a var statement. A declaration starts with a single identifier or a [tuple](#tuple) of identifiers. You can also nest tuples. Optionally, you can add an initial assignment by adding an equal symbol `=` and an expression on the right which will be assigned to the left part of the declaration. When assigning a tuple to a tuple of identifiers, both tuple must have the same size, otherwise an exception is thrown. If an initial assignment is provided, the expression is evaluated first, then the variable gets declared and finally it gets assigned the value. Declarations are evaluated from left to right.
 
-```python
+```csharp
 # Simple declaration
-def a; 
+var a; 
 
 # Declaration with initial assignement
-def b = 2; 
+var b = 2; 
 
 # Multiple declarations
-def c = 3, d = 4, e = 5; 
+var c = 3, d = 4, e = 5; 
 
-# Single declararion using tuples
-def (f, g, h) = (6, 7, 8); 
+# Single declaration using tuples
+var (f, g, h) = (6, 7, 8); 
 
 # Complex declarations (you probably shouldn't do this)
-def ((i, j), k, l) = (1, 2, (3, 4)), m = 5; 
+var ((i, j), k, l) = (1, 2, (3, 4)), m = 5; 
 # i = 1
 # j = 1
 # k = 2
@@ -1640,29 +1698,12 @@ def ((i, j), k, l) = (1, 2, (3, 4)), m = 5;
 
 ---
 
-#### delete statement
-
-The delete statement allows you to delete variable previously declared. It consists of the `delete` keyword followed by an expression and ens with a semicolon `;`. The expression can be a single variable or a tuple of variables. You can also delete heap variables by combining the delete statement with the [val operator](#value-operator-val). You cannot delete elements of an array or struct.
-
-```python
-def foo; 
-delete foo; # The variable foo no longer exists
-
-def bar = new { 1, 2, 3 }; 
-delete val bar; # The variable bar contains an invalid reference
-
-def a, b, c; 
-delete (a, b, c); 
-```
-
----
-
 #### if statement
 
-The if statement allows you to perform or not a certain operations based on a condition. It consists of the `if` keyword, parentheses `()` containing an expression and an embeded statement. It starts by evaluating the expression and implicitly casts the result as a [bool](#bool). If an implicit conversion does not exists, an exception is thrown. If the expression evaluates to `true`, the embeded statement is executed. You can also add the `else` keyword followed by a second embeded statement. This second statement is executed if the expresion evaluated to `false`. You can also nest multiple if..else statements to check multiple conditions. The [ternary conditional operator](#ternary-conditional-operator) can also be used as an inline if.
+The if statement allows you to perform or not a certain operation based on a condition. It consists of the `if` keyword, parentheses `()` containing an expression and an embedded statement. It starts by evaluating the expression and implicitly casts the result as a [bool](#bool). If an implicit conversion does not exist, an exception is thrown. If the expression evaluates to `true`, the embedded statement is executed. You can also add the `else` keyword followed by a second embedded statement. This second statement is executed if the expression evaluated to `false`. You can also nest multiple if..else statements to check multiple conditions. The [ternary conditional operator](#ternary-conditional-operator) can also be used as an inline if.
 
-```python
-def temperature = 15; 
+```csharp
+var temperature = 15; 
 
 # if statement
 if (temperature < 25)
@@ -1674,7 +1715,7 @@ if (temperature < 25)
 else
     /echo 'hot'; 
 
-def character = 'A'; 
+var character = 'A'; 
 
 # 3 nested if..else statements
 if (ord character in (ord 'A')..(ord 'Z' + 1)) {
@@ -1692,32 +1733,32 @@ if (ord character in (ord 'A')..(ord 'Z' + 1)) {
 
 #### while, until, do..while and do..until statements
 
-The while statement allows you to repetedly perform an operation as long as a condition is true. It consists of the `while` keyword, parentheses `()` containing an expression and an embeded statement. It starts by evaluating the expression like an if statement. If the expression evaluated to `true`, the embeded statement is executed. Then it starts over again as long as the expression evaluates to true. If the expression is false to begin with, the operation is never executed. The until statement is the oposite of the while statement. It will repetedly perform an operation as long as its condition is false. Its syntax is the same as the while statement but with the `until` keyword.
+The while statement allows you to repeatedly perform an operation as long as a condition is true. It consists of the `while` keyword, parentheses `()` containing an expression and an embeded statement. It starts by evaluating the expression like an if statement. If the expression evaluated to `true`, the embeded statement is executed. Then it starts over again as long as the expression evaluates to true. If the expression is false to begin with, the operation is never executed. The until statement is the opposite of the while statement. It will repeatedly perform an operation as long as its condition is false. Its syntax is the same as the while statement but with the `until` keyword.
 
-```python
-def i = 0; 
+```csharp
+var i = 0; 
 while (i < 5) {
     /echo $i;
     i++;
 }
 
-def j = 0
+var j = 0
 until (j == 5) {
     /echo $j;
     j++;
 }
 ```
 
-Both while and until statements can be combined with the `do` keyword to make a do..while or do..until statement respectively. These statements act the same as their counterpart, except that their condition is evaluated after the operation. This means that their operation will always be executed at least once. These statements consists of the `do` keyword, an embeded statement, either the `while` or `until` keyword, parentheses `()` containing an expression and finally a semicolon `;`.
+Both while and until statements can be combined with the `do` keyword to make a do..while or do..until statement respectively. These statements act the same as their counterpart, except that their condition is evaluated after the operation. This means that their operation will always be executed at least once. These statements consists of the `do` keyword, an embedded statement, either the `while` or `until` keyword, parentheses `()` containing an expression and finally a semicolon `;`.
 
-```python
-def i = 5; 
+```csharp
+var i = 5; 
 do { # executed once
     /echo $i;
     i++;
 } while (i < 5); 
 
-def j = 5; 
+var j = 5; 
 do { # executed once
     /echo $j;
     j++;
@@ -1728,21 +1769,21 @@ do { # executed once
 
 #### for statement
 
-The for statement is similar to the while statement, but provides additional functionalities which are especialy usefull for iterating over a range of numbers with a given increment. It consists of the `for` keyword, parentheses `()` and an embeded statement. Inside the parentheses, there are 3 parts which are separated by 2 semicolons `;`.
+The for statement is similar to the while statement, but provides additional functionalities which are especially useful for iterating over a range of numbers with a given increment. It consists of the `for` keyword, parentheses `()` and an embedded statement. Inside the parentheses, there are 3 expressions which are separated by 2 semicolons `;`.
 
-The first part is the initializer and is essentially an implicit [def statement](#def-statement). You can declare variables separeated by commas `,` and give them an initial assignment with the equal symbol `=`. You have to ommit the `def` keyword.
+The first expression is the initializer and is evaluated once at the very beginning. This is usually used to declare a variable with the let operator.
 
-The second part is the condition and acts like the condition of a [while statement](#while-until-dowhile-and-dountil-statements). The operation defined by the embeded statement will be executed as long as this expression is true.
+The second expression is the condition and acts like the condition of a [while statement](#while-until-dowhile-and-dountil-statements). The operation defined by the embedded statement will be executed as long as this expression is true.
 
-The third part is the increment and is just an expression which will be evaluated after each iteration. This is usualy used to increment the variable declared inside the initializer.
+The third expression is the increment and is evaluated after each iteration. This is usually used to increment the variable declared inside the initializer.
 
-All 3 parts are optionnal and the condition defaults to `true` if it is ommited.
+All 3 parts are optional and the condition defaults to `true` if it is omitted.
 
-```python
-def arr = { 1, 2, 3, 4, 5, 6, 7, 8, 9 }; 
+```csharp
+var arr = { 1, 2, 3, 4, 5, 6, 7, 8, 9 }; 
 
-for (i = 0; i < len arr; i++) {
-    def item = arr[i];
+for (let i = 0; i < len arr; i++) {
+    var item = arr[i];
     /echo $item;
 }
 
@@ -1753,10 +1794,10 @@ for(;;); # Infinite loop
 
 #### for..in statement
 
-The for..in statement allows you to execute an operation for each element of a collection. It consists of the `for` keyword, parentheses `()` and an embeded statement. Inside the parentheses, there are 2 parts separated by the `in` keyword. On the left, you have to provide an identifier or a tuple of identifiers. At each iteration, theses identifiers will be assigned the next value inside the collection. On the right, you have to provide an expression which will be evaluated once. This expression should be an array, a string or a range. You are allowed to modify the collection during an iteration, but the changes will not directly affect the for..in statement, since the collection gets only evaluated once. Generally, this is cleaner than a [for statement](#for-statement) for iterating over a collection.
+The for..in statement allows you to execute an operation for each element of a collection. It consists of the `for` keyword, parentheses `()` and an embedded statement. Inside the parentheses, there are 2 parts separated by the `in` keyword. On the left, you have to provide an identifier or a tuple of identifiers. At each iteration, these identifiers will be assigned the next value inside the collection. On the right, you have to provide an expression which will be evaluated once. This expression should be an array, a string or a range. You are allowed to modify the collection during an iteration, but the changes will not directly affect the for..in statement, since the collection gets only evaluated once. Generally, this is cleaner than a [for statement](#for-statement) for iterating over a collection.
 
-```python
-def arr = { 1, 2, 3, 4, 5, 6, 7, 8, 9 }; 
+```csharp
+var arr = { 1, 2, 3, 4, 5, 6, 7, 8, 9 }; 
 
 for (item in arr)
     /echo $item; 
@@ -1766,9 +1807,9 @@ for (item in arr)
 
 #### repeat statement
 
-The repeat statement allows you to repeat an operation a given amount of times. It consists of the `repeat` keyword, parentheses `()` containing an expression and an embeded statement. It evaluates the expression once and implicitly casts the result as a number. If an implicit conversion does not exists, an exception is thrown. The embeded statement is executed a number of time equivalent to that number.
+The repeat statement allows you to repeat an operation a given number of times. It consists of the `repeat` keyword, parentheses `()` containing an expression and an embedded statement. It evaluates the expression once and implicitly casts the result as a number. If an implicit conversion does not exist, an exception is thrown. The embedded statement is executed a number of times equivalent to that number.
 
-```python
+```csharp
 repeat (10)
     /echo 'Hello world'; 
 ```
@@ -1777,9 +1818,9 @@ repeat (10)
 
 #### loop statement
 
-The loop statement allows you to repeat an operation an infinite amount of times. It consists of the `loop` keyword and an embeded statement. The only way to stop a loop statement is with a [break](#break-statement), [return](#return-statement), [exit](#exit-statement) or [throw](#throw-statement) statement.
+The loop statement allows you to repeat an operation an infinite number of times. It consists of the `loop` keyword and an embedded statement. The only way to stop a loop statement is with a [break](#break-statement), [return](#return-statement), [exit](#exit-statement) or [throw](#throw-statement) statement.
 
-```python
+```csharp
 # These 3 statements are infinite loops
 loop; 
 for (;;); 
@@ -1790,17 +1831,17 @@ while (true);
 
 #### try statement
 
-The try statement allows you to execute an operation and catch any exceptions that could be thrown. It consists of the `try` keyword and an embeded statement. It Starts by trying to execute its embeded statement. If an exception is thrown, it catches it and the program resume its execution after the try statement.
+The try statement allows you to execute an operation and catch any exceptions that could be thrown. It consists of the `try` keyword and an embedded statement. It starts by trying to execute its embedded statement. If an exception is thrown, it catches it and the program resumes its execution after the try statement.
 
-```python
+```csharp
 # trys to declare variable foo
-try def foo = { 1, 2, 3 }; 
+try let foo = { 1, 2, 3 }; 
 ```
 
-You can add the `catch` keyword and an other embeded statement which will be executed only if an exception is thrown. Between the `catch` keyword and its embeded statement, you can optionally add parentheses `()` containing an identifier. This identifier can then be used to retreive the exception thrown from the catch's embeded statement.
+You can add the `catch` keyword and another embedded statement which will be executed only if an exception is thrown. Between the `catch` keyword and its embedded statement, you can optionally add parentheses `()` containing an identifier. This identifier can then be used to retrieve the exception thrown from the catch's embedded statement.
 
-```python
-def tryParseNumber = (input, output) {
+```csharp
+var tryParseNumber = (input, output) {
     try {
         val output = input as number; 
         return true;
@@ -1811,10 +1852,10 @@ def tryParseNumber = (input, output) {
 }; 
 ```
 
-You can also add the `finally` keyword and an other embeded statement which will be executed no matter what. You can use it if something needs to be executed whether an exception is thrown or not. You can also use it to overwrite a return or exit statement.
+You can also add the `finally` keyword and another embedded statement which will be executed no matter what. You can use it if something needs to be executed whether an exception is thrown or not. You can also use it to overwrite a return or exit statement.
 
-```python
-def someFunction = () {
+```csharp
+var someFunction = () {
     exit;
 }; 
 
@@ -1822,13 +1863,13 @@ try {
     try
         someFunction(); 
     finally
-        throw; # overwrites the exit with an exception that is instantly caught preventing the programm from exiting
+        throw; # overwrites the exit with an exception that is instantly caught preventing the program from exiting
 }
 ```
 
 If both a `catch` and a `finally` are provided, the catch has to be before the finally.
 
-```python
+```csharp
 /file text open read '''c:\users\public\test.txt''' |> set file; 
 
 try
@@ -1843,14 +1884,14 @@ finally
 
 #### lock statement
 
-The lock statement allows you to lock variables, so that other asynchronous functions can't access it while you use it. It consists of the `lock` keyword, parentheses `()` containing an expression and an embeded statement. If you have multiple asynchronous functions modifying a shared variable, it is imperative that you use a lock statement to prevent them from modifying the same variable at the same time. Failling to do so will produce undefined behaviour.
+The lock statement allows you to lock variables, so that other asynchronous functions can't access it while you use it. It consists of the `lock` keyword, parentheses `()` containing an expression and an embedded statement. If you have multiple asynchronous functions modifying a shared variable, it is imperative that you use a lock statement to prevent them from modifying the same variable at the same time. Failing to do so will produce undefined behaviour.
 
-```python
-def (input, output) = array(); 
+```csharp
+var (input, output) = array(); 
 
-def workerThread = async () {
+var workerThread = async () {
     while (true) {
-        def value
+        var value;
 
         lock (input) {
             if (len input == 0)
@@ -1860,7 +1901,7 @@ def workerThread = async () {
             input = input[..^1];
         }
 
-        # proccess the value;
+        # process the value;
 
         lock (output)
             output += value;
@@ -1873,7 +1914,7 @@ repeat(5)
 lock (input)
     input = { 1, 2, 3, 4, 5 }; 
 
-# The 5 worker threads are now proccessing the data
+# 5 worker threads are now processing the data
 ```
 
 ---
@@ -1882,7 +1923,7 @@ lock (input)
 
 The continue statement allows you to end the current iteration of a loop and continue to the next one.
 
-```python
+```csharp
 for (i in ..5) {
     if (i == 2)
         continue;
@@ -1902,7 +1943,7 @@ for (i in ..5) {
 
 The break statement allows you to end an entire loop.
 
-```python
+```csharp
 for (i in ..5) {
     if (i == 2)
         continue;
@@ -1920,8 +1961,8 @@ for (i in ..5) {
 
 The return statement allows you to end the execution of a function and specify the value the function should return.
 
-```python
-def add = (a, b) {
+```csharp
+var add = (a, b) {
     return a + b;
 }; 
 ```
@@ -1932,8 +1973,8 @@ def add = (a, b) {
 
 The exit statement allows you to end the execution of the entire program and specify the value it should return.
 
-```python
-def stopProgramm = () {
+```csharp
+var stopProgramm = () {
     # clean up
     exit 0;
 }; 
@@ -1943,10 +1984,10 @@ def stopProgramm = () {
 
 #### throw statement
 
-The throw statement allows you to throw an exception, stoping the execution of everything until it is caught by a try statement or crashes the program.
+The throw statement allows you to throw an exception, stopping the execution of everything until it is caught by a try statement or crashes the program.
 
-```python
-def add = (a, b) {
+```csharp
+var add = (a, b) {
     if (a is not number || b is not number)
         throw `{nameof a} and {nameof b} must be numbers`;
 
@@ -1960,17 +2001,17 @@ def add = (a, b) {
 
 The goto statement allows you to jump to a statement with a given label and continue executing a function from there.
 
-```python
-def arr = {
+```csharp
+var arr = {
     { 1, 2, 3 },
     { 4, 5, 6 },
     { 7, 8, 9 }
 }; 
 
-def target; 
+var target; 
 
-for (i = 0; i < len arr; i++) {
-    for (j = 0; j < len arr[0]; j++) {
+for (let i = 0; i < len arr; i++) {
+    for (let j = 0; j < len arr[0]; j++) {
         if (arr[i][j] == 5) {
             target = (i, j);
             goto End;
@@ -1985,17 +2026,17 @@ End :: ;
 
 ### Commands
 
-Commands are the only way to interact with resources outside of Bloc. They are not standardized and can be different in each implement and each platform. You should refer to the implementors website to know all available commands. Commands do not follow the same syntax as the rest of the language. They are defined by a name and a list of arguments separated by spaces. If you want an argument to contain spaces, you have to suround it with quotes to make a `string`. Every types of string literal can be used inside of commands. You can pass variables as arguments to command with the variable identifier `$`. They will be implicitly casted as strings. A variable can be interpreted as more than one argument if it contains spaces. You should use interpolated strings to guarentee that a variable will be a single argument.
+Commands are the only way to interact with resources outside of Bloc. They are not standardized and can be different in each implement and each platform. You should refer to the implementors website to know all available commands. Commands do not follow the same syntax as the rest of the language. They are defined by a name and a list of arguments separated by spaces. If you want an argument to contain spaces, you have to surround it with quotes to make a `string`. Every types of string literal can be used inside of commands. You can pass variables as arguments to command with the variable identifier `$`. They will be implicitly cast as strings. A variable can be interpreted as more than one argument if it contains spaces. You should use interpolated strings to guarantee that a variable will be a single argument.
 
-```python
+```csharp
 /echo Hello; 
 
 /echo 'Hello world'; 
 
-def command = 'echo Hello'; 
+var command = 'echo Hello'; 
 /$command; 
 
-def text = 'Hello world'; 
+var text = 'Hello world'; 
 /echo `{text}`; 
 ```
 
@@ -2003,11 +2044,11 @@ def text = 'Hello world';
 
 ### Comments
 
-You can use comments to write text that will not be evaluated. You can use this to explain code or to temporarely prevent the execution of a part of the code. A single line comment with a `#` and ends at the end of the line. A multi line comment starts with a `#*` and end with a `*#`.
+You can use comments to write text that will not be evaluated. You can use this to explain code or to temporarily prevent the execution of a part of the code. A single line comment with a `#` and ends at the end of the line. A multi-line comment starts with a `#*` and end with a `*#`.
 
-```python
+```csharp
 /echo 'Hello world'; # This is a comment
 
-#* This is a multi
-line comment *#
+#* This is a
+multi-line comment *#
 ```
