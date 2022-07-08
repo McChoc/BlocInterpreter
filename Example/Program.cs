@@ -30,7 +30,7 @@ while (true)
 
             var line = Console.ReadLine();
 
-            if (line[^1] == '\x4')
+            if (line.Length > 0 && line[^1] == '\x4')
             {
                 cancel = true;
                 break;
