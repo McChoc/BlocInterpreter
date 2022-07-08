@@ -478,6 +478,12 @@ If both its operands are [numbers](#number), it will compute the sum of its oper
 5 + 4.6; # evaluates to 9.6
 ```
 
+If both its operands are [structs](#struct), it will add all the members of the right struct to the left one
+
+```csharp
+({ a = 1, b = 2 } + { a = 10, c = 3 }); # evaluates to { a = 10, b = 2, c = 3 }
+```
+
 If both its operands are [arrays](#array), it will concatenate them.
 
 ```csharp

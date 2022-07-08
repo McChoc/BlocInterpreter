@@ -31,6 +31,19 @@ namespace Bloc.Operators.Arithmetic
             if (left.Is(out Number? leftNumber) && right.Is(out Number? rightNumber))
                 return new Number(leftNumber!.Value + rightNumber!.Value);
 
+            if (left.Is(out Struct? leftStruct) && right.Is(out Struct? rightStruct))
+            {
+                var dict = new Dictionary<string, IValue>();
+
+                foreach (var (key, value) in ((Struct)leftStruct!.Copy()).Values)
+                    dict[key] = value;
+
+                foreach (var (key, value) in ((Struct)rightStruct!.Copy()).Values)
+                    dict[key] = value;
+
+                return new Struct(dict);
+            }
+
             if (left.Is(out Array? leftArray) && right.Is(out Array? rightArray))
             {
                 var list = new List<IValue>();
