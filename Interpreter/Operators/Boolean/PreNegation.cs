@@ -2,7 +2,6 @@
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Values;
-using Bloc.Variables;
 
 namespace Bloc.Operators.Boolean
 {
@@ -23,7 +22,7 @@ namespace Bloc.Operators.Boolean
                 throw new Throw("The operand of an increment must be a variable");
 
             if (!variable.Value.Is(out Bool? @bool))
-                throw new Throw($"Cannot apply operator '!!' on type {variable.Type.ToString().ToLower()}");
+                throw new Throw($"Cannot apply operator '!!' on type {variable.GetType().ToString().ToLower()}");
 
             return variable.Value = new Bool(!@bool!.Value);
         }

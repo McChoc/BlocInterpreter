@@ -18,8 +18,8 @@ namespace Bloc.Operators.Character
         {
             var value = _operand.Evaluate(call);
 
-            if (!value.Is(out Number? num))
-                throw new Throw($"Cannot apply operator 'chr' on type {value.Type.ToString().ToLower()}");
+            if (!value.Value.Is(out Number? num))
+                throw new Throw($"Cannot apply operator 'chr' on type {value.GetType().ToString().ToLower()}");
 
             return new String(((char)num!.ToInt()).ToString());
         }

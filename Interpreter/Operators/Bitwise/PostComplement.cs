@@ -31,14 +31,14 @@ namespace Bloc.Operators.Bitwise
             if (value is not Variables.Variable variable)
                 throw new Throw("The operand of an increment must be a variable");
 
-            if (value.Is(out Number? number))
+            if (value.Value.Is(out Number? number))
             {
                 variable.Value = new Number(~number!.ToInt());
 
                 return new Number(number.ToInt());
             }
 
-            if (value.Is(out TypeCollection? type))
+            if (value.Value.Is(out Values.Type? type))
             {
                 var types = new HashSet<ValueType>();
 
@@ -46,12 +46,12 @@ namespace Bloc.Operators.Bitwise
                     if (!type!.Value.Contains(t))
                         types.Add(t);
 
-                variable.Value = new TypeCollection(types);
+                variable.Value = new Values.Type(types);
 
                 return type!;
             }
 
-            throw new Throw($"Cannot apply operator '~~' on type {variable.Type.ToString().ToLower()}");
+            throw new Throw($"Cannot apply operator '~~' on type {variable.GetType().ToString().ToLower()}");
         }
     }
 }

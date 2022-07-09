@@ -11,12 +11,7 @@ namespace Bloc.Values
 
         public object? Value { get; }
 
-        public override ValueType Type => ValueType.Complex;
-
-        public override Value Copy()
-        {
-            return this;
-        }
+        public override ValueType GetType() => ValueType.Complex;
 
         public override bool Equals(IValue other)
         {

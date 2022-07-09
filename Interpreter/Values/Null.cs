@@ -8,12 +8,7 @@ namespace Bloc.Values
 
         public static Null Value { get; } = new();
 
-        public override ValueType Type => ValueType.Null;
-
-        public override Value Copy()
-        {
-            return this;
-        }
+        public override ValueType GetType() => ValueType.Null;
 
         public override bool Equals(IValue other)
         {

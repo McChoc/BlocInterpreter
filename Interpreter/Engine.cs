@@ -85,18 +85,16 @@ namespace Bloc
         public class Builder
         {
             private readonly Dictionary<string, Command> _commands = new();
-            private Action _clear = () => { };
-            private int _hopLimit = 100;
-            private int _jumpLimit = 1000;
 
             private Action<string> _log = _ => { };
-            private int _loopLimit = 1000;
+            private Action _clear = () => { };
 
+            private int _hopLimit = 100;
+            private int _jumpLimit = 1000;
+            private int _loopLimit = 1000;
             private int _stackLimit = 1000;
 
-            public Builder(params string[] _)
-            {
-            }
+            public Builder(params string[] _) { }
 
             public Builder SetStackLimit(int limit)
             {

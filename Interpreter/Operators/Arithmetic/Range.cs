@@ -27,7 +27,7 @@ namespace Bloc.Operators.Arithmetic
             {
                 var value = _start.Evaluate(call);
 
-                if (!value.Is(out Number? number))
+                if (!value.Value.Is(out Number? number))
                     throw new Throw("");
 
                 start = number!.ToInt();
@@ -37,7 +37,7 @@ namespace Bloc.Operators.Arithmetic
             {
                 var value = _end.Evaluate(call);
 
-                if (!value.Is(out Number? number))
+                if (!value.Value.Is(out Number? number))
                     throw new Throw("");
 
                 end = number!.ToInt();
@@ -47,7 +47,7 @@ namespace Bloc.Operators.Arithmetic
             {
                 var value = _step.Evaluate(call);
 
-                if (!value.Is(out Number? number))
+                if (!value.Value.Is(out Number? number))
                     throw new Throw("");
 
                 step = number!.ToInt();

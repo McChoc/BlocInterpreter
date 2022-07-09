@@ -3,7 +3,6 @@ using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Utils;
 using Bloc.Values;
-using Bloc.Variables;
 
 namespace Bloc.Operators.Arithmetic
 {
@@ -29,7 +28,7 @@ namespace Bloc.Operators.Arithmetic
                 throw new Throw("The operand of an increment must be a variable");
 
             if (!variable.Value.Is(out Number? number))
-                throw new Throw($"Cannot apply operator '--' on type {variable.Type.ToString().ToLower()}");
+                throw new Throw($"Cannot apply operator '--' on type {variable.GetType().ToString().ToLower()}");
 
             return variable.Value = new Number(number!.Value - 1);
         }

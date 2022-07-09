@@ -14,11 +14,11 @@ namespace Bloc.Values
             Values = value;
         }
 
-        public static Struct Empty { get; } = new(new Dictionary<string, IValue>());
+        public static Struct Empty { get; } = new(new());
 
         public Dictionary<string, IValue> Values { get; }
 
-        public override ValueType Type => ValueType.Struct;
+        public override ValueType GetType() => ValueType.Struct;
 
         public IValue Index(Value value, Call _)
         {
@@ -33,7 +33,7 @@ namespace Bloc.Values
 
         public override Value Copy()
         {
-            return new Struct(Values.ToDictionary(p => p.Key, p => (IValue)p.Value.Copy()));
+            return new Struct(Values.ToDictionary(p => p.Key, p => (IValue)p.Value.Value.Copy()));
         }
 
         public override void Assign()
@@ -41,14 +41,14 @@ namespace Bloc.Values
             foreach (var key in Values.Keys)
             {
                 Values[key] = new ChildVariable((Value)Values[key], key, this);
-                Values[key].Assign();
+                Values[key].Value.Assign();
             }
         }
 
         public override void Destroy()
         {
             foreach (var value in Values.Values)
-                value.Destroy();
+                value.Value.Destroy();
         }
 
         public override bool Equals(IValue other)
@@ -60,7 +60,7 @@ namespace Bloc.Values
                 return false;
 
             foreach (var key in Values.Keys)
-                if (!Values[key].Equals(obj.Values[key]))
+                if (!Values[key].Value.Equals(obj.Values[key]))
                     return false;
 
             return true;
@@ -86,11 +86,13 @@ namespace Bloc.Values
             {
                 ValueType.Bool => Bool.True,
                 ValueType.String => new String(ToString()),
-                ValueType.Tuple => new Tuple(Values.OrderBy(x => x.Key).Select(v => v.Value.Copy()).ToList<IValue>()),
                 ValueType.Array => new Array(Values.OrderBy(x => x.Key).Select(x =>
-                    new Struct(new Dictionary<string, IValue>
-                        { { "key", new String(x.Key) }, { "value", x.Value.Copy() } })).ToList<IValue>()),
+                    new Struct(new Dictionary<string, IValue> {
+                        { "key", new String(x.Key) },
+                        { "value", x.Value.Value.Copy() }
+                    })).ToList<IValue>()),
                 ValueType.Struct => this,
+                ValueType.Tuple => new Tuple(Values.OrderBy(x => x.Key).Select(v => v.Value.Value.Copy()).ToList<IValue>()),
                 _ => throw new Throw($"Cannot cast struct as {type.ToString().ToLower()}")
             };
         }
@@ -101,7 +103,7 @@ namespace Bloc.Values
                 return "struct()";
 
             return "{\n" +
-                   string.Join(",\n", Values.OrderBy(x => x.Key).Select(p => new string(' ', (depth + 1) * 4) + p.Key + " = " + p.Value.ToString(depth + 1))) + "\n" +
+                   string.Join(",\n", Values.OrderBy(x => x.Key).Select(p => new string(' ', (depth + 1) * 4) + p.Key + " = " + p.Value.Value.ToString(depth + 1))) + "\n" +
                    new string(' ', depth * 4) + "}";
         }
 

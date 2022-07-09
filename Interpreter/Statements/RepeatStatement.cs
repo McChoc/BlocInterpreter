@@ -17,7 +17,7 @@ namespace Bloc.Statements
             {
                 var value = Count.Evaluate(call);
 
-                if (!value.Is(out Number? number))
+                if (!value.Value.Is(out Number? number))
                     return new Throw("Cannot implicitly convert to number");
 
                 var loopCount = number!.ToInt();

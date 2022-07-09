@@ -27,10 +27,10 @@ namespace Bloc.Operators.Bitwise
 
         private static IValue Operation(IValue value)
         {
-            if (value.Is(out Number? number))
+            if (value.Value.Is(out Number? number))
                 return new Number(~number!.ToInt());
 
-            if (value.Is(out TypeCollection? type))
+            if (value.Value.Is(out Values.Type? type))
             {
                 var types = new HashSet<ValueType>();
 
@@ -38,10 +38,10 @@ namespace Bloc.Operators.Bitwise
                     if (!type!.Value.Contains(t))
                         types.Add(t);
 
-                return new TypeCollection(types);
+                return new Values.Type(types);
             }
 
-            throw new Throw($"Cannot apply operator '~' on type {value.Type.ToString().ToLower()}");
+            throw new Throw($"Cannot apply operator '~' on type {value.GetType().ToString().ToLower()}");
         }
     }
 }

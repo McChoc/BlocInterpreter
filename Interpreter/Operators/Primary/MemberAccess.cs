@@ -20,7 +20,7 @@ namespace Bloc.Operators.Primary
         {
             var value = _expression.Evaluate(call);
 
-            if (!value.Is(out Struct? obj))
+            if (!value.Value.Is(out Struct? obj))
                 throw new Throw("The '.' operator can only be apllied to a struct");
 
             return obj!.Get(_member);

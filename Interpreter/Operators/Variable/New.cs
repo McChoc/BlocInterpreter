@@ -18,8 +18,8 @@ namespace Bloc.Operators.Variable
         {
             var value = _operand.Evaluate(call);
 
-            value = value!.Copy();
-            value.Assign();
+            value = value!.Value.Copy();
+            value.Value.Assign();
 
             var variable = new HeapVariable(value.Value);
             var reference = new Values.Reference(variable);

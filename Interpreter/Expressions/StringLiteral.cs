@@ -27,7 +27,7 @@ namespace Bloc.Expressions
             {
                 var value = expression.Evaluate(call);
 
-                if (!value.Is(out String? str))
+                if (!value.Value.Is(out String? str))
                     throw new Throw("Cannot implicitly convert to string");
 
                 builder.Insert(index + offset, str!.Value);

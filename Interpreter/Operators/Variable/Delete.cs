@@ -29,7 +29,7 @@ namespace Bloc.Operators.Variable
             if (val is StackVariable or HeapVariable)
             {
                 var value = val.Value;
-                val.Destroy();
+                val.Value.Destroy();
                 return value;
             }
 

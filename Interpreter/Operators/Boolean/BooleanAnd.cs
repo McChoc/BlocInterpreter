@@ -20,7 +20,7 @@ namespace Bloc.Operators.Boolean
         {
             var value = _left.Evaluate(call);
 
-            if (!value.Is(out Bool? @bool))
+            if (!value.Value.Is(out Bool? @bool))
                 throw new Throw("Cannot implicitly convert to bool");
 
             if (!@bool!.Value)

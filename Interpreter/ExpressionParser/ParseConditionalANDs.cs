@@ -13,18 +13,18 @@ namespace Bloc
         {
             for (var i = tokens.Count - 1; i >= 0; i--)
             {
-                if (tokens[i] is (TokenType.Operator, "&&") op)
+                if (tokens[i] is (TokenType.Operator, "&&") @operator)
                 {
                     if (i == 0)
-                        throw new SyntaxError(op.Start, op.End, "Missing the left part of logical AND");
+                        throw new SyntaxError(@operator.Start, @operator.End, "Missing the left part of logical AND");
 
                     if (i == tokens.Count - 1)
-                        throw new SyntaxError(op.Start, op.End, "Missing the right part of logical AND");
+                        throw new SyntaxError(@operator.Start, @operator.End, "Missing the right part of logical AND");
 
-                    var a = ParseConditionalANDs(tokens.GetRange(..i), precedence);
-                    var b = Parse(tokens.GetRange((i + 1)..), precedence);
+                    var left = ParseConditionalANDs(tokens.GetRange(..i), precedence);
+                    var right = Parse(tokens.GetRange((i + 1)..), precedence);
 
-                    return new BooleanAnd(a, b);
+                    return new BooleanAnd(left, right);
                 }
             }
 

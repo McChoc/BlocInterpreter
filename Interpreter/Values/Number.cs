@@ -12,12 +12,7 @@ namespace Bloc.Values
 
         public double Value { get; }
 
-        public override ValueType Type => ValueType.Number;
-
-        public override Value Copy()
-        {
-            return this;
-        }
+        public override ValueType GetType() => ValueType.Number;
 
         public override bool Equals(IValue other)
         {

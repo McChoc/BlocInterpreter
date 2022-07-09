@@ -14,11 +14,11 @@ namespace Bloc.Values
             Values = value;
         }
 
-        public static Array Empty { get; } = new(new List<IValue>());
+        public static Array Empty { get; } = new(new());
 
         public List<IValue> Values { get; }
 
-        public override ValueType Type => ValueType.Array;
+        public override ValueType GetType() => ValueType.Array;
 
         public IValue Index(Value val, Call call)
         {
@@ -86,7 +86,7 @@ namespace Bloc.Values
 
         public override Value Copy()
         {
-            return new Array(Values.Select(v => v.Copy()).ToList<IValue>());
+            return new Array(Values.Select(v => v.Value.Copy()).ToList<IValue>());
         }
 
         public override void Assign()
@@ -94,14 +94,14 @@ namespace Bloc.Values
             for (var i = 0; i < Values.Count; i++)
             {
                 Values[i] = new ChildVariable((Value)Values[i], i, this);
-                Values[i].Assign();
+                Values[i].Value.Assign();
             }
         }
 
         public override void Destroy()
         {
             foreach (var value in Values)
-                value.Destroy();
+                value.Value.Destroy();
         }
 
         public override bool Equals(IValue other)
@@ -113,7 +113,7 @@ namespace Bloc.Values
                 return false;
 
             for (var i = 0; i < Values.Count; i++)
-                if (!Values[i].Equals(arr.Values[i]))
+                if (!Values[i].Value.Equals(arr.Values[i]))
                     return false;
 
             return true;
@@ -139,7 +139,7 @@ namespace Bloc.Values
             {
                 ValueType.Bool => Bool.True,
                 ValueType.String => new String(ToString()),
-                ValueType.Tuple => new Tuple(Values.Select(v => v.Copy()).ToList<IValue>()),
+                ValueType.Tuple => new Tuple(Values.Select(v => v.Value.Copy()).ToList<IValue>()),
                 ValueType.Array => this,
                 _ => throw new Throw($"Cannot cast array as {type.ToString().ToLower()}")
             };
@@ -154,7 +154,7 @@ namespace Bloc.Values
                 return "{ " + string.Join(", ", Values.Select(v => v.Value.ToString())) + " }";
 
             return "{\n" +
-                   string.Join(",\n", Values.Select(v => new string(' ', (depth + 1) * 4) + v.ToString(depth + 1))) + "\n" +
+                   string.Join(",\n", Values.Select(v => new string(' ', (depth + 1) * 4) + v.Value.ToString(depth + 1))) + "\n" +
                    new string(' ', depth * 4) + "}";
         }
     }

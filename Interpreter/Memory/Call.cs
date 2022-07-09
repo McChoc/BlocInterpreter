@@ -77,11 +77,13 @@ namespace Bloc.Memory
         internal bool TryGet(string name, out Variable? var)
         {
             for (var i = Scopes.Count - 1; i >= 0; i--)
+            {
                 if (Scopes[i].Variables.ContainsKey(name))
                 {
                     var = Scopes[i].Variables[name];
                     return true;
                 }
+            }
 
             if (Captures is not null && Captures.Variables.ContainsKey(name))
             {
@@ -103,8 +105,8 @@ namespace Bloc.Memory
             var captures = new Scope(null);
 
             foreach (var scope in Scopes)
-            foreach (var pair in scope.Variables)
-                captures.Variables[pair.Key] = pair.Value;
+                foreach (var pair in scope.Variables)
+                    captures.Variables[pair.Key] = pair.Value;
 
             return captures;
         }

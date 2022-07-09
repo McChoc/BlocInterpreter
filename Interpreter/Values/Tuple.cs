@@ -14,11 +14,11 @@ namespace Bloc.Values
 
         public List<IValue> Values { get; }
 
-        public override ValueType Type => ValueType.Tuple;
+        public override ValueType GetType() => ValueType.Tuple;
 
         public override Value Copy()
         {
-            return new Tuple(Values.Select(v => v.Copy()).ToList<IValue>());
+            return new Tuple(Values.Select(v => v.Value.Copy()).ToList<IValue>());
         }
 
         public override void Assign()
@@ -26,7 +26,7 @@ namespace Bloc.Values
             for (var i = 0; i < Values.Count; i++)
             {
                 Values[i] = new ChildVariable(Values[i].Value, null, this);
-                Values[i].Assign();
+                Values[i].Value.Assign();
             }
         }
 
@@ -39,7 +39,7 @@ namespace Bloc.Values
                 return false;
 
             for (var i = 0; i < Values.Count; i++)
-                if (!Values[i].Equals(tpl.Values[i]))
+                if (!Values[i].Value.Equals(tpl.Values[i]))
                     return false;
 
             return true;
@@ -50,7 +50,7 @@ namespace Bloc.Values
             if (typeof(T) == typeof(Bool))
             {
                 foreach (var variable in Values)
-                    if (!variable.Implicit<Bool>().Value)
+                    if (!variable.Value.Implicit<Bool>().Value)
                         return (Bool.False as T)!;
 
                 return (Bool.True as T)!;
@@ -71,7 +71,7 @@ namespace Bloc.Values
             {
                 foreach (var variable in Values)
                 {
-                    var result = variable.Explicit(ValueType.Bool);
+                    var result = variable.Value.Explicit(ValueType.Bool);
 
                     if (result is not IValue v || !((Bool)v.Value).Value)
                         return result;
@@ -83,7 +83,7 @@ namespace Bloc.Values
             return type switch
             {
                 ValueType.String => new String(ToString()),
-                ValueType.Array => new Array(Values.Select(v => v.Copy()).ToList<IValue>()),
+                ValueType.Array => new Array(Values.Select(v => v.Value.Copy()).ToList<IValue>()),
                 ValueType.Tuple => this,
                 _ => throw new Throw($"Cannot cast tuple as {type.ToString().ToLower()}")
             };

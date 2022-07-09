@@ -14,21 +14,21 @@ namespace Bloc
         {
             for (var i = tokens.Count - 1; i >= 0; i--)
             {
-                if (tokens[i] is (TokenType.Operator, "<<" or ">>") op)
+                if (tokens[i] is (TokenType.Operator, "<<" or ">>") @operator)
                 {
                     if (i == 0)
-                        throw new SyntaxError(op.Start, op.End, "Missing the left part of shift");
+                        throw new SyntaxError(@operator.Start, @operator.End, "Missing the left part of shift");
 
                     if (i > tokens.Count - 1)
-                        throw new SyntaxError(op.Start, op.End, "Missing the right part of shift");
+                        throw new SyntaxError(@operator.Start, @operator.End, "Missing the right part of shift");
 
-                    var a = ParseShifts(tokens.GetRange(..i), precedence);
-                    var b = Parse(tokens.GetRange((i + 1)..), precedence - 1);
+                    var left = ParseShifts(tokens.GetRange(..i), precedence);
+                    var right = Parse(tokens.GetRange((i + 1)..), precedence - 1);
 
-                    return op.Text switch
+                    return @operator.Text switch
                     {
-                        "<<" => new LeftShift(a, b),
-                        ">>" => new RightShift(a, b),
+                        "<<" => new LeftShift(left, right),
+                        ">>" => new RightShift(left, right),
                         _ => throw new Exception()
                     };
                 }

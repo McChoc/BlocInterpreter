@@ -27,10 +27,10 @@ namespace Bloc.Operators.Bitwise
 
         internal static IValue Operation(IValue left, IValue right)
         {
-            if (left.Is(out Number? leftNumber) && right.Is(out Number? rightNumber))
+            if (left.Value.Is(out Number? leftNumber) && right.Value.Is(out Number? rightNumber))
                 return new Number(leftNumber!.ToInt() << rightNumber!.ToInt());
 
-            throw new Throw($"Cannot apply operator '<<' on operands of types {left.Type.ToString().ToLower()} and {right.Type.ToString().ToLower()}");
+            throw new Throw($"Cannot apply operator '<<' on operands of types {left.GetType().ToString().ToLower()} and {right.GetType().ToString().ToLower()}");
         }
     }
 }

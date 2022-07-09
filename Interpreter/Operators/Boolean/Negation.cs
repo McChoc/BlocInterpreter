@@ -18,10 +18,10 @@ namespace Bloc.Operators.Boolean
         {
             var value = _operand.Evaluate(call);
 
-            if (value.Is(out Bool? @bool))
+            if (value.Value.Is(out Bool? @bool))
                 return new Bool(!@bool!.Value);
 
-            throw new Throw($"Cannot apply operator '!' on type {value.Type.ToString().ToLower()}");
+            throw new Throw($"Cannot apply operator '!' on type {value.GetType().ToString().ToLower()}");
         }
     }
 }

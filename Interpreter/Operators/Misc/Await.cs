@@ -19,7 +19,7 @@ namespace Bloc.Operators.Misc
         {
             var value = _operand.Evaluate(call);
 
-            if (value.Is(out Task? task))
+            if (value.Value.Is(out Task? task))
             {
                 try
                 {
@@ -31,7 +31,7 @@ namespace Bloc.Operators.Misc
                 }
             }
 
-            throw new Throw($"Cannot apply operator 'await' on type {value.Type.ToString().ToLower()}");
+            throw new Throw($"Cannot apply operator 'await' on type {value.GetType().ToString().ToLower()}");
         }
     }
 }

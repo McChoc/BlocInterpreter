@@ -17,12 +17,7 @@ namespace Bloc.Values
 
         internal Task<Value> Value { get; }
 
-        public override ValueType Type => ValueType.Task;
-
-        public override Value Copy()
-        {
-            return this;
-        }
+        public override ValueType GetType() => ValueType.Task;
 
         public override bool Equals(IValue other)
         {

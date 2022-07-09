@@ -22,9 +22,9 @@ namespace Bloc.Operators.Type
             var leftValue = _left.Evaluate(call);
             var rightValue = _right.Evaluate(call);
 
-            if (!rightValue.Is(out TypeCollection? type))
+            if (!rightValue.Value.Is(out Values.Type? type))
                 throw new Throw(
-                    $"Cannot apply operator 'as' on operands of types {leftValue.Type.ToString().ToLower()} and {rightValue.Type.ToString().ToLower()}");
+                    $"Cannot apply operator 'as' on operands of types {leftValue.GetType().ToString().ToLower()} and {rightValue.GetType().ToString().ToLower()}");
 
             if (type!.Value.Count != 1)
                 throw new Throw("Cannot apply operator 'as' on a composite type");
@@ -33,7 +33,7 @@ namespace Bloc.Operators.Type
             {
                 ValueType.Void => Void.Value,
                 ValueType.Null => Null.Value,
-                ValueType t => leftValue.Explicit(t)
+                ValueType t => leftValue.Value.Explicit(t)
             };
         }
     }

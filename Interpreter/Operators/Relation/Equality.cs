@@ -20,7 +20,7 @@ namespace Bloc.Operators.Relation
             var leftValue = _left.Evaluate(call);
             var rightValue = _right.Evaluate(call);
 
-            return new Bool(leftValue.Equals(rightValue));
+            return new Bool(leftValue.Value.Equals(rightValue));
         }
     }
 }

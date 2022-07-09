@@ -61,6 +61,7 @@ namespace Bloc
 
             if (parts.All(p => p.Count >= 2 && p[0].Type == TokenType.Identifier && p[1] is (TokenType.Operator, "=")))
                 return new StrucLiteral(parts.ToDictionary(p => p[0].Text, p => Parse(p.GetRange(2..))));
+
             return new ArrayLiteral(parts.Select(p => Parse(p)).ToList());
         }
     }

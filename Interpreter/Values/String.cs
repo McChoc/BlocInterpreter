@@ -18,7 +18,7 @@ namespace Bloc.Values
 
         public string Value { get; }
 
-        public override ValueType Type => ValueType.String;
+        public override ValueType GetType() => ValueType.String;
 
         public IValue Index(Value val, Call _)
         {
@@ -65,11 +65,6 @@ namespace Bloc.Values
         {
             foreach (var @char in Value)
                 yield return new String(@char.ToString());
-        }
-
-        public override Value Copy()
-        {
-            return this;
         }
 
         public override bool Equals(IValue other)

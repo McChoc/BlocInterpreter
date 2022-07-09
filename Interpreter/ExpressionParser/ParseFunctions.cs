@@ -15,10 +15,10 @@ namespace Bloc
         {
             for (var i = 0; i < tokens.Count; i++)
             {
-                if (tokens[i] is (TokenType.Operator, "=>") op)
+                if (tokens[i] is (TokenType.Operator, "=>") @operator)
                 {
                     if (i == 0)
-                        throw new SyntaxError(op.Start, op.End, "Missing identifiers");
+                        throw new SyntaxError(@operator.Start, @operator.End, "Missing identifiers");
 
                     var async = false;
 

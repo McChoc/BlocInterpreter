@@ -5,7 +5,6 @@ using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Utils;
 using Bloc.Values;
-using Bloc.Variables;
 using ValueType = Bloc.Values.ValueType;
 
 namespace Bloc.Operators.Bitwise
@@ -31,10 +30,10 @@ namespace Bloc.Operators.Bitwise
             if (value is not Variables.Variable variable)
                 throw new Throw("The operand of an increment must be a variable");
 
-            if (value.Is(out Number? number))
+            if (value.Value.Is(out Number? number))
                 return variable.Value = new Number(~number!.ToInt());
 
-            if (value.Is(out TypeCollection? type))
+            if (value.Value.Is(out Values.Type? type))
             {
                 var types = new HashSet<ValueType>();
 
@@ -42,10 +41,10 @@ namespace Bloc.Operators.Bitwise
                     if (!type!.Value.Contains(t))
                         types.Add(t);
 
-                return variable.Value = new TypeCollection(types);
+                return variable.Value = new Values.Type(types);
             }
 
-            throw new Throw($"Cannot apply operator '~~' on type {variable.Type.ToString().ToLower()}");
+            throw new Throw($"Cannot apply operator '~~' on type {variable.GetType().ToString().ToLower()}");
         }
     }
 }

@@ -12,6 +12,6 @@ namespace Bloc.Expressions
             _type = type;
         }
 
-        public IValue Evaluate(Call _) => new TypeCollection(_type);
+        public IValue Evaluate(Call _) => new Type(_type);
     }
 }

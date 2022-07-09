@@ -18,7 +18,7 @@ namespace Bloc.Operators.Variable
         {
             var value = _operand.Evaluate(call);
 
-            for (var i = 1; value.Is(out Values.Reference? reference); i++)
+            for (var i = 1; value.Value.Is(out Values.Reference? reference); i++)
             {
                 if (i > call.Engine.HopLimit)
                     throw new Throw("The hop limit was reached");

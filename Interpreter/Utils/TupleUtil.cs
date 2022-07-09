@@ -63,7 +63,7 @@ namespace Bloc.Utils
             if (left is not Variable variable)
                 throw new Throw("You cannot assign a value to a literal");
 
-            var value = right.Copy();
+            var value = right.Value.Copy();
 
             value.Assign();
             variable.Value.Destroy();
@@ -94,7 +94,7 @@ namespace Bloc.Utils
 
             var value = RecursivelyCall(left, right, operation);
 
-            value.Assign();
+            value.Value.Assign();
             variable.Value.Destroy();
             return variable.Value = value.Value;
         }

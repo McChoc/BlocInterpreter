@@ -7,25 +7,25 @@ using Bloc.Results;
 
 namespace Bloc.Values
 {
-    public class TypeCollection : Value, IInvokable
+    public class Type : Value, IInvokable
     {
-        public TypeCollection(ValueType type)
+        public Type(ValueType type)
         {
             Value = new HashSet<ValueType> { type };
         }
 
-        public TypeCollection(HashSet<ValueType> types)
+        public Type(HashSet<ValueType> types)
         {
             Value = types;
         }
 
-        public static TypeCollection None { get; } = new(new HashSet<ValueType>());
+        public static Type None { get; } = new(new HashSet<ValueType>());
 
-        public static TypeCollection Any { get; } = new(Enum.GetValues(typeof(ValueType)).Cast<ValueType>().ToHashSet());
+        public static Type Any { get; } = new(Enum.GetValues(typeof(ValueType)).Cast<ValueType>().ToHashSet());
 
         public HashSet<ValueType> Value { get; }
 
-        public override ValueType Type => ValueType.Type;
+        public override ValueType GetType() => ValueType.Type;
 
         public IValue Invoke(List<Value> _0, Call _1)
         {
@@ -52,14 +52,9 @@ namespace Bloc.Values
             };
         }
 
-        public override Value Copy()
-        {
-            return this;
-        }
-
         public override bool Equals(IValue other)
         {
-            if (other.Value is TypeCollection t)
+            if (other.Value is Type t)
                 return Value.SetEquals(t.Value);
 
             return false;
@@ -73,7 +68,7 @@ namespace Bloc.Values
             if (typeof(T) == typeof(String))
                 return (new String(ToString()) as T)!;
 
-            if (typeof(T) == typeof(TypeCollection))
+            if (typeof(T) == typeof(Type))
                 return (this as T)!;
 
             throw new Throw($"Cannot implicitly cast type as {typeof(T).Name.ToLower()}");

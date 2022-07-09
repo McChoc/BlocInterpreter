@@ -17,7 +17,7 @@ namespace Bloc.Operators.Misc
         {
             var value = _operand.Evaluate(call);
 
-            return new TypeCollection(value.Type);
+            return new Values.Type(value.Value.GetType());
         }
     }
 }

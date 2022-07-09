@@ -8,9 +8,7 @@ namespace Bloc.Values
 
         public static Void Value { get; } = new();
 
-        public override ValueType Type => ValueType.Void;
-
-        public override Value Copy() => this;
+        public override ValueType GetType() => ValueType.Void;
 
         public override void Assign() => throw new Throw("You cannot assign void to a variable");
 

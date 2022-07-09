@@ -24,7 +24,7 @@ namespace Bloc.Operators.Assignment
             if (value is not Variables.Variable variable)
                 throw new Throw("You cannot assign a value to a literal");
 
-            if (!value.Is(out Bool? @bool))
+            if (!value.Value.Is(out Bool? @bool))
                 throw new Throw("Cannot implicitly convert to bool");
 
             if (!@bool!.Value)
@@ -32,7 +32,7 @@ namespace Bloc.Operators.Assignment
 
             value = _right.Evaluate(call).Value;
 
-            value.Assign();
+            value.Value.Assign();
             variable.Value.Destroy();
             return variable.Value = value.Value;
         }

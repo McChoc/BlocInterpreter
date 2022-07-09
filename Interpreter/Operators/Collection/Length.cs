@@ -18,13 +18,13 @@ namespace Bloc.Operators.Collection
         {
             var value = _operand.Evaluate(call);
 
-            if (value.Is(out Array? arr))
+            if (value.Value.Is(out Array? arr))
                 return new Number(arr!.Values.Count);
 
-            if (value.Is(out String? str))
+            if (value.Value.Is(out String? str))
                 return new Number(str!.Value.Length);
 
-            throw new Throw($"Cannot apply operator 'len' type {value!.Type.ToString().ToLower()}");
+            throw new Throw($"Cannot apply operator 'len' type {value!.GetType().ToString().ToLower()}");
         }
     }
 }

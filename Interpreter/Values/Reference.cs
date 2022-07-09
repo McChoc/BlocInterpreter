@@ -7,7 +7,7 @@ namespace Bloc.Values
     {
         internal Variable? Variable { get; private set; }
 
-        public override ValueType Type => ValueType.Reference;
+        public override ValueType GetType() => ValueType.Reference;
 
         internal Reference(Variable? variable) => Variable = variable;
 

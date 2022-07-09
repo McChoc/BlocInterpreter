@@ -22,7 +22,7 @@ namespace Bloc.Operators.Relation
             var leftValue = _left.Evaluate(call);
             var rightValue = _right.Evaluate(call);
 
-            if (leftValue.Is(out Number? leftNumber) && rightValue.Is(out Number? rightNumber))
+            if (leftValue.Value.Is(out Number? leftNumber) && rightValue.Value.Is(out Number? rightNumber))
             {
                 if (double.IsNaN(leftNumber!.Value) || double.IsNaN(rightNumber!.Value))
                     return new Number(double.NaN);
@@ -30,7 +30,7 @@ namespace Bloc.Operators.Relation
                 return new Number(Sign(leftNumber!.Value - rightNumber!.Value));
             }
 
-            throw new Throw($"Cannot apply operator '<=>' on operands of types {leftValue.Type.ToString().ToLower()} and {rightValue.Type.ToString().ToLower()}");
+            throw new Throw($"Cannot apply operator '<=>' on operands of types {leftValue.GetType().ToString().ToLower()} and {rightValue.GetType().ToString().ToLower()}");
         }
     }
 }

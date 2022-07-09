@@ -22,7 +22,7 @@ namespace Bloc.Statements
 
                     var identifier = definition.Item1.Evaluate(call);
 
-                    Define(identifier, value.Copy(), call);
+                    Define(identifier, value.Value.Copy(), call);
                 }
                 catch (Result result)
                 {

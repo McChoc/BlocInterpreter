@@ -17,28 +17,28 @@ namespace Bloc
             for (var i = tokens.Count - 1; i >= 0; i--)
             {
                 if (tokens[i] is (TokenType.Operator or TokenType.Keyword,
-                    "<" or "<=" or ">" or ">=" or "in" or "not in" or "is" or "is not" or "as") op)
+                    "<" or "<=" or ">" or ">=" or "in" or "not in" or "is" or "is not" or "as") @operator)
                 {
                     if (i == 0)
-                        throw new SyntaxError(op.Start, op.End, "Missing the left part of relation");
+                        throw new SyntaxError(@operator.Start, @operator.End, "Missing the left part of relation");
 
                     if (i > tokens.Count - 1)
-                        throw new SyntaxError(op.Start, op.End, "Missing the right part of relation");
+                        throw new SyntaxError(@operator.Start, @operator.End, "Missing the right part of relation");
 
-                    var a = ParseRelations(tokens.GetRange(..i), precedence);
-                    var b = Parse(tokens.GetRange((i + 1)..), precedence - 1);
+                    var left = ParseRelations(tokens.GetRange(..i), precedence);
+                    var right = Parse(tokens.GetRange((i + 1)..), precedence - 1);
 
-                    return op.Text switch
+                    return @operator.Text switch
                     {
-                        "<" => new Less(a, b),
-                        "<=" => new LessEqual(a, b),
-                        ">" => new Greater(a, b),
-                        ">=" => new GreaterEqual(a, b),
-                        "in" => new In(a, b),
-                        "not in" => new NotIn(a, b),
-                        "is" => new Is(a, b),
-                        "is not" => new IsNot(a, b),
-                        "as" => new As(a, b),
+                        "<" => new Less(left, right),
+                        "<=" => new LessEqual(left, right),
+                        ">" => new Greater(left, right),
+                        ">=" => new GreaterEqual(left, right),
+                        "in" => new In(left, right),
+                        "not in" => new NotIn(left, right),
+                        "is" => new Is(left, right),
+                        "is not" => new IsNot(left, right),
+                        "as" => new As(left, right),
                         _ => throw new Exception()
                     };
                 }

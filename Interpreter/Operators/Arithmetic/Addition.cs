@@ -28,10 +28,10 @@ namespace Bloc.Operators.Arithmetic
 
         internal static IValue Operation(IValue left, IValue right)
         {
-            if (left.Is(out Number? leftNumber) && right.Is(out Number? rightNumber))
+            if (left.Value.Is(out Number? leftNumber) && right.Value.Is(out Number? rightNumber))
                 return new Number(leftNumber!.Value + rightNumber!.Value);
 
-            if (left.Is(out Struct? leftStruct) && right.Is(out Struct? rightStruct))
+            if (left.Value.Is(out Struct? leftStruct) && right.Value.Is(out Struct? rightStruct))
             {
                 var dict = new Dictionary<string, IValue>();
 
@@ -44,7 +44,7 @@ namespace Bloc.Operators.Arithmetic
                 return new Struct(dict);
             }
 
-            if (left.Is(out Array? leftArray) && right.Is(out Array? rightArray))
+            if (left.Value.Is(out Array? leftArray) && right.Value.Is(out Array? rightArray))
             {
                 var list = new List<IValue>();
                 list.AddRange(((Array)leftArray!.Copy()).Values);
@@ -54,28 +54,28 @@ namespace Bloc.Operators.Arithmetic
 
 #pragma warning disable IDE0028
 
-            if (left.Is(out Array? array))
+            if (left.Value.Is(out Array? array))
             {
                 var list = new List<IValue>();
                 list.AddRange(((Array)array!.Copy()).Values);
-                list.Add(right.Copy());
+                list.Add(right.Value.Copy());
                 return new Array(list);
             }
 
-            if (right.Is(out array))
+            if (right.Value.Is(out array))
             {
                 var list = new List<IValue>();
-                list.Add(left.Copy());
+                list.Add(left.Value.Copy());
                 list.AddRange(((Array)array!.Copy()).Values);
                 return new Array(list);
             }
 
 #pragma warning restore IDE0028
 
-            if (left.Is(out String? leftString) && right.Is(out String? rightString))
+            if (left.Value.Is(out String? leftString) && right.Value.Is(out String? rightString))
                 return new String(leftString!.Value + rightString!.Value);
 
-            throw new Throw($"Cannot apply operator '+' on operands of types {left.Type.ToString().ToLower()} and {right.Type.ToString().ToLower()}");
+            throw new Throw($"Cannot apply operator '+' on operands of types {left.GetType().ToString().ToLower()} and {right.GetType().ToString().ToLower()}");
         }
     }
 }

@@ -21,7 +21,7 @@ namespace Bloc.Operators.Boolean
         {
             var value = _condition.Evaluate(call);
 
-            var @bool = value.Implicit<Bool>();
+            var @bool = value.Value.Implicit<Bool>();
 
             return @bool!.Value ? _consequent.Evaluate(call) : _alternative.Evaluate(call);
         }

@@ -14,7 +14,7 @@ namespace Bloc.Values
         internal List<Statement> Code { get; set; } = new();
         internal Scope Captures { get; set; } = new(null);
 
-        public override ValueType Type => ValueType.Function;
+        public override ValueType GetType() => ValueType.Function;
 
         public IValue Invoke(List<Value> values, Call parent)
         {
@@ -24,16 +24,16 @@ namespace Bloc.Values
             return new Task(System.Threading.Tasks.Task.Run(() => Call(values, parent)));
         }
 
-        public override Value Copy()
-        {
-            return new Function
-            {
-                Async = Async,
-                Names = Names,
-                Code = Code,
-                Captures = Captures
-            };
-        }
+        //public override Value Copy()
+        //{
+        //    return new Function
+        //    {
+        //        Async = Async,
+        //        Names = Names,
+        //        Code = Code,
+        //        Captures = Captures
+        //    };
+        //}
 
         public override bool Equals(IValue other)
         {
@@ -61,7 +61,7 @@ namespace Bloc.Values
                     return false;
 
             foreach (var key in Captures.Variables.Keys)
-                if (!Captures.Variables[key].Equals(func.Captures.Variables[key]))
+                if (!Captures.Variables[key].Value.Equals(func.Captures.Variables[key]))
                     return false;
 
             return true;

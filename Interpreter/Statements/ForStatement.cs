@@ -31,7 +31,7 @@ namespace Bloc.Statements
                     {
                         var value = Condition.Evaluate(call);
 
-                        if (!value.Is(out Bool? @bool))
+                        if (!value.Value.Is(out Bool? @bool))
                             return new Throw("Cannot implicitly convert to bool");
 
                         if (!@bool!.Value)

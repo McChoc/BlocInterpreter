@@ -15,7 +15,7 @@ namespace Bloc.Values
         public int? End { get; }
         public int Step { get; }
 
-        public override ValueType Type => ValueType.Range;
+        public override ValueType GetType() => ValueType.Range;
 
         public IEnumerable<Value> Iterate()
         {
@@ -29,11 +29,6 @@ namespace Bloc.Values
             if (Step < 0)
                 for (var i = start; i > end; i += Step)
                     yield return new Number(i);
-        }
-
-        public override Value Copy()
-        {
-            return this;
         }
 
         public override bool Equals(IValue other)

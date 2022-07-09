@@ -14,12 +14,7 @@ namespace Bloc.Values
 
         public bool Value { get; }
 
-        public override ValueType Type => ValueType.Bool;
-
-        public override Value Copy()
-        {
-            return this;
-        }
+        public override ValueType GetType() => ValueType.Bool;
 
         public override bool Equals(IValue other)
         {

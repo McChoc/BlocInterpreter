@@ -24,10 +24,10 @@ namespace Bloc.Operators.Arithmetic
 
         private static IValue Operation(IValue value)
         {
-            if (value.Is(out Number? number))
+            if (value.Value.Is(out Number? number))
                 return new Number(-number!.Value);
 
-            throw new Throw($"Cannot apply operator '-' on type {value.Type.ToString().ToLower()}");
+            throw new Throw($"Cannot apply operator '-' on type {value.GetType().ToString().ToLower()}");
         }
     }
 }
