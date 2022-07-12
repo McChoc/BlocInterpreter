@@ -32,7 +32,7 @@ namespace Bloc.Operators
             if (pointer.Get().Is(out Number? number))
                 return pointer.Set(new Number(~number!.ToInt()));
 
-            if (pointer.Get().Is(out Values.Type? type))
+            if (pointer.Get().Is(out Type? type))
             {
                 var types = new HashSet<ValueType>();
 
@@ -40,7 +40,7 @@ namespace Bloc.Operators
                     if (!type!.Value.Contains(t))
                         types.Add(t);
 
-                return pointer.Set(new Values.Type(types));
+                return pointer.Set(new Type(types));
             }
 
             throw new Throw($"Cannot apply operator '~~' on type {pointer.Get().GetType().ToString().ToLower()}");

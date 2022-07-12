@@ -1,5 +1,5 @@
-﻿using Bloc.Statements;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Bloc.Statements;
 
 namespace Bloc.Utils
 {

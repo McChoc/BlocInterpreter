@@ -59,7 +59,9 @@ namespace Bloc
 
                     return Parse(expression, precedence - 1);
                 }
-                else if (i < tokens.Count - 1 && tokens[i].Type == TokenType.Parentheses && tokens[i + 1].Type == TokenType.Braces)
+                else if (i < tokens.Count - 1 &&
+                    tokens[i].Type == TokenType.Parentheses &&
+                    tokens[i + 1].Type == TokenType.Braces)
                 {
                     var parameters = TokenScanner.Scan(tokens[i]).ToList();
 

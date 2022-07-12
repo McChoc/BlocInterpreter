@@ -49,8 +49,10 @@ namespace Bloc.Values
                 ValueType.Null => Null.Value,
                 ValueType.Bool => Bool.True,
                 ValueType.String => this,
-                ValueType.Tuple => new Tuple(Value.ToCharArray().Select(c => new String(c.ToString())).ToList<IPointer>()),
-                ValueType.Array => new Array(Value.ToCharArray().Select(c => new String(c.ToString())).ToList<IVariable>()),
+                ValueType.Tuple => new Tuple(Value.ToCharArray().Select(c => new String(c.ToString()))
+                    .ToList<IPointer>()),
+                ValueType.Array => new Array(Value.ToCharArray().Select(c => new String(c.ToString()))
+                    .ToList<IVariable>()),
                 _ => throw new Throw($"Cannot cast string as {type.ToString().ToLower()}")
             };
         }

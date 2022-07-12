@@ -1,8 +1,8 @@
-﻿using Bloc.Memory;
-using Bloc.Expressions;
+﻿using Bloc.Expressions;
+using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Values;
-using Bloc.Pointers;
 
 namespace Bloc.Operators
 {
@@ -10,7 +10,10 @@ namespace Bloc.Operators
     {
         private readonly IExpression _operand;
 
-        internal Ref(IExpression operand) => _operand = operand;
+        internal Ref(IExpression operand)
+        {
+            _operand = operand;
+        }
 
         public IPointer Evaluate(Call call)
         {

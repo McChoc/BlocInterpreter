@@ -37,7 +37,7 @@ namespace Bloc.Commands
 
                         return new String(command.Description);
                     }
-                        
+
                     throw new Throw("The input could not be converted to a string.");
                 }
 
@@ -105,9 +105,7 @@ namespace Bloc.Commands
                 }
 
                 if (args.Length == 1)
-                {
                     return call.Get(args[0]).Get();
-                }
 
                 throw new Throw($"'get' does not take {args.Length} arguments.\nType '/help get' to see its usage.");
             }

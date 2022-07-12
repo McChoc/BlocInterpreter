@@ -1,6 +1,7 @@
 ﻿using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Pointers;
+using Bloc.Values;
 
 namespace Bloc.Operators
 {
@@ -17,7 +18,7 @@ namespace Bloc.Operators
         {
             var value = _operand.Evaluate(call).Value;
 
-            return new Values.Type(value.GetType());
+            return new Type(value.GetType());
         }
     }
 }

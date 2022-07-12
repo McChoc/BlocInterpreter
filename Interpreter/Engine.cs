@@ -55,7 +55,6 @@ namespace Bloc
                 value = null;
                 return result;
             }
-
         }
 
         public Result? Execute(List<Statement> statements)

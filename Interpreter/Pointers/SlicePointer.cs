@@ -1,9 +1,9 @@
-﻿using Bloc.Memory;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Values;
 using Bloc.Variables;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Bloc.Pointers
 {
@@ -87,7 +87,7 @@ namespace Bloc.Pointers
             if (Variables.Count != pointer.Variables.Count)
                 return false;
 
-            for (int i = 0; i < Variables.Count; i++)
+            for (var i = 0; i < Variables.Count; i++)
                 if (Variables[i] != pointer.Variables[i])
                     return false;
 

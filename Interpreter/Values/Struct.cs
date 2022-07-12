@@ -87,7 +87,8 @@ namespace Bloc.Values
                         { "value", x.Value.Value.Copy() }
                     })).ToList<IVariable>()),
                 ValueType.Struct => this,
-                ValueType.Tuple => new Tuple(Values.OrderBy(x => x.Key).Select(x => x.Value.Value.Copy()).ToList<IPointer>()),
+                ValueType.Tuple => new Tuple(Values.OrderBy(x => x.Key).Select(x => x.Value.Value.Copy())
+                    .ToList<IPointer>()),
                 _ => throw new Throw($"Cannot cast struct as {type.ToString().ToLower()}")
             };
         }

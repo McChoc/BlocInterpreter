@@ -27,7 +27,7 @@ namespace Bloc.Operators
         {
             if (identifier is Pointer pointer)
                 return pointer.Define(Null.Value, call);
-            
+
             if (identifier.Value is Tuple tuple)
             {
                 var values = new List<IPointer>(tuple.Values.Count);

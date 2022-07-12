@@ -23,7 +23,7 @@ namespace Bloc.Statements
             {
                 try
                 {
-                    bool loop = true;
+                    var loop = true;
 
                     if (!Do || loopCount != 0)
                     {

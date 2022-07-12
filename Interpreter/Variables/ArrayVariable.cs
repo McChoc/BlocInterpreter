@@ -6,7 +6,7 @@ namespace Bloc.Variables
     {
         private readonly Array _parent;
 
-        internal ArrayVariable(Value value, Array parent): base(value)
+        internal ArrayVariable(Value value, Array parent) : base(value)
         {
             _parent = parent;
         }

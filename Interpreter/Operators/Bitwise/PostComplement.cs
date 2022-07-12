@@ -36,7 +36,7 @@ namespace Bloc.Operators
                 return new Number(number.ToInt());
             }
 
-            if (pointer.Get().Is(out Values.Type? type))
+            if (pointer.Get().Is(out Type? type))
             {
                 var types = new HashSet<ValueType>();
 
@@ -44,7 +44,7 @@ namespace Bloc.Operators
                     if (!type!.Value.Contains(t))
                         types.Add(t);
 
-                pointer.Set(new Values.Type(types));
+                pointer.Set(new Type(types));
 
                 return type!;
             }

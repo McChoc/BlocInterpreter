@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using Bloc;
 using Bloc.Commands;
-using Bloc.Expressions;
 using Bloc.Results;
-using Bloc.Statements;
 using Bloc.Utils.Exceptions;
 using Bloc.Values;
 using Void = Bloc.Values.Void;
@@ -74,7 +72,7 @@ while (true)
 
             try
             {
-                Engine.Compile(code, out IExpression expression, out List<Statement> statements);
+                Engine.Compile(code, out var expression, out var statements);
 
                 Result result;
                 Value value = null;

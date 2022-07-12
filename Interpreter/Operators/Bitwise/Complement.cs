@@ -29,7 +29,7 @@ namespace Bloc.Operators
             if (value.Value.Is(out Number? number))
                 return new Number(~number!.ToInt());
 
-            if (value.Value.Is(out Values.Type? type))
+            if (value.Value.Is(out Type? type))
             {
                 var types = new HashSet<ValueType>();
 
@@ -37,7 +37,7 @@ namespace Bloc.Operators
                     if (!type!.Value.Contains(t))
                         types.Add(t);
 
-                return new Values.Type(types);
+                return new Type(types);
             }
 
             throw new Throw($"Cannot apply operator '~' on type {value.Value.GetType().ToString().ToLower()}");

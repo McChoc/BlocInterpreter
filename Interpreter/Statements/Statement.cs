@@ -33,10 +33,9 @@ namespace Bloc.Statements
 
                     return result;
                 }
-                else if (result is not null)
-                {
+
+                if (result is not null)
                     return result;
-                }
             }
 
             return null;

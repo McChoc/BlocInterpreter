@@ -9,7 +9,7 @@ namespace Bloc.Memory
 {
     public class Call
     {
-        private readonly int _stack = 0;
+        private readonly int _stack;
 
         internal Call(Engine engine)
         {

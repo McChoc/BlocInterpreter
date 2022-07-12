@@ -32,7 +32,7 @@ namespace Bloc.Operators
             if (left.Value.Is(out Number? leftNumber) && right.Value.Is(out Number? rightNumber))
                 return new Number(leftNumber!.ToInt() & rightNumber!.ToInt());
 
-            if (left.Value.Is(out Values.Type? leftType) && right.Value.Is(out Values.Type? rightType))
+            if (left.Value.Is(out Type? leftType) && right.Value.Is(out Type? rightType))
             {
                 var types = new HashSet<ValueType>();
 
@@ -40,7 +40,7 @@ namespace Bloc.Operators
                     if (leftType!.Value.Contains(type) && rightType!.Value.Contains(type))
                         types.Add(type);
 
-                return new Values.Type(types);
+                return new Type(types);
             }
 
             throw new Throw($"Cannot apply operator '&' on operands of types {left.Value.GetType().ToString().ToLower()} and {right.Value.GetType().ToString().ToLower()}");
