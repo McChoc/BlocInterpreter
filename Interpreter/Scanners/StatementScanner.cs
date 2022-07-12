@@ -131,13 +131,13 @@ namespace Bloc.Scanners
             var statement = new IfStatement
             {
                 Condition = GetExpression(@if, scanner),
-                IfBody = GetBody(@if, scanner)
+                If = GetBody(@if, scanner)
             };
 
             if (scanner.HasNextToken() && scanner.Peek() is (TokenType.Keyword, "else"))
             {
                 var @else = scanner.GetNextToken();
-                statement.ElseBody = GetBody(@else, scanner);
+                statement.Else = GetBody(@else, scanner);
             }
 
             return statement;
@@ -321,7 +321,7 @@ namespace Bloc.Scanners
             if (line.Count != 0)
                 throw new SyntaxError(line[0].Start, line[^1].End, "Unexpected expression");
 
-            return new ContinueStatement();
+            return new BreakStatement();
         }
 
         private static Statement GetGotoStatement(TokenScanner scanner)

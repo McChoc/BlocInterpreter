@@ -4,14 +4,6 @@ namespace Bloc.Utils.Exceptions
 {
     public class SyntaxError : Exception
     {
-        [Obsolete]
-        public SyntaxError()
-        {
-            Start = 0;
-            End = 0;
-            Text = "";
-        }
-
         public SyntaxError(int start, int end, string text) : base(text)
         {
             Start = start;

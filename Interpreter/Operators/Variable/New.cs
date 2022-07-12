@@ -1,9 +1,10 @@
 ﻿using Bloc.Expressions;
 using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Values;
 using Bloc.Variables;
 
-namespace Bloc.Operators.Variable
+namespace Bloc.Operators
 {
     internal class New : IExpression
     {
@@ -14,19 +15,16 @@ namespace Bloc.Operators.Variable
             _operand = operand;
         }
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
-            var value = _operand.Evaluate(call);
+            var value = _operand.Evaluate(call).Value.Copy();
 
-            value = value!.Value.Copy();
-            value.Value.Assign();
+            value.Assign();
 
-            var variable = new HeapVariable(value.Value);
-            var reference = new Values.Reference(variable);
+            var variable = new HeapVariable(value);
+            var pointer = new VariablePointer(variable);
 
-            variable.References.Add(reference);
-
-            return reference;
+            return new Reference(pointer);
         }
     }
 }

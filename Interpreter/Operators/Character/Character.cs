@@ -1,9 +1,10 @@
 ﻿using Bloc.Expressions;
 using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Values;
 
-namespace Bloc.Operators.Character
+namespace Bloc.Operators
 {
     internal class Character : IExpression
     {
@@ -14,11 +15,11 @@ namespace Bloc.Operators.Character
             _operand = operand;
         }
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
-            var value = _operand.Evaluate(call);
+            var value = _operand.Evaluate(call).Value;
 
-            if (!value.Value.Is(out Number? num))
+            if (!value.Is(out Number? num))
                 throw new Throw($"Cannot apply operator 'chr' on type {value.GetType().ToString().ToLower()}");
 
             return new String(((char)num!.ToInt()).ToString());

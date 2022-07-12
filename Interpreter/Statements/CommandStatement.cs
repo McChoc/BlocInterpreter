@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Tokens;
 using Bloc.Values;
-using String = Bloc.Values.String;
-using Void = Bloc.Values.Void;
 
 namespace Bloc.Statements
 {
@@ -15,34 +13,29 @@ namespace Bloc.Statements
 
         internal override Result? Execute(Call call)
         {
-            Value output = Void.Value;
+            Value value = Void.Value;
 
             foreach (var command in Commands)
             {
-                var words = new List<string>();
-
-                foreach (var token in command)
+                try
                 {
-                    try
-                    {
-                        words.AddRange(GetText(token, call));
-                    }
-                    catch (Result result)
-                    {
-                        return result;
-                    }
+                    var words = command.SelectMany(t => GetText(t, call)).ToArray();
+
+                    var name = words[0];
+                    var args = words[1..];
+
+                    if (!call.Engine.Commands.TryGetValue(name, out var com))
+                        throw new Throw("Unknown command.");
+
+                    value = com.Call(args, value, call);
                 }
-
-                var name = words[0];
-                var args = words.ToArray()[1..];
-
-                if (call.Engine.Commands.TryGetValue(name, out var c))
-                    output = c.Call(args, output, call);
-                else
-                    output = new String("Unknown command.");
+                catch (Result result)
+                {
+                    return result;
+                }
             }
 
-            if (output.Is(out String? str))
+            if (value.Is(out String? str))
                 call.Engine.Log(str!.Value);
 
             return null;
@@ -59,16 +52,15 @@ namespace Bloc.Statements
                     return new[] { token.Text };
 
                 case { Type: TokenType.Identifier, Text: string identifier }:
-                    if (!call.TryGet(identifier, out var variable))
-                        throw new Throw($"Variable '{identifier}' was not defined in scope");
+                    var value = call.Get(identifier).Get();
 
-                    if (!variable!.Value.Is(out String? str))
+                    if (!value.Is(out String? str))
                         throw new Throw("Cannot implicitly cast to string");
 
                     return str!.Value.Split(' ');
 
                 default:
-                    throw new Exception();
+                    throw new System.Exception();
             }
         }
     }

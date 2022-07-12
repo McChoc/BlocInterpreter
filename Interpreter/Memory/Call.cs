@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Values;
 using Bloc.Variables;
@@ -8,12 +9,10 @@ namespace Bloc.Memory
 {
     public class Call
     {
-        private readonly int _stack;
+        private readonly int _stack = 0;
 
         internal Call(Engine engine)
         {
-            _stack = 0;
-
             Engine = engine;
             Scopes = new List<Scope>();
             Push();
@@ -31,23 +30,23 @@ namespace Bloc.Memory
             Captures = captures;
 
             Recall = new HeapVariable(recall);
-            Params = new HeapVariable(new Array(@params.Cast<IValue>().ToList()));
+            Params = new HeapVariable(new Array(@params.Cast<IVariable>().ToList()));
             Params.Value.Assign();
         }
 
-        internal Engine Engine { get; }
+        public Engine Engine { get; }
 
         internal Call? Parent { get; }
         internal Scope? Captures { get; }
 
-        internal Variable? Recall { get; }
         internal Variable? Params { get; }
+        internal Variable? Recall { get; }
 
         internal List<Scope> Scopes { get; }
 
         internal void Push()
         {
-            Scopes.Add(new(this));
+            Scopes.Add(new());
         }
 
         internal void Pop()
@@ -58,55 +57,43 @@ namespace Bloc.Memory
 
         internal void Destroy()
         {
-            Recall?.Destroy();
-            Params?.Destroy();
+            Recall?.Delete();
+            Params?.Delete();
 
             foreach (var scope in Scopes)
                 scope.Destroy();
         }
 
-        internal bool TryAdd(StackVariable variable)
+        internal Pointer Get(string name)
         {
-            if (Scopes[^1].Variables.ContainsKey(variable.Name))
-                return false;
+            StackVariable variable;
 
-            Scopes[^1].Variables.Add(variable.Name, variable);
-            return true;
-        }
-
-        internal bool TryGet(string name, out Variable? var)
-        {
             for (var i = Scopes.Count - 1; i >= 0; i--)
-            {
-                if (Scopes[i].Variables.ContainsKey(name))
-                {
-                    var = Scopes[i].Variables[name];
-                    return true;
-                }
-            }
+                if (Scopes[i].Variables.TryGetValue(name, out variable))
+                    return new VariablePointer(variable);
 
-            if (Captures is not null && Captures.Variables.ContainsKey(name))
-            {
-                var = Captures.Variables[name];
-                return true;
-            }
+            if (Captures is not null && Captures.Variables.TryGetValue(name, out variable))
+                return new VariablePointer(variable);
 
-            var = null;
-            return false;
+            return new UndefinedPointer(name);
         }
 
-        internal void Set(string name, Variable variable)
+        internal Pointer Set(string name, Value value)
         {
+            var variable = new StackVariable(name, value, Scopes[^1]);
+
             Scopes[^1].Variables[name] = variable;
+
+            return new VariablePointer(variable);
         }
 
         internal Scope Capture()
         {
-            var captures = new Scope(null);
+            var captures = new Scope();
 
             foreach (var scope in Scopes)
-                foreach (var pair in scope.Variables)
-                    captures.Variables[pair.Key] = pair.Value;
+                foreach (var (key, value) in scope.Variables)
+                    captures.Variables[key] = value;
 
             return captures;
         }

@@ -3,10 +3,11 @@ using System.Linq;
 using Bloc.Expressions;
 using Bloc.Interfaces;
 using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Values;
 
-namespace Bloc.Operators.Primary
+namespace Bloc.Operators
 {
     internal class Invocation : IExpression
     {
@@ -19,14 +20,14 @@ namespace Bloc.Operators.Primary
             _parameters = parameters;
         }
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
-            var value = _expression.Evaluate(call);
+            var value = _expression.Evaluate(call).Value;
 
-            if (value.Value is not IInvokable invk)
+            if (value is not IInvokable invokable)
                 throw new Throw("You can only invoke a function or a type.");
 
-            var args = new List<Value>();
+            var args = new List<Value>(_parameters.Count);
 
             foreach (var parameter in _parameters)
                 args.Add(parameter.Evaluate(call).Value);
@@ -34,7 +35,7 @@ namespace Bloc.Operators.Primary
             if (args.Count == 1 && args[0] is Array array)
                 args = array.Values.Select(v => v.Value).ToList();
 
-            return invk.Invoke(args, call);
+            return invokable.Invoke(args, call);
         }
     }
 }

@@ -4,10 +4,7 @@ namespace Bloc.Values
 {
     public class Bool : Value
     {
-        internal Bool(bool value)
-        {
-            Value = value;
-        }
+        internal Bool(bool value) => Value = value;
 
         public static Bool False { get; } = new(false);
         public static Bool True { get; } = new(true);
@@ -16,16 +13,19 @@ namespace Bloc.Values
 
         public override ValueType GetType() => ValueType.Bool;
 
-        public override bool Equals(IValue other)
+        public override bool Equals(Value other)
         {
-            if (other.Value is Bool b)
-                return Value == b.Value;
+            if (other is Bool @bool)
+                return Value == @bool.Value;
 
             return false;
         }
 
         public override T Implicit<T>()
         {
+            if (typeof(T) == typeof(Null))
+                return (Null.Value as T)!;
+
             if (typeof(T) == typeof(Bool))
                 return (this as T)!;
 
@@ -38,10 +38,11 @@ namespace Bloc.Values
             throw new Throw($"Cannot implicitly cast bool as {typeof(T).Name.ToLower()}");
         }
 
-        public override IValue Explicit(ValueType type)
+        public override Value Explicit(ValueType type)
         {
             return type switch
             {
+                ValueType.Null => Null.Value,
                 ValueType.Bool => this,
                 ValueType.Number => new Number(Value ? 1 : 0),
                 ValueType.String => new String(ToString()),

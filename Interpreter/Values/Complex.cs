@@ -4,25 +4,27 @@ namespace Bloc.Values
 {
     public class Complex : Value
     {
-        public Complex(object? value)
-        {
-            Value = value;
-        }
+        public Complex() => Value = null;
+
+        public Complex(object? value) => Value = value;
 
         public object? Value { get; }
 
         public override ValueType GetType() => ValueType.Complex;
 
-        public override bool Equals(IValue other)
+        public override bool Equals(Value other)
         {
-            if (other.Value is Complex c)
-                return Value == c.Value;
+            if (other is Complex complex)
+                return Value == complex.Value;
 
             return false;
         }
 
         public override T Implicit<T>()
         {
+            if (typeof(T) == typeof(Null))
+                return (Null.Value as T)!;
+
             if (typeof(T) == typeof(Bool))
                 return (Bool.True as T)!;
 
@@ -35,10 +37,11 @@ namespace Bloc.Values
             throw new Throw($"Cannot implicitly cast complex as {typeof(T).Name.ToLower()}");
         }
 
-        public override IValue Explicit(ValueType type)
+        public override Value Explicit(ValueType type)
         {
             return type switch
             {
+                ValueType.Null => Null.Value,
                 ValueType.Bool => Bool.True,
                 ValueType.String => new String(ToString()),
                 ValueType.Complex => this,

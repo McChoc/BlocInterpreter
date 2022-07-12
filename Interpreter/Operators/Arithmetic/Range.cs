@@ -1,14 +1,15 @@
 ﻿using Bloc.Expressions;
 using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Values;
 
-namespace Bloc.Operators.Arithmetic
+namespace Bloc.Operators
 {
     internal class Range : IExpression
     {
-        private readonly IExpression? _end;
         private readonly IExpression? _start;
+        private readonly IExpression? _end;
         private readonly IExpression? _step;
 
         internal Range(IExpression? start, IExpression? end, IExpression? step)
@@ -18,16 +19,16 @@ namespace Bloc.Operators.Arithmetic
             _step = step;
         }
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
             int? start = null, end = null;
-            var step = 1;
+            int step = 1;
 
             if (_start is not null)
             {
-                var value = _start.Evaluate(call);
+                var value = _start.Evaluate(call).Value;
 
-                if (!value.Value.Is(out Number? number))
+                if (!value.Is(out Number? number))
                     throw new Throw("");
 
                 start = number!.ToInt();
@@ -35,9 +36,9 @@ namespace Bloc.Operators.Arithmetic
 
             if (_end is not null)
             {
-                var value = _end.Evaluate(call);
+                var value = _end.Evaluate(call).Value;
 
-                if (!value.Value.Is(out Number? number))
+                if (!value.Is(out Number? number))
                     throw new Throw("");
 
                 end = number!.ToInt();
@@ -45,9 +46,9 @@ namespace Bloc.Operators.Arithmetic
 
             if (_step is not null)
             {
-                var value = _step.Evaluate(call);
+                var value = _step.Evaluate(call).Value;
 
-                if (!value.Value.Is(out Number? number))
+                if (!value.Is(out Number? number))
                     throw new Throw("");
 
                 step = number!.ToInt();

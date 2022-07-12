@@ -1,8 +1,8 @@
 ﻿using Bloc.Expressions;
 using Bloc.Memory;
-using Bloc.Values;
+using Bloc.Pointers;
 
-namespace Bloc.Operators.Misc
+namespace Bloc.Operators
 {
     internal class Typeof : IExpression
     {
@@ -13,11 +13,11 @@ namespace Bloc.Operators.Misc
             _operand = operand;
         }
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
-            var value = _operand.Evaluate(call);
+            var value = _operand.Evaluate(call).Value;
 
-            return new Values.Type(value.Value.GetType());
+            return new Values.Type(value.GetType());
         }
     }
 }

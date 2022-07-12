@@ -1,18 +1,27 @@
 ﻿using System.Collections.Generic;
-using Bloc.Expressions;
-using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Values;
 
 namespace Bloc.Variables
 {
-    internal abstract class Variable : IValue, IExpression
+    public abstract class Variable : IVariable
     {
-        public List<Reference> References { get; } = new();
+        public Variable(Value value)
+        {
+            Value = value;
+            Pointers = new();
+        }
 
-        public abstract Value Value { get; set; }
+        public Value Value { get; set; }
 
-        IValue IExpression.Evaluate(Call _) => this;
+        internal List<Pointer> Pointers { get; }
 
-        public abstract void Destroy();
+        public virtual void Delete()
+        {
+            foreach (var pointer in Pointers)
+                pointer.Invalidate();
+
+            Value.Destroy();
+        }
     }
 }

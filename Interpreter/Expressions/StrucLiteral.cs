@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Values;
+using Bloc.Variables;
 
 namespace Bloc.Expressions
 {
@@ -13,9 +15,9 @@ namespace Bloc.Expressions
             _lines = lines;
         }
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
-            var values = new Dictionary<string, IValue>();
+            var values = new Dictionary<string, IVariable>(_lines.Count);
 
             foreach (var (key, value) in _lines)
                 values.Add(key, value.Evaluate(call).Value);

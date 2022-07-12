@@ -2,11 +2,13 @@
 using System.Text;
 using Bloc.Expressions;
 using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Utils;
 using Bloc.Values;
+using Bloc.Variables;
 
-namespace Bloc.Operators.Arithmetic
+namespace Bloc.Operators
 {
     internal class Multiplication : IExpression
     {
@@ -19,7 +21,7 @@ namespace Bloc.Operators.Arithmetic
             _right = right;
         }
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
             var left = _left.Evaluate(call);
             var right = _right.Evaluate(call);
@@ -27,7 +29,7 @@ namespace Bloc.Operators.Arithmetic
             return TupleUtil.RecursivelyCall(left, right, Operation);
         }
 
-        internal static IValue Operation(IValue left, IValue right)
+        internal static IPointer Operation(IPointer left, IPointer right)
         {
             if (left.Value.Is(out Number? leftNumber) && right.Value.Is(out Number? rightNumber))
                 return new Number(leftNumber!.Value * rightNumber!.Value);
@@ -38,32 +40,33 @@ namespace Bloc.Operators.Arithmetic
                 if (number!.Value < 0)
                     throw new Throw("You cannot multiply an array by a negative number");
 
-                var list = new List<IValue>();
+                var amount = number.ToInt();
 
-                var amount = number!.ToInt();
+                var list = new List<IVariable>(array!.Values.Count * amount);
 
                 for (var i = 0; i < amount; i++)
-                    list.AddRange(((Array)array!.Copy()).Values);
+                    list.AddRange(((Array)array.Copy()).Values);
 
                 return new Array(list);
             }
 
-            if ((left.Value.Is(out String? str) && right.Value.Is(out number)) || (left.Value.Is(out number) && right.Value.Is(out str)))
+            if ((left.Value.Is(out String? str) && right.Value.Is(out number)) ||
+                (left.Value.Is(out number) && right.Value.Is(out str)))
             {
                 if (number!.Value < 0)
                     throw new Throw("You cannot multiply a string by a negative number");
 
-                var builder = new StringBuilder();
-
                 var amount = number!.ToInt();
 
+                var builder = new StringBuilder(str!.Value.Length * amount);
+
                 for (var i = 0; i < amount; i++)
-                    builder.Append(str!.Value);
+                    builder.Append(str.Value);
 
                 return new String(builder.ToString());
             }
 
-            throw new Throw($"Cannot apply operator '*' on operands of types {left.GetType().ToString().ToLower()} and {right.GetType().ToString().ToLower()}");
+            throw new Throw($"Cannot apply operator '*' on operands of types {left.Value.GetType().ToString().ToLower()} and {right.Value.GetType().ToString().ToLower()}");
         }
     }
 }

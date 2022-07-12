@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Bloc.Expressions;
 using Bloc.Extensions;
-using Bloc.Operators.Bitwise;
+using Bloc.Operators;
 using Bloc.Tokens;
 using Bloc.Utils.Exceptions;
 

@@ -1,8 +1,9 @@
 ﻿using Bloc.Expressions;
 using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Values;
 
-namespace Bloc.Operators.Boolean
+namespace Bloc.Operators
 {
     internal class Conditional : IExpression
     {
@@ -17,13 +18,12 @@ namespace Bloc.Operators.Boolean
             _alternative = alternative;
         }
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
-            var value = _condition.Evaluate(call);
+            var value = _condition.Evaluate(call).Value;
+            var @bool = value.Implicit<Bool>();
 
-            var @bool = value.Value.Implicit<Bool>();
-
-            return @bool!.Value ? _consequent.Evaluate(call) : _alternative.Evaluate(call);
+            return @bool!.Value ? _consequent.Evaluate(call).Value : _alternative.Evaluate(call).Value;
         }
     }
 }

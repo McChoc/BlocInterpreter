@@ -1,10 +1,10 @@
 ﻿using Bloc.Expressions;
 using Bloc.Interfaces;
 using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Results;
-using Bloc.Values;
 
-namespace Bloc.Operators.Primary
+namespace Bloc.Operators
 {
     internal class Indexer : IExpression
     {
@@ -17,16 +17,16 @@ namespace Bloc.Operators.Primary
             _index = index;
         }
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
-            var value = _expression.Evaluate(call);
+            var value = _expression.Evaluate(call).Value;
 
-            if (value.Value is not IIndexable indx)
+            if (value is not IIndexable indexable)
                 throw new Throw("You can only index a string, an array or a struct.");
 
-            value = _index.Evaluate(call);
+            var index = _index.Evaluate(call).Value;
 
-            return indx.Index(value.Value, call);
+            return indexable.Index(index, call);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Bloc.Memory;
 using Bloc.Results;
+using Bloc.Utils;
 
 namespace Bloc.Statements
 {
@@ -11,7 +12,7 @@ namespace Bloc.Statements
         internal override Result? Execute(Call call)
         {
             var loopCount = 0;
-            var labels = GetLabels(Statements);
+            var labels = StatementUtil.GetLabels(Statements);
 
             while (true)
             {
@@ -24,7 +25,7 @@ namespace Bloc.Statements
                 {
                     call.Push();
 
-                    var result = ExecuteBlockInLoop(Statements, labels, call);
+                    var result = ExecuteBlock(Statements, labels, call);
 
                     if (result is Continue)
                         continue;

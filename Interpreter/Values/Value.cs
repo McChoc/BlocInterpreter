@@ -1,20 +1,23 @@
-﻿namespace Bloc.Values
+﻿using Bloc.Pointers;
+using Bloc.Variables;
+
+namespace Bloc.Values
 {
-    public abstract class Value : IValue
+    public abstract class Value : IVariable, IPointer
     {
-        Value IValue.Value => this;
+        Value IVariable.Value => this;
+        Value IPointer.Value => this;
 
         public abstract new ValueType GetType();
 
-        public virtual Value Copy() => this;
-        public virtual void Assign() { }
-        public virtual void Destroy() { }
-        public virtual void Remove(object accessor) { }
+        internal virtual Value Copy() => this;
+        internal virtual void Assign() { }
+        internal virtual void Destroy() { }
 
-        public abstract bool Equals(IValue other);
+        public abstract bool Equals(Value other);
 
+        public abstract Value Explicit(ValueType type);
         public abstract T Implicit<T>() where T : Value;
-        public abstract IValue Explicit(ValueType type);
         public bool Is<T>(out T? value) where T : Value
         {
             try

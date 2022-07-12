@@ -1,10 +1,11 @@
 ﻿using Bloc.Expressions;
 using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Utils;
 using Bloc.Values;
 
-namespace Bloc.Operators.Arithmetic
+namespace Bloc.Operators
 {
     internal class Plus : IExpression
     {
@@ -15,19 +16,19 @@ namespace Bloc.Operators.Arithmetic
             _operand = operand;
         }
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
             var value = _operand.Evaluate(call);
 
             return TupleUtil.RecursivelyCall(value, Operation);
         }
 
-        private static IValue Operation(IValue value)
+        private static IPointer Operation(IPointer value)
         {
             if (value.Value.Is(out Number? number))
                 return new Number(+number!.Value);
 
-            throw new Throw($"Cannot apply operator '+' on type {value.GetType().ToString().ToLower()}");
+            throw new Throw($"Cannot apply operator '+' on type {value.Value.GetType().ToString().ToLower()}");
         }
     }
 }

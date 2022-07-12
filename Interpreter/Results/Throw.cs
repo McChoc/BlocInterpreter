@@ -4,12 +4,12 @@ namespace Bloc.Results
 {
     public class Throw : Result
     {
-        public Value value;
+        public Value Value {  get; }
 
-        public Throw() => value = Void.Value;
+        public Throw() => Value = Void.Value;
 
-        public Throw(Value value) => this.value = value;
+        public Throw(Value value) => Value = value;
 
-        public Throw(string text) => value = new String(text);
+        public Throw(string text) => Value = new String(text);
     }
 }

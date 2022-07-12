@@ -1,17 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bloc.Expressions;
 using Bloc.Extensions;
-using Bloc.Operators.Arithmetic;
-using Bloc.Operators.Bitwise;
-using Bloc.Operators.Boolean;
-using Bloc.Operators.Character;
-using Bloc.Operators.Collection;
-using Bloc.Operators.Misc;
-using Bloc.Operators.Variable;
+using Bloc.Operators;
 using Bloc.Tokens;
 using Bloc.Utils.Exceptions;
-using Nullable = Bloc.Operators.Type.Nullable;
 
 namespace Bloc
 {
@@ -49,7 +41,7 @@ namespace Bloc
                     "await" => new Await(operand),
                     "nameof" => new Nameof(operand),
                     "typeof" => new Typeof(operand),
-                    _ => throw new Exception()
+                    _ => throw new System.Exception()
                 };
             }
 
@@ -64,7 +56,7 @@ namespace Bloc
                     "~~" => new PostComplement(operand),
                     "!!" => new PostNegation(operand),
                     "?" => new Nullable(operand),
-                    _ => throw new Exception()
+                    _ => throw new System.Exception()
                 };
             }
 

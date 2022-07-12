@@ -1,6 +1,5 @@
 ﻿using Bloc.Memory;
-using Bloc.Values;
-using Bloc.Variables;
+using Bloc.Pointers;
 
 namespace Bloc.Expressions
 {
@@ -8,17 +7,8 @@ namespace Bloc.Expressions
     {
         private readonly string _name;
 
-        internal Identifier(string name)
-        {
-            _name = name;
-        }
+        internal Identifier(string name) => _name = name;
 
-        public IValue Evaluate(Call call)
-        {
-            if (call.TryGet(_name, out var variable))
-                return variable!;
-
-            return new UndefinedVariable(_name);
-        }
+        public IPointer Evaluate(Call call) => call.Get(_name);
     }
 }

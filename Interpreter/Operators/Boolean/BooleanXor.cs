@@ -1,10 +1,10 @@
-﻿using System;
-using Bloc.Expressions;
+﻿using Bloc.Expressions;
 using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Values;
 
-namespace Bloc.Operators.Boolean
+namespace Bloc.Operators
 {
     internal class BooleanXor : IExpression
     {
@@ -17,28 +17,25 @@ namespace Bloc.Operators.Boolean
             _right = right;
         }
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
-            var leftValue = _left.Evaluate(call);
+            var leftValue = _left.Evaluate(call).Value;
 
-            if (!leftValue.Value.Is(out Bool? leftBool))
+            if (!leftValue.Is(out Bool? leftBool))
                 throw new Throw("Cannot implicitly convert to bool");
 
-            var rightValue = _right.Evaluate(call);
+            var rightValue = _right.Evaluate(call).Value;
 
-            if (!rightValue.Value.Is(out Bool? rightBool))
+            if (!rightValue.Is(out Bool? rightBool))
                 throw new Throw("Cannot implicitly convert to bool");
 
-            if (leftBool!.Value == rightBool!.Value)
-                return Null.Value;
-
-            if (leftBool.Value)
+            if (leftBool!.Value && !rightBool!.Value)
                 return leftValue;
 
-            if (rightBool.Value)
+            if (!leftBool!.Value && rightBool!.Value)
                 return rightValue;
 
-            throw new Exception();
+            return Null.Value;
         }
     }
 }

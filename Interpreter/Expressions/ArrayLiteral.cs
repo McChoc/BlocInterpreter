@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Values;
+using Bloc.Variables;
 
 namespace Bloc.Expressions
 {
@@ -13,9 +15,9 @@ namespace Bloc.Expressions
             _expressions = expressions;
         }
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
-            var values = new List<IValue>();
+            var values = new List<IVariable>(_expressions.Count);
 
             foreach (var expression in _expressions)
                 values.Add(expression.Evaluate(call).Value);

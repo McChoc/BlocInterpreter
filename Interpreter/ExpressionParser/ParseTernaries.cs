@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Bloc.Expressions;
 using Bloc.Extensions;
-using Bloc.Operators.Boolean;
+using Bloc.Operators;
 using Bloc.Tokens;
 
 namespace Bloc

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Bloc.Commands;
+using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Scanners;
@@ -13,13 +14,10 @@ namespace Bloc
 {
     public class Engine
     {
-        private readonly List<Statement> _statements = new();
-        private Dictionary<string, int> _labels = new();
-
         private Engine()
         {
-            var root = new Call(this);
-            Global = root.Scopes.First();
+            GlobalCall = new Call(this);
+            GlobalScope = GlobalCall.Scopes.First();
         }
 
         internal Dictionary<string, Command> Commands { get; set; } = default!;
@@ -32,23 +30,41 @@ namespace Bloc
         internal int JumpLimit { get; set; }
         internal int HopLimit { get; set; }
 
-        internal Scope Global { get; }
+        public Call GlobalCall { get; }
+        public Scope GlobalScope { get; }
 
-        public Variant<Value, Result>? Execute(string code)
+        public static void Compile(string code, out IExpression? expression, out List<Statement> statements)
         {
-            var statements = StatementScanner.GetStatements(code);
+            statements = StatementScanner.GetStatements(code);
 
-            var start = _statements.Count;
+            if (statements.Count == 1 && statements[0] is ExpressionStatement statement)
+                expression = statement.Expression;
+            else
+                expression = null;
+        }
 
-            _statements.AddRange(statements);
-            _labels = GetLabels(_statements);
-
-            if (statements.Count == 1 && statements[0] is ExpressionStatement expression)
-                return expression.Evaluate(Global.Call!);
-
-            for (var i = start; i < _statements.Count; i++)
+        public Result? Evaluate(IExpression expression, out Value? value)
+        {
+            try
             {
-                var result = _statements[i].Execute(Global.Call!);
+                value = expression.Evaluate(GlobalCall).Value.Copy();
+                return null;
+            }
+            catch (Result result)
+            {
+                value = null;
+                return result;
+            }
+
+        }
+
+        public Result? Execute(List<Statement> statements)
+        {
+            var labels = StatementUtil.GetLabels(statements);
+
+            for (var i = 0; i < statements.Count; i++)
+            {
+                var result = statements[i].Execute(GlobalCall);
 
                 if (result is Throw or Exit)
                     return result;
@@ -61,25 +77,23 @@ namespace Bloc
 
                 if (result is Goto g)
                 {
-                    if (_labels.TryGetValue(g.label, out var index))
-                        i = index - 1;
-                    else
-                        return new Throw($"Label '{g.label}' does not exist in scope.");
+                    if (labels.TryGetValue(g.Label, out var label))
+                    {
+                        label.Count++;
+
+                        if (label.Count > JumpLimit)
+                            return new Throw("The jump limit was reached.");
+
+                        i = label.Index - 1;
+
+                        continue;
+                    }
+
+                    return new Throw($"Label '{g.Label}' does not exist in scope.");
                 }
             }
 
             return null;
-        }
-
-        private static Dictionary<string, int> GetLabels(List<Statement> statements)
-        {
-            var labels = new Dictionary<string, int>();
-
-            for (var i = 0; i < statements.Count; i++)
-                if (statements[i].Label is not null)
-                    labels.Add(statements[i].Label!, i);
-
-            return labels;
         }
 
         public class Builder

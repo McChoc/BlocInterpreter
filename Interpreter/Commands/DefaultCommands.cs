@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using Bloc.Results;
 using Bloc.Values;
-using Bloc.Variables;
 using String = Bloc.Values.String;
 using Void = Bloc.Values.Void;
 
@@ -25,29 +25,31 @@ namespace Bloc.Commands
                 if (args.Length == 0)
                 {
                     if (input is Void)
-                        return new String(
-                            "For more informations on a specific command, type '/help <command>'.\n\n" +
-                            string.Join("\n", call.Engine.Commands.Select(p => p.Value.Name))
-                        );
+                    {
+                        return new String("For more informations on a specific command, type '/help <command>'.\n\n" +
+                            string.Join("\n", call.Engine.Commands.Select(p => p.Value.Name)));
+                    }
 
-                    if (!input.Is(out String? str))
-                        return new String("The input could not be converted to a string.");
+                    if (input.Is(out String? str))
+                    {
+                        if (!call.Engine.Commands.TryGetValue(str!.Value, out var command))
+                            throw new Throw("Unknown command.");
 
-                    if (!call.Engine.Commands.TryGetValue(str!.Value, out var command))
-                        return new String("Unknown command.");
-
-                    return new String(command.Description);
+                        return new String(command.Description);
+                    }
+                        
+                    throw new Throw("The input could not be converted to a string.");
                 }
 
                 if (args.Length == 1)
                 {
                     if (!call.Engine.Commands.TryGetValue(args[0], out var command))
-                        return new String("Unknown command.");
+                        throw new Throw("Unknown command.");
 
                     return new String(command.Description);
                 }
 
-                return new String($"'help' does not take {args.Length} arguments.\nType '/help' to see its usage.");
+                throw new Throw($"'help' does not take {args.Length} arguments.\nType '/help help' to see its usage.");
             }
         );
 
@@ -60,11 +62,8 @@ namespace Bloc.Commands
             {
                 if (args.Length == 0)
                 {
-                    if (input is Void)
-                        return new String("The input was empty.");
-
                     if (!input.Is(out String? str))
-                        return new String("The input could not be converted to a string.");
+                        throw new Throw("The input could not be converted to a string.");
 
                     return str!;
                 }
@@ -72,8 +71,7 @@ namespace Bloc.Commands
                 if (args.Length == 1)
                     return new String(args[0]);
 
-                return new String(
-                    $"'echo' does not take {args.Length} arguments.\nType '/help echo' to see its usage.");
+                throw new Throw($"'echo' does not take {args.Length} arguments.\nType '/help echo' to see its usage.");
             }
         );
 
@@ -84,7 +82,7 @@ namespace Bloc.Commands
             (args, _, call) =>
             {
                 if (args.Length != 0)
-                    return new String("'clear' does not take arguments.\nType '/help clear' to see its usage.");
+                    throw new Throw("'clear' does not take arguments.\nType '/help clear' to see its usage.");
 
                 call.Engine.Clear();
                 return Void.Value;
@@ -100,27 +98,18 @@ namespace Bloc.Commands
             {
                 if (args.Length == 0)
                 {
-                    if (input is Void)
-                        return new String("The input was empty.");
-
                     if (!input.Is(out String? str))
-                        return new String("The input could not be converted to a string.");
+                        throw new Throw("The input could not be converted to a string.");
 
-                    if (!call.TryGet(str!.Value, out var var))
-                        return new String("The variable was not defined.");
-
-                    return var!.Value;
+                    return call.Get(str!.Value).Get();
                 }
 
                 if (args.Length == 1)
                 {
-                    if (!call.TryGet(args[0], out var var))
-                        return new String("The variable was not defined.");
-
-                    return var!.Value;
+                    return call.Get(args[0]).Get();
                 }
 
-                return new String($"'get' does not take {args.Length} arguments.\nType '/help get' to see its usage.");
+                throw new Throw($"'get' does not take {args.Length} arguments.\nType '/help get' to see its usage.");
             }
         );
 
@@ -132,17 +121,17 @@ namespace Bloc.Commands
             (args, input, call) =>
             {
                 if (args.Length == 0)
-                    return new String("'set' does not take 0 arguments.\nType '/help set' to see its usage.");
+                    throw new Throw("'set' does not take 0 arguments.\nType '/help set' to see its usage.");
 
                 if (args.Length == 1)
                 {
                     if (input is Void)
-                        return new String("The input was empty.");
+                        throw new Throw("The input was empty.");
 
                     var name = args[0];
                     var value = input;
 
-                    call.Set(name, new StackVariable(value, name, call.Scopes[^1]));
+                    call.Set(name, value);
 
                     return Void.Value;
                 }
@@ -152,12 +141,12 @@ namespace Bloc.Commands
                     var name = args[0];
                     var value = new String(args[1]);
 
-                    call.Set(name, new StackVariable(value, name, call.Scopes[^1]));
+                    call.Set(name, value);
 
                     return Void.Value;
                 }
 
-                return new String($"'get' does not take {args.Length} arguments.\nType '/help get' to see its usage.");
+                throw new Throw($"'set' does not take {args.Length} arguments.\nType '/help set' to see its usage.");
             }
         );
 
@@ -168,34 +157,17 @@ namespace Bloc.Commands
             (args, _, call) =>
             {
                 if (args.Length == 0)
-                    return new String("'set' does not take 0 arguments.\nType '/help set' to see its usage.");
+                    throw new Throw("'call' does not take 0 arguments.\nType '/help call' to see its usage.");
 
                 var name = args[0];
-                var variables = args[1..].Select(a => new String(a)).ToList<Value>();
+                var values = args[1..].Select(a => new String(a)).ToList<Value>();
 
-                if (!call.TryGet(name, out var var))
-                    return new String("The variable was not defined.");
+                var value = call.Get(name).Get();
 
-                if (!var!.Value.Is(out Function? func))
-                    return new String("The variable could not be converted to a function.");
+                if (!value.Is(out Function? func))
+                    throw new Throw("The variable could not be converted to a function.");
 
-                return func!.Invoke(variables, call).Value;
-            }
-        );
-
-        public static Command DeleteGlobal => new(
-            "delete_global",
-            "delete_global\n" +
-            "Deletes all global variables",
-            (args, _, call) =>
-            {
-                if (args.Length != 0)
-                    return new String("'delete_global' does not take arguments.\nType '/help clear' to see its usage.");
-
-                foreach (var variable in call.Engine.Global.Variables.Values)
-                    variable.Destroy();
-
-                return Void.Value;
+                return func!.Invoke(values, call);
             }
         );
 
@@ -228,7 +200,7 @@ namespace Bloc.Commands
                 if (args.Length == 1)
                 {
                     if (!int.TryParse(args[0], out var max))
-                        return new String($"Cannot parse '{args[0]}' has number.");
+                        throw new Throw($"Cannot parse '{args[0]}' has number.");
 
                     return new Number(rng.Next(max));
                 }
@@ -236,16 +208,15 @@ namespace Bloc.Commands
                 if (args.Length == 2)
                 {
                     if (!int.TryParse(args[0], out var min))
-                        return new String($"Cannot parse '{args[0]}' has number.");
+                        throw new Throw($"Cannot parse '{args[0]}' has number.");
 
                     if (!int.TryParse(args[1], out var max))
-                        return new String($"Cannot parse '{args[1]}' has number.");
+                        throw new Throw($"Cannot parse '{args[1]}' has number.");
 
                     return new Number(rng.Next(min, max));
                 }
 
-                return new String(
-                    $"'random' does not take {args.Length} arguments.\nType '/help random' to see its usage.");
+                throw new Throw($"'random' does not take {args.Length} arguments.\nType '/help random' to see its usage.");
             }
         );
 
@@ -258,7 +229,7 @@ namespace Bloc.Commands
                 if (args.Length == 0)
                     return new String(DateTime.UtcNow.ToString());
 
-                return new String("'time' does not take arguments.\nType '/help time' to see its usage.");
+                throw new Throw("'time' does not take arguments.\nType '/help time' to see its usage.");
             }
         );
 

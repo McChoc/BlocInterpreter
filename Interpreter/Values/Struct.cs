@@ -2,6 +2,7 @@
 using System.Linq;
 using Bloc.Interfaces;
 using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Variables;
 
@@ -9,58 +10,48 @@ namespace Bloc.Values
 {
     public class Struct : Value, IIndexable
     {
-        public Struct(Dictionary<string, IValue> value)
-        {
-            Values = value;
-        }
+        private bool _assigned;
 
-        public static Struct Empty { get; } = new(new());
+        public Struct() => Values = new();
 
-        public Dictionary<string, IValue> Values { get; }
+        public Struct(Dictionary<string, IVariable> value) => Values = value;
+
+        public Dictionary<string, IVariable> Values { get; }
 
         public override ValueType GetType() => ValueType.Struct;
 
-        public IValue Index(Value value, Call _)
+        internal override Value Copy()
         {
-            if (value is not String str)
-                throw new Throw("It should be a string.");
-
-            if (Values.ContainsKey(str.Value))
-                return Values[str.Value];
-
-            throw new Throw($"'{str.Value}' was not defined inside this struct");
+            return new Struct(Values.ToDictionary(p => p.Key, p => (IVariable)p.Value.Value.Copy()));
         }
 
-        public override Value Copy()
+        internal override void Assign()
         {
-            return new Struct(Values.ToDictionary(p => p.Key, p => (IValue)p.Value.Value.Copy()));
-        }
+            _assigned = true;
 
-        public override void Assign()
-        {
             foreach (var key in Values.Keys)
             {
-                Values[key] = new ChildVariable((Value)Values[key], key, this);
+                Values[key] = new StructVariable(key, Values[key].Value, this);
                 Values[key].Value.Assign();
             }
         }
 
-        public override void Destroy()
+        internal override void Destroy()
         {
-            foreach (var value in Values.Values)
-                value.Value.Destroy();
+            foreach (var value in Values.Values.Cast<StructVariable>())
+                value.Delete();
         }
 
-        public override bool Equals(IValue other)
+        public override bool Equals(Value other)
         {
-            if (other.Value is not Struct obj)
+            if (other is not Struct @struct)
                 return false;
 
-            if (Values.Count != obj.Values.Count)
+            if (Values.Count != @struct.Values.Count)
                 return false;
 
             foreach (var key in Values.Keys)
-                if (!Values[key].Value.Equals(obj.Values[key]))
+                if (!Values[key].Value.Equals(@struct.Values[key].Value))
                     return false;
 
             return true;
@@ -68,6 +59,9 @@ namespace Bloc.Values
 
         public override T Implicit<T>()
         {
+            if (typeof(T) == typeof(Null))
+                return (Null.Value as T)!;
+
             if (typeof(T) == typeof(Bool))
                 return (Bool.True as T)!;
 
@@ -80,19 +74,20 @@ namespace Bloc.Values
             throw new Throw($"Cannot implicitly cast struct as {typeof(T).Name.ToLower()}");
         }
 
-        public override IValue Explicit(ValueType type)
+        public override Value Explicit(ValueType type)
         {
             return type switch
             {
+                ValueType.Null => Null.Value,
                 ValueType.Bool => Bool.True,
                 ValueType.String => new String(ToString()),
                 ValueType.Array => new Array(Values.OrderBy(x => x.Key).Select(x =>
-                    new Struct(new Dictionary<string, IValue> {
+                    new Struct(new() {
                         { "key", new String(x.Key) },
                         { "value", x.Value.Value.Copy() }
-                    })).ToList<IValue>()),
+                    })).ToList<IVariable>()),
                 ValueType.Struct => this,
-                ValueType.Tuple => new Tuple(Values.OrderBy(x => x.Key).Select(v => v.Value.Value.Copy()).ToList<IValue>()),
+                ValueType.Tuple => new Tuple(Values.OrderBy(x => x.Key).Select(x => x.Value.Value.Copy()).ToList<IPointer>()),
                 _ => throw new Throw($"Cannot cast struct as {type.ToString().ToLower()}")
             };
         }
@@ -100,19 +95,44 @@ namespace Bloc.Values
         public override string ToString(int depth)
         {
             if (Values.Count == 0)
-                return "struct()";
+                return "{ }";
 
             return "{\n" +
                    string.Join(",\n", Values.OrderBy(x => x.Key).Select(p => new string(' ', (depth + 1) * 4) + p.Key + " = " + p.Value.Value.ToString(depth + 1))) + "\n" +
                    new string(' ', depth * 4) + "}";
         }
 
-        public IValue Get(string identifier)
+        public IPointer Index(Value index, Call _)
         {
-            if (Values.ContainsKey(identifier))
-                return Values[identifier];
+            if (index is not String str)
+                throw new Throw("It should be a string.");
 
-            throw new Throw($"'{identifier}' was not defined inside this struct");
+            if (!Values.ContainsKey(str.Value))
+                throw new Throw($"'{str.Value}' was not defined inside this struct");
+
+            var value = Values[str.Value];
+
+            if (!_assigned)
+                return (Value)value;
+
+            var variable = (Variable)value;
+
+            return new VariablePointer(variable);
+        }
+
+        public IPointer Get(string key)
+        {
+            if (!Values.ContainsKey(key))
+                throw new Throw($"'{key}' was not defined inside this struct");
+
+            var value = Values[key];
+
+            if (!_assigned)
+                return (Value)value;
+
+            var variable = (Variable)value;
+
+            return new VariablePointer(variable);
         }
     }
 }

@@ -1,8 +1,6 @@
 ﻿using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
-using Bloc.Utils;
-using Bloc.Values;
 
 namespace Bloc.Statements
 {
@@ -27,20 +25,6 @@ namespace Bloc.Statements
             }
 
             return null;
-        }
-
-        internal Variant<Value, Result> Evaluate(Call call)
-        {
-            try
-            {
-                var value = Expression.Evaluate(call).Value;
-                value.ToString(); // will throw an exception if a tuple contains an undefined variable
-                return value;
-            }
-            catch (Result result)
-            {
-                return result;
-            }
         }
     }
 }

@@ -10,13 +10,16 @@ namespace Bloc.Values
 
         public override ValueType GetType() => ValueType.Null;
 
-        public override bool Equals(IValue other)
+        public override bool Equals(Value other)
         {
-            return other.Value is Null;
+            return other is Null;
         }
 
         public override T Implicit<T>()
         {
+            if (typeof(T) == typeof(Null))
+                return (this as T)!;
+
             if (typeof(T) == typeof(Bool))
                 return (Bool.False as T)!;
 
@@ -26,10 +29,11 @@ namespace Bloc.Values
             throw new Throw($"Cannot implicitly cast null as {typeof(T).Name.ToLower()}");
         }
 
-        public override IValue Explicit(ValueType type)
+        public override Value Explicit(ValueType type)
         {
             return type switch
             {
+                ValueType.Null => this,
                 ValueType.Bool => Bool.False,
                 ValueType.String => String.Empty,
                 _ => throw new Throw($"Cannot cast null as {type.ToString().ToLower()}")

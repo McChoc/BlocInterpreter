@@ -5,23 +5,17 @@ namespace Bloc.Values
 {
     public class Task : Value
     {
-        internal Task()
-        {
-            Value = System.Threading.Tasks.Task.Run(() => (Value)Void.Value);
-        }
+        internal Task() : this(() => Void.Value) { }
 
-        internal Task(Task<Value> task)
-        {
-            Value = task;
-        }
+        internal Task(System.Func<Value> func) => Value = System.Threading.Tasks.Task.Run(func);
 
         internal Task<Value> Value { get; }
 
         public override ValueType GetType() => ValueType.Task;
 
-        public override bool Equals(IValue other)
+        public override bool Equals(Value other)
         {
-            if (other.Value is not Task task)
+            if (other is not Task task)
                 return false;
 
             if (Value != task.Value)
@@ -32,6 +26,9 @@ namespace Bloc.Values
 
         public override T Implicit<T>()
         {
+            if (typeof(T) == typeof(Null))
+                return (Null.Value as T)!;
+
             if (typeof(T) == typeof(Bool))
                 return (Bool.True as T)!;
 
@@ -44,10 +41,11 @@ namespace Bloc.Values
             throw new Throw($"Cannot implicitly cast task as {typeof(T).Name.ToLower()}");
         }
 
-        public override IValue Explicit(ValueType type)
+        public override Value Explicit(ValueType type)
         {
             return type switch
             {
+                ValueType.Null => Null.Value,
                 ValueType.Bool => Bool.True,
                 ValueType.String => new String(ToString()),
                 ValueType.Task => this,

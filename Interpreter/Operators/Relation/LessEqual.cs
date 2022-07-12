@@ -1,9 +1,10 @@
 ﻿using Bloc.Expressions;
 using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Values;
 
-namespace Bloc.Operators.Relation
+namespace Bloc.Operators
 {
     internal class LessEqual : IExpression
     {
@@ -16,12 +17,12 @@ namespace Bloc.Operators.Relation
             _right = right;
         }
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
-            var leftValue = _left.Evaluate(call);
-            var rightValue = _right.Evaluate(call);
+            var leftValue = _left.Evaluate(call).Value;
+            var rightValue = _right.Evaluate(call).Value;
 
-            if (leftValue.Value.Is(out Number? leftNumber) && rightValue.Value.Is(out Number? rightNumber))
+            if (leftValue.Is(out Number? leftNumber) && rightValue.Is(out Number? rightNumber))
                 return new Bool(leftNumber!.Value <= rightNumber!.Value);
 
             throw new Throw($"Cannot apply operator '<=' on operands of types {leftValue.GetType().ToString().ToLower()} and {rightValue.GetType().ToString().ToLower()}");

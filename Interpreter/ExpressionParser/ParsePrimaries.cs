@@ -2,7 +2,7 @@
 using System.Linq;
 using Bloc.Expressions;
 using Bloc.Extensions;
-using Bloc.Operators.Primary;
+using Bloc.Operators;
 using Bloc.Scanners;
 using Bloc.Tokens;
 using Bloc.Utils.Exceptions;

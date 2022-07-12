@@ -1,9 +1,10 @@
 ﻿using Bloc.Expressions;
 using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Values;
 
-namespace Bloc.Operators.Boolean
+namespace Bloc.Operators
 {
     internal class Negation : IExpression
     {
@@ -14,11 +15,11 @@ namespace Bloc.Operators.Boolean
             _operand = operand;
         }
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
-            var value = _operand.Evaluate(call);
+            var value = _operand.Evaluate(call).Value;
 
-            if (value.Value.Is(out Bool? @bool))
+            if (value.Is(out Bool? @bool))
                 return new Bool(!@bool!.Value);
 
             throw new Throw($"Cannot apply operator '!' on type {value.GetType().ToString().ToLower()}");

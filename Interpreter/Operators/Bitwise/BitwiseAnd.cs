@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bloc.Expressions;
 using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Utils;
 using Bloc.Values;
-using ValueType = Bloc.Values.ValueType;
 
-namespace Bloc.Operators.Bitwise
+namespace Bloc.Operators
 {
     internal class BitwiseAnd : IExpression
     {
@@ -20,7 +19,7 @@ namespace Bloc.Operators.Bitwise
             _right = right;
         }
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
             var left = _left.Evaluate(call);
             var right = _right.Evaluate(call);
@@ -28,7 +27,7 @@ namespace Bloc.Operators.Bitwise
             return TupleUtil.RecursivelyCall(left, right, Operation);
         }
 
-        internal static IValue Operation(IValue left, IValue right)
+        internal static IPointer Operation(IPointer left, IPointer right)
         {
             if (left.Value.Is(out Number? leftNumber) && right.Value.Is(out Number? rightNumber))
                 return new Number(leftNumber!.ToInt() & rightNumber!.ToInt());
@@ -37,14 +36,14 @@ namespace Bloc.Operators.Bitwise
             {
                 var types = new HashSet<ValueType>();
 
-                foreach (ValueType type in Enum.GetValues(typeof(ValueType)))
+                foreach (ValueType type in System.Enum.GetValues(typeof(ValueType)))
                     if (leftType!.Value.Contains(type) && rightType!.Value.Contains(type))
                         types.Add(type);
 
                 return new Values.Type(types);
             }
 
-            throw new Throw($"Cannot apply operator '&' on operands of types {left.GetType().ToString().ToLower()} and {right.GetType().ToString().ToLower()}");
+            throw new Throw($"Cannot apply operator '&' on operands of types {left.Value.GetType().ToString().ToLower()} and {right.Value.GetType().ToString().ToLower()}");
         }
     }
 }

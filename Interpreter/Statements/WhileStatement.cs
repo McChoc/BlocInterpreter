@@ -2,6 +2,7 @@
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
+using Bloc.Utils;
 using Bloc.Values;
 
 namespace Bloc.Statements
@@ -16,57 +17,53 @@ namespace Bloc.Statements
         internal override Result? Execute(Call call)
         {
             var loopCount = 0;
-            var labels = GetLabels(Statements);
+            var labels = StatementUtil.GetLabels(Statements);
 
             while (true)
             {
-                bool loop;
-
                 try
                 {
-                    if (Do && loopCount == 0)
-                    {
-                        loop = true;
-                    }
-                    else
-                    {
-                        var value = Condition.Evaluate(call);
+                    bool loop = true;
 
-                        if (!value.Value.Is(out Bool? @bool))
+                    if (!Do || loopCount != 0)
+                    {
+                        var value = Condition.Evaluate(call).Value;
+
+                        if (!value.Is(out Bool? @bool))
                             return new Throw("Cannot implicitly convert to bool");
 
                         loop = @bool!.Value != Until;
+                    }
+
+                    if (!loop)
+                        break;
+
+                    loopCount++;
+
+                    if (loopCount > call.Engine.LoopLimit)
+                        return new Throw("The loop limit was reached.");
+
+                    try
+                    {
+                        call.Push();
+
+                        var result = ExecuteBlock(Statements, labels, call);
+
+                        if (result is Continue)
+                            continue;
+                        else if (result is Break)
+                            break;
+                        else if (result is not null)
+                            return result;
+                    }
+                    finally
+                    {
+                        call.Pop();
                     }
                 }
                 catch (Result result)
                 {
                     return result;
-                }
-
-                if (!loop)
-                    break;
-
-                loopCount++;
-
-                if (loopCount > call.Engine.LoopLimit)
-                    return new Throw("The loop limit was reached.");
-
-                try
-                {
-                    call.Push();
-
-                    var result = ExecuteBlockInLoop(Statements, labels, call);
-
-                    if (result is Continue)
-                        continue;
-                    else if (result is Break)
-                        break;
-                    else if (result is not null)
-                        return result;
-                }
-                finally
-                {
-                    call.Pop();
                 }
             }
 

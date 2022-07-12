@@ -2,6 +2,7 @@
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
+using Bloc.Utils;
 using Bloc.Values;
 
 namespace Bloc.Statements
@@ -21,7 +22,7 @@ namespace Bloc.Statements
                     return new Throw("Cannot implicitly convert to number");
 
                 var loopCount = number!.ToInt();
-                var labels = GetLabels(Statements);
+                var labels = StatementUtil.GetLabels(Statements);
 
                 for (var i = 0; i < loopCount; i++)
                 {
@@ -32,14 +33,14 @@ namespace Bloc.Statements
                     {
                         call.Push();
 
-                        var r = ExecuteBlockInLoop(Statements, labels, call);
+                        var result = ExecuteBlock(Statements, labels, call);
 
-                        if (r is Continue)
+                        if (result is Continue)
                             continue;
-                        else if (r is Break)
+                        else if (result is Break)
                             break;
-                        else if (r is not null)
-                            return r;
+                        else if (result is not null)
+                            return result;
                     }
                     finally
                     {

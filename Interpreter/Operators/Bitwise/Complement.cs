@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bloc.Expressions;
 using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Utils;
 using Bloc.Values;
-using ValueType = Bloc.Values.ValueType;
 
-namespace Bloc.Operators.Bitwise
+namespace Bloc.Operators
 {
     internal class Complement : IExpression
     {
@@ -18,14 +17,14 @@ namespace Bloc.Operators.Bitwise
             _operand = operand;
         }
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
             var value = _operand.Evaluate(call);
 
             return TupleUtil.RecursivelyCall(value, Operation);
         }
 
-        private static IValue Operation(IValue value)
+        private static IPointer Operation(IPointer value)
         {
             if (value.Value.Is(out Number? number))
                 return new Number(~number!.ToInt());
@@ -34,14 +33,14 @@ namespace Bloc.Operators.Bitwise
             {
                 var types = new HashSet<ValueType>();
 
-                foreach (ValueType t in Enum.GetValues(typeof(ValueType)))
+                foreach (ValueType t in System.Enum.GetValues(typeof(ValueType)))
                     if (!type!.Value.Contains(t))
                         types.Add(t);
 
                 return new Values.Type(types);
             }
 
-            throw new Throw($"Cannot apply operator '~' on type {value.GetType().ToString().ToLower()}");
+            throw new Throw($"Cannot apply operator '~' on type {value.Value.GetType().ToString().ToLower()}");
         }
     }
 }

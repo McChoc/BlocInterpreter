@@ -1,10 +1,10 @@
 ﻿using Bloc.Memory;
-using Bloc.Values;
+using Bloc.Pointers;
 
 namespace Bloc.Expressions
 {
-    internal interface IExpression
+    public interface IExpression
     {
-        IValue Evaluate(Call call);
+        IPointer Evaluate(Call call);
     }
 }

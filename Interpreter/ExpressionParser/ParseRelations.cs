@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using Bloc.Expressions;
 using Bloc.Extensions;
-using Bloc.Operators.Collection;
-using Bloc.Operators.Relation;
-using Bloc.Operators.Type;
+using Bloc.Operators;
 using Bloc.Tokens;
 using Bloc.Utils.Exceptions;
 

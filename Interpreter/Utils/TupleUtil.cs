@@ -1,17 +1,17 @@
 ﻿using System.Linq;
+using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Values;
-using Bloc.Variables;
 
 namespace Bloc.Utils
 {
-    internal delegate IValue UnaryOperation(IValue value);
+    internal delegate IPointer UnaryOperation(IPointer value);
 
-    internal delegate IValue BinaryOperation(IValue left, IValue right);
+    internal delegate IPointer BinaryOperation(IPointer left, IPointer right);
 
     internal static class TupleUtil
     {
-        internal static IValue RecursivelyCall(IValue value, UnaryOperation operation)
+        internal static IPointer RecursivelyCall(IPointer value, UnaryOperation operation)
         {
             if (value.Value is Tuple tuple)
                 return new Tuple(tuple.Values.Select(x => RecursivelyCall(x, operation)).ToList());
@@ -19,7 +19,7 @@ namespace Bloc.Utils
             return operation(value);
         }
 
-        internal static IValue RecursivelyCall(IValue left, IValue right, BinaryOperation operation)
+        internal static IPointer RecursivelyCall(IPointer left, IPointer right, BinaryOperation operation)
         {
             if (left.Value is Tuple leftTuple && right.Value is Tuple rightTuple)
             {
@@ -42,7 +42,7 @@ namespace Bloc.Utils
             return operation(left, right);
         }
 
-        internal static IValue RecursivelyAssign(IValue left, IValue right)
+        internal static IPointer RecursivelyAssign(IPointer left, IPointer right)
         {
             if (left is Tuple leftTuple && right.Value is Tuple rightTuple)
             {
@@ -58,19 +58,7 @@ namespace Bloc.Utils
             return Assign(left, right);
         }
 
-        internal static IValue Assign(IValue left, IValue right)
-        {
-            if (left is not Variable variable)
-                throw new Throw("You cannot assign a value to a literal");
-
-            var value = right.Value.Copy();
-
-            value.Assign();
-            variable.Value.Destroy();
-            return variable.Value = value;
-        }
-
-        internal static IValue RecursivelyCompoundAssign(IValue left, IValue right, BinaryOperation operation)
+        internal static IPointer RecursivelyCompoundAssign(IPointer left, IPointer right, BinaryOperation operation)
         {
             if (left is Tuple leftTuple && right.Value is Tuple rightTuple)
             {
@@ -87,16 +75,24 @@ namespace Bloc.Utils
             return CompoundAssign(left, right, operation);
         }
 
-        private static IValue CompoundAssign(IValue left, IValue right, BinaryOperation operation)
+        private static IPointer Assign(IPointer left, IPointer right)
         {
-            if (left is not Variable variable)
+            if (left is not Pointer pointer)
                 throw new Throw("You cannot assign a value to a literal");
 
-            var value = RecursivelyCall(left, right, operation);
+            var value = right.Value;
 
-            value.Value.Assign();
-            variable.Value.Destroy();
-            return variable.Value = value.Value;
+            return pointer.Set(value);
+        }
+
+        private static IPointer CompoundAssign(IPointer left, IPointer right, BinaryOperation operation)
+        {
+            if (left is not Pointer pointer)
+                throw new Throw("You cannot assign a value to a literal");
+
+            var value = RecursivelyCall(left, right, operation).Value;
+
+            return pointer.Set(value);
         }
     }
 }

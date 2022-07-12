@@ -22,9 +22,9 @@ namespace Bloc.Statements
                 if (_expression is null)
                     return new Return();
 
-                var value = _expression.Evaluate(call);
+                var value = _expression.Evaluate(call).Value;
 
-                return new Return(value.Value);
+                return new Return(value);
             }
             catch (Result result)
             {

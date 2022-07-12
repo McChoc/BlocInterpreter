@@ -4,10 +4,10 @@ namespace Bloc.Results
 {
     public class Exit : Result
     {
-        public Value value;
+        public Value Value { get; }
 
-        public Exit() => value = Void.Value;
+        public Exit() => Value = Void.Value;
 
-        public Exit(Value value) => this.value = value;
+        public Exit(Value value) => Value = value;
     }
 }

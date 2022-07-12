@@ -3,7 +3,7 @@ using Bloc.Expressions;
 using Bloc.Interfaces;
 using Bloc.Memory;
 using Bloc.Results;
-using Bloc.Variables;
+using Bloc.Utils;
 
 namespace Bloc.Statements
 {
@@ -17,15 +17,15 @@ namespace Bloc.Statements
         {
             try
             {
-                var value = Iterable.Evaluate(call);
+                var value = Iterable.Evaluate(call).Value;
 
-                if (value.Value is not IIterable iter)
+                if (value is not IIterable iterable)
                     return new Throw("You can only iterate over a range, a string or an array.");
 
                 var loopCount = 0;
-                var labels = GetLabels(Statements);
+                var labels = StatementUtil.GetLabels(Statements);
 
-                foreach (var item in iter.Iterate())
+                foreach (var item in iterable.Iterate())
                 {
                     loopCount++;
 
@@ -35,17 +35,16 @@ namespace Bloc.Statements
                     try
                     {
                         call.Push();
+                        call.Set(VariableName, item);
 
-                        call.Set(VariableName, new StackVariable(item, VariableName, call.Scopes[^1]));
+                        var result = ExecuteBlock(Statements, labels, call);
 
-                        var r = ExecuteBlockInLoop(Statements, labels, call);
-
-                        if (r is Continue)
+                        if (result is Continue)
                             continue;
-                        else if (r is Break)
+                        else if (result is Break)
                             break;
-                        else if (r is not null)
-                            return r;
+                        else if (result is not null)
+                            return result;
                     }
                     finally
                     {

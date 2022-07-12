@@ -6,6 +6,6 @@ namespace Bloc.Interfaces
 {
     internal interface IInvokable
     {
-        IValue Invoke(List<Value> values, Call call);
+        Value Invoke(List<Value> values, Call call);
     }
 }

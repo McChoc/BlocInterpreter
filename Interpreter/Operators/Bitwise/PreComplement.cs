@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bloc.Expressions;
 using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Utils;
 using Bloc.Values;
-using ValueType = Bloc.Values.ValueType;
 
-namespace Bloc.Operators.Bitwise
+namespace Bloc.Operators
 {
     internal class PreComplement : IExpression
     {
@@ -18,33 +17,33 @@ namespace Bloc.Operators.Bitwise
             _operand = operand;
         }
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
             var value = _operand.Evaluate(call);
 
             return TupleUtil.RecursivelyCall(value, Operation);
         }
 
-        private static IValue Operation(IValue value)
+        private static IPointer Operation(IPointer value)
         {
-            if (value is not Variables.Variable variable)
+            if (value is not Pointer pointer)
                 throw new Throw("The operand of an increment must be a variable");
 
-            if (value.Value.Is(out Number? number))
-                return variable.Value = new Number(~number!.ToInt());
+            if (pointer.Get().Is(out Number? number))
+                return pointer.Set(new Number(~number!.ToInt()));
 
-            if (value.Value.Is(out Values.Type? type))
+            if (pointer.Get().Is(out Values.Type? type))
             {
                 var types = new HashSet<ValueType>();
 
-                foreach (ValueType t in Enum.GetValues(typeof(ValueType)))
+                foreach (ValueType t in System.Enum.GetValues(typeof(ValueType)))
                     if (!type!.Value.Contains(t))
                         types.Add(t);
 
-                return variable.Value = new Values.Type(types);
+                return pointer.Set(new Values.Type(types));
             }
 
-            throw new Throw($"Cannot apply operator '~~' on type {variable.GetType().ToString().ToLower()}");
+            throw new Throw($"Cannot apply operator '~~' on type {pointer.Get().GetType().ToString().ToLower()}");
         }
     }
 }

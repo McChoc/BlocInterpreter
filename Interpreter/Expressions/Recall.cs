@@ -1,10 +1,10 @@
 ﻿using Bloc.Memory;
-using Bloc.Values;
+using Bloc.Pointers;
 
 namespace Bloc.Expressions
 {
     internal class Recall : IExpression
     {
-        public IValue Evaluate(Call call) => call.Recall!;
+        public IPointer Evaluate(Call call) => new VariablePointer(call.Recall!);
     }
 }

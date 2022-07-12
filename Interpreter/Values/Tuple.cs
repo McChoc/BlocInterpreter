@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Variables;
 
@@ -7,39 +8,35 @@ namespace Bloc.Values
 {
     public class Tuple : Value
     {
-        public Tuple(List<IValue> value)
-        {
-            Values = value;
-        }
+        public Tuple() => Values = new();
 
-        public List<IValue> Values { get; }
+        public Tuple(List<IPointer> value) => Values = value;
+
+        public List<IPointer> Values { get; }
 
         public override ValueType GetType() => ValueType.Tuple;
 
-        public override Value Copy()
+        internal override Value Copy()
         {
-            return new Tuple(Values.Select(v => v.Value.Copy()).ToList<IValue>());
+            return new Tuple(Values.Select(v => v.Value.Copy()).ToList<IPointer>());
         }
 
-        public override void Assign()
+        internal override void Assign()
         {
-            for (var i = 0; i < Values.Count; i++)
-            {
-                Values[i] = new ChildVariable(Values[i].Value, null, this);
-                Values[i].Value.Assign();
-            }
+            foreach (var value in Values)
+                value.Value.Assign();
         }
 
-        public override bool Equals(IValue other)
+        public override bool Equals(Value other)
         {
-            if (other.Value is not Tuple tpl)
+            if (other is not Tuple tuple)
                 return false;
 
-            if (Values.Count != tpl.Values.Count)
+            if (Values.Count != tuple.Values.Count)
                 return false;
 
             for (var i = 0; i < Values.Count; i++)
-                if (!Values[i].Value.Equals(tpl.Values[i]))
+                if (!Values[i].Value.Equals(tuple.Values[i].Value))
                     return false;
 
             return true;
@@ -47,6 +44,9 @@ namespace Bloc.Values
 
         public override T Implicit<T>()
         {
+            if (typeof(T) == typeof(Null))
+                return (Null.Value as T)!;
+
             if (typeof(T) == typeof(Bool))
             {
                 foreach (var variable in Values)
@@ -65,16 +65,16 @@ namespace Bloc.Values
             throw new Throw($"Cannot implicitly cast tuple as {typeof(T).Name.ToLower()}");
         }
 
-        public override IValue Explicit(ValueType type)
+        public override Value Explicit(ValueType type)
         {
             if (type == ValueType.Bool)
             {
                 foreach (var variable in Values)
                 {
-                    var result = variable.Value.Explicit(ValueType.Bool);
+                    var value = variable.Value.Explicit(ValueType.Bool);
 
-                    if (result is not IValue v || !((Bool)v.Value).Value)
-                        return result;
+                    if (!((Bool)value).Value)
+                        return Bool.False;
                 }
 
                 return Bool.True;
@@ -82,8 +82,9 @@ namespace Bloc.Values
 
             return type switch
             {
+                ValueType.Null => Null.Value,
                 ValueType.String => new String(ToString()),
-                ValueType.Array => new Array(Values.Select(v => v.Value.Copy()).ToList<IValue>()),
+                ValueType.Array => new Array(Values.Select(v => v.Value.Copy()).ToList<IVariable>()),
                 ValueType.Tuple => this,
                 _ => throw new Throw($"Cannot cast tuple as {type.ToString().ToLower()}")
             };

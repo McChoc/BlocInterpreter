@@ -1,10 +1,10 @@
 ﻿using Bloc.Memory;
-using Bloc.Values;
+using Bloc.Pointers;
 
 namespace Bloc.Expressions
 {
     internal class Params : IExpression
     {
-        public IValue Evaluate(Call call) => call.Params!;
+        public IPointer Evaluate(Call call) => new VariablePointer(call.Params!);
     }
 }

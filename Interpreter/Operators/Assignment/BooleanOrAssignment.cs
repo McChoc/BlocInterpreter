@@ -1,10 +1,10 @@
 ﻿using Bloc.Expressions;
 using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Values;
-using Bloc.Variables;
 
-namespace Bloc.Operators.Assignment
+namespace Bloc.Operators
 {
     internal class BooleanOrAssignment : IExpression
     {
@@ -17,24 +17,22 @@ namespace Bloc.Operators.Assignment
             _right = right;
         }
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
             var value = _left.Evaluate(call);
 
-            if (value is not Variables.Variable variable)
+            if (value is not Pointer pointer)
                 throw new Throw("You cannot assign a value to a literal");
 
-            if (!value.Value.Is(out Bool? @bool))
+            if (!pointer.Get().Is(out Bool? @bool))
                 throw new Throw("Cannot implicitly convert to bool");
 
             if (@bool!.Value)
                 return value.Value;
 
-            value = _right.Evaluate(call).Value;
+            value = _right.Evaluate(call);
 
-            value.Value.Assign();
-            variable.Value.Destroy();
-            return variable.Value = value.Value;
+            return pointer.Set(value.Value);
         }
     }
 }

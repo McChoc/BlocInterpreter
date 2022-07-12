@@ -3,21 +3,24 @@ using Bloc.Variables;
 
 namespace Bloc.Memory
 {
-    internal class Scope
+    public class Scope
     {
-        internal Scope(Call? call)
+        public Dictionary<string, StackVariable> Variables { get; } = new();
+
+        internal Scope Copy()
         {
-            Call = call;
+            var scope = new Scope();
+
+            foreach (var (key, value) in Variables)
+                scope.Variables[key] = new(key, value.Value.Copy(), scope);
+
+            return scope;
         }
-
-        internal Call? Call { get; }
-
-        internal Dictionary<string, Variable> Variables { get; } = new();
 
         internal void Destroy()
         {
             foreach (var variable in Variables.Values)
-                variable.Destroy();
+                variable.Delete();
         }
     }
 }

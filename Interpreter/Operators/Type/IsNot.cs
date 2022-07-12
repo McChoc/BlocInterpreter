@@ -1,9 +1,10 @@
 ﻿using Bloc.Expressions;
 using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Values;
 
-namespace Bloc.Operators.Type
+namespace Bloc.Operators
 {
     internal class IsNot : IExpression
     {
@@ -16,13 +17,13 @@ namespace Bloc.Operators.Type
             _right = right;
         }
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
-            var leftValue = _left.Evaluate(call);
-            var rightValue = _right.Evaluate(call);
+            var leftValue = _left.Evaluate(call).Value;
+            var rightValue = _right.Evaluate(call).Value;
 
-            if (rightValue.Value.Is(out Values.Type? type))
-                return new Bool(!type!.Value.Contains(leftValue.Value.GetType()));
+            if (rightValue.Is(out Type? type))
+                return new Bool(!type!.Value.Contains(leftValue.GetType()));
 
             throw new Throw($"Cannot apply operator 'is not' on operands of types {leftValue.GetType().ToString().ToLower()} and {rightValue.GetType().ToString().ToLower()}");
         }

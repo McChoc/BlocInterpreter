@@ -6,9 +6,13 @@ namespace Bloc.Values
 {
     public class Range : Value, IIterable
     {
+        public Range() : this(null, null) { }
+
         public Range(int? start, int? end, int step = 1)
         {
-            (Start, End, Step) = (start, end, step);
+            Start = start;
+            End = end;
+            Step = step;
         }
 
         public int? Start { get; }
@@ -17,32 +21,18 @@ namespace Bloc.Values
 
         public override ValueType GetType() => ValueType.Range;
 
-        public IEnumerable<Value> Iterate()
+        public override bool Equals(Value other)
         {
-            double start = Start ?? (Step >= 0 ? 0 : -1);
-            var end = End ?? (Step >= 0 ? double.PositiveInfinity : double.NegativeInfinity);
-
-            if (Step > 0)
-                for (var i = start; i < end; i += Step)
-                    yield return new Number(i);
-
-            if (Step < 0)
-                for (var i = start; i > end; i += Step)
-                    yield return new Number(i);
-        }
-
-        public override bool Equals(IValue other)
-        {
-            if (other.Value is not Range rng)
+            if (other is not Range range)
                 return false;
 
-            if (Start != rng.Start)
+            if (Start != range.Start)
                 return false;
 
-            if (End != rng.End)
+            if (End != range.End)
                 return false;
 
-            if (Step != rng.Step)
+            if (Step != range.Step)
                 return false;
 
             return true;
@@ -50,6 +40,9 @@ namespace Bloc.Values
 
         public override T Implicit<T>()
         {
+            if (typeof(T) == typeof(Null))
+                return (Null.Value as T)!;
+
             if (typeof(T) == typeof(Bool))
                 return (Bool.True as T)!;
 
@@ -62,10 +55,11 @@ namespace Bloc.Values
             throw new Throw($"Cannot implicitly cast range as {typeof(T).Name.ToLower()}");
         }
 
-        public override IValue Explicit(ValueType type)
+        public override Value Explicit(ValueType type)
         {
             return type switch
             {
+                ValueType.Null => Null.Value,
                 ValueType.Bool => Bool.True,
                 ValueType.Range => this,
                 ValueType.String => new String(ToString()),
@@ -76,6 +70,15 @@ namespace Bloc.Values
         public override string ToString(int _)
         {
             return $"{Start}..{End}{(Step != 1 ? $"..{Step}" : "")}";
+        }
+
+        public IEnumerable<Value> Iterate()
+        {
+            double start = Start ?? (Step >= 0 ? 0 : -1);
+            double end = End ?? (Step >= 0 ? double.PositiveInfinity : double.NegativeInfinity);
+
+            for (var i = start; i * Step < end * Step; i += Step)
+                yield return new Number(i);
         }
     }
 }

@@ -40,7 +40,7 @@ You can use the `void` literal to create an instance of type void. It cannot be 
 
 ```csharp
 # The 3 functions return void
-var void_1 = () { }; 
+var void_1 = () { };
 
 var void_2 = () {
     return;
@@ -51,8 +51,6 @@ var void_3 = () {
 }; 
 
 var foo = void; # throws an exception
-
-typeof void; # evaluates to void
 ```
 
 ---
@@ -63,11 +61,9 @@ You can use the `null` literal to create an instance of type null. This is used 
 
 ```csharp
 # Both variables have a value of null
-var foo; 
+var foo;
 
-var bar = null; 
-
-typeof null; # evaluates to null
+var bar = null;
 ```
 
 ---
@@ -77,13 +73,13 @@ typeof null; # evaluates to null
 You can use the `true` and `false` literals to create an instance of type bool. They represent a boolean value and are mainly used as conditions inside `if` statements and loops.
 
 ```csharp
-var condition = true; 
+# outputs 'Hello world'
+if (true)
+    /echo 'Hello world';  
 
-if (condition)
+# does nothing
+if (false)
     /echo 'Hello world'; 
-
-typeof true;    # evaluates to bool
-typeof false;   # evaluates to bool
 ```
 
 ---
@@ -93,7 +89,7 @@ typeof false;   # evaluates to bool
 A number is used to represent both integers and floating-point numbers. To create an integer, you can simply write a decimal number with digits from 0 to 9 or you can prefix it with `0b`, `0o` or `0x` to write a number in binary, octal or hexadecimal respectively. To create a floating point number, you can simply add a dot `.` to separate its integral and fractional parts. Floating point numbers have to be decimal, but you can use the scientific notation by adding an `e` and an exponent. Both integers and floating-point literals can contain any number of underscores `_` to separate digits. You can also use the `infinity` and `nan` literals to create a number.
 
 ```csharp
-# they all represent the same number
+# the 4 numbers represent the same number
 42; 
 0b_0010_1010; 
 0o52; 
@@ -101,10 +97,6 @@ A number is used to represent both integers and floating-point numbers. To creat
 
 3.141_592_654; 
 0.42E-2; 
-
-typeof nan;         # evaluates to number
-typeof infinity;    # evaluates to number
-typeof -infinity;   # evaluates to number
 ```
 
 ---
@@ -119,9 +111,7 @@ arr[..2];   # evaluates to { 1, 2 }
 
 # outputs the numbers from 0 to 9
 for (i in ..10) 
-    /echo $i; 
-
-typeof(..); # evaluates to range
+    /echo $i;
 ```
 
 ---
@@ -214,7 +204,7 @@ var emptyArray = array();
 
 #### Struct
 
-A struct is used to represent a set of key-value pairs. You can create one by putting a list of coma `,` separated key-value pairs  inside braces `{}`. A key-value pair is formed by a name, the equal symbol `=` and a value. The values can be of any type and the keys have to be valid variable names. You are allowed to leave a trailing comma `,` after the last key-value pair. You cannot make an empty struct literal because it would be ambiguous with an empty [array](#array). If you want to create an empty struct, use the default constructor for `struct`.
+A struct is used to represent a set of key-value pairs. You can create one by putting a list of coma `,` separated key-value pairs  inside braces `{}`. A key-value pair is formed by a name, the equal symbol `=` and a value. The values can be of any type and the names have to be valid variable names. You are allowed to leave a trailing comma `,` after the last key-value pair. You cannot make an empty struct literal because it would be ambiguous with an empty [array](#array). If you want to create an empty struct, use the default constructor for `struct`.
 
 ```csharp
 var myStruct = {
@@ -255,7 +245,7 @@ With the first syntax, you have to put a pair of parentheses `()` next to a pair
 
 ```csharp
 var print = (text) {
-    /echo $text;
+    /echo `{text}`;
 }; 
 ```
 
@@ -267,7 +257,7 @@ var add = (a, b) => a + b;
 var toString = x => x as string; 
 ```
 
-Both syntax can be used to create asynchronous function by prefixing them with the `async` keyword. Asynchronous functions allow you to run multiple functions at the same time. When calling an asynchronous function, it instantly returns a [task](#task) and starts executing its body in the background. The task returned can be used to retrieve the result of the function later. If the function throws an exception, the exception will be stored inside the task.
+Both syntax can be used to create asynchronous function by prefixing them with the `async` keyword. Asynchronous functions allow you to run multiple functions at the same time. When calling an asynchronous function, it immediately returns a [task](#task) and starts executing its body in the background. The task returned can be used to retrieve the result of the function later. If the function throws an exception, the exception will be stored inside the task.
 
 ```csharp
 var foo = async () {
@@ -286,7 +276,7 @@ var bar = async () => await foo();
 
 #### Task
 
-Tasks cannot be directly created, they are returned by [asynchronous functions](#function) and can be used to wait for the function to finish and to retreive the result of the function using the [await operator](#await-operator-await).
+Tasks are returned by [asynchronous functions](#function) and can be used to wait for the function to finish and to retreive the result of the function using the [await operator](#await-operator-await).
 
 ```csharp
 var myAsyncFunc = async () {
@@ -319,13 +309,13 @@ var ref2 = new { 1, 2 };    # ref2 is a reference to an array stored on the heap
 
 #### Complex
 
-Complexes cannot be directly created. They are returned by some command and are essentially references to objects that live outside of Bloc. You cannot modify them in any way, you can only store them and pass them to another command.
+Complexes are returned by some command and are essentially references to objects that live outside of Bloc. You cannot modify them in any way, you can only store them and pass them to another command.
 
 ---
 
 #### Type
 
-You can create a type by using any of the following literals : `bool`,  `number`,  `range`,  `string`,  `array`,  `struct`,  `tuple`,  `function`,  `reference`,  `complex`,  `type` and  `any`. You can also use the `typeof` operator to get the type of a value. You have to use the `typeof` operator to get the void or null type since they don't have literals. Types can be used to check if a value is of a certain type with the `is` or `is not` operator. Types can be combined into composit types using bitwise operators or the [nullable type operator](#nullable-type-operator) `?`. This allows you to check if a value is of any of the types within a composite type. `any` is the composite type of every types. Types can also be used to cast a value from its type to another with the `as` operator. A value cannot be cast to a composite type.
+You can create a type by using any of the following literals : `bool`,  `number`,  `range`,  `string`,  `array`,  `struct`,  `tuple`,  `function`,  `reference`,  `complex` and  `type`. You can also use the `typeof` operator to get the type of a value. You have to use the `typeof` operator to get the void or null type since they don't have literals. Types can be used to check if a value is of a certain type with the `is` or `is not` operator. Types can be combined into composit types using bitwise operators or the [nullable type operator](#nullable-type-operator) `?`. This allows you to check if a value is of any of the types within a composite type. Types can also be used to cast a value from its type to another with the `as` operator. A value cannot be cast to a composite type.
 
 ```csharp
 0 is number;            # evaluates to true
@@ -342,7 +332,7 @@ true as (number | string) # throws an exception
 
 Variables allow you to store values in memory to use later. Values can be stored either on the stack or the heap.
 
-To store a value on the stack, you have to use a `var` statement or the `let` operator. Variables stored on the stack can be accessed by their name but are automatically deleted once you get out of the scope in which they were declared. A variable name can contain both lower and upper-case characters, digits, underscores `_` and any special character except for these : ```!"#$%&'()*+,-./:;<=>?@[\]^`{|}~```. A variable name cannot contain white spaces and cannot start with a digit.
+To store a value on the stack, you have to use a `var` statement or the `let` operator. Variables stored on the stack can be accessed by their name and are automatically deleted once you get out of the scope in which they were declared. A variable name can contain both lower and upper-case characters, digits, underscores `_` and any special character except for these : ```!"#$%&'()*+,-./:;<=>?@[\]^`{|}~```. A variable name cannot contain white spaces and cannot start with a digit.
 
 ```csharp
 # declaring a variable with the let operator
@@ -394,6 +384,17 @@ var bar = 42;
 
 $bar; # evaluates to 42
 ```
+
+Both variables stored on the stack or the heap can be manually deleted using the `delete` operator.
+
+```csharp
+var foo; 
+delete foo; # The variable foo no longer exists
+
+var bar = new { 1, 2, 3 }; 
+delete val bar; # The variable bar contains an invalid reference
+```
+
 ---
 
 ### Access keywords
@@ -474,37 +475,37 @@ Note that the operands don't need to be exactly the type specified in a certain 
 
 If both its operands are [numbers](#number), it will compute the sum of its operands.
 
-```csharp
+```python
 5 + 4.6; # evaluates to 9.6
 ```
 
 If both its operands are [structs](#struct), it will add all the members of the right struct to the left one
 
-```csharp
+```python
 ({ a = 1, b = 2 } + { a = 10, c = 3 }); # evaluates to { a = 10, b = 2, c = 3 }
 ```
 
 If both its operands are [arrays](#array), it will concatenate them.
 
-```csharp
+```python
 ({ 4, 4 } + { 2, 7 }); # evaluates to { 4, 4, 2, 7 }
 ```
 
 If its left operand is an [array](#array), but the right one is not, it will append the right operand to the [array](#array).
 
-```csharp
+```python
 ({ 2, 5 } + 2); # evaluates to { 2, 5, 2 }
 ```
 
 If its right operand is an [array](#array), but the left one is not, it will prepend the left operand to the [array](#array).
 
-```csharp
+```python
 2 + { 3, 8 }; # evaluates to { 2, 3, 8 }
 ```
 
 If both its operands are [strings](#string), it will concatenate them.
 
-```csharp
+```python
 'fizz' + 'buzz'; # evaluates to 'fizzbuzz'
 ```
 
@@ -516,7 +517,7 @@ Note that [string interpolation]() provides a more convenient way to format stri
 
 If both its operands are [numbers](#number), it will subtract its right operand from its left operand.
 
-```csharp
+```python
 5 - 3;      # evaluates to 2
 7 - 5.8;    # evaluates to 1.2
 5 - 9;      # evaluates to -4
@@ -528,22 +529,22 @@ If both its operands are [numbers](#number), it will subtract its right operand 
 
 If both its operands are [numbers](#number), it will compute the product of its operands.
 
-```csharp
+```python
 2 * 8.6; # evaluates to 17.2
 ```
 
 If one of its operands is an [array](#array) and the other is a [number](#number), it will concatenate an empty array with the given array a number of times equivalent to the floor of the given number.
 
-```csharp
+```python
 ({ 1, 2 } * 3);     # evaluates to { 1, 2, 1, 2, 1, 2 }
-({ 1, 2 } * 0);     # evaluates to array()
+({ 1, 2 } * 0);     # evaluates to { }
 ({ 1, 2 } * 1.9);   # evaluates to { 1, 2 }
 ({ 1, 2 } * -2);    # throws an exception
 ```
 
 If one of its operands is a [string](#string) and the other is a [number](#number), it will concatenate an empty string with the given string a number of times equivalent to the floor of the given number.
 
-```csharp
+```python
 'ab' * 3;   # evaluates to 'ababab'
 'ab' * 0;   # evaluates to ''
 'ab' * 1.9; # evaluates to 'ab'
@@ -556,7 +557,7 @@ If one of its operands is a [string](#string) and the other is a [number](#numbe
 
 If both its operands are [numbers](#number), it will divide its left operand by its right operand. Dividing a positive number by zero will return `infinity`, dividing a negative number by zero will return `-infinity` and dividing zero by zero will return `nan`.
 
-```csharp
+```python
 6 / 4;  # evaluates to 1.5
 1 / 0;  # evaluates to infinity
 -1 / 0; # evaluates to -infinity
@@ -571,7 +572,7 @@ The `/` can also be used to make a [command statement]().
 
 If both its operands are [numbers](#number), it will compute the remainder after dividing its left operand by its right operand. Even though it is similar, this **is not** a modulus operator. It can be used as a modulus operator as long as its operands are positive, but with negative values the result will not be the same.
 
-```csharp
+```python
 8 % 3;      # evaluates to 2
 8.4 % 1;    # evaluates to 0.4
 ```
@@ -582,7 +583,7 @@ If both its operands are [numbers](#number), it will compute the remainder after
 
 If both its operands are [numbers](#number), it will raise its left operand to the power of its right operand.
 
-```csharp
+```python
 5 ** 4;     # evaluates to 625
 10 ** -1;   # evaluates to 0.1
 25 ** 0.5;  # evaluates to 5
@@ -594,7 +595,7 @@ If both its operands are [numbers](#number), it will raise its left operand to t
 
 If both its operands are [numbers](#number), it will compute the n^th^ root of its left operand, where n is the value of its right operand.
 
-```csharp
+```python
 25 // 2; # evaluates to 5 (the square root of 25)
 ```
 
@@ -604,7 +605,7 @@ If both its operands are [numbers](#number), it will compute the n^th^ root of i
 
 If both its operands are [numbers](#number), it will compute the logarithm of its left operand with its right operand as the base.
 
-```csharp
+```python
 100 %% 10; # evaluates to 2 (the logarithm base 10 of 100)
 ```
 
@@ -614,7 +615,7 @@ If both its operands are [numbers](#number), it will compute the logarithm of it
 
 If its operand is a [number](#number), it will return the value of that number. It can be used to [implicitly convert]() a value to a [number](#number).
 
-```csharp
+```python
 +4;     # evaluates to 4
 +true;  # evaluates to 1
 ```
@@ -625,7 +626,7 @@ If its operand is a [number](#number), it will return the value of that number. 
 
 If its operand is a [number](#number), it will compute the numeric negation of its operand.
 
-```csharp
+```python
 -4;     # evaluates to -4
 - -4;   # evaluates to 4
 ```
@@ -719,10 +720,7 @@ result = operand(true, 'left evaluated') || operand(true, 'right evaluated');
 # left evaluated
 # true
 
-var foo = null; 
-var bar = {
-    a = 2
-}; 
+var foo, bar = { a = 2 }; 
 
 result = foo || bar; 
 /echo $result; 
@@ -1131,7 +1129,7 @@ var bar = {
 bar[0][1]; # evaluates to 2
 ```
 
-If used on an [array](#array) with a [range](#range) as the parameter, it returns an array containing a slice of the original array. If the slice goes outside the bounds of the array, an exception is thrown.
+If used on an [array](#array) with a [range](#range) as the parameter, it returns a slice of the array. If the slice goes outside the bounds of the array, an exception is thrown.
 
 ```csharp
 var foo = { 'a', 'b', 'c', 'd', 'e' }; 
@@ -1238,7 +1236,7 @@ This operator has three operands : the condition, the consequent and the alterna
 
 ```csharp
 var print = (text) {
-    /echo $text;
+    /echo `{text}`;
 }; 
 
 var temperature; 
@@ -1346,7 +1344,7 @@ This operator can also be used with composite types. In which case, it returns `
 2 is (bool | string); # evaluates to false
 
 # this produces the same result without using the is operator
-(typeof 2 & (bool | string)) != ~any; 
+(typeof 2 & (bool | string)) != type(); 
 ```
 
 ---
@@ -1447,14 +1445,14 @@ val foo; # throws an exception
 
 #### Reference operator `ref`
 
-This operator returns a reference to its operand. Its operand has to be a variable.
+This operator returns a reference to its operand. Its operand can be a variable, an element of an array or struct or a slice of an array.
 
 ```csharp
-var foo = 2; 
-var bar = ref foo; # bar is a reference
+var foo = { 1, 2, 3, 4, 5 };
 
-val bar;        # evaluates to 2
-nameof val bar; # evaluates to 'foo'
+var bar = ref foo;      # bar is a reference to the variable foo
+
+var baz = ref foo[..2]; # baz is a reference to a slice of foo
 ```
 
 ---
@@ -1512,7 +1510,7 @@ var foo = new {
 
 #### Delete operator `delete`
 
-The delete operator allows you to delete variable previously declared. Its operand can be a variable or a tuple of variables and it will return the value stored in the deleted variables. You can also delete heap variables by combining it with the [val operator](#value-operator-val). You cannot delete elements of an array or struct.
+The delete operator allows you to delete variable previously declared. Its operand can be a variable or a tuple of variables and it will return the value stored in the deleted variables. You can delete heap variables by combining it with the [val operator](#value-operator-val) and you can also delete elements of an array or struct.
 
 ```csharp
 var foo; 
@@ -1522,7 +1520,17 @@ var bar = new { 1, 2, 3 };
 delete val bar; # The variable bar contains an invalid reference
 
 var a, b, c; 
-delete (a, b, c); 
+delete (a, b, c); # Deleting multiple variables using a tuple
+
+var myStruct = {
+    a = 2,
+    b = 5
+};
+delete myStruct.b;
+
+var myArray = { 1, 2, 3, 4, 5 };
+delete myArray[..2];
+myArray; # evaluates to { 3, 4, 5 }
 ```
 
 ---
@@ -1541,11 +1549,11 @@ var addAsync = async (a, b) {
 
 var task1 = addAsync(1, 2); 
 
-await task1(); # evaluates to 3
+await task1; # evaluates to 3
 
 var task2 = addAsync("", ""); # no exception is thrown 
 
-await task2();  # throws the exception
+await task2;  # throws the exception
 ```
 
 ---
@@ -1610,7 +1618,7 @@ Some statements require an embedded statement. This statement can either be a si
 ```csharp
 if (true) {
     var foo = 'Hello world'; 
-    /echo $foo; 
+    /echo `{foo}`; 
 }
 
 if (true)
@@ -1636,7 +1644,7 @@ var print;
 
 # Expression statement assigning a function to a variable
 print = (text) {
-    /echo &text;
+    /echo `{text}`;
 }; 
 
 # Expression statement invoking a function
@@ -1720,19 +1728,6 @@ if (temperature < 25)
     /echo 'cold'; 
 else
     /echo 'hot'; 
-
-var character = 'A'; 
-
-# 3 nested if..else statements
-if (ord character in (ord 'A')..(ord 'Z' + 1)) {
-    /echo 'uppercase letter'; 
-} else if (ord character in (ord 'a')..(ord 'z' + 1)) {
-    /echo 'lowercase letter'; 
-} else if (ord character in (ord '0')..(ord '9' + 1)) {
-    /echo 'digit'; 
-} else {
-    /echo 'symbol'; 
-}
 ```
 
 ---
@@ -1768,7 +1763,7 @@ var j = 5;
 do { # executed once
     /echo $j;
     j++;
-} until (j == 5); 
+} until (j >= 5); 
 ```
 
 ---
@@ -1840,8 +1835,8 @@ while (true);
 The try statement allows you to execute an operation and catch any exceptions that could be thrown. It consists of the `try` keyword and an embedded statement. It starts by trying to execute its embedded statement. If an exception is thrown, it catches it and the program resumes its execution after the try statement.
 
 ```csharp
-# trys to declare variable foo
-try let foo = { 1, 2, 3 }; 
+# trys to delete variable foo
+try delete foo; 
 ```
 
 You can add the `catch` keyword and another embedded statement which will be executed only if an exception is thrown. Between the `catch` keyword and its embedded statement, you can optionally add parentheses `()` containing an identifier. This identifier can then be used to retrieve the exception thrown from the catch's embedded statement.
@@ -1895,30 +1890,32 @@ The lock statement allows you to lock variables, so that other asynchronous func
 ```csharp
 var (input, output) = array(); 
 
+var _input = ref input;
+var _output = ref output;
+
 var workerThread = async () {
     while (true) {
         var value;
 
-        lock (input) {
-            if (len input == 0)
+        lock (val _input) {
+            if (len _input == 0)
                 continue;
 
-            value = intput[^1];
-            input = input[..^1];
+            value = _input[-1];
+            val _input = _input[..-1];
         }
 
         # process the value;
 
-        lock (output)
-            output += value;
+        lock (val _output)
+            val _output += value;
     }
 }; 
 
-repeat(5)
-    workerThread(); 
+input = { 1, 2, 3, 4, 5 };
 
-lock (input)
-    input = { 1, 2, 3, 4, 5 }; 
+repeat(5)
+    workerThread();
 
 # 5 worker threads are now processing the data
 ```
@@ -1952,7 +1949,7 @@ The break statement allows you to end an entire loop.
 ```csharp
 for (i in ..5) {
     if (i == 2)
-        continue;
+        break;
 
     /echo $i;
 }
@@ -1980,7 +1977,7 @@ var add = (a, b) {
 The exit statement allows you to end the execution of the entire program and specify the value it should return.
 
 ```csharp
-var stopProgramm = () {
+var stopProgram = () {
     # clean up
     exit 0;
 }; 

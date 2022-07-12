@@ -1,4 +1,5 @@
 ﻿using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Values;
 
 namespace Bloc.Expressions
@@ -7,11 +8,8 @@ namespace Bloc.Expressions
     {
         private readonly bool _bool;
 
-        internal BoolLiteral(bool @bool)
-        {
-            _bool = @bool;
-        }
+        internal BoolLiteral(bool @bool) => _bool = @bool;
 
-        public IValue Evaluate(Call _) => _bool ? Bool.True : Bool.False;
+        public IPointer Evaluate(Call _) => _bool ? Bool.True : Bool.False;
     }
 }

@@ -1,10 +1,11 @@
 ﻿using Bloc.Expressions;
 using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Utils;
 using Bloc.Values;
 
-namespace Bloc.Operators.Bitwise
+namespace Bloc.Operators
 {
     internal class LeftShift : IExpression
     {
@@ -17,7 +18,7 @@ namespace Bloc.Operators.Bitwise
             _right = right;
         }
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
             var leftValue = _left.Evaluate(call);
             var rightValue = _right.Evaluate(call);
@@ -25,12 +26,12 @@ namespace Bloc.Operators.Bitwise
             return TupleUtil.RecursivelyCall(leftValue, rightValue, Operation);
         }
 
-        internal static IValue Operation(IValue left, IValue right)
+        internal static IPointer Operation(IPointer left, IPointer right)
         {
             if (left.Value.Is(out Number? leftNumber) && right.Value.Is(out Number? rightNumber))
                 return new Number(leftNumber!.ToInt() << rightNumber!.ToInt());
 
-            throw new Throw($"Cannot apply operator '<<' on operands of types {left.GetType().ToString().ToLower()} and {right.GetType().ToString().ToLower()}");
+            throw new Throw($"Cannot apply operator '<<' on operands of types {left.Value.GetType().ToString().ToLower()} and {right.Value.GetType().ToString().ToLower()}");
         }
     }
 }

@@ -1,10 +1,11 @@
 ﻿using System;
 using Bloc.Expressions;
 using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Values;
 
-namespace Bloc.Operators.Misc
+namespace Bloc.Operators
 {
     internal class Await : IExpression
     {
@@ -15,11 +16,11 @@ namespace Bloc.Operators.Misc
             _operand = operand;
         }
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
-            var value = _operand.Evaluate(call);
+            var value = _operand.Evaluate(call).Value;
 
-            if (value.Value.Is(out Task? task))
+            if (value.Is(out Task? task))
             {
                 try
                 {

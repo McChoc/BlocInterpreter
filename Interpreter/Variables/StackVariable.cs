@@ -3,28 +3,23 @@ using Bloc.Values;
 
 namespace Bloc.Variables
 {
-    internal class StackVariable : Variable
+    public class StackVariable : Variable
     {
         private readonly Scope _scope;
 
-        internal StackVariable(Value value, string name, Scope scope)
+        internal StackVariable(string name, Value value, Scope scope) : base(value)
         {
-            Value = value;
-            Name = name;
             _scope = scope;
+            Name = name;
         }
 
-        public override Value Value { get; set; }
         internal string Name { get; }
 
-        public override void Destroy()
+        public override void Delete()
         {
             _scope.Variables.Remove(Name);
 
-            foreach (var reference in References)
-                reference.Invalidate();
-
-            Value.Destroy();
+            base.Delete();
         }
     }
 }

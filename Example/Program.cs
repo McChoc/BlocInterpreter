@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using Bloc;
 using Bloc.Commands;
+using Bloc.Expressions;
 using Bloc.Results;
+using Bloc.Statements;
 using Bloc.Utils.Exceptions;
 using Bloc.Values;
 using Void = Bloc.Values.Void;
@@ -14,79 +16,96 @@ var engine = new Engine.Builder(args)
     .OnLog(Console.WriteLine)
     .OnClear(Console.Clear)
     .AddDefaultCommands()
+    .AddCommand(new(
+        "delete_global",
+        "delete_global\n" +
+        "Deletes all global variables",
+        (args, _, call) =>
+        {
+            if (args.Length != 0)
+                throw new Throw("'delete_global' does not take arguments.\nType '/help delete_global' to see its usage.");
+
+            foreach (var variable in call.Engine.GlobalScope.Variables.Values)
+                variable.Delete();
+
+            return Void.Value;
+        }
+    ))
     .Build();
 
 while (true)
 {
-    try
+    var cancel = false;
+    var depth = 0;
+    var lines = new List<string>();
+
+    while (true)
     {
-        var cancel = false;
-        var depth = 0;
-        var lines = new List<string>();
+        Console.Write(lines.Count == 0 ? ">>> " : "... ");
 
-        while (true)
+        var line = Console.ReadLine();
+
+        if (line.Length > 0 && line[^1] == '\x4')
         {
-            Console.Write(lines.Count == 0 ? ">>> " : "... ");
-
-            var line = Console.ReadLine();
-
-            if (line.Length > 0 && line[^1] == '\x4')
-            {
-                cancel = true;
-                break;
-            }
-
-            lines.Add(line);
-
-            if (line.Length >= 1 && line[^1] == '{')
-                depth++;
-
-            if (line.Length >= 1 && line[^1] == '}')
-                depth--;
-
-            if (depth <= 0)
-                break;
+            cancel = true;
+            break;
         }
 
-        if (!cancel)
-        {
-            var code = string.Join("\n", lines);
+        lines.Add(line);
 
-            if (code.Length > 0 && code[^1] != ';')
+        if (line.Length > 0 && line[^1] == '{')
+            depth++;
+
+        if (line.Length > 0 && line[^1] == '}')
+            depth--;
+
+        if (depth <= 0)
+            break;
+    }
+
+    if (!cancel)
+    {
+        var code = string.Join("\n", lines);
+
+        if (code.Length > 0)
+        {
+            if (code[^1] != ';')
                 code += ';';
 
-            if (code.Length > 0)
+            try
             {
-                var variant = engine.Execute(code);
+                Engine.Compile(code, out IExpression expression, out List<Statement> statements);
 
-                if (variant is not null)
+                Result result;
+                Value value = null;
+
+                if (expression is not null)
+                    result = engine.Evaluate(expression, out value);
+                else
+                    result = engine.Execute(statements);
+
+                if (result is Throw t)
                 {
-                    if (variant.Is(out Value value))
-                    {
-                        if (value is not Void)
-                            Console.WriteLine(value.ToString());
-                    }
-                    else if (variant.Is(out Result result))
-                    {
-                        if (result is Exit)
-                            break;
-
-                        if (result is Throw t)
-                        {
-                            ConsoleColor.SetColor(ORANGE);
-                            Console.WriteLine($"An exception was thrown : {t.value}");
-                            Console.ResetColor();
-                        }
-                    }
+                    ConsoleColor.SetColor(ORANGE);
+                    Console.WriteLine($"An exception was thrown : {t.Value}");
+                    Console.ResetColor();
+                }
+                else if (result is Exit)
+                {
+                    break;
+                }
+                else if (value is not (null or Void))
+                {
+                    Console.WriteLine(value.ToString());
                 }
             }
+            catch (SyntaxError e)
+            {
+                ConsoleColor.SetColor(RED);
+                Console.WriteLine($"Syntax error : {e.Message}");
+                Console.ResetColor();
+            }
         }
-    }
-    catch (SyntaxError e)
-    {
-        ConsoleColor.SetColor(RED);
-        Console.WriteLine($"Syntax error : {e.Message}");
-        Console.ResetColor();
     }
 
     Console.WriteLine();

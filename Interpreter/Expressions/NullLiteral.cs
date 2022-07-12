@@ -1,10 +1,11 @@
 ﻿using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Values;
 
 namespace Bloc.Expressions
 {
     internal class NullLiteral : IExpression
     {
-        public IValue Evaluate(Call _) => Null.Value;
+        public IPointer Evaluate(Call _) => Null.Value;
     }
 }

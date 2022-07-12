@@ -1,10 +1,10 @@
 ﻿using Bloc.Memory;
 using Bloc.Expressions;
 using Bloc.Results;
-using Bloc.Variables;
 using Bloc.Values;
+using Bloc.Pointers;
 
-namespace Bloc.Operators.Variable
+namespace Bloc.Operators
 {
     internal class Ref : IExpression
     {
@@ -12,19 +12,17 @@ namespace Bloc.Operators.Variable
 
         internal Ref(IExpression operand) => _operand = operand;
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
             var value = _operand.Evaluate(call);
 
-            if (value is not Variables.Variable variable)
+            if (value is not Pointer pointer)
                 throw new Throw("The right part of a reference must be a variable");
 
-            if (variable is UndefinedVariable undefined)
+            if (pointer is UndefinedPointer undefined)
                 throw new Throw($"Variable {undefined.Name} was not defined in scope");
 
-            var reference = new Values.Reference(variable);
-            variable.References.Add(reference);
-            return reference;
+            return new Reference(pointer);
         }
     }
 }

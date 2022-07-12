@@ -3,7 +3,7 @@ using Bloc.Interfaces;
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Statements;
-using Bloc.Variables;
+using Bloc.Utils;
 
 namespace Bloc.Values
 {
@@ -12,32 +12,24 @@ namespace Bloc.Values
         internal bool Async { get; set; }
         internal List<string> Names { get; set; } = new();
         internal List<Statement> Code { get; set; } = new();
-        internal Scope Captures { get; set; } = new(null);
+        internal Scope Captures { get; set; } = new();
 
         public override ValueType GetType() => ValueType.Function;
 
-        public IValue Invoke(List<Value> values, Call parent)
+        internal override Value Copy()
         {
-            if (!Async)
-                return Call(values, parent);
-
-            return new Task(System.Threading.Tasks.Task.Run(() => Call(values, parent)));
+            return new Function
+            {
+                Async = Async,
+                Names = Names,
+                Code = Code,
+                Captures = Captures.Copy()
+            };
         }
 
-        //public override Value Copy()
-        //{
-        //    return new Function
-        //    {
-        //        Async = Async,
-        //        Names = Names,
-        //        Code = Code,
-        //        Captures = Captures
-        //    };
-        //}
-
-        public override bool Equals(IValue other)
+        public override bool Equals(Value other)
         {
-            if (other.Value is not Function func)
+            if (other is not Function func)
                 return false;
 
             if (Async != func.Async)
@@ -61,7 +53,7 @@ namespace Bloc.Values
                     return false;
 
             foreach (var key in Captures.Variables.Keys)
-                if (!Captures.Variables[key].Value.Equals(func.Captures.Variables[key]))
+                if (!Captures.Variables[key].Value.Equals(func.Captures.Variables[key].Value))
                     return false;
 
             return true;
@@ -69,6 +61,9 @@ namespace Bloc.Values
 
         public override T Implicit<T>()
         {
+            if (typeof(T) == typeof(Null))
+                return (Null.Value as T)!;
+
             if (typeof(T) == typeof(Bool))
                 return (Bool.True as T)!;
 
@@ -81,10 +76,11 @@ namespace Bloc.Values
             throw new Throw($"Cannot implicitly cast function as {typeof(T).Name.ToLower()}");
         }
 
-        public override IValue Explicit(ValueType type)
+        public override Value Explicit(ValueType type)
         {
             return type switch
             {
+                ValueType.Null => Null.Value,
                 ValueType.Bool => Bool.True,
                 ValueType.String => new String(ToString()),
                 ValueType.Function => this,
@@ -94,7 +90,16 @@ namespace Bloc.Values
 
         public override string ToString(int _)
         {
-            return $"{(Async ? "async " : "")}({string.Join(", ", Names)}) {{...}}";
+            //return $"{(Async ? "async " : "")}({string.Join(", ", Names)}) {{...}}";
+            return "[function]";
+        }
+
+        public Value Invoke(List<Value> values, Call parent)
+        {
+            if (!Async)
+                return Call(values, parent);
+            else
+                return new Task(() => Call(values, parent));
         }
 
         private Value Call(List<Value> values, Call parent)
@@ -103,39 +108,44 @@ namespace Bloc.Values
 
             try
             {
+                var labels = StatementUtil.GetLabels(Code);
+
                 for (var i = 0; i < Names.Count; i++)
                 {
                     var name = Names[i];
                     var value = i < values.Count && values[i] != Void.Value ? values[i] : Null.Value;
 
-                    call.Set(name, new StackVariable(value, name, call.Scopes[^1]));
+                    call.Set(name, value);
                 }
-
-                var labels = new Dictionary<string, int>();
-
-                for (var i = 0; i < Code.Count; i++)
-                    if (Code[i].Label is not null)
-                        labels.Add(Code[i].Label!, i);
 
                 for (var i = 0; i < Code.Count; i++)
                 {
                     var result = Code[i].Execute(call);
 
-                    if (result is Return r)
-                        return r.value;
+                    if (result is Continue or Break)
+                        throw new Throw("No loop");
 
                     if (result is Throw or Exit)
                         throw result;
 
-                    if (result is Continue or Break)
-                        throw new Throw("No loop");
+                    if (result is Return r)
+                        return r.Value;
 
                     if (result is Goto g)
                     {
-                        if (labels.TryGetValue(g.label, out var index))
-                            i = index - 1;
-                        else
-                            throw new Throw("No such label in scope");
+                        if (labels.TryGetValue(g.Label, out var label))
+                        {
+                            label.Count++;
+
+                            if (label.Count > call.Engine.JumpLimit)
+                                throw new Throw("The jump limit was reached.");
+
+                            i = label.Index - 1;
+
+                            continue;
+                        }
+
+                        throw new Throw("No such label in scope");
                     }
                 }
 

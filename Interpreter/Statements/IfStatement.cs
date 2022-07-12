@@ -2,6 +2,7 @@
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
+using Bloc.Utils;
 using Bloc.Values;
 
 namespace Bloc.Statements
@@ -9,8 +10,8 @@ namespace Bloc.Statements
     internal class IfStatement : Statement
     {
         internal IExpression Condition { get; set; } = default!;
-        internal List<Statement> IfBody { get; set; } = default!;
-        internal List<Statement> ElseBody { get; set; } = new();
+        internal List<Statement> If { get; set; } = default!;
+        internal List<Statement> Else { get; set; } = new();
 
         internal override Result? Execute(Call call)
         {
@@ -21,9 +22,14 @@ namespace Bloc.Statements
                 if (!value.Value.Is(out Bool? @bool))
                     return new Throw("Cannot implicitly convert to bool");
 
-                if (@bool!.Value)
-                    return ExecuteBlock(IfBody, call);
-                return ExecuteBlock(ElseBody, call);
+                var statements = @bool!.Value ? If : Else;
+                var labels = StatementUtil.GetLabels(statements);
+
+                call.Push();
+                var result = ExecuteBlock(statements, labels, call);
+                call.Pop();
+
+                return result;
             }
             catch (Result result)
             {

@@ -12,13 +12,13 @@ public static class ConsoleColor
     }
 
     [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern bool SetConsoleMode(IntPtr hConsoleHandle, int mode);
+    private static extern IntPtr GetStdHandle(int handle);
 
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern bool GetConsoleMode(IntPtr handle, out int mode);
 
     [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern IntPtr GetStdHandle(int handle);
+    private static extern bool SetConsoleMode(IntPtr hConsoleHandle, int mode);
 
     public static void SetColor(byte color)
     {

@@ -1,9 +1,10 @@
 ﻿using Bloc.Expressions;
 using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Values;
 
-namespace Bloc.Operators.Primary
+namespace Bloc.Operators
 {
     internal class MemberAccess : IExpression
     {
@@ -16,14 +17,14 @@ namespace Bloc.Operators.Primary
             _member = member;
         }
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
-            var value = _expression.Evaluate(call);
+            var value = _expression.Evaluate(call).Value;
 
-            if (!value.Value.Is(out Struct? obj))
+            if (!value.Is(out Struct? @struct))
                 throw new Throw("The '.' operator can only be apllied to a struct");
 
-            return obj!.Get(_member);
+            return @struct!.Get(_member);
         }
     }
 }

@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using Bloc.Expressions;
 using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Values;
 
-namespace Bloc.Operators.Type
+namespace Bloc.Operators
 {
     internal class Nullable : IExpression
     {
@@ -15,11 +16,11 @@ namespace Bloc.Operators.Type
             _operand = operand;
         }
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
-            var value = _operand.Evaluate(call);
+            var value = _operand.Evaluate(call).Value;
 
-            if (value.Value.Is(out Values.Type? type))
+            if (value.Is(out Type? type))
             {
                 var types = new HashSet<ValueType>
                 {
@@ -29,7 +30,7 @@ namespace Bloc.Operators.Type
                 foreach (var t in type!.Value)
                     types.Add(t);
 
-                return new Values.Type(types);
+                return new Type(types);
             }
 
             throw new Throw($"Cannot apply operator '?' on type {value.GetType().ToString().ToLower()}");

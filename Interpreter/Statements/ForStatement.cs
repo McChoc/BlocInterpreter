@@ -2,6 +2,7 @@
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
+using Bloc.Utils;
 using Bloc.Values;
 
 namespace Bloc.Statements
@@ -22,16 +23,15 @@ namespace Bloc.Statements
                 Initialisation?.Evaluate(call);
 
                 var loopCount = 0;
-
-                var labels = GetLabels(Statements);
+                var labels = StatementUtil.GetLabels(Statements);
 
                 while (true)
                 {
                     if (Condition is not null)
                     {
-                        var value = Condition.Evaluate(call);
+                        var value = Condition.Evaluate(call).Value;
 
-                        if (!value.Value.Is(out Bool? @bool))
+                        if (!value.Is(out Bool? @bool))
                             return new Throw("Cannot implicitly convert to bool");
 
                         if (!@bool!.Value)
@@ -47,14 +47,14 @@ namespace Bloc.Statements
                     {
                         call.Push();
 
-                        var r = ExecuteBlockInLoop(Statements, labels, call);
+                        var result = ExecuteBlock(Statements, labels, call);
 
-                        if (r is Continue)
+                        if (result is Continue)
                             continue;
-                        else if (r is Break)
+                        else if (result is Break)
                             break;
-                        else if (r is not null)
-                            return r;
+                        else if (result is not null)
+                            return result;
                     }
                     finally
                     {

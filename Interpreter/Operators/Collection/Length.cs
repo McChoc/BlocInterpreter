@@ -1,9 +1,10 @@
 ﻿using Bloc.Expressions;
 using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Values;
 
-namespace Bloc.Operators.Collection
+namespace Bloc.Operators
 {
     internal class Length : IExpression
     {
@@ -14,17 +15,17 @@ namespace Bloc.Operators.Collection
             _operand = operand;
         }
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
-            var value = _operand.Evaluate(call);
+            var value = _operand.Evaluate(call).Value;
 
-            if (value.Value.Is(out Array? arr))
+            if (value.Is(out Array? arr))
                 return new Number(arr!.Values.Count);
 
-            if (value.Value.Is(out String? str))
+            if (value.Is(out String? str))
                 return new Number(str!.Value.Length);
 
-            throw new Throw($"Cannot apply operator 'len' type {value!.GetType().ToString().ToLower()}");
+            throw new Throw($"Cannot apply operator 'len' type {value.GetType().ToString().ToLower()}");
         }
     }
 }

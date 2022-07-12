@@ -1,10 +1,11 @@
 ﻿using Bloc.Expressions;
 using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Utils;
 using Bloc.Values;
 
-namespace Bloc.Operators.Arithmetic
+namespace Bloc.Operators
 {
     internal class Substraction : IExpression
     {
@@ -17,7 +18,7 @@ namespace Bloc.Operators.Arithmetic
             _right = right;
         }
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
             var left = _left.Evaluate(call);
             var right = _right.Evaluate(call);
@@ -25,12 +26,12 @@ namespace Bloc.Operators.Arithmetic
             return TupleUtil.RecursivelyCall(left, right, Operation);
         }
 
-        internal static IValue Operation(IValue left, IValue right)
+        internal static IPointer Operation(IPointer left, IPointer right)
         {
             if (left.Value.Is(out Number? leftNumber) && right.Value.Is(out Number? rightNumber))
                 return new Number(leftNumber!.Value - rightNumber!.Value);
 
-            throw new Throw($"Cannot apply operator '-' on operands of types {left.GetType().ToString().ToLower()} and {right.GetType().ToString().ToLower()}");
+            throw new Throw($"Cannot apply operator '-' on operands of types {left.Value.GetType().ToString().ToLower()} and {right.Value.GetType().ToString().ToLower()}");
         }
     }
 }

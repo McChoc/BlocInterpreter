@@ -1,9 +1,10 @@
 ﻿using Bloc.Expressions;
 using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Values;
 
-namespace Bloc.Operators.Variable
+namespace Bloc.Operators
 {
     internal class Val : IExpression
     {
@@ -14,19 +15,16 @@ namespace Bloc.Operators.Variable
             _operand = operand;
         }
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
             var value = _operand.Evaluate(call);
 
-            for (var i = 1; value.Value.Is(out Values.Reference? reference); i++)
+            for (var i = 1; value.Value.Is(out Reference? reference); i++)
             {
                 if (i > call.Engine.HopLimit)
                     throw new Throw("The hop limit was reached");
 
-                if (reference!.Variable is null)
-                    throw new Throw("Invalid reference.");
-
-                value = reference.Variable;
+                value = reference!.Pointer;
             }
 
             return value;

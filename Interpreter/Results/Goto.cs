@@ -2,8 +2,8 @@
 {
     public class Goto : Result
     {
-        public string label;
+        public string Label { get; }
 
-        public Goto(string label) => this.label = label;
+        public Goto(string label) => Label = label;
     }
 }

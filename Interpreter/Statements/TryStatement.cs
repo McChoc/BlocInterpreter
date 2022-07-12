@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Bloc.Memory;
 using Bloc.Results;
+using Bloc.Utils;
 
 namespace Bloc.Statements
 {
@@ -12,24 +13,37 @@ namespace Bloc.Statements
 
         internal override Result? Execute(Call call)
         {
-            var result = ExecuteBlock(Try, call);
+            Result? result;
+
+            {
+                var labels = StatementUtil.GetLabels(Try);
+
+                call.Push();
+                result = ExecuteBlock(Try, labels, call);
+                call.Pop();
+            }
 
             if (result is Throw)
             {
-                result = null;
+                var labels = StatementUtil.GetLabels(Catch);
 
-                var catchResult = ExecuteBlock(Catch, call);
+                call.Push();
+                result = ExecuteBlock(Catch, labels, call);
+                call.Pop();
 
-                if (catchResult is not null)
-                    return catchResult;
+                if (result is not null)
+                    return result;
             }
 
-            var finallyResult = ExecuteBlock(Finally, call);
+            {
+                var labels = StatementUtil.GetLabels(Finally);
 
-            if (finallyResult is not null)
-                return finallyResult;
+                call.Push();
+                var finalResult = ExecuteBlock(Finally, labels, call);
+                call.Pop();
 
-            return result;
+                return finalResult ?? result;
+            }
         }
     }
 }

@@ -2,9 +2,9 @@
 using System.Linq;
 using Bloc.Expressions;
 using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Values;
-using Bloc.Variables;
 
 namespace Bloc.Statements
 {
@@ -33,32 +33,26 @@ namespace Bloc.Statements
             return null;
         }
 
-        private void Define(IValue identifier, Value value, Call call)
+        private void Define(IPointer identifier, Value value, Call call)
         {
-            if (identifier is StackVariable stackVariable)
-            {
-                throw new Throw($"Variable '{stackVariable.Name}' was already defined in scope");
-            }
-
-            if (identifier is UndefinedVariable undefined)
+            if (identifier is Pointer pointer)
             {
                 value.Assign();
-
-                call.TryAdd(new StackVariable(value, undefined.Name, call.Scopes[^1]));
+                pointer.Define(value, call);
             }
             else if (identifier.Value is Tuple leftTuple)
             {
-                if (!value.Is(out Tuple? tuple))
+                if (!value.Is(out Tuple? rightTuple))
                 {
                     foreach (var id in leftTuple.Values)
                         Define(id, value, call);
                 }
                 else
                 {
-                    if (leftTuple.Values.Count != tuple!.Values.Count)
+                    if (leftTuple.Values.Count != rightTuple!.Values.Count)
                         throw new Throw("Miss match number of elements in tuples.");
 
-                    foreach (var (id, val) in leftTuple.Values.Zip(tuple.Values, (i, v) => (i, v.Value)))
+                    foreach (var (id, val) in leftTuple.Values.Zip(rightTuple.Values, (i, v) => (i, v.Value)))
                         Define(id, val, call);
                 }
             }

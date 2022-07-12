@@ -1,11 +1,11 @@
-﻿using Bloc.Expressions;
+﻿using System.Collections.Generic;
+using Bloc.Expressions;
 using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Values;
-using Bloc.Variables;
-using System.Collections.Generic;
 
-namespace Bloc.Operators.Variable
+namespace Bloc.Operators
 {
     internal class Let : IExpression
     {
@@ -16,28 +16,21 @@ namespace Bloc.Operators.Variable
             _operand = operand;
         }
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
             var identifier = _operand.Evaluate(call);
 
             return Define(identifier, call);
         }
 
-        private IValue Define(IValue identifier, Call call)
+        private IPointer Define(IPointer identifier, Call call)
         {
-            if (identifier is StackVariable stackVariable)
-                throw new Throw($"Variable '{stackVariable.Name}' was already defined in scope");
-
-            if (identifier is UndefinedVariable undefined)
-            {
-                var variable = new StackVariable(Null.Value, undefined.Name, call.Scopes[^1]);
-                call.TryAdd(variable);
-                return variable;
-            }
+            if (identifier is Pointer pointer)
+                return pointer.Define(Null.Value, call);
             
             if (identifier.Value is Tuple tuple)
             {
-                var values = new List<IValue>();
+                var values = new List<IPointer>(tuple.Values.Count);
 
                 foreach (var id in tuple.Values)
                     values.Add(Define(id, call));

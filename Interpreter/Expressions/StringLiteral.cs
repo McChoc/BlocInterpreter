@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text;
 using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Values;
 
@@ -17,7 +18,7 @@ namespace Bloc.Expressions
             _expressions = expressions;
         }
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
             var offset = 0;
 
@@ -25,9 +26,9 @@ namespace Bloc.Expressions
 
             foreach (var (index, expression) in _expressions)
             {
-                var value = expression.Evaluate(call);
+                var value = expression.Evaluate(call).Value;
 
-                if (!value.Value.Is(out String? str))
+                if (!value.Is(out String? str))
                     throw new Throw("Cannot implicitly convert to string");
 
                 builder.Insert(index + offset, str!.Value);

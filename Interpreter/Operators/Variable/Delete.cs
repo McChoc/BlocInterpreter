@@ -1,12 +1,11 @@
-﻿using Bloc.Expressions;
+﻿using System.Collections.Generic;
+using Bloc.Expressions;
 using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Values;
-using Bloc.Variables;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace Bloc.Operators.Variable
+namespace Bloc.Operators
 {
     internal class Delete : IExpression
     {
@@ -17,30 +16,26 @@ namespace Bloc.Operators.Variable
             _operand = operand;
         }
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
             var identifier = _operand.Evaluate(call);
 
             return Undefine(identifier);
         }
 
-        private Value Undefine(IValue val)
+        private Value Undefine(IPointer value)
         {
-            if (val is StackVariable or HeapVariable)
-            {
-                var value = val.Value;
-                val.Value.Destroy();
-                return value;
-            }
+            if (value is Pointer pointer)
+                return pointer.Delete();
 
-            if (val is Tuple tpl)
+            if (value is Tuple tuple)
             {
-                var values = new List<Value>();
+                var values = new List<IPointer>(tuple.Values.Count);
 
-                foreach (var item in tpl.Values)
+                foreach (var item in tuple.Values)
                     values.Add(Undefine(item));
 
-                return new Tuple(values.ToList<IValue>());
+                return new Tuple(values);
             }
 
             throw new Throw("You can only delete a variable");

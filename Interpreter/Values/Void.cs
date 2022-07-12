@@ -10,23 +10,35 @@ namespace Bloc.Values
 
         public override ValueType GetType() => ValueType.Void;
 
-        public override void Assign() => throw new Throw("You cannot assign void to a variable");
-
-        public override bool Equals(IValue other)
+        internal override void Assign()
         {
-            return other.Value is Void;
+            throw new Throw("You cannot assign void to a variable");
+        }
+
+        public override bool Equals(Value other)
+        {
+            return other is Void;
         }
 
         public override T Implicit<T>()
         {
+            if (typeof(T) == typeof(Void))
+                return (this as T)!;
+
             throw new Throw($"Cannot implicitly cast void as {typeof(T).Name.ToLower()}");
         }
 
-        public override IValue Explicit(ValueType type)
+        public override Value Explicit(ValueType type)
         {
+            if (type == ValueType.Void)
+                return this;
+
             throw new Throw($"Cannot cast void as {type.ToString().ToLower()}");
         }
 
-        public override string ToString(int _) => "void";
+        public override string ToString(int _)
+        {
+            return "void";
+        }
     }
 }

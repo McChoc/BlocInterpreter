@@ -1,10 +1,9 @@
 ﻿using Bloc.Expressions;
 using Bloc.Memory;
-using Bloc.Operators.Arithmetic;
+using Bloc.Pointers;
 using Bloc.Utils;
-using Bloc.Values;
 
-namespace Bloc.Operators.Assignment
+namespace Bloc.Operators
 {
     internal class SubstractionAssignment : IExpression
     {
@@ -17,7 +16,7 @@ namespace Bloc.Operators.Assignment
             _right = right;
         }
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
             var left = _left.Evaluate(call);
             var right = _right.Evaluate(call);

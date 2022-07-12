@@ -1,8 +1,9 @@
 ﻿using Bloc.Expressions;
 using Bloc.Memory;
+using Bloc.Pointers;
 using Bloc.Values;
 
-namespace Bloc.Operators.Relation
+namespace Bloc.Operators
 {
     internal class Equality : IExpression
     {
@@ -15,12 +16,12 @@ namespace Bloc.Operators.Relation
             _right = right;
         }
 
-        public IValue Evaluate(Call call)
+        public IPointer Evaluate(Call call)
         {
-            var leftValue = _left.Evaluate(call);
-            var rightValue = _right.Evaluate(call);
+            var leftValue = _left.Evaluate(call).Value;
+            var rightValue = _right.Evaluate(call).Value;
 
-            return new Bool(leftValue.Value.Equals(rightValue));
+            return new Bool(leftValue.Equals(rightValue));
         }
     }
 }
