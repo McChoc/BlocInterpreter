@@ -87,13 +87,24 @@ namespace Bloc.Memory
             return new VariablePointer(variable);
         }
 
-        internal Scope Capture()
+        internal Scope ValueCapture()
         {
             var captures = new Scope();
 
             foreach (var scope in Scopes)
                 foreach (var (key, value) in scope.Variables)
-                    captures.Variables[key] = value;
+                    captures.Variables[key] = new StackVariable(key, value.Value.Copy(), captures);
+
+            return captures;
+        }
+
+        internal Scope ReferenceCapture()
+        {
+            var captures = new Scope();
+
+            foreach (var scope in Scopes)
+                foreach (var (key, value) in scope.Variables)
+                    captures.Variables[key] = new StackVariable(key, new Reference(new VariablePointer(value)), captures);
 
             return captures;
         }

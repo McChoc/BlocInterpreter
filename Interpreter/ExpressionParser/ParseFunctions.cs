@@ -5,6 +5,7 @@ using Bloc.Extensions;
 using Bloc.Scanners;
 using Bloc.Statements;
 using Bloc.Tokens;
+using Bloc.Utils;
 using Bloc.Utils.Exceptions;
 
 namespace Bloc
@@ -15,86 +16,104 @@ namespace Bloc
         {
             for (var i = 0; i < tokens.Count; i++)
             {
-                if (tokens[i] is (TokenType.Operator, "=>") @operator)
+                var foundFunction = false;
+                List<Token> parameters = null!;
+                List<Statement> statements = null!;
+
+                if (i > 0 && tokens[i].Type == TokenType.Braces && tokens[i - 1].Type == TokenType.Parentheses)
                 {
+                    foundFunction = true;
+
+                    parameters = TokenScanner.Scan(tokens[i - 1]).ToList();
+
+                    statements = StatementScanner.GetStatements(tokens[i].Text);
+
+                    tokens.RemoveRange(i - 1, 2);
+                }
+                else if (tokens[i] is (TokenType.Operator, "=>") @operator)
+                {
+                    foundFunction = true;
+
                     if (i == 0)
                         throw new SyntaxError(@operator.Start, @operator.End, "Missing identifiers");
 
-                    var async = false;
-
-                    if (i >= 2 && tokens[i - 2] is (TokenType.Keyword, "async"))
-                        async = true;
-
-                    List<string> names;
-
                     if (tokens[i - 1].Type == TokenType.Identifier)
-                    {
-                        names = new List<string>
-                        {
-                            tokens[i - 1].Text
-                        };
-                    }
+                        parameters = new() { tokens[i - 1] };
                     else if (tokens[i - 1].Type == TokenType.Parentheses)
-                    {
-                        var parameters = TokenScanner.Scan(tokens[i - 1]).ToList();
-
-                        names = parameters.Count > 0
-                            ? parameters.Split(x => x is (TokenType.Operator, ",")).Select(x => x.Single().Text).ToList()
-                            : new List<string>();
-
-                        if (names.Count != names.Distinct().Count())
-                            throw new SyntaxError(tokens[i - 1].Start, tokens[i - 1].End, "Some parameters are duplicates.");
-                    }
+                        parameters = TokenScanner.Scan(tokens[i - 1]).ToList();
                     else
-                    {
                         throw new SyntaxError(tokens[i - 1].Start, tokens[i - 1].End, "Unexpected symbol");
-                    }
 
-                    var statement = new ReturnStatement(Parse(tokens.GetRange((i + 1)..)));
+                    statements = new() { new ReturnStatement(Parse(tokens.GetRange((i + 1)..))) };
 
-                    var function = new FunctionLiteral(async, names, new List<Statement> { statement });
-
-                    var expression = tokens.GetRange(..(i - (async ? 2 : 1)));
-                    expression.Add(new Literal(0, 0, function));
-
-                    return Parse(expression, precedence - 1);
+                    tokens.RemoveRange(i - 1, tokens.Count - i + 1);
                 }
-                else if (i < tokens.Count - 1 &&
-                    tokens[i].Type == TokenType.Parentheses &&
-                    tokens[i + 1].Type == TokenType.Braces)
+
+                if (foundFunction)
                 {
-                    var parameters = TokenScanner.Scan(tokens[i]).ToList();
+                    var names = new List<string>();
 
-                    var names = parameters.Count > 0
-                        ? parameters.Split(x => x is (TokenType.Operator, ",")).Select(x => x.Single().Text).ToList()
-                        : new List<string>();
+                    if (parameters.Count > 0)
+                    {
+                        foreach (var part in parameters.Split(x => x is (TokenType.Operator, ",")))
+                        {
+                            var name = part.Single().Text;
 
-                    if (names.Count != names.Distinct().Count())
-                        throw new SyntaxError(tokens[i].Start, tokens[i].End, "Some parameters are duplicates.");
+                            if (names.Contains(name))
+                                throw new SyntaxError(part[0].Start, part[^1].End, "Some parameters are duplicates.");
+
+                            names.Add(name);
+                        }
+                    }
 
                     var async = false;
+                    var mode = CaptureMode.None;
 
-                    if (i >= 1 && tokens[i - 1] is (TokenType.Keyword, "async"))
-                        async = true;
+                    var j = i - 2;
 
-                    var statements = StatementScanner.GetStatements(tokens[i + 1].Text);
-
-                    var function = new FunctionLiteral(async, names, statements);
-
-                    var expression = tokens;
-
-                    if (async)
+                    while (j >= 0)
                     {
-                        expression.RemoveRange(i - 1, 3);
-                        expression.Insert(i - 1, new Literal(0, 0, function));
-                    }
-                    else
-                    {
-                        expression.RemoveRange(i, 2);
-                        expression.Insert(i, new Literal(0, 0, function));
+                        if (tokens[j] is (TokenType.Keyword, "async"))
+                        {
+                            if (async)
+                                throw new SyntaxError(tokens[j].Start, tokens[j].End, "'async' modifier doubled");
+
+                            async = true;
+                        }
+                        else if (tokens[j] is (TokenType.Keyword, "val"))
+                        {
+                            if (mode == CaptureMode.Value)
+                                throw new SyntaxError(tokens[j].Start, tokens[j].End, "'val' modifier doubled");
+
+                            if (mode == CaptureMode.Reference)
+                                throw new SyntaxError(tokens[j].Start, tokens[j].End, "multiple capture modifier");
+
+                            mode = CaptureMode.Value;
+                        }
+                        else if (tokens[j] is (TokenType.Keyword, "ref"))
+                        {
+                            if (mode == CaptureMode.Value)
+                                throw new SyntaxError(tokens[j].Start, tokens[j].End, "multiple capture modifier");
+
+                            if (mode == CaptureMode.Reference)
+                                throw new SyntaxError(tokens[j].Start, tokens[j].End, "'ref' modifier doubled");
+
+                            mode = CaptureMode.Reference;
+                        }
+                        else
+                        {
+                            break;
+                        }
+
+                        tokens.RemoveAt(j);
+                        j--;
                     }
 
-                    return Parse(expression, precedence - 1);
+                    var function = new FunctionLiteral(async, mode, names, statements);
+
+                    tokens.Insert(j + 1, new Literal(0, 0, function));
+
+                    return ParseFunctions(tokens, precedence);
                 }
             }
 

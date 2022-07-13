@@ -10,6 +10,8 @@ namespace Bloc.Values
     public class Function : Value, IInvokable
     {
         internal bool Async { get; set; }
+        internal CaptureMode Mode { get; set; }
+
         internal List<string> Names { get; set; } = new();
         internal List<Statement> Code { get; set; } = new();
         internal Scope Captures { get; set; } = new();
@@ -21,6 +23,7 @@ namespace Bloc.Values
             return new Function
             {
                 Async = Async,
+                Mode = Mode,
                 Names = Names,
                 Code = Code,
                 Captures = Captures.Copy()
@@ -33,6 +36,9 @@ namespace Bloc.Values
                 return false;
 
             if (Async != func.Async)
+                return false;
+
+            if (Mode != func.Mode)
                 return false;
 
             if (Names.Count != func.Names.Count)
@@ -90,7 +96,6 @@ namespace Bloc.Values
 
         public override string ToString(int _)
         {
-            //return $"{(Async ? "async " : "")}({string.Join(", ", Names)}) {{...}}";
             return "[function]";
         }
 

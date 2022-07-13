@@ -257,7 +257,7 @@ var add = (a, b) => a + b;
 var toString = x => x as string; 
 ```
 
-Both syntax can be used to create asynchronous function by prefixing them with the `async` keyword. Asynchronous functions allow you to run multiple functions at the same time. When calling an asynchronous function, it immediately returns a [task](#task) and starts executing its body in the background. The task returned can be used to retrieve the result of the function later. If the function throws an exception, the exception will be stored inside the task.
+You can create an asynchronous function by prefixing it with the `async` keyword. Asynchronous functions allow you to run multiple functions at the same time. When calling an asynchronous function, it immediately returns a [task](#task) and starts executing its body in the background. The task returned can be used to retrieve the result of the function later. If the function throws an exception, the exception will be stored inside the task.
 
 ```csharp
 var foo = async () {
@@ -267,9 +267,38 @@ var foo = async () {
         sum += i;
 
     return sum;
-}; 
+};
+```
 
-var bar = async () => await foo(); 
+By default, you cannot access outside variable from within a function, but you can prefix a function with the `val` or `ref` keywords to capture all accessible variable at the time of creating the function inside said function.
+
+If you use the `val` keyword, captures are copies of their original variable. This means that you can access and modify their value without impacting the original.
+
+```csharp
+var functions = array();
+
+for (i in ..10) {
+    # using val since i will be out of scope when calling the function
+    functions += val () {
+        /echo $i;
+    };
+}
+
+for (func in functions)
+    func();
+```
+
+If you use the `ref` keyword, captures are reference to their original variable. This means that you can modify the original value, but if the variable goes out of scope, you are left with an invalid reference.
+
+```csharp
+var variable = 0;
+
+# using ref since the original variable needs to be modified
+var setVariable = ref (value) {
+    val variable = value;
+};
+
+setVariable(42);
 ```
 
 ---
@@ -1890,29 +1919,26 @@ The lock statement allows you to lock variables, so that other asynchronous func
 ```csharp
 var (input, output) = array(); 
 
-var _input = ref input;
-var _output = ref output;
-
-var workerThread = async () {
+var workerThread = async ref () {
     while (true) {
         var value;
 
-        lock (val _input) {
-            if (len _input == 0)
+        lock (val input) {
+            if (len input == 0)
                 continue;
 
-            value = _input[-1];
-            val _input = _input[..-1];
+            value = input[-1];
+            val input = input[..-1];
         }
 
         # process the value;
 
-        lock (val _output)
-            val _output += value;
+        lock (val output)
+            val output += value;
     }
 }; 
 
-input = { 1, 2, 3, 4, 5 };
+input = { 65, 66, 67, 68, 69 };
 
 repeat(5)
     workerThread();
