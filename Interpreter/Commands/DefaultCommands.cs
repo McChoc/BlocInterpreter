@@ -26,8 +26,12 @@ namespace Bloc.Commands
                 {
                     if (input is Void)
                     {
-                        return new String("For more informations on a specific command, type '/help <command>'.\n\n" +
-                            string.Join("\n", call.Engine.Commands.Select(p => p.Value.Name)));
+                        var message =
+                            "For more informations on a specific command, type '/help <command>'.\n" +
+                            "\n" +
+                            string.Join("\n", call.Engine.Commands.Values.Select(c => c.Name));
+
+                        return new String(message);
                     }
 
                     if (input.Is(out String? str))

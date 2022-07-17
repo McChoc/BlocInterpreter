@@ -346,7 +346,7 @@ namespace Bloc.Scanners
             var slash = scanner.GetNextToken();
 
             var statement = new CommandStatement();
-            statement.Commands.Add(new List<Token>());
+            statement.Commands.Add(new());
 
             while (scanner.HasNextToken())
             {
@@ -361,7 +361,7 @@ namespace Bloc.Scanners
                 }
 
                 if (token is (TokenType.Operator, "|>"))
-                    statement.Commands.Add(new List<Token>());
+                    statement.Commands.Add(new());
                 else
                     statement.Commands[^1].Add(token);
             }

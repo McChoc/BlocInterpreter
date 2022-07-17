@@ -17,7 +17,8 @@ namespace Bloc.Utils
             value = ReferenceUtil.Dereference(value, call.Engine).Value;
 
             if (value is Tuple tuple)
-                return new Tuple(tuple.Values.Select(x => RecursivelyCall(x.Value, operation, call)).ToList<IPointer>());
+                return new Tuple(tuple.Values.Select(x => RecursivelyCall(x.Value, operation, call))
+                    .ToList<IPointer>());
 
             return operation(value);
         }
@@ -32,17 +33,21 @@ namespace Bloc.Utils
                 if (leftTuple.Values.Count != rightTuple.Values.Count)
                     throw new Throw("Miss mathch number of elements inside the tuples");
 
-                return new Tuple(leftTuple.Values.Zip(rightTuple.Values, (a, b) => RecursivelyCall(a.Value, b.Value, operation, call)).ToList<IPointer>());
+                return new Tuple(leftTuple.Values
+                    .Zip(rightTuple.Values, (a, b) => RecursivelyCall(a.Value, b.Value, operation, call))
+                    .ToList<IPointer>());
             }
 
             {
                 if (left is Tuple tuple)
-                    return new Tuple(tuple.Values.Select(x => RecursivelyCall(x.Value, right, operation, call)).ToList<IPointer>());
+                    return new Tuple(tuple.Values.Select(x => RecursivelyCall(x.Value, right, operation, call))
+                        .ToList<IPointer>());
             }
 
             {
                 if (right is Tuple tuple)
-                    return new Tuple(tuple.Values.Select(x => RecursivelyCall(left, x.Value, operation, call)).ToList<IPointer>());
+                    return new Tuple(tuple.Values.Select(x => RecursivelyCall(left, x.Value, operation, call))
+                        .ToList<IPointer>());
             }
 
             return operation(left, right);

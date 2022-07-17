@@ -2,7 +2,6 @@
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Statements;
-using Bloc.Utils;
 using Bloc.Values;
 
 namespace Bloc.Expressions

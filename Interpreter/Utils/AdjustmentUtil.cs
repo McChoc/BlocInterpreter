@@ -32,7 +32,7 @@ namespace Bloc.Utils
 
                 return returned;
             }
-                
+
             throw new Throw("The operand must be a variable");
         }
 

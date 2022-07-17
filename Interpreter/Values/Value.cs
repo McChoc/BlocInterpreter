@@ -5,8 +5,8 @@ namespace Bloc.Values
 {
     public abstract class Value : IVariable, IPointer
     {
-        Value IVariable.Value => this;
         Value IPointer.Value => this;
+        Value IVariable.Value => this;
 
         public abstract new ValueType GetType();
 
@@ -18,6 +18,7 @@ namespace Bloc.Values
 
         public abstract Value Explicit(ValueType type);
         public abstract T Implicit<T>() where T : Value;
+
         public bool Is<T>(out T? value) where T : Value
         {
             try

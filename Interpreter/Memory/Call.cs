@@ -93,7 +93,7 @@ namespace Bloc.Memory
 
             foreach (var scope in Scopes)
                 foreach (var (key, value) in scope.Variables)
-                    captures.Variables[key] = new StackVariable(key, value.Value.Copy(), captures);
+                    captures.Variables[key] = new(key, value.Value.Copy(), captures);
 
             return captures;
         }
@@ -104,7 +104,7 @@ namespace Bloc.Memory
 
             foreach (var scope in Scopes)
                 foreach (var (key, value) in scope.Variables)
-                    captures.Variables[key] = new StackVariable(key, new Reference(new VariablePointer(value)), captures);
+                    captures.Variables[key] = new(key, new Reference(new VariablePointer(value)), captures);
 
             return captures;
         }

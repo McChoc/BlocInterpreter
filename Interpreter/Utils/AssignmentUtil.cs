@@ -74,7 +74,7 @@ namespace Bloc.Utils
 
             if (left.Is(out Tuple? leftTuple) | right.Is(out Tuple? rightTuple))
             {
-                int count = 0;
+                var count = 0;
 
                 IEnumerable<IPointer> leftEnumerable = null!;
                 IEnumerable<IPointer> rightEnumerable = null!;

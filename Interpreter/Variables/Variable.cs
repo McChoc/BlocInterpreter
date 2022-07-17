@@ -12,9 +12,9 @@ namespace Bloc.Variables
             Pointers = new();
         }
 
-        public Value Value { get; set; }
-
         internal List<Pointer> Pointers { get; }
+
+        public Value Value { get; set; }
 
         public virtual void Delete()
         {
