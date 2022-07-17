@@ -1,6 +1,8 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using Bloc.Exceptions;
 using Bloc.Results;
 using Bloc.Values;
 using String = Bloc.Values.String;
@@ -14,12 +16,14 @@ namespace Bloc.Commands
 
         public static Command Help => new(
             "help",
+
             "help\n" +
             "Returns a list of all commands.\n" +
             "\n" +
             "help <command>\n" +
             "<command: string> |> help\n" +
             "Returns the description of the given command.",
+
             (args, input, call) =>
             {
                 if (args.Length == 0)
@@ -59,9 +63,11 @@ namespace Bloc.Commands
 
         public static Command Echo => new(
             "echo",
+
             "echo <message>\n" +
             "<message: string> |> echo\n" +
             "Returns the message.",
+
             (args, input, _) =>
             {
                 if (args.Length == 0)
@@ -81,8 +87,10 @@ namespace Bloc.Commands
 
         public static Command Clear => new(
             "clear",
+
             "clear\n" +
             "Clears the console.",
+
             (args, _, call) =>
             {
                 if (args.Length != 0)
@@ -95,9 +103,11 @@ namespace Bloc.Commands
 
         public static Command Get => new(
             "get",
+
             "get <name>\n" +
             "<name: string> |> get\n" +
             "Gets the value of the variable with the specified name.",
+
             (args, input, call) =>
             {
                 if (args.Length == 0)
@@ -117,9 +127,11 @@ namespace Bloc.Commands
 
         public static Command Set => new(
             "set",
+
             "set <name> <value>\n" +
             "<value> |> set <name>\n" +
             "Sets a value to a variable with a specified name. It doesn't matter if the variable was previously defined or not. The variable will always be set inside the current scope.",
+
             (args, input, call) =>
             {
                 if (args.Length == 0)
@@ -154,8 +166,10 @@ namespace Bloc.Commands
 
         public static Command Call => new(
             "call",
+
             "call <function> [param] ...\n" +
             "Calls a function and passes it a list of arguments. Arguments can be accessed by the params keyword.",
+
             (args, _, call) =>
             {
                 if (args.Length == 0)
@@ -173,17 +187,72 @@ namespace Bloc.Commands
             }
         );
 
-        //public static Command Execute => new Command(
-        //    "execute",
+        public static Command Execute => new Command(
+            "execute",
 
-        //    "execute <code> [argument] ...\n" +
-        //    "Executes a piece of code and passes it a list of arguments.",
+            "execute <code>\n" +
+            "Executes a piece of code.",
 
-        //    (args, pipe, call) => new Null()
-        //);
+            (args, _, call) =>
+            {
+                if (args.Length != 1)
+                    throw new Throw($"'execute' does not take {args.Length} arguments.\nType '/help execute' to see its usage.");
+
+                try
+                {
+                    Engine.Compile(args[0], out var _, out var statements);
+
+                    var result = call.Engine.Execute(statements);
+
+                    if (result is not null)
+                        throw result;
+                }
+                catch (SyntaxError e)
+                {
+                    throw new Throw($"Syntax error : {e.Message}");
+                }
+
+                return Void.Value;
+            }
+        );
+
+        public static Command Load => new(
+            "load",
+
+            "load <path>\n" +
+            "Loads and execute the code stored in a text file.",
+
+            (args, _, call) =>
+            {
+                if (args.Length != 1)
+                    throw new Throw($"'load' does not take {args.Length} arguments.\nType '/help load' to see its usage.");
+
+                if (!File.Exists(args[0]))
+                    throw new Throw("File does not exists.");
+
+                var code = File.ReadAllText(args[0]);
+
+                try
+                {
+                    Engine.Compile(code, out var _, out var statements);
+
+                    var result = call.Engine.Execute(statements);
+
+                    if (result is not null)
+                        throw result;
+                }
+                catch (SyntaxError e)
+                {
+                    throw new Throw($"Syntax error : {e.Message}");
+                }
+
+                return Void.Value;
+            }
+        );
 
         public static Command Random => new(
             "random",
+
             "random\n" +
             "Returns a pseudo-random number between 0 and 1.\n" +
             "\n" +
@@ -192,6 +261,7 @@ namespace Bloc.Commands
             "\n" +
             "random <min> <max>\n" +
             "Returns a pseudo-random integer between min and max, the max value is excluded.",
+
             (args, pipe, _) =>
             {
                 new Number(rng.NextDouble());
@@ -224,8 +294,10 @@ namespace Bloc.Commands
 
         public static Command Time => new(
             "time",
+
             "time\n" +
             "Returns the current time.",
+
             (args, pipe, _) =>
             {
                 if (args.Length == 0)
