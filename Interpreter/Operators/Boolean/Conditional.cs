@@ -23,7 +23,7 @@ namespace Bloc.Operators
         {
             var value = _condition.Evaluate(call).Value;
 
-            value = ReferenceUtil.Dereference(value, call.Engine).Value;
+            value = ReferenceUtil.Dereference(value, call.Engine.HopLimit).Value;
 
             var @bool = value.Implicit<Bool>();
 

@@ -12,7 +12,7 @@ namespace Bloc.Utils
     {
         internal static Value Adjust(IPointer value, Adjustment adjustment, Call call)
         {
-            value = ReferenceUtil.Dereference(value, call.Engine);
+            value = ReferenceUtil.Dereference(value, call.Engine.HopLimit);
 
             if (value is Tuple tuple)
             {

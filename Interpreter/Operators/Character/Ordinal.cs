@@ -20,7 +20,7 @@ namespace Bloc.Operators
         {
             var value = _operand.Evaluate(call).Value;
 
-            value = ReferenceUtil.Dereference(value, call.Engine).Value;
+            value = ReferenceUtil.Dereference(value, call.Engine.HopLimit).Value;
 
             if (!value.Is(out String? str))
                 throw new Throw($"Cannot apply operator 'ord' on type {value!.GetType().ToString().ToLower()}");

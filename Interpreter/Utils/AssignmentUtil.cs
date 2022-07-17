@@ -31,8 +31,8 @@ namespace Bloc.Utils
 
         internal static Value CompoundAssign(IPointer left, IPointer right, BinaryOperation operation, Call call)
         {
-            left = ReferenceUtil.Dereference(left, call.Engine);
-            right = ReferenceUtil.Dereference(right, call.Engine);
+            left = ReferenceUtil.Dereference(left, call.Engine.HopLimit);
+            right = ReferenceUtil.Dereference(right, call.Engine.HopLimit);
 
             if (left is Tuple tuple)
             {

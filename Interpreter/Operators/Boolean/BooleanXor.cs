@@ -22,14 +22,14 @@ namespace Bloc.Operators
         {
             var left = _left.Evaluate(call).Value;
 
-            left = ReferenceUtil.Dereference(left, call.Engine).Value;
+            left = ReferenceUtil.Dereference(left, call.Engine.HopLimit).Value;
 
             if (!left.Is(out Bool? leftBool))
                 throw new Throw("Cannot implicitly convert to bool");
 
             var right = _right.Evaluate(call).Value;
 
-            right = ReferenceUtil.Dereference(right, call.Engine).Value;
+            right = ReferenceUtil.Dereference(right, call.Engine.HopLimit).Value;
 
             if (!right.Is(out Bool? rightBool))
                 throw new Throw("Cannot implicitly convert to bool");

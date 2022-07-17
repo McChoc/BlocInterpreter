@@ -29,7 +29,7 @@ namespace Bloc.Operators
             {
                 var value = _start.Evaluate(call).Value;
 
-                value = ReferenceUtil.Dereference(value, call.Engine).Value;
+                value = ReferenceUtil.Dereference(value, call.Engine.HopLimit).Value;
 
                 if (!value.Is(out Number? number))
                     throw new Throw("");
@@ -41,7 +41,7 @@ namespace Bloc.Operators
             {
                 var value = _end.Evaluate(call).Value;
 
-                value = ReferenceUtil.Dereference(value, call.Engine).Value;
+                value = ReferenceUtil.Dereference(value, call.Engine.HopLimit).Value;
 
                 if (!value.Is(out Number? number))
                     throw new Throw("");
@@ -53,7 +53,7 @@ namespace Bloc.Operators
             {
                 var value = _step.Evaluate(call).Value;
 
-                value = ReferenceUtil.Dereference(value, call.Engine).Value;
+                value = ReferenceUtil.Dereference(value, call.Engine.HopLimit).Value;
 
                 if (!value.Is(out Number? number))
                     throw new Throw("");

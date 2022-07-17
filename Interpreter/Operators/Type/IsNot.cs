@@ -23,7 +23,7 @@ namespace Bloc.Operators
             var left = _left.Evaluate(call).Value;
             var right = _right.Evaluate(call).Value;
 
-            right = ReferenceUtil.Dereference(right, call.Engine).Value;
+            right = ReferenceUtil.Dereference(right, call.Engine.HopLimit).Value;
 
             if (right.Is(out Type? type))
                 return new Bool(!type!.Value.Contains(left.GetType()));

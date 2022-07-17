@@ -8,9 +8,16 @@ namespace Bloc.Utils
 {
     internal static class ReferenceUtil
     {
-        internal static IPointer Dereference(IPointer value, Engine engine)
+        internal static IPointer Dereference(IPointer value, int hopLimit)
         {
-            for (var i = 0; i < engine.HopLimit; i++)
+            var hopCount = 0;
+
+            return Dereference(value, ref hopCount, hopLimit);
+        }
+
+        private static IPointer Dereference(IPointer value, ref int hopCount, int hopLimit)
+        {
+            for (; hopCount < hopLimit; hopCount++)
             {
                 if (!value.Value.Is(out Reference? reference))
                     return value;
@@ -21,16 +28,21 @@ namespace Bloc.Utils
             throw new Throw("The hop limit was reached");
         }
 
-        internal static Value TrueValue(Value value, Engine engine)
+        internal static Value TrueValue(Value value, int hopLimit)
         {
-            value = Dereference(value, engine).Value;
+            return TrueValue(value, 0, hopLimit);
+        }
+
+        private static Value TrueValue(Value value, int hopCount, int hopLimit)
+        {
+            value = Dereference(value, ref hopCount, hopLimit).Value;
 
             if (value is Tuple tuple)
             {
                 var values = new List<IPointer>(tuple.Values.Count);
 
                 foreach (var item in tuple.Values)
-                    values.Add(TrueValue(item.Value, engine));
+                    values.Add(TrueValue(item.Value, hopCount, hopLimit));
 
                 return new Tuple(values);
             }
@@ -40,7 +52,7 @@ namespace Bloc.Utils
                 var values = new Dictionary<string, IVariable>(@struct.Values.Count);
 
                 foreach (var (key, item) in @struct.Values)
-                    values[key] = TrueValue(item.Value, engine);
+                    values[key] = TrueValue(item.Value, hopCount, hopLimit);
 
                 return new Struct(values);
             }
@@ -50,7 +62,7 @@ namespace Bloc.Utils
                 var values = new List<IVariable>(array.Values.Count);
 
                 foreach (var item in array.Values)
-                    values.Add(TrueValue(item.Value, engine));
+                    values.Add(TrueValue(item.Value, hopCount, hopLimit));
 
                 return new Array(values);
             }

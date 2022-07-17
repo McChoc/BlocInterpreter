@@ -24,8 +24,8 @@ namespace Bloc.Operators
             var left = _left.Evaluate(call).Value;
             var right = _right.Evaluate(call).Value;
 
-            left = ReferenceUtil.Dereference(left, call.Engine).Value;
-            right = ReferenceUtil.Dereference(right, call.Engine).Value;
+            left = ReferenceUtil.Dereference(left, call.Engine.HopLimit).Value;
+            right = ReferenceUtil.Dereference(right, call.Engine.HopLimit).Value;
 
             if (left.Is(out Number? leftNumber) && right.Is(out Number? rightNumber))
             {

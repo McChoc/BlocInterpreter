@@ -18,7 +18,7 @@ namespace Bloc.Operators
         {
             var value = _operand.Evaluate(call);
 
-            return ReferenceUtil.TrueValue(value.Value, call.Engine);
+            return ReferenceUtil.TrueValue(value.Value, call.Engine.HopLimit);
         }
     }
 }

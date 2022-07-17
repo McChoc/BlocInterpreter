@@ -24,18 +24,13 @@ namespace Bloc.Operators
             var left = _left.Evaluate(call).Value;
             var right = _right.Evaluate(call).Value;
 
-            right = ReferenceUtil.Dereference(right, call.Engine).Value;
+            right = ReferenceUtil.Dereference(right, call.Engine.HopLimit).Value;
 
             if (!right.Is(out Type? type))
                 throw new Throw($"Cannot apply operator 'as' on operands of types {left.GetType().ToString().ToLower()} and {right.GetType().ToString().ToLower()}");
 
             if (type!.Value.Count != 1)
                 throw new Throw("Cannot apply operator 'as' on a composite type");
-
-            //if (left is Reference && type.Value.Single() == ValueType.Reference)
-            //    return left;
-
-            //left = ReferenceUtil.Dereference(left, call.Engine).Value;
 
             return left.Explicit(type.Value.Single());
         }

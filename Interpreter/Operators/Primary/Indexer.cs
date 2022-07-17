@@ -22,7 +22,7 @@ namespace Bloc.Operators
         {
             var value = _expression.Evaluate(call).Value;
 
-            value = ReferenceUtil.Dereference(value, call.Engine).Value;
+            value = ReferenceUtil.Dereference(value, call.Engine.HopLimit).Value;
 
             if (value is not IIndexable indexable)
                 throw new Throw("The '[]' operator can only be apllied to a string, an array or a struct");

@@ -23,7 +23,7 @@ namespace Bloc.Operators
             if (value is not Reference and not Pointer)
                 throw new Throw("The 'val' operator can only be used on references and variables");
 
-            return ReferenceUtil.Dereference(value, call.Engine);
+            return ReferenceUtil.Dereference(value, call.Engine.HopLimit);
         }
     }
 }
