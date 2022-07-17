@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
+using Bloc.Exceptions;
 using Bloc.Expressions;
 using Bloc.Extensions;
 using Bloc.Operators;
 using Bloc.Tokens;
-using Bloc.Utils.Exceptions;
 
 namespace Bloc
 {

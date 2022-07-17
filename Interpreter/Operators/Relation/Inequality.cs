@@ -18,10 +18,10 @@ namespace Bloc.Operators
 
         public IPointer Evaluate(Call call)
         {
-            var leftValue = _left.Evaluate(call).Value;
-            var rightValue = _right.Evaluate(call).Value;
+            var left = _left.Evaluate(call).Value;
+            var right = _right.Evaluate(call).Value;
 
-            return new Bool(!leftValue.Equals(rightValue!));
+            return new Bool(!left.Equals(right!));
         }
     }
 }

@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
+using Bloc.Exceptions;
 using Bloc.Expressions;
 using Bloc.Extensions;
 using Bloc.Operators;
 using Bloc.Tokens;
-using Bloc.Utils.Exceptions;
 
 namespace Bloc
 {
@@ -16,7 +16,7 @@ namespace Bloc
 
             if (tokens[0] is (TokenType.Operator or TokenType.Keyword,
                 "+" or "-" or "~" or "!" or "++" or "--" or "~~" or "!!" or "len" or "chr" or "ord" or
-                "val" or "ref" or "let" or "new" or "delete" or "await" or "nameof" or "typeof"))
+                "ref" or "val" or "val val" or "new" or "let" or "delete" or "await" or "nameof" or "typeof"))
             {
                 var operand = ParseUnaries(tokens.GetRange(1..), precedence);
 
@@ -33,10 +33,11 @@ namespace Bloc
                     "len" => new Length(operand),
                     "chr" => new Character(operand),
                     "ord" => new Ordinal(operand),
-                    "val" => new Val(operand),
                     "ref" => new Ref(operand),
-                    "let" => new Let(operand),
+                    "val" => new Val(operand),
+                    "val val" => new ValVal(operand),
                     "new" => new New(operand),
+                    "let" => new Let(operand),
                     "delete" => new Delete(operand),
                     "await" => new Await(operand),
                     "nameof" => new Nameof(operand),

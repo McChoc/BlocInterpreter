@@ -18,7 +18,6 @@ namespace Bloc.Operators
         public IPointer Evaluate(Call call)
         {
             var value = _operand.Evaluate(call).Value.Copy();
-
             value.Assign();
 
             var variable = new HeapVariable(value);

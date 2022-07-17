@@ -21,7 +21,7 @@ namespace Bloc.Operators
             var left = _left.Evaluate(call);
             var right = _right.Evaluate(call);
 
-            return TupleUtil.RecursivelyCompoundAssign(left, right, Logarithm.Operation);
+            return AssignmentUtil.CompoundAssign(left, right, Logarithm.Operation, call);
         }
     }
 }

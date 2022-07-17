@@ -7,6 +7,13 @@ using Bloc.Utils;
 
 namespace Bloc.Values
 {
+    internal enum CaptureMode
+    {
+        None,
+        Value,
+        Reference
+    }
+
     public class Function : Value, IInvokable
     {
         internal bool Async { get; set; }

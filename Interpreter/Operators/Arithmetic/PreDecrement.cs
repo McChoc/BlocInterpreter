@@ -20,18 +20,17 @@ namespace Bloc.Operators
         {
             var value = _operand.Evaluate(call);
 
-            return TupleUtil.RecursivelyCall(value, Operation);
+            return AdjustmentUtil.Adjust(value, Adjustment, call);
         }
 
-        private static IPointer Operation(IPointer value)
+        private static (Value, Value) Adjustment(Value value)
         {
-            if (value is not Pointer pointer)
-                throw new Throw("The operand of an increment must be a variable");
+            if (!value.Is(out Number? number))
+                throw new Throw($"Cannot apply operator '--' on type {value.GetType().ToString().ToLower()}");
 
-            if (!pointer.Get().Is(out Number? number))
-                throw new Throw($"Cannot apply operator '--' on type {pointer.Get().GetType().ToString().ToLower()}");
+            number = new Number(number!.Value - 1);
 
-            return pointer.Set(new Number(number!.Value - 1));
+            return (number, number);
         }
     }
 }

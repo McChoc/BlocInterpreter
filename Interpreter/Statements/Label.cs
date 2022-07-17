@@ -1,4 +1,4 @@
-﻿namespace Bloc.Utils
+﻿namespace Bloc.Statements
 {
     internal class Label
     {

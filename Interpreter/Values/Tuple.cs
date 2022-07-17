@@ -48,13 +48,7 @@ namespace Bloc.Values
                 return (Null.Value as T)!;
 
             if (typeof(T) == typeof(Bool))
-            {
-                foreach (var variable in Values)
-                    if (!variable.Value.Implicit<Bool>().Value)
-                        return (Bool.False as T)!;
-
                 return (Bool.True as T)!;
-            }
 
             if (typeof(T) == typeof(String))
                 return (new String(ToString()) as T)!;
@@ -67,22 +61,10 @@ namespace Bloc.Values
 
         public override Value Explicit(ValueType type)
         {
-            if (type == ValueType.Bool)
-            {
-                foreach (var variable in Values)
-                {
-                    var value = variable.Value.Explicit(ValueType.Bool);
-
-                    if (!((Bool)value).Value)
-                        return Bool.False;
-                }
-
-                return Bool.True;
-            }
-
             return type switch
             {
                 ValueType.Null => Null.Value,
+                ValueType.Bool => Bool.True,
                 ValueType.String => new String(ToString()),
                 ValueType.Array => new Array(Values.Select(v => v.Value.Copy()).ToList<IVariable>()),
                 ValueType.Tuple => this,

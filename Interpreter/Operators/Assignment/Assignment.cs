@@ -21,7 +21,7 @@ namespace Bloc.Operators
             var left = _left.Evaluate(call);
             var right = _right.Evaluate(call);
 
-            return TupleUtil.RecursivelyAssign(left, right);
+            return AssignmentUtil.Assign(left, right, call);
         }
     }
 }

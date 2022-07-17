@@ -1,6 +1,7 @@
 ﻿using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Pointers;
+using Bloc.Utils;
 using Bloc.Values;
 
 namespace Bloc.Operators
@@ -21,6 +22,9 @@ namespace Bloc.Operators
         public IPointer Evaluate(Call call)
         {
             var value = _condition.Evaluate(call).Value;
+
+            value = ReferenceUtil.Dereference(value, call.Engine).Value;
+
             var @bool = value.Implicit<Bool>();
 
             return @bool!.Value ? _consequent.Evaluate(call).Value : _alternative.Evaluate(call).Value;

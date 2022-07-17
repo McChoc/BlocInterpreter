@@ -2,6 +2,7 @@
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
+using Bloc.Utils;
 using Bloc.Values;
 
 namespace Bloc.Operators
@@ -19,13 +20,16 @@ namespace Bloc.Operators
 
         public IPointer Evaluate(Call call)
         {
-            var leftValue = _left.Evaluate(call).Value;
-            var rightValue = _right.Evaluate(call).Value;
+            var left = _left.Evaluate(call).Value;
+            var right = _right.Evaluate(call).Value;
 
-            if (leftValue.Is(out Number? leftNumber) && rightValue.Is(out Number? rightNumber))
+            left = ReferenceUtil.Dereference(left, call.Engine).Value;
+            right = ReferenceUtil.Dereference(right, call.Engine).Value;
+
+            if (left.Is(out Number? leftNumber) && right.Is(out Number? rightNumber))
                 return new Bool(leftNumber!.Value < rightNumber!.Value);
 
-            throw new Throw($"Cannot apply operator '<' on operands of types {leftValue.GetType().ToString().ToLower()} and {rightValue.GetType().ToString().ToLower()}");
+            throw new Throw($"Cannot apply operator '<' on operands of types {left.GetType().ToString().ToLower()} and {right.GetType().ToString().ToLower()}");
         }
     }
 }

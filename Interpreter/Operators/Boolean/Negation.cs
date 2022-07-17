@@ -2,6 +2,7 @@
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
+using Bloc.Utils;
 using Bloc.Values;
 
 namespace Bloc.Operators
@@ -19,6 +20,11 @@ namespace Bloc.Operators
         {
             var value = _operand.Evaluate(call).Value;
 
+            return OperatorUtil.RecursivelyCall(value, Operation, call);
+        }
+
+        private static Value Operation(Value value)
+        {
             if (value.Is(out Bool? @bool))
                 return new Bool(!@bool!.Value);
 

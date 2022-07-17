@@ -1,4 +1,4 @@
-﻿namespace Bloc.Utils.Exceptions
+﻿namespace Bloc.Exceptions
 {
     public class MissingBodyError : SyntaxError
     {

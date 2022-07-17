@@ -3,6 +3,7 @@ using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
+using Bloc.Utils;
 using Bloc.Values;
 
 namespace Bloc.Operators
@@ -20,16 +21,23 @@ namespace Bloc.Operators
 
         public IPointer Evaluate(Call call)
         {
-            var leftValue = _left.Evaluate(call).Value;
-            var rightValue = _right.Evaluate(call).Value;
+            var left = _left.Evaluate(call).Value;
+            var right = _right.Evaluate(call).Value;
 
-            if (!rightValue.Is(out Type? type))
-                throw new Throw($"Cannot apply operator 'as' on operands of types {leftValue.GetType().ToString().ToLower()} and {rightValue.GetType().ToString().ToLower()}");
+            right = ReferenceUtil.Dereference(right, call.Engine).Value;
+
+            if (!right.Is(out Type? type))
+                throw new Throw($"Cannot apply operator 'as' on operands of types {left.GetType().ToString().ToLower()} and {right.GetType().ToString().ToLower()}");
 
             if (type!.Value.Count != 1)
                 throw new Throw("Cannot apply operator 'as' on a composite type");
 
-            return leftValue.Explicit(type.Value.Single());
+            //if (left is Reference && type.Value.Single() == ValueType.Reference)
+            //    return left;
+
+            //left = ReferenceUtil.Dereference(left, call.Engine).Value;
+
+            return left.Explicit(type.Value.Single());
         }
     }
 }

@@ -20,14 +20,14 @@ namespace Bloc.Operators
         {
             var value = _operand.Evaluate(call);
 
-            if (value is not VariablePointer pointer)
-                throw new Throw("The expression must be a variable stored on the stack or a member of a struct");
+            if (value is VariablePointer pointer)
+            {
+                if (pointer.Variable is StackVariable variable)
+                    return new String(variable.Name);
 
-            if (pointer.Variable is StackVariable variable)
-                return new String(variable.Name);
-
-            if (pointer.Variable is StructVariable member)
-                return new String(member.Name);
+                if (pointer.Variable is StructVariable member)
+                    return new String(member.Name);
+            }
 
             throw new Throw("The expression must be a variable stored on the stack or a member of a struct");
         }

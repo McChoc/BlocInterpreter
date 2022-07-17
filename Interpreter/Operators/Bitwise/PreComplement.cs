@@ -21,29 +21,17 @@ namespace Bloc.Operators
         {
             var value = _operand.Evaluate(call);
 
-            return TupleUtil.RecursivelyCall(value, Operation);
+            return AdjustmentUtil.Adjust(value, Adjustment, call);
         }
 
-        private static IPointer Operation(IPointer value)
+        private static (Value, Value) Adjustment(Value value)
         {
-            if (value is not Pointer pointer)
-                throw new Throw("The operand of an increment must be a variable");
+            if (!value.Is(out Number? number))
+                throw new Throw($"Cannot apply operator '~~' on type {value.GetType().ToString().ToLower()}");
 
-            if (pointer.Get().Is(out Number? number))
-                return pointer.Set(new Number(~number!.ToInt()));
+            number = new Number(~number!.ToInt());
 
-            if (pointer.Get().Is(out Type? type))
-            {
-                var types = new HashSet<ValueType>();
-
-                foreach (ValueType t in System.Enum.GetValues(typeof(ValueType)))
-                    if (!type!.Value.Contains(t))
-                        types.Add(t);
-
-                return pointer.Set(new Type(types));
-            }
-
-            throw new Throw($"Cannot apply operator '~~' on type {pointer.Get().GetType().ToString().ToLower()}");
+            return (number, number);
         }
     }
 }

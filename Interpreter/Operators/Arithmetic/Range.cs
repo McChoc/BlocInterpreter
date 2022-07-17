@@ -2,6 +2,7 @@
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
+using Bloc.Utils;
 using Bloc.Values;
 
 namespace Bloc.Operators
@@ -28,6 +29,8 @@ namespace Bloc.Operators
             {
                 var value = _start.Evaluate(call).Value;
 
+                value = ReferenceUtil.Dereference(value, call.Engine).Value;
+
                 if (!value.Is(out Number? number))
                     throw new Throw("");
 
@@ -38,6 +41,8 @@ namespace Bloc.Operators
             {
                 var value = _end.Evaluate(call).Value;
 
+                value = ReferenceUtil.Dereference(value, call.Engine).Value;
+
                 if (!value.Is(out Number? number))
                     throw new Throw("");
 
@@ -47,6 +52,8 @@ namespace Bloc.Operators
             if (_step is not null)
             {
                 var value = _step.Evaluate(call).Value;
+
+                value = ReferenceUtil.Dereference(value, call.Engine).Value;
 
                 if (!value.Is(out Number? number))
                     throw new Throw("");

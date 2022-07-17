@@ -5,6 +5,7 @@ using Bloc.Interfaces;
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
+using Bloc.Utils;
 using Bloc.Values;
 
 namespace Bloc.Operators
@@ -24,8 +25,10 @@ namespace Bloc.Operators
         {
             var value = _expression.Evaluate(call).Value;
 
+            value = ReferenceUtil.Dereference(value, call.Engine).Value;
+
             if (value is not IInvokable invokable)
-                throw new Throw("You can only invoke a function or a type.");
+                throw new Throw("The '()' operator can only be apllied to a function or a type");
 
             var args = new List<Value>(_parameters.Count);
 

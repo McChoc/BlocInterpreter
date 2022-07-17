@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Bloc.Exceptions;
 using Bloc.Expressions;
 using Bloc.Extensions;
 using Bloc.Scanners;
 using Bloc.Statements;
 using Bloc.Tokens;
-using Bloc.Utils;
-using Bloc.Utils.Exceptions;
+using Bloc.Values;
 
 namespace Bloc
 {

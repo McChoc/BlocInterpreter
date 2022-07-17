@@ -1,17 +1,15 @@
 ﻿using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Pointers;
-using Bloc.Results;
 using Bloc.Utils;
-using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal class Val : IExpression
+    internal class ValVal : IExpression
     {
         private readonly IExpression _operand;
 
-        internal Val(IExpression operand)
+        internal ValVal(IExpression operand)
         {
             _operand = operand;
         }
@@ -20,10 +18,7 @@ namespace Bloc.Operators
         {
             var value = _operand.Evaluate(call);
 
-            if (value is not Reference and not Pointer)
-                throw new Throw("The 'val' operator can only be used on references and variables");
-
-            return ReferenceUtil.Dereference(value, call.Engine);
+            return ReferenceUtil.TrueValue(value.Value, call.Engine);
         }
     }
 }

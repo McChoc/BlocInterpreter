@@ -22,18 +22,18 @@ namespace Bloc.Operators
 
         public IPointer Evaluate(Call call)
         {
-            var left = _left.Evaluate(call);
-            var right = _right.Evaluate(call);
+            var left = _left.Evaluate(call).Value;
+            var right = _right.Evaluate(call).Value;
 
-            return TupleUtil.RecursivelyCall(left, right, Operation);
+            return OperatorUtil.RecursivelyCall(left, right, Operation, call);
         }
 
-        internal static IPointer Operation(IPointer left, IPointer right)
+        internal static Value Operation(Value left, Value right)
         {
-            if (left.Value.Is(out Number? leftNumber) && right.Value.Is(out Number? rightNumber))
+            if (left.Is(out Number? leftNumber) && right.Is(out Number? rightNumber))
                 return new Number(leftNumber!.Value + rightNumber!.Value);
 
-            if (left.Value.Is(out Struct? leftStruct) && right.Value.Is(out Struct? rightStruct))
+            if (left.Is(out Struct? leftStruct) && right.Is(out Struct? rightStruct))
             {
                 var dict = new Dictionary<string, IVariable>();
 
@@ -46,7 +46,7 @@ namespace Bloc.Operators
                 return new Struct(dict);
             }
 
-            if (left.Value.Is(out Array? leftArray) && right.Value.Is(out Array? rightArray))
+            if (left.Is(out Array? leftArray) && right.Is(out Array? rightArray))
             {
                 var list = new List<IVariable>(leftArray!.Values.Count + rightArray!.Values.Count);
                 list.AddRange(((Array)leftArray.Copy()).Values);
@@ -56,28 +56,28 @@ namespace Bloc.Operators
 
 #pragma warning disable IDE0028
 
-            if (left.Value.Is(out Array? array))
+            if (left.Is(out Array? array))
             {
                 var list = new List<IVariable>(array!.Values.Count + 1);
                 list.AddRange(((Array)array.Copy()).Values);
-                list.Add(right.Value.Copy());
+                list.Add(right.Copy());
                 return new Array(list);
             }
 
-            if (right.Value.Is(out array))
+            if (right.Is(out array))
             {
                 var list = new List<IVariable>(array!.Values.Count + 1);
-                list.Add(left.Value.Copy());
+                list.Add(left.Copy());
                 list.AddRange(((Array)array.Copy()).Values);
                 return new Array(list);
             }
 
 #pragma warning restore IDE0028
 
-            if (left.Value.Is(out String? leftString) && right.Value.Is(out String? rightString))
+            if (left.Is(out String? leftString) && right.Is(out String? rightString))
                 return new String(leftString!.Value + rightString!.Value);
 
-            throw new Throw($"Cannot apply operator '+' on operands of types {left.Value.GetType().ToString().ToLower()} and {right.Value.GetType().ToString().ToLower()}");
+            throw new Throw($"Cannot apply operator '+' on operands of types {left.GetType().ToString().ToLower()} and {right.GetType().ToString().ToLower()}");
         }
     }
 }

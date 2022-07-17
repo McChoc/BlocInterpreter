@@ -472,7 +472,7 @@ The following table shows the precedence of all operators. The operators at the 
 | Operators                                                                                | Description          | Associativity                     |
 |------------------------------------------------------------------------------------------|----------------------|-----------------------------------|
 | [`.`](#member-access-operator), [`[]`](#indexer-operator), [`()`](#invocation-operator)  | Primary              | Left&#8209;to&#8209;right&nbsp;🡲 |
-| [`+`](#unary-plus-operator), [`-`](#unary-minus-operator-), [`~`](#complement-operator-), [`!`](#negation-operator), [`++`](#increment-operator), [`--`](#decrement-operator-), [`~~`](#variable-complement-operator-), [`!!`](#variable-negation-operator), [`?`](#nullable-type-operator), [`len`](#length-operator-len), [`chr`](#character-operator-chr), [`ord`](#ordinal-operator-ord), [`val`](#value-operator-val), [`ref`](#reference-operator-ref), [`let`](#definition-operator-let), [`new`](#allocation-operator-new), [`delete`](#delete-operator-delete), [`await`](#await-operator-await) [`nameof`](#nameof-operator-nameof), [`typeof`](#typeof-operator-typeof) | Unary | Right&#8209;to&#8209;left&nbsp;🡰 |
+| [`+`](#unary-plus-operator), [`-`](#unary-minus-operator-), [`~`](#complement-operator-), [`!`](#negation-operator), [`++`](#increment-operator), [`--`](#decrement-operator-), [`~~`](#variable-complement-operator-), [`!!`](#variable-negation-operator), [`?`](#nullable-type-operator), [`len`](#length-operator-len), [`chr`](#character-operator-chr), [`ord`](#ordinal-operator-ord), [`ref`](#reference-operator-ref), [`val`](#value-operator-val), [`val val`](#true-value-operator-val-val), [`let`](#definition-operator-let), [`new`](#allocation-operator-new), [`delete`](#delete-operator-delete), [`await`](#await-operator-await) [`nameof`](#nameof-operator-nameof), [`typeof`](#typeof-operator-typeof) | Unary | Right&#8209;to&#8209;left&nbsp;🡰 |
 | [`..`](#range-operator)                                                                  | Range                | N/A                               |
 | [`**`](#power-operator), [`//`](#root-operator), [`%%`](#logarithm-operator)             | Exponential          | Left&#8209;to&#8209;right&nbsp;🡲 |
 | [`*`](#multiplication-operator), [`/`](#division-operator), [`%`](#remainder-operator)   | Multiplicative       | Left&#8209;to&#8209;right&nbsp;🡲 |
@@ -1448,30 +1448,6 @@ ord 'AB'; # throws an exception
 
 ---
 
-#### Value operator `val`
-
-This operator will dereference every reference in a chain of references until it finds a value and return this value. The result of this operator is guaranteed not to be a reference. If its operand is not a reference, its value is simply returned. If too many references are dereferenced, an exception is thrown. This is the hop limit and prevents the program from freezing if two references are pointing at each other creating an infinite loop.
-
-```csharp
-val 2; # evaluates to 2
-
-var value = 5; 
-var ref1 = ref value; 
-var ref2 = ref ref1; 
-
-val value;  # evaluates to 5
-val ref1;   # evaluates to 5
-val ref2;   # evaluates to 5
-
-var foo; 
-var bar = ref foo; 
-foo = ref bar; 
-
-val foo; # throws an exception
-```
-
----
-
 #### Reference operator `ref`
 
 This operator returns a reference to its operand. Its operand can be a variable, an element of an array or struct or a slice of an array.
@@ -1482,6 +1458,48 @@ var foo = { 1, 2, 3, 4, 5 };
 var bar = ref foo;      # bar is a reference to the variable foo
 
 var baz = ref foo[..2]; # baz is a reference to a slice of foo
+```
+
+---
+
+#### Value operator `val`
+
+This operator will dereference every reference in a chain of references until it finds a variable with a value other than a reference and return this variable. If its operand is already a valid variable, it is simply returned. You can assing values to the result of this operator. If a variable cannot be found, an exception is thrown. If too many references are dereferenced, an exception is thrown. This is the hop limit and prevents the program from freezing if references are pointing at each other creating an infinite loop.
+
+```csharp
+val 2; # throws an exception
+
+var value = 5; 
+var ref1 = ref value; 
+var ref2 = ref ref1; 
+
+val value;  # evaluates to 5
+val ref1;   # evaluates to 5
+val ref2;   # evaluates to 5
+
+let (foo, bar) = (ref bar, ref foo);
+
+val foo; # throws an exception
+```
+
+---
+
+#### True value operator `val val`
+
+This operator will dereference every reference in a data structure. Its operand doesn't need to be or to point to a variable, but you cannot assign a value to its result.
+
+```csharp
+val val 2; # evaluates to 2
+
+var foo = 4;
+
+var a = 1;
+var b = new 2;
+var c = (3, ref foo);
+var d = { ref a, ref b, ref c };
+var e = ref d;
+
+val val e; # evaluates to { 1, 2, (3, 4) }
 ```
 
 ---
@@ -1499,7 +1517,7 @@ let bar = ref bar; # works fine
 # Declaring multiple variable with a var statement
 var a = 2, b = 5; 
 
-# Two ways to acheive the same thing with the let operator
+# Two ways to achieve the same thing with the let operator
 let (c, d) = (2, 5); 
 let e = 2, let f = 5; 
 
@@ -1927,14 +1945,13 @@ var workerThread = async ref () {
             if (len input == 0)
                 continue;
 
-            value = input[-1];
-            val input = input[..-1];
+            value = delete input[-1];
         }
 
         # process the value;
 
         lock (val output)
-            val output += value;
+            output += value;
     }
 }; 
 

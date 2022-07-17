@@ -19,17 +19,17 @@ namespace Bloc.Operators
 
         public IPointer Evaluate(Call call)
         {
-            var value = _operand.Evaluate(call);
+            var value = _operand.Evaluate(call).Value;
 
-            return TupleUtil.RecursivelyCall(value, Operation);
+            return OperatorUtil.RecursivelyCall(value, Operation, call);
         }
 
-        private static IPointer Operation(IPointer value)
+        private static Value Operation(Value value)
         {
-            if (value.Value.Is(out Number? number))
+            if (value.Is(out Number? number))
                 return new Number(~number!.ToInt());
 
-            if (value.Value.Is(out Type? type))
+            if (value.Is(out Type? type))
             {
                 var types = new HashSet<ValueType>();
 
@@ -40,7 +40,7 @@ namespace Bloc.Operators
                 return new Type(types);
             }
 
-            throw new Throw($"Cannot apply operator '~' on type {value.Value.GetType().ToString().ToLower()}");
+            throw new Throw($"Cannot apply operator '~' on type {value.GetType().ToString().ToLower()}");
         }
     }
 }

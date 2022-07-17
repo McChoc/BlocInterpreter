@@ -23,12 +23,12 @@ namespace Bloc.Operators
             return Undefine(identifier);
         }
 
-        private Value Undefine(IPointer value)
+        private Value Undefine(IPointer identifier)
         {
-            if (value is Pointer pointer)
+            if (identifier is Pointer pointer)
                 return pointer.Delete();
 
-            if (value is Tuple tuple)
+            if (identifier is Tuple tuple)
             {
                 var values = new List<IPointer>(tuple.Values.Count);
 

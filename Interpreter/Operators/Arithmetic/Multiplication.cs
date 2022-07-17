@@ -23,19 +23,19 @@ namespace Bloc.Operators
 
         public IPointer Evaluate(Call call)
         {
-            var left = _left.Evaluate(call);
-            var right = _right.Evaluate(call);
+            var left = _left.Evaluate(call).Value;
+            var right = _right.Evaluate(call).Value;
 
-            return TupleUtil.RecursivelyCall(left, right, Operation);
+            return OperatorUtil.RecursivelyCall(left, right, Operation, call);
         }
 
-        internal static IPointer Operation(IPointer left, IPointer right)
+        internal static Value Operation(Value left, Value right)
         {
-            if (left.Value.Is(out Number? leftNumber) && right.Value.Is(out Number? rightNumber))
+            if (left.Is(out Number? leftNumber) && right.Is(out Number? rightNumber))
                 return new Number(leftNumber!.Value * rightNumber!.Value);
 
-            if ((left.Value.Is(out Array? array) && right.Value.Is(out Number? number)) ||
-                (left.Value.Is(out number) && right.Value.Is(out array)))
+            if ((left.Is(out Array? array) && right.Is(out Number? number)) ||
+                (left.Is(out number) && right.Is(out array)))
             {
                 if (number!.Value < 0)
                     throw new Throw("You cannot multiply an array by a negative number");
@@ -50,8 +50,8 @@ namespace Bloc.Operators
                 return new Array(list);
             }
 
-            if ((left.Value.Is(out String? str) && right.Value.Is(out number)) ||
-                (left.Value.Is(out number) && right.Value.Is(out str)))
+            if ((left.Is(out String? str) && right.Is(out number)) ||
+                (left.Is(out number) && right.Is(out str)))
             {
                 if (number!.Value < 0)
                     throw new Throw("You cannot multiply a string by a negative number");
@@ -66,7 +66,7 @@ namespace Bloc.Operators
                 return new String(builder.ToString());
             }
 
-            throw new Throw($"Cannot apply operator '*' on operands of types {left.Value.GetType().ToString().ToLower()} and {right.Value.GetType().ToString().ToLower()}");
+            throw new Throw($"Cannot apply operator '*' on operands of types {left.GetType().ToString().ToLower()} and {right.GetType().ToString().ToLower()}");
         }
     }
 }

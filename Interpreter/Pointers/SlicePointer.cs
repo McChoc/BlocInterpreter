@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Bloc.Extensions;
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Values;
@@ -46,7 +47,7 @@ namespace Bloc.Pointers
             value = value.Copy();
             value.Assign();
 
-            foreach (var (var, val) in Variables.Zip(array.Values, (a, b) => (a, b)))
+            foreach (var (var, val) in Variables.Zip(array.Values))
             {
                 var.Value.Destroy();
                 var.Value = val.Value;

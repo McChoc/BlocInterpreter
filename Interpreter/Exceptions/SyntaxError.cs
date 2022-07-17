@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Bloc.Utils.Exceptions
+namespace Bloc.Exceptions
 {
     public class SyntaxError : Exception
     {

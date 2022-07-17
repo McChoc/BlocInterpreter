@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using Bloc.Exceptions;
 using Bloc.Expressions;
 using Bloc.Tokens;
-using Bloc.Utils.Exceptions;
 
 namespace Bloc.Scanners
 {
@@ -136,6 +136,9 @@ namespace Bloc.Scanners
 
             if (word is (TokenType.Keyword, "is") && HasNextToken() && Peek() is (TokenType.Keyword, "not"))
                 return new Token(word.Start, GetNextToken().End, TokenType.Keyword, "is not");
+
+            if (word is (TokenType.Keyword, "val") && HasNextToken() && Peek() is (TokenType.Keyword, "val"))
+                return new Token(word.Start, GetNextToken().End, TokenType.Keyword, "val val");
 
             return word;
         }

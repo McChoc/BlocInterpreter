@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Bloc.Exceptions;
 using Bloc.Expressions;
 using Bloc.Extensions;
 using Bloc.Statements;
 using Bloc.Tokens;
-using Bloc.Utils.Exceptions;
 
 namespace Bloc.Scanners
 {

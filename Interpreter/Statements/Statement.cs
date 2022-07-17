@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using Bloc.Memory;
 using Bloc.Results;
-using Bloc.Utils;
 
 namespace Bloc.Statements
 {

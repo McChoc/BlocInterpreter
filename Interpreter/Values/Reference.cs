@@ -1,12 +1,9 @@
-﻿using Bloc.Interfaces;
-using Bloc.Memory;
-using Bloc.Pointers;
+﻿using Bloc.Pointers;
 using Bloc.Results;
-using System.Collections.Generic;
 
 namespace Bloc.Values
 {
-    public class Reference : Value, IInvokable, IIndexable, IIterable
+    public class Reference : Value
     {
         internal Reference() => Pointer = new VariablePointer(null);
 
@@ -26,53 +23,36 @@ namespace Bloc.Values
 
         public override T Implicit<T>()
         {
+            if (typeof(T) == typeof(Null))
+                return (Null.Value as T)!;
+
+            if (typeof(T) == typeof(Bool))
+                return (Bool.True as T)!;
+
+            if (typeof(T) == typeof(String))
+                return (new String(ToString()) as T)!;
+
             if (typeof(T) == typeof(Reference))
                 return (this as T)!;
 
-            return Pointer.Get().Implicit<T>();
+            throw new Throw($"Cannot implicitly cast reference as {typeof(T).Name.ToLower()}");
         }
 
         public override Value Explicit(ValueType type)
         {
-            if (type == ValueType.Reference)
-                return this;
-
-            return Pointer.Get().Explicit(type);
+            return type switch
+            {
+                ValueType.Null => Null.Value,
+                ValueType.Bool => Bool.True,
+                ValueType.String => new String(ToString()),
+                ValueType.Reference => this,
+                _ => throw new Throw($"Cannot cast reference as {type.ToString().ToLower()}")
+            };
         }
 
         public override string ToString(int _)
         {
             return "[reference]";
-        }
-
-        public Value Invoke(List<Value> values, Call call)
-        {
-            var value = Pointer.Get();
-
-            if (value is not IInvokable invokable)
-                throw new Throw("You can only invoke a function or a type.");
-
-            return invokable.Invoke(values, call);
-        }
-
-        public IPointer Index(Value index, Call call)
-        {
-            var value = Pointer.Get();
-
-            if (value is not IIndexable indexable)
-                throw new Throw("You can only index a string, an array or a struct.");
-
-            return indexable.Index(index, call);
-        }
-
-        public IEnumerable<Value> Iterate()
-        {
-            var value = Pointer.Get();
-            
-            if (value is not IIterable iterable)
-                throw new Throw("You can only iterate over a range, a string or an array.");
-
-            return iterable.Iterate();
         }
     }
 }

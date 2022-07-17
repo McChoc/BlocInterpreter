@@ -3,6 +3,7 @@ using Bloc.Interfaces;
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
+using Bloc.Utils;
 
 namespace Bloc.Operators
 {
@@ -21,8 +22,10 @@ namespace Bloc.Operators
         {
             var value = _expression.Evaluate(call).Value;
 
+            value = ReferenceUtil.Dereference(value, call.Engine).Value;
+
             if (value is not IIndexable indexable)
-                throw new Throw("You can only index a string, an array or a struct.");
+                throw new Throw("The '[]' operator can only be apllied to a string, an array or a struct");
 
             var index = _index.Evaluate(call).Value;
 

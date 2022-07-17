@@ -2,6 +2,7 @@
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
+using Bloc.Utils;
 using Bloc.Values;
 
 namespace Bloc.Operators
@@ -19,15 +20,15 @@ namespace Bloc.Operators
         {
             var value = _operand.Evaluate(call);
 
-            if (value is not Pointer pointer)
-                throw new Throw("The operand of an increment must be a variable");
+            return AdjustmentUtil.Adjust(value, Adjustment, call);
+        }
 
-            if (!pointer.Get().Is(out Bool? @bool))
-                throw new Throw($"Cannot apply operator '!!' on type {pointer.Get().GetType().ToString().ToLower()}");
+        private static (Value, Value) Adjustment(Value value)
+        {
+            if (!value.Is(out Bool? @bool))
+                throw new Throw($"Cannot apply operator '!!' on type {value.GetType().ToString().ToLower()}");
 
-            pointer.Set(new Bool(!@bool!.Value));
-
-            return @bool;
+            return (@bool!, new Bool(!@bool!.Value));
         }
     }
 }

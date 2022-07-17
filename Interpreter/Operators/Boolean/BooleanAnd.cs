@@ -2,6 +2,7 @@
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
+using Bloc.Utils;
 using Bloc.Values;
 
 namespace Bloc.Operators
@@ -20,6 +21,8 @@ namespace Bloc.Operators
         public IPointer Evaluate(Call call)
         {
             var value = _left.Evaluate(call).Value;
+
+            value = ReferenceUtil.Dereference(value, call.Engine).Value;
 
             if (!value.Is(out Bool? @bool))
                 throw new Throw("Cannot implicitly convert to bool");

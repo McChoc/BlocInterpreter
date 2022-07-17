@@ -2,6 +2,7 @@
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
+using Bloc.Utils;
 using Bloc.Values;
 
 namespace Bloc.Operators
@@ -19,13 +20,15 @@ namespace Bloc.Operators
 
         public IPointer Evaluate(Call call)
         {
-            var leftValue = _left.Evaluate(call).Value;
-            var rightValue = _right.Evaluate(call).Value;
+            var left = _left.Evaluate(call).Value;
+            var right = _right.Evaluate(call).Value;
 
-            if (rightValue.Is(out Type? type))
-                return new Bool(type!.Value.Contains(leftValue.GetType()));
+            right = ReferenceUtil.Dereference(right, call.Engine).Value;
 
-            throw new Throw($"Cannot apply operator 'is' on operands of types {leftValue.GetType().ToString().ToLower()} and {rightValue.GetType().ToString().ToLower()}");
+            if (right.Is(out Type? type))
+                return new Bool(type!.Value.Contains(left.GetType()));
+
+            throw new Throw($"Cannot apply operator 'is' on operands of types {left.GetType().ToString().ToLower()} and {right.GetType().ToString().ToLower()}");
         }
     }
 }
