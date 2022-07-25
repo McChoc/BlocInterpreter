@@ -19,7 +19,7 @@ namespace Bloc.Operators
         public IPointer Evaluate(Call call)
         {
             var left = _left.Evaluate(call);
-            var right = _right.Evaluate(call);
+            var right = _right.Evaluate(call).Value.Copy();
 
             return AssignmentUtil.CompoundAssign(left, right, Remainder.Operation, call);
         }
