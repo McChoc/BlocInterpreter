@@ -46,23 +46,77 @@ namespace Bloc
             return operations[precedence](expression, precedence);
         }
 
-        internal static IExpression ParseBlock(Token token)
+        private static IExpression ParseBlock(Token token)
         {
             var tokens = TokenScanner.Scan(token).ToList();
-
-            if (tokens.Count == 0)
-                throw new SyntaxError(token.Start, token.End,
-                    "Literal is ambiguous between an empty array and an empty struct. Use 'array()' or 'struct()' instead.");
-
             var parts = tokens.Split(x => x is (TokenType.Operator, ","));
 
             if (parts[^1].Count == 0)
                 parts.RemoveAt(parts.Count - 1);
 
-            if (parts.All(p => p.Count >= 2 && p[0].Type == TokenType.Identifier && p[1] is (TokenType.Operator, "=")))
-                return new StrucLiteral(parts.ToDictionary(p => p[0].Text, p => Parse(p.GetRange(2..))));
+            if (parts.Count == 0)
+                throw new SyntaxError(token.Start, token.End,
+                    "Literal is ambiguous between an empty array and an empty struct. Use 'array()' or 'struct()' instead.");
 
-            return new ArrayLiteral(parts.Select(p => Parse(p)).ToList());
+            return parts[0].Any(x => x is (TokenType.Operator, "="))
+                ? ParseStruct(parts)
+                : ParseArray(parts);
+        }
+
+        private static ArrayLiteral ParseArray(List<List<Token>> parts)
+        {
+            var elements = new List<IExpression>();
+
+            foreach (var part in parts)
+            {
+                if (part.Count == 0)
+                    throw new SyntaxError(0, 0, "Unexpected symbol ','");
+
+                if (part.Any(x => x is (TokenType.Operator, "=")))
+                    throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
+
+                var expression = Parse(part);
+
+                elements.Add(expression);
+            }
+
+            return new ArrayLiteral(elements);
+        }
+
+        private static StructLiteral ParseStruct(List<List<Token>> parts)
+        {
+            var properties = new Dictionary<string, IExpression>();
+
+            foreach (var part in parts)
+            {
+                if (part.Count == 0)
+                    throw new SyntaxError(0, 0, "Unexpected symbol ','");
+
+                var index = part.FindIndex(x => x is (TokenType.Operator, "="));
+
+                if (index == -1)
+                    throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
+
+                var keyTokens = part.GetRange(..index);
+                var valueTokens = part.GetRange((index + 1)..);
+
+                if (keyTokens.Count == 0)
+                    throw new SyntaxError(0, 0, "Missing identifier");
+
+                if (valueTokens.Count == 0)
+                    throw new SyntaxError(0, 0, "Missing value");
+
+                var keyExpr = Parse(keyTokens);
+
+                if (keyExpr is not Identifier identifier)
+                    throw new SyntaxError(0, 0, "Invalid identifier");
+
+                var expression = Parse(valueTokens);
+
+                properties.Add(identifier.Name, expression);
+            }
+
+            return new StructLiteral(properties);
         }
     }
 }

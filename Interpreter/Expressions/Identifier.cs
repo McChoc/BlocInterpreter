@@ -5,10 +5,10 @@ namespace Bloc.Expressions
 {
     internal class Identifier : IExpression
     {
-        private readonly string _name;
+        internal string Name { get; }
 
-        internal Identifier(string name) => _name = name;
+        internal Identifier(string name) => Name = name;
 
-        public IPointer Evaluate(Call call) => call.Get(_name);
+        public IPointer Evaluate(Call call) => call.Get(Name);
     }
 }
