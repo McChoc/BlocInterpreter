@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Statements;
@@ -10,10 +11,10 @@ namespace Bloc.Expressions
     {
         private readonly bool _async;
         private readonly CaptureMode _mode;
-        private readonly List<string> _parameters;
+        private readonly List<(string, IExpression)> _parameters;
         private readonly List<Statement> _statements;
 
-        internal FunctionLiteral(bool async, CaptureMode mode, List<string> parameters, List<Statement> statements)
+        internal FunctionLiteral(bool async, CaptureMode mode, List<(string, IExpression)> parameters, List<Statement> statements)
         {
             _async = async;
             _mode = mode;
@@ -23,12 +24,16 @@ namespace Bloc.Expressions
 
         public IPointer Evaluate(Call call)
         {
+            var parameters = _parameters
+                .Select(x => (x.Item1, x.Item2.Evaluate(call).Value))
+                .ToList();
+
             var function = new Function
             {
                 Async = _async,
                 Mode = _mode,
-                Names = _parameters,
-                Code = _statements
+                Parameters = parameters,
+                Statements = _statements
             };
 
             if (_mode == CaptureMode.Value)

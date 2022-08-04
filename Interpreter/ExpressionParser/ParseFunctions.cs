@@ -16,15 +16,15 @@ namespace Bloc
         {
             for (var i = 0; i < tokens.Count; i++)
             {
-                var foundFunction = false;
-                List<Token> parameters = null!;
-                List<Statement> statements = null!;
+                bool foundFunction = false;
+                List<Token>? paramTokens = null;
+                List<Statement>? statements = null;
 
                 if (i > 0 && tokens[i].Type == TokenType.Braces && tokens[i - 1].Type == TokenType.Parentheses)
                 {
                     foundFunction = true;
 
-                    parameters = TokenScanner.Scan(tokens[i - 1]).ToList();
+                    paramTokens = TokenScanner.Scan(tokens[i - 1]).ToList();
 
                     statements = StatementScanner.GetStatements(tokens[i].Text);
 
@@ -38,9 +38,9 @@ namespace Bloc
                         throw new SyntaxError(@operator.Start, @operator.End, "Missing identifiers");
 
                     if (tokens[i - 1].Type == TokenType.Identifier)
-                        parameters = new() { tokens[i - 1] };
+                        paramTokens = new() { tokens[i - 1] };
                     else if (tokens[i - 1].Type == TokenType.Parentheses)
-                        parameters = TokenScanner.Scan(tokens[i - 1]).ToList();
+                        paramTokens = TokenScanner.Scan(tokens[i - 1]).ToList();
                     else
                         throw new SyntaxError(tokens[i - 1].Start, tokens[i - 1].End, "Unexpected symbol");
 
@@ -51,18 +51,46 @@ namespace Bloc
 
                 if (foundFunction)
                 {
-                    var names = new List<string>();
+                    var parameters = new List<(string, IExpression)>();
 
-                    if (parameters.Count > 0)
+                    if (paramTokens!.Count > 0)
                     {
-                        foreach (var part in parameters.Split(x => x is (TokenType.Operator, ",")))
+                        foreach (var part in paramTokens.Split(x => x is (TokenType.Operator, ",")))
                         {
-                            var name = part.Single().Text;
+                            if (part.Count == 0)
+                                throw new SyntaxError(0, 0, "Unexpected symbol ','");
 
-                            if (names.Contains(name))
+                            IExpression name, value;
+
+                            var index = part.FindIndex(x => x is (TokenType.Operator, "="));
+
+                            if (index == -1)
+                            {
+                                name = Parse(part);
+                                value = new NullLiteral();
+                            }
+                            else
+                            {
+                                var nameTokens = part.GetRange(..index);
+                                var valueTokens = part.GetRange((index + 1)..);
+
+                                if (nameTokens.Count == 0)
+                                    throw new SyntaxError(0, 0, "Missing identifier");
+
+                                if (valueTokens.Count == 0)
+                                    throw new SyntaxError(0, 0, "Missing value");
+
+                                name = Parse(nameTokens);
+                                value = Parse(valueTokens);
+                            }
+
+                            if (name is not Identifier identifier)
+                                throw new SyntaxError(0, 0, "Invalid identifier");
+
+                            if (parameters.Any(x => x.Item1 == identifier.Name))
                                 throw new SyntaxError(part[0].Start, part[^1].End, "Some parameters are duplicates.");
 
-                            names.Add(name);
+                            parameters.Add((identifier.Name, value));
                         }
                     }
 
@@ -109,7 +137,7 @@ namespace Bloc
                         j--;
                     }
 
-                    var function = new FunctionLiteral(async, mode, names, statements);
+                    var function = new FunctionLiteral(async, mode, parameters, statements!);
 
                     tokens.Insert(j + 1, new Literal(0, 0, function));
 

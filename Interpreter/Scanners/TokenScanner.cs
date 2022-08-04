@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 using Bloc.Exceptions;
 using Bloc.Expressions;
 using Bloc.Tokens;
+using Bloc.Values;
 
 namespace Bloc.Scanners
 {
@@ -35,22 +35,15 @@ namespace Bloc.Scanners
         {
             "chr", "ord", "len",
             "not", "in", "is", "as",
-            "val", "ref", "new",
-            "let", "delete", "async",
-            "await", "nameof", "typeof",
-            "pass", "var", "if", "else",
+            "val", "ref", "new", "let",
+            "delete", "nameof", "typeof",
+            "await", "async", "lock",
+            "pass", "var", "if", "else", 
             "do", "while", "until",
             "loop", "repeat", "for",
             "try", "catch", "finally",
             "throw", "return", "exit",
-            "continue", "break", "goto",
-            "lock", "recall", "params",
-            "void", "null", "false",
-            "true", "infinity", "nan",
-            "bool", "number", "range",
-            "string", "array", "struct",
-            "tuple", "function", "task",
-            "reference", "complex", "type"
+            "continue", "break", "goto"
         };
 
         private readonly string _code;
@@ -112,7 +105,7 @@ namespace Bloc.Scanners
         internal Token GetNextToken()
         {
             if (_index >= _code.Length)
-                throw new Exception();
+                throw new System.Exception();
 
             SkipWhiteSpace();
 
@@ -146,7 +139,7 @@ namespace Bloc.Scanners
         internal Token GetNextCommandToken()
         {
             if (_index >= _code.Length)
-                throw new Exception();
+                throw new System.Exception();
 
             SkipWhiteSpace();
 
@@ -244,6 +237,37 @@ namespace Bloc.Scanners
             if (word == "$")
                 throw new SyntaxError(start + _offset, _index + _offset, "Missing variable name.");
 
+            IExpression? expression = word switch
+            {
+                "void" => new VoidLiteral(),
+                "null" => new NullLiteral(),
+                "false" => new BoolLiteral(false),
+                "true" => new BoolLiteral(true),
+                "nan" => new NumberLiteral(double.NaN),
+                "infinity" => new NumberLiteral(double.PositiveInfinity),
+
+                "bool" => new TypeLiteral(ValueType.Bool),
+                "number" => new TypeLiteral(ValueType.Number),
+                "range" => new TypeLiteral(ValueType.Range),
+                "string" => new TypeLiteral(ValueType.String),
+                "tuple" => new TypeLiteral(ValueType.Tuple),
+                "array" => new TypeLiteral(ValueType.Array),
+                "struct" => new TypeLiteral(ValueType.Struct),
+                "function" => new TypeLiteral(ValueType.Function),
+                "task" => new TypeLiteral(ValueType.Task),
+                "reference" => new TypeLiteral(ValueType.Reference),
+                "complex" => new TypeLiteral(ValueType.Complex),
+                "type" => new TypeLiteral(ValueType.Type),
+
+                "recall" => new Recall(),
+                "params" => new Params(),
+
+                _ => null
+            };
+
+            if (expression is not null)
+                return new Literal(start + _offset, _index + _offset, expression);
+
             if (keyWords.Contains(word))
                 return new Token(start + _offset, _index + _offset, TokenType.Keyword, word);
 
@@ -325,7 +349,7 @@ namespace Bloc.Scanners
             {
                 var number = @base == 10
                     ? double.Parse(num, CultureInfo.InvariantCulture)
-                    : Convert.ToInt32(num, @base);
+                    : System.Convert.ToInt32(num, @base);
                 return new Literal(start + _offset, _index + _offset, new NumberLiteral(number));
             }
             catch
@@ -470,7 +494,7 @@ namespace Bloc.Scanners
                 '(' => new[] { '(', ')' },
                 '[' => new[] { '[', ']' },
                 '{' => new[] { '{', '}' },
-                _ => throw new Exception()
+                _ => throw new System.Exception()
             };
 
             var depth = 0;
@@ -499,7 +523,7 @@ namespace Bloc.Scanners
                 '(' => TokenType.Parentheses,
                 '[' => TokenType.Brackets,
                 '{' => TokenType.Braces,
-                _ => throw new Exception()
+                _ => throw new System.Exception()
             }, text);
         }
 

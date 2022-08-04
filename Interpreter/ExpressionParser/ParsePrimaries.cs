@@ -6,7 +6,6 @@ using Bloc.Extensions;
 using Bloc.Operators;
 using Bloc.Scanners;
 using Bloc.Tokens;
-using Bloc.Values;
 
 namespace Bloc
 {
@@ -17,29 +16,6 @@ namespace Bloc
             var expression = tokens[0] switch
             {
                 Literal literal => literal.Expression,
-
-                (TokenType.Keyword, "void") => new VoidLiteral(),
-                (TokenType.Keyword, "null") => new NullLiteral(),
-                (TokenType.Keyword, "false") => new BoolLiteral(false),
-                (TokenType.Keyword, "true") => new BoolLiteral(true),
-                (TokenType.Keyword, "nan") => new NumberLiteral(double.NaN),
-                (TokenType.Keyword, "infinity") => new NumberLiteral(double.PositiveInfinity),
-
-                (TokenType.Keyword, "bool") => new TypeLiteral(ValueType.Bool),
-                (TokenType.Keyword, "number") => new TypeLiteral(ValueType.Number),
-                (TokenType.Keyword, "range") => new TypeLiteral(ValueType.Range),
-                (TokenType.Keyword, "string") => new TypeLiteral(ValueType.String),
-                (TokenType.Keyword, "tuple") => new TypeLiteral(ValueType.Tuple),
-                (TokenType.Keyword, "array") => new TypeLiteral(ValueType.Array),
-                (TokenType.Keyword, "struct") => new TypeLiteral(ValueType.Struct),
-                (TokenType.Keyword, "function") => new TypeLiteral(ValueType.Function),
-                (TokenType.Keyword, "task") => new TypeLiteral(ValueType.Task),
-                (TokenType.Keyword, "reference") => new TypeLiteral(ValueType.Reference),
-                (TokenType.Keyword, "complex") => new TypeLiteral(ValueType.Complex),
-                (TokenType.Keyword, "type") => new TypeLiteral(ValueType.Type),
-
-                (TokenType.Keyword, "recall") => new Recall(),
-                (TokenType.Keyword, "params") => new Params(),
 
                 { Type: TokenType.Identifier } => new Identifier(tokens[0].Text),
                 { Type: TokenType.Braces } => ParseBlock(tokens[0]),
@@ -75,8 +51,15 @@ namespace Bloc
                     var parameters = new List<IExpression>();
 
                     if (content.Count > 0)
+                    {
                         foreach (var part in content.Split(x => x is (TokenType.Operator, ",")))
-                            parameters.Add(Parse(part));
+                        {
+                            if (part.Count == 0)
+                                parameters.Add(new VoidLiteral());
+                            else
+                                parameters.Add(Parse(part));
+                        }
+                    }
 
                     expression = new Invocation(expression, parameters);
                 }

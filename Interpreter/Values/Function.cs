@@ -19,9 +19,9 @@ namespace Bloc.Values
         internal bool Async { get; set; }
         internal CaptureMode Mode { get; set; }
 
-        internal List<string> Names { get; set; } = new();
-        internal List<Statement> Code { get; set; } = new();
         internal Scope Captures { get; set; } = new();
+        internal List<(string, Value)> Parameters { get; set; } = new();
+        internal List<Statement> Statements { get; set; } = new();
 
         public override ValueType GetType() => ValueType.Function;
 
@@ -31,8 +31,8 @@ namespace Bloc.Values
             {
                 Async = Async,
                 Mode = Mode,
-                Names = Names,
-                Code = Code,
+                Parameters = Parameters,
+                Statements = Statements,
                 Captures = Captures.Copy()
             };
         }
@@ -48,21 +48,21 @@ namespace Bloc.Values
             if (Mode != func.Mode)
                 return false;
 
-            if (Names.Count != func.Names.Count)
+            if (Parameters.Count != func.Parameters.Count)
                 return false;
 
-            if (Code.Count != func.Code.Count)
+            if (Statements.Count != func.Statements.Count)
                 return false;
 
             if (Captures.Variables.Count != func.Captures.Variables.Count)
                 return false;
 
-            for (var i = 0; i < Names.Count; i++)
-                if (Names[i] != func.Names[i])
+            for (var i = 0; i < Parameters.Count; i++)
+                if (Parameters[i] != func.Parameters[i]) //TODO verify this
                     return false;
 
-            for (var i = 0; i < Code.Count; i++)
-                if (Code[i] != func.Code[i])
+            for (var i = 0; i < Statements.Count; i++)
+                if (Statements[i] != func.Statements[i])
                     return false;
 
             foreach (var key in Captures.Variables.Keys)
@@ -116,23 +116,31 @@ namespace Bloc.Values
 
         private Value Call(List<Value> values, Call parent)
         {
+            for (int i = 0; i < values.Count; i++)
+                if (values[i] == Void.Value)
+                    values[i] = i < Parameters.Count
+                        ? Parameters[i].Item2
+                        : Null.Value;
+
             var call = new Call(parent, Captures, this, values);
 
             try
             {
-                var labels = StatementUtil.GetLabels(Code);
+                var labels = StatementUtil.GetLabels(Statements);
 
-                for (var i = 0; i < Names.Count; i++)
+                for (var i = 0; i < Parameters.Count; i++)
                 {
-                    var name = Names[i];
-                    var value = i < values.Count && values[i] != Void.Value ? values[i] : Null.Value;
+                    var (name, value) = Parameters[i];
+
+                    if (i < values.Count)
+                        value = values[i];
 
                     call.Set(name, value);
                 }
 
-                for (var i = 0; i < Code.Count; i++)
+                for (var i = 0; i < Statements.Count; i++)
                 {
-                    var result = Code[i].Execute(call);
+                    var result = Statements[i].Execute(call);
 
                     if (result is Continue or Break)
                         throw new Throw("No loop");
@@ -141,7 +149,7 @@ namespace Bloc.Values
                         throw result;
 
                     if (result is Return r)
-                        return r.Value;
+                        return r.Value.Copy();
 
                     if (result is Goto g)
                     {
