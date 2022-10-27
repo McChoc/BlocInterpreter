@@ -16,7 +16,7 @@ namespace Bloc
             {
                 if (tokens[i] is (TokenType.Operator,
                     "=" or "+=" or "-=" or "*=" or "/=" or "%=" or "**=" or "//=" or "%%=" or
-                    "&&=" or "||=" or "^^=" or "&=" or "|=" or "^=" or "<<=" or ">>=") @operator)
+                    "&&=" or "||=" or "^^=" or "&=" or "|=" or "^=" or "<<=" or ">>=" or "??=") @operator)
                 {
                     if (i == 0)
                         throw new SyntaxError(@operator.Start, @operator.End, "Missing the left part of assignment");
@@ -46,6 +46,7 @@ namespace Bloc
                         "^=" => new BitwiseXorAssignment(left, right),
                         "<<=" => new LeftShiftAssignment(left, right),
                         ">>=" => new RightShiftAssignment(left, right),
+                        "??=" => new NullCoalescingAssignment(left, right),
                         _ => throw new Exception()
                     };
                 }
