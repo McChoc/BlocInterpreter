@@ -9,7 +9,7 @@ using Bloc.Variables;
 
 namespace Bloc.Values
 {
-    public class Array : Value, IIterable, IIndexable
+    public sealed class Array : Value, IIndexable
     {
         private bool _assigned;
 
@@ -19,7 +19,7 @@ namespace Bloc.Values
 
         public List<IVariable> Values { get; }
 
-        public override ValueType GetType() => ValueType.Array;
+        internal override ValueType GetType() => ValueType.Array;
 
         internal override Value Copy()
         {
@@ -58,60 +58,56 @@ namespace Bloc.Values
             return true;
         }
 
-        public override T Implicit<T>()
+        internal static Array Construct(List<Value> values)
         {
-            if (typeof(T) == typeof(Null))
-                return (Null.Value as T)!;
-
-            if (typeof(T) == typeof(Bool))
-                return (Bool.True as T)!;
-
-            if (typeof(T) == typeof(String))
-                return (new String(ToString()) as T)!;
-
-            if (typeof(T) == typeof(Array))
-                return (this as T)!;
-
-            throw new Throw($"Cannot implicitly cast array as {typeof(T).Name.ToLower()}");
-        }
-
-        public override Value Explicit(ValueType type)
-        {
-            return type switch
+            return values.Count switch
             {
-                ValueType.Null => Null.Value,
-                ValueType.Bool => Bool.True,
-                ValueType.String => new String(ToString()),
-                ValueType.Tuple => new Tuple(Values.Select(v => v.Value.Copy()).ToList<IPointer>()),
-                ValueType.Array => this,
-                _ => throw new Throw($"Cannot cast array as {type.ToString().ToLower()}")
+                0 => new(),
+                1 => values[0] switch
+                {
+                    Null => new(),
+                    Number number => new(Enumerable
+                        .Repeat(Null.Value, number.GetInt())
+                        .ToList<IVariable>()),
+                    String @string => new(@string.Value
+                        .ToCharArray()
+                        .Select(x => new String(x.ToString()))
+                        .ToList<IVariable>()),
+                    Array array => array,
+                    Struct @struct => new(@struct.Values
+                        .OrderBy(x => x.Key)
+                        .Select(x => new Tuple(new()
+                        {
+                            new String(x.Key),
+                            x.Value.Value.Copy()
+                        }))
+                        .ToList<IVariable>()),
+                    Tuple tuple => new(tuple.Values
+                        .Select(x => x.Value.Copy())
+                        .ToList<IVariable>()),
+                    Iter iter => new(iter
+                        .Iterate()
+                        .ToList<IVariable>()),
+                    Type type => new(type.Value
+                        .Select(x => new Type(x))
+                        .ToList<IVariable>()),
+                    var value => throw new Throw($"'array' does not have a constructor that takes a '{value.GetType().ToString().ToLower()}'")
+                },
+                2 => (values[0], values[1]) is (var value, Number number)
+                    ? new(Enumerable
+                        .Repeat(value, number.GetInt())
+                        .Select(x => x.Copy())
+                        .ToList<IVariable>())
+                    : throw new Throw($"'array' does not have a constructor that takes a '{values[0].GetType().ToString().ToLower()}' and a '{values[1].GetType().ToString().ToLower()}'"),
+                _ => throw new Throw($"'array' does not have a constructor that takes {values.Count} arguments")
             };
-        }
-
-        public override string ToString(int depth)
-        {
-            if (Values.Count == 0)
-                return "{ }";
-
-            if (!Values.Any(v => v.Value is Array or Struct or Tuple))
-                return "{ " + string.Join(", ", Values.Select(v => v.Value.ToString())) + " }";
-
-            return "{\n" +
-                   string.Join(",\n", Values.Select(v => new string(' ', (depth + 1) * 4) + v.Value.ToString(depth + 1))) + "\n" +
-                   new string(' ', depth * 4) + "}";
-        }
-
-        public IEnumerable<Value> Iterate()
-        {
-            foreach (var value in Values)
-                yield return value.Value;
         }
 
         public IPointer Index(Value value, Call call)
         {
             if (value is Number number)
             {
-                var index = number.ToInt();
+                var index = number.GetInt();
 
                 if (index < 0)
                     index += Values.Count;
@@ -146,12 +142,25 @@ namespace Bloc.Values
                 return new SlicePointer(variables);
             }
 
-            if (value is Function function)
+            if (value is Func func)
             {
-                return new Array(Values.Select(v => function.Invoke(new() { v.Value }, call)).ToList<IVariable>());
+                return new Array(Values.Select(v => func.Invoke(new() { v.Value }, call)).ToList<IVariable>());
             }
 
-            throw new Throw("It should be a number, a range or a function.");
+            throw new Throw("It should be a number or a range.");
+        }
+
+        public override string ToString(int depth)
+        {
+            if (Values.Count == 0)
+                return "{ }";
+
+            if (!Values.Any(v => v.Value is Array or Struct or Tuple))
+                return "{ " + string.Join(", ", Values.Select(v => v.Value.ToString())) + " }";
+
+            return "{\n" +
+                   string.Join(",\n", Values.Select(v => new string(' ', (depth + 1) * 4) + v.Value.ToString(depth + 1))) + "\n" +
+                   new string(' ', depth * 4) + "}";
         }
     }
 }

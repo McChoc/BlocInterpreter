@@ -16,7 +16,7 @@ namespace Bloc
 
             if (tokens[0] is (TokenType.Operator or TokenType.Keyword,
                 "+" or "-" or "~" or "!" or "++" or "--" or "~~" or "!!" or "len" or "chr" or "ord" or
-                "ref" or "val" or "val val" or "new" or "let" or "delete" or "await" or "nameof" or "typeof"))
+                "ref" or "val" or "val val" or "new" or "let" or "delete" or "await" or "next" or "nameof" or "typeof"))
             {
                 var operand = ParseUnaries(tokens.GetRange(1..), precedence);
 
@@ -40,6 +40,7 @@ namespace Bloc
                     "let" => new Let(operand),
                     "delete" => new Delete(operand),
                     "await" => new Await(operand),
+                    "next" => new Next(operand),
                     "nameof" => new Nameof(operand),
                     "typeof" => new Typeof(operand),
                     _ => throw new System.Exception()

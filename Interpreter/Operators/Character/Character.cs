@@ -1,4 +1,5 @@
 ﻿using Bloc.Expressions;
+using Bloc.Interfaces;
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
@@ -7,7 +8,7 @@ using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal class Character : IExpression
+    internal sealed record Character : IExpression
     {
         private readonly IExpression _operand;
 
@@ -22,10 +23,10 @@ namespace Bloc.Operators
 
             value = ReferenceUtil.Dereference(value, call.Engine.HopLimit).Value;
 
-            if (!value.Is(out Number? num))
+            if (value is not IScalar scalar)
                 throw new Throw($"Cannot apply operator 'chr' on type {value.GetType().ToString().ToLower()}");
 
-            return new String(((char)num!.ToInt()).ToString());
+            return new String(((char)scalar.GetInt()).ToString());
         }
     }
 }

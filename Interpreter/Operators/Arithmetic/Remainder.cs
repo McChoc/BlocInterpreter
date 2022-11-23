@@ -1,4 +1,5 @@
 ﻿using Bloc.Expressions;
+using Bloc.Interfaces;
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
@@ -7,7 +8,7 @@ using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal class Remainder : IExpression
+    internal sealed record Remainder : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
@@ -26,12 +27,19 @@ namespace Bloc.Operators
             return OperatorUtil.RecursivelyCall(left, right, Operation, call);
         }
 
-        internal static Value Operation(Value left, Value right)
+        internal static Value Operation(Value a, Value b)
         {
-            if (left.Is(out Number? leftNumber) && right.Is(out Number? rightNumber))
-                return new Number(leftNumber!.Value % rightNumber!.Value);
+            return (a, b) switch
+            {
+                (IScalar left, IScalar right) => ModScalars(left, right),
 
-            throw new Throw($"Cannot apply operator '%' on operands of types {left.GetType().ToString().ToLower()} and {right.GetType().ToString().ToLower()}");
+                _ => throw new Throw($"Cannot apply operator '%' on operands of types {a.GetType().ToString().ToLower()} and {b.GetType().ToString().ToLower()}"),
+            };
+        }
+
+        private static Number ModScalars(IScalar left, IScalar right)
+        {
+            return new Number(left.GetDouble() % right.GetDouble());
         }
     }
 }

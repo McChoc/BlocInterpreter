@@ -4,7 +4,7 @@ using Bloc.Values;
 
 namespace Bloc.Pointers
 {
-    internal class UndefinedPointer : Pointer
+    internal sealed class UndefinedPointer : Pointer
     {
         internal UndefinedPointer(string name) => Name = name;
 

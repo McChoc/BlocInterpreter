@@ -7,7 +7,7 @@ using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal class Val : IExpression
+    internal sealed record Val : IExpression
     {
         private readonly IExpression _operand;
 

@@ -3,7 +3,7 @@ using Bloc.Results;
 
 namespace Bloc.Statements
 {
-    internal class EmptyStatement : Statement
+    internal sealed record EmptyStatement : Statement
     {
         internal override Result? Execute(Call _)
         {

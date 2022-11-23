@@ -6,7 +6,7 @@ using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal class BooleanXorAssignment : IExpression
+    internal sealed record BooleanXorAssignment : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
@@ -24,17 +24,15 @@ namespace Bloc.Operators
             if (leftValue is not Pointer pointer)
                 throw new Throw("You cannot assign a value to a literal");
 
-            if (!pointer.Get().Is(out Bool? leftBool))
-                throw new Throw("Cannot implicitly convert to bool");
+            var leftBool = Bool.ImplicitCast(pointer.Get());
 
             var rightValue = _right.Evaluate(call);
 
-            if (!rightValue.Value.Is(out Bool? rightBool))
-                throw new Throw("Cannot implicitly convert to bool");
+            var rightBool = Bool.ImplicitCast(rightValue.Value);
 
             Value value;
 
-            if (leftBool!.Value == rightBool!.Value)
+            if (leftBool.Value == rightBool.Value)
                 value = Null.Value;
             else if (rightBool.Value)
                 value = rightValue.Value;

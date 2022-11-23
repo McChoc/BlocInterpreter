@@ -10,7 +10,7 @@ using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal class Invocation : IExpression
+    internal sealed record Invocation : IExpression
     {
         private readonly IExpression _expression;
         private readonly List<IExpression> _parameters;
@@ -28,7 +28,7 @@ namespace Bloc.Operators
             value = ReferenceUtil.Dereference(value, call.Engine.HopLimit).Value;
 
             if (value is not IInvokable invokable)
-                throw new Throw("The '()' operator can only be apllied to a function or a type");
+                throw new Throw("The '()' operator can only be apllied to a func or a type");
 
             var args = new List<Value>(_parameters.Count);
 

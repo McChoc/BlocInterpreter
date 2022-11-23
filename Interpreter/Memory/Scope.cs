@@ -3,7 +3,7 @@ using Bloc.Variables;
 
 namespace Bloc.Memory
 {
-    public class Scope
+    public sealed class Scope
     {
         public Dictionary<string, StackVariable> Variables { get; } = new();
 

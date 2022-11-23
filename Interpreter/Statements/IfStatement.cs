@@ -7,22 +7,22 @@ using Bloc.Values;
 
 namespace Bloc.Statements
 {
-    internal class IfStatement : Statement
+    internal sealed record IfStatement : Statement
     {
-        internal IExpression Condition { get; set; } = default!;
-        internal List<Statement> If { get; set; } = default!;
+        internal IExpression Condition { get; set; } = null!;
+        internal List<Statement> If { get; set; } = null!;
         internal List<Statement> Else { get; set; } = new();
 
         internal override Result? Execute(Call call)
         {
             try
             {
-                var value = Condition.Evaluate(call);
+                var value = Condition.Evaluate(call).Value;
 
-                if (!value.Value.Is(out Bool? @bool))
+                if (!Bool.TryImplicitCast(value, out var @bool))
                     return new Throw("Cannot implicitly convert to bool");
 
-                var statements = @bool!.Value ? If : Else;
+                var statements = @bool.Value ? If : Else;
                 var labels = StatementUtil.GetLabels(statements);
 
                 call.Push();

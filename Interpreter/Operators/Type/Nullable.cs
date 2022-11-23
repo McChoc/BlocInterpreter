@@ -8,7 +8,7 @@ using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal class Nullable : IExpression
+    internal sealed record Nullable : IExpression
     {
         private readonly IExpression _operand;
 
@@ -23,14 +23,14 @@ namespace Bloc.Operators
 
             value = ReferenceUtil.Dereference(value, call.Engine.HopLimit).Value;
 
-            if (value.Is(out Type? type))
+            if (value is Type type)
             {
                 var types = new HashSet<ValueType>
                 {
                     ValueType.Null
                 };
 
-                foreach (var t in type!.Value)
+                foreach (var t in type.Value)
                     types.Add(t);
 
                 return new Type(types);

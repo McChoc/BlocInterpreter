@@ -13,7 +13,7 @@ namespace Bloc
         {
             for (var i = tokens.Count - 1; i >= 0; i--)
             {
-                if (tokens[i] is (TokenType.Operator, "==" or "!=" or "<>") @operator)
+                if (tokens[i] is (TokenType.Operator, "==" or "!=" or "~=" or "<>") @operator)
                 {
                     if (i == 0)
                         throw new SyntaxError(@operator.Start, @operator.End, "Missing the left part of equality");

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Bloc.Expressions;
+using Bloc.Interfaces;
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
@@ -9,7 +10,7 @@ using Bloc.Variables;
 
 namespace Bloc.Operators
 {
-    internal class Addition : IExpression
+    internal sealed record Addition : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
@@ -28,56 +29,92 @@ namespace Bloc.Operators
             return OperatorUtil.RecursivelyCall(left, right, Operation, call);
         }
 
-        internal static Value Operation(Value left, Value right)
+        internal static Value Operation(Value a, Value b)
         {
-            if (left.Is(out Number? leftNumber) && right.Is(out Number? rightNumber))
-                return new Number(leftNumber!.Value + rightNumber!.Value);
-
-            if (left.Is(out Struct? leftStruct) && right.Is(out Struct? rightStruct))
+            return (a, b) switch
             {
-                var dict = new Dictionary<string, IVariable>();
+                (IScalar left, IScalar right)   => AddScalars(left, right),
+                (String left, String right)     => ConcatStrings(left, right),
+                (Array left, Array right)       => ConcatArrays(left, right),
+                (Struct left, Struct right)     => MergeStructs(left, right),
+                (Value value, Array array)      => PrependToArray(array, value),
+                (Array array, Value value)      => AppendToArray(array, value),
+                (Value value, String @string)   => PrependToString(@string, value),
+                (String @string, Value value)   => AppendToString(@string, value),
 
-                foreach (var (key, value) in ((Struct)leftStruct!.Copy()).Values)
-                    dict[key] = value;
+                _ => throw new Throw($"Cannot apply operator '+' on operands of types {a.GetType().ToString().ToLower()} and {b.GetType().ToString().ToLower()}"),
+            };
+        }
 
-                foreach (var (key, value) in ((Struct)rightStruct!.Copy()).Values)
-                    dict[key] = value;
+        private static Number AddScalars(IScalar left, IScalar right)
+        {
+            return new Number(left.GetDouble() + right.GetDouble());
+        }
 
-                return new Struct(dict);
-            }
+        private static String ConcatStrings(String left, String right)
+        {
+            return new String(left.Value + right.Value);
+        }
 
-            if (left.Is(out Array? leftArray) && right.Is(out Array? rightArray))
+        private static String PrependToString(String @string, Value value)
+        {
+            return new String(String.ImplicitCast(value).Value + @string.Value);
+        }
+
+        private static String AppendToString(String @string, Value value)
+        {
+            return new String(@string.Value + String.ImplicitCast(value).Value);
+        }
+
+        private static Array ConcatArrays(Array left, Array right)
+        {
+            var list = new List<IVariable>(left.Values.Count + right.Values.Count);
+
+            foreach (var item in left.Values)
+                list.Add(item.Value.Copy());
+
+            foreach (var item in right.Values)
+                list.Add(item.Value.Copy());
+
+            return new Array(list);
+        }
+
+        private static Array PrependToArray(Array array, Value value)
+        {
+            var list = new List<IVariable>(array.Values.Count + 1)
             {
-                var list = new List<IVariable>(leftArray!.Values.Count + rightArray!.Values.Count);
-                list.AddRange(((Array)leftArray.Copy()).Values);
-                list.AddRange(((Array)rightArray.Copy()).Values);
-                return new Array(list);
-            }
+                value
+            };
 
-#pragma warning disable IDE0028
+            foreach (var item in array.Values)
+                list.Add(item.Value.Copy());
 
-            if (left.Is(out Array? array))
-            {
-                var list = new List<IVariable>(array!.Values.Count + 1);
-                list.AddRange(((Array)array.Copy()).Values);
-                list.Add(right.Copy());
-                return new Array(list);
-            }
+            return new Array(list);
+        }
 
-            if (right.Is(out array))
-            {
-                var list = new List<IVariable>(array!.Values.Count + 1);
-                list.Add(left.Copy());
-                list.AddRange(((Array)array.Copy()).Values);
-                return new Array(list);
-            }
+        private static Array AppendToArray(Array array, Value value)
+        {
+            var list = new List<IVariable>(array.Values.Count + 1);
 
-#pragma warning restore IDE0028
+            foreach (var item in array.Values)
+                list.Add(item.Value.Copy());
 
-            if (left.Is(out String? leftString) && right.Is(out String? rightString))
-                return new String(leftString!.Value + rightString!.Value);
+            list.Add(value);
 
-            throw new Throw($"Cannot apply operator '+' on operands of types {left.GetType().ToString().ToLower()} and {right.GetType().ToString().ToLower()}");
+            return new Array(list);
+        }
+
+        private static Struct MergeStructs(Struct left, Struct right)
+        {
+            var dict = new Dictionary<string, IVariable>();
+
+            foreach (var (key, value) in left.Values)
+                dict[key] = value.Value.Copy();
+
+            foreach (var (key, value) in right.Values)
+                dict[key] = value.Value.Copy();
+
+            return new Struct(dict);
         }
     }
 }

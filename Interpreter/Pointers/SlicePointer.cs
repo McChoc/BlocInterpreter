@@ -8,7 +8,7 @@ using Bloc.Variables;
 
 namespace Bloc.Pointers
 {
-    internal class SlicePointer : Pointer
+    internal sealed class SlicePointer : Pointer
     {
         internal SlicePointer(List<Variable> variables)
         {
@@ -38,10 +38,10 @@ namespace Bloc.Pointers
             if (Variables is null)
                 throw new Throw("Invalid reference");
 
-            if (!value.Is(out Array? array))
+            if (value is not Array array)
                 throw new Throw("You can only assign an array to a slice");
 
-            if (Variables.Count != array!.Values.Count)
+            if (Variables.Count != array.Values.Count)
                 throw new Throw("Mismatch number of elements inside the slice and the array");
 
             value = value.Copy();

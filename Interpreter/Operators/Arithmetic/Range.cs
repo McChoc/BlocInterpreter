@@ -1,13 +1,13 @@
 ﻿using Bloc.Expressions;
+using Bloc.Interfaces;
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Utils;
-using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal class Range : IExpression
+    internal sealed record Range : IExpression
     {
         private readonly IExpression? _start;
         private readonly IExpression? _end;
@@ -31,10 +31,10 @@ namespace Bloc.Operators
 
                 value = ReferenceUtil.Dereference(value, call.Engine.HopLimit).Value;
 
-                if (!value.Is(out Number? number))
-                    throw new Throw("");
+                if (value is not IScalar scalar)
+                    throw new Throw($"Cannot apply operator '..' on type {value.GetType().ToString().ToLower()}");
 
-                start = number!.ToInt();
+                start = scalar.GetInt();
             }
 
             if (_end is not null)
@@ -43,10 +43,10 @@ namespace Bloc.Operators
 
                 value = ReferenceUtil.Dereference(value, call.Engine.HopLimit).Value;
 
-                if (!value.Is(out Number? number))
-                    throw new Throw("");
+                if (value is not IScalar scalar)
+                    throw new Throw($"Cannot apply operator '..' on type {value.GetType().ToString().ToLower()}");
 
-                end = number!.ToInt();
+                end = scalar.GetInt();
             }
 
             if (_step is not null)
@@ -55,14 +55,14 @@ namespace Bloc.Operators
 
                 value = ReferenceUtil.Dereference(value, call.Engine.HopLimit).Value;
 
-                if (!value.Is(out Number? number))
-                    throw new Throw("");
+                if (value is not IScalar scalar)
+                    throw new Throw($"Cannot apply operator '..' on type {value.GetType().ToString().ToLower()}");
 
-                step = number!.ToInt();
+                step = scalar.GetInt();
+
+                if (step == 0)
+                    throw new Throw("A range cannot have a step of 0");
             }
-
-            if (step == 0)
-                throw new Throw("A range cannot have a step of 0");
 
             return new Values.Range(start, end, step);
         }

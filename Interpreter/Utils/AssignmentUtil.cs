@@ -69,55 +69,53 @@ namespace Bloc.Utils
 
         private static (Value, Value) Evaluate(Value left, Value right, BinaryOperation assignment, Call call)
         {
-            if (left.Is(out Reference? reference))
-                return (CompoundAssign(reference!, right, assignment, call), reference!);
+            if (left is Reference reference)
+                return (CompoundAssign(reference, right, assignment, call), reference);
 
-            if (left.Is(out Tuple? leftTuple) | right.Is(out Tuple? rightTuple))
+            int count;
+
+            IEnumerable<IPointer> leftEnumerable, rightEnumerable;
+
+            switch (left, right)
             {
-                var count = 0;
-
-                IEnumerable<IPointer> leftEnumerable = null!;
-                IEnumerable<IPointer> rightEnumerable = null!;
-
-                if (left.Is(out Tuple? _) && right.Is(out Tuple? _))
-                {
-                    if (leftTuple!.Values.Count != rightTuple!.Values.Count)
+                case (Tuple leftTuple, Tuple rightTuple):
+                    if (leftTuple.Values.Count != rightTuple.Values.Count)
                         throw new Throw("Miss mathch number of elements inside the tuples");
 
                     count = leftTuple.Values.Count;
                     leftEnumerable = leftTuple.Values;
                     rightEnumerable = rightTuple.Values;
-                }
-                else if (left.Is(out Tuple? _))
-                {
-                    count = leftTuple!.Values.Count;
+                    break;
+
+                case (Tuple leftTuple, _):
+                    count = leftTuple.Values.Count;
                     leftEnumerable = leftTuple.Values;
                     rightEnumerable = Enumerable.Repeat(right, count);
-                }
-                else if (right.Is(out Tuple? _))
-                {
-                    count = rightTuple!.Values.Count;
+                    break;
+
+                case (_, Tuple rightTuple):
+                    count = rightTuple.Values.Count;
                     leftEnumerable = Enumerable.Repeat(left, count);
-                    rightEnumerable = rightTuple!.Values;
-                }
+                    rightEnumerable = rightTuple.Values;
+                    break;
 
-                var returnedValues = new List<IPointer>(count);
-                var actualValues = new List<IPointer>(count);
-
-                foreach (var (a, b) in leftEnumerable.Zip(rightEnumerable))
-                {
-                    var (returned, actual) = Evaluate(a.Value, b.Value, assignment, call);
-
-                    returnedValues.Add(returned);
-                    actualValues.Add(actual);
-                }
-
-                return (new Tuple(returnedValues), new Tuple(actualValues));
+                default:
+                    var value = assignment(left, right);
+                    return (value, value);
             }
 
-            var value = assignment(left, right);
+            var returnedValues = new List<IPointer>(count);
+            var actualValues = new List<IPointer>(count);
 
-            return (value, value);
+            foreach (var (a, b) in leftEnumerable.Zip(rightEnumerable))
+            {
+                var (returned, actual) = Evaluate(a.Value, b.Value, assignment, call);
+
+                returnedValues.Add(returned);
+                actualValues.Add(actual);
+            }
+
+            return (new Tuple(returnedValues), new Tuple(actualValues));
         }
     }
 }

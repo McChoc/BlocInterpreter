@@ -2,7 +2,7 @@
 
 namespace Bloc.Variables
 {
-    public class HeapVariable : Variable
+    public sealed class HeapVariable : Variable
     {
         internal HeapVariable(Value value) : base(value) { }
     }

@@ -1,31 +1,31 @@
 ﻿using System.Collections.Generic;
 using Bloc.Expressions;
-using Bloc.Interfaces;
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Utils;
+using Bloc.Values;
 
 namespace Bloc.Statements
 {
-    internal class ForInStatement : Statement
+    internal sealed record ForInStatement : Statement
     {
-        internal string VariableName { get; set; } = default!;
-        internal IExpression Iterable { get; set; } = default!;
-        internal List<Statement> Statements { get; set; } = default!;
+        internal string Name { get; set; } = null!;
+        internal IExpression Expression { get; set; } = null!;
+        internal List<Statement> Statements { get; set; } = null!;
 
         internal override Result? Execute(Call call)
         {
             try
             {
-                var value = Iterable.Evaluate(call).Value;
+                var value = Expression.Evaluate(call).Value;
 
-                if (value is not IIterable iterable)
-                    return new Throw("You can only iterate over a range, a string or an array.");
+                if (!Iter.TryImplicitCast(value, out var iter, call))
+                    return new Throw("Cannot implicitly convert to iter");
 
                 var loopCount = 0;
                 var labels = StatementUtil.GetLabels(Statements);
 
-                foreach (var item in iterable.Iterate())
+                foreach (var item in iter.Iterate())
                 {
                     loopCount++;
 
@@ -35,7 +35,7 @@ namespace Bloc.Statements
                     try
                     {
                         call.Push();
-                        call.Set(VariableName, item);
+                        call.Set(Name, item);
 
                         var result = ExecuteBlock(Statements, labels, call);
 

@@ -7,10 +7,8 @@ using Bloc.Results;
 
 namespace Bloc.Values
 {
-    public class Type : Value, IInvokable
+    public sealed class Type : Value, IInvokable
     {
-        public Type() => Value = new();
-
         public Type(ValueType type) => Value = new() { type };
 
         public Type(HashSet<ValueType> types) => Value = types;
@@ -20,7 +18,7 @@ namespace Bloc.Values
 
         public HashSet<ValueType> Value { get; }
 
-        public override ValueType GetType() => ValueType.Type;
+        internal override ValueType GetType() => ValueType.Type;
 
         public override bool Equals(Value other)
         {
@@ -30,32 +28,18 @@ namespace Bloc.Values
             return false;
         }
 
-        public override T Implicit<T>()
+        internal static Type Construct(List<Value> values)
         {
-            if (typeof(T) == typeof(Null))
-                return (Null.Value as T)!;
-
-            if (typeof(T) == typeof(Bool))
-                return (Bool.True as T)!;
-
-            if (typeof(T) == typeof(String))
-                return (new String(ToString()) as T)!;
-
-            if (typeof(T) == typeof(Type))
-                return (this as T)!;
-
-            throw new Throw($"Cannot implicitly cast type as {typeof(T).Name.ToLower()}");
-        }
-
-        public override Value Explicit(ValueType type)
-        {
-            return type switch
+            return values.Count switch
             {
-                ValueType.Null => Null.Value,
-                ValueType.Bool => Bool.True,
-                ValueType.String => new String(ToString()),
-                ValueType.Type => this,
-                _ => throw new Throw($"Cannot cast type as {type.ToString().ToLower()}")
+                0 => new(new HashSet<ValueType>()),
+                1 => values[0] switch
+                {
+                    Null => new(new HashSet<ValueType>()),
+                    Type type => type,
+                    _ => throw new Throw($"'type' does not have a constructor that takes a '{values[0].GetType().ToString().ToLower()}'")
+                },
+                _ => throw new Throw($"'type' does not have a constructor that takes {values.Count} arguments")
             };
         }
 
@@ -69,27 +53,28 @@ namespace Bloc.Values
             return "[type]";
         }
 
-        public Value Invoke(List<Value> _0, Call _1)
+        public Value Invoke(List<Value> values, Call call)
         {
             if (Value.Count != 1)
                 throw new Throw("Cannot instantiate a composite type");
 
             return Value.Single() switch
             {
-                ValueType.Void => Void.Value,
-                ValueType.Null => Null.Value,
-                ValueType.Bool => Bool.False,
-                ValueType.Number => new Number(),
-                ValueType.Range => new Range(),
-                ValueType.String => String.Empty,
-                ValueType.Array => new Array(),
-                ValueType.Struct => new Struct(),
-                ValueType.Tuple => new Tuple(),
-                ValueType.Function => new Function(),
-                ValueType.Task => new Task(),
-                ValueType.Reference => new Reference(),
-                ValueType.Complex => new Complex(),
-                ValueType.Type => new Type(),
+                ValueType.Void =>       Void.Construct(values),
+                ValueType.Null =>       Null.Construct(values),
+                ValueType.Bool =>       Bool.Construct(values),
+                ValueType.Number =>     Number.Construct(values),
+                ValueType.Range =>      Range.Construct(values),
+                ValueType.String =>     String.Construct(values),
+                ValueType.Array =>      Array.Construct(values),
+                ValueType.Struct =>     Struct.Construct(values),
+                ValueType.Tuple =>      Tuple.Construct(values),
+                ValueType.Func =>       Func.Construct(values),
+                ValueType.Task =>       Task.Construct(values, call),
+                ValueType.Iter =>       Iter.Construct(values, call),
+                ValueType.Reference =>  Reference.Construct(values, call),
+                ValueType.Extern =>     Extern.Construct(values),
+                ValueType.Type =>       Construct(values),
                 _ => throw new Exception()
             };
         }

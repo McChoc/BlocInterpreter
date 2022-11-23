@@ -4,7 +4,7 @@ using Bloc.Results;
 
 namespace Bloc.Statements
 {
-    internal class ReturnStatement : Statement
+    internal sealed record ReturnStatement : Statement
     {
         private readonly IExpression? _expression;
 

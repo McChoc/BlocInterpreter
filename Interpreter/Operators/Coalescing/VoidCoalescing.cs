@@ -6,7 +6,7 @@ using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal class VoidCoalescing : IExpression
+    internal sealed record VoidCoalescing : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
@@ -23,7 +23,7 @@ namespace Bloc.Operators
 
             value = ReferenceUtil.Dereference(value, call.Engine.HopLimit).Value;
 
-            if (value.GetType() == ValueType.Void)
+            if (value is Void)
                 return _right.Evaluate(call).Value;
 
             return value;

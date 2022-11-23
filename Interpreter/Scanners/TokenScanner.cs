@@ -9,26 +9,37 @@ using Bloc.Values;
 
 namespace Bloc.Scanners
 {
-    internal class TokenScanner
+    internal sealed class TokenScanner
     {
         private static readonly HashSet<char> symbols = new()
         {
-            '=', '<', '>', '!', '~', '&', '|', '^',
-            '+', '-', '*', '/', '%', '?', ':', '.', ',', ';',
-            '@', '$', '#', '\\', '\'', '\"', '`',
+            '@', '$', '#',
+            '=', '<', '>',
+            '!', '~', '&', '|', '^',
+            '+', '-', '*', '/', '%',
+            '?', ':', '.', ',', ';',
+            '\\', '\'', '\"', '`',
             '(', ')', '[', ']', '{', '}'
         };
 
         private static readonly HashSet<string> operators = new()
         {
-            "-", "--", "-=", ",", ";", ":", "::",
-            "!", "!!", "!=", "?", "??", "???", "??=", ".", "..",
-            "*", "**", "**=", "*=", "/", "//", "//=", "/=",
-            "&", "&&", "&&=", "&=", "%", "%%", "%%=", "%=",
-            "^", "^^", "^^=", "^=", "+", "++", "+=",
-            "<", "<<", "<<=", "<=", "<=>", "<>", "=", "==", "=>",
-            ">", ">=", ">>", ">>=", "|", "|=", "|>", "||", "||=",
-            "~", "~~"
+            ".", ",", ";",
+            "..", "::", "|>",
+            "!", "!!", "!=",
+            "~", "~~", "~=",
+            "+", "++", "+=",
+            "-", "--", "-=",
+            "*", "**", "**=", "*=",
+            "/", "//", "//=", "/=",
+            "%", "%%", "%%=", "%=",
+            "&", "&&", "&&=", "&=",
+            "^", "^^", "^^=", "^=",
+            "|", "|=", "||", "||=",
+            "<", "<<", "<<=", "<=",
+            ">", ">=", ">>", ">>=",
+            "?", "??", "???", "??=", ":",
+            "<=>", "<>", "=", "==", "=>",
         };
 
         private static readonly HashSet<string> keyWords = new()
@@ -36,13 +47,17 @@ namespace Bloc.Scanners
             "chr", "ord", "len",
             "not", "in", "is", "as",
             "val", "ref", "new", "let",
-            "delete", "nameof", "typeof",
-            "await", "async", "lock",
-            "pass", "var", "if", "else", 
+            "delete", "eval",
+            "nameof", "typeof",
+            "select", "where", "orderby",
+            "await", "async",
+            "next", "generator",
+            "var", "const", "pass",
+            "lock", "if", "else", 
             "do", "while", "until",
             "loop", "repeat", "for",
-            "try", "catch", "finally",
-            "throw", "return", "exit",
+            "try", "catch", "when", "finally",
+            "throw", "return", "yield",
             "continue", "break", "goto"
         };
 
@@ -250,13 +265,14 @@ namespace Bloc.Scanners
                 "number" => new TypeLiteral(ValueType.Number),
                 "range" => new TypeLiteral(ValueType.Range),
                 "string" => new TypeLiteral(ValueType.String),
-                "tuple" => new TypeLiteral(ValueType.Tuple),
                 "array" => new TypeLiteral(ValueType.Array),
                 "struct" => new TypeLiteral(ValueType.Struct),
-                "function" => new TypeLiteral(ValueType.Function),
+                "tuple" => new TypeLiteral(ValueType.Tuple),
+                "func" => new TypeLiteral(ValueType.Func),
                 "task" => new TypeLiteral(ValueType.Task),
+                "iter" => new TypeLiteral(ValueType.Iter),
                 "reference" => new TypeLiteral(ValueType.Reference),
-                "complex" => new TypeLiteral(ValueType.Complex),
+                "extern" => new TypeLiteral(ValueType.Extern),
                 "type" => new TypeLiteral(ValueType.Type),
 
                 "recall" => new Recall(),

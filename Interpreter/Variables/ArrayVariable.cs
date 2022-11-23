@@ -2,7 +2,7 @@
 
 namespace Bloc.Variables
 {
-    internal class ArrayVariable : Variable
+    internal sealed class ArrayVariable : Variable
     {
         private readonly Array _parent;
 

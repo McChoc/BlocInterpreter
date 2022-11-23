@@ -1,4 +1,5 @@
 ﻿using Bloc.Expressions;
+using Bloc.Interfaces;
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
@@ -7,7 +8,7 @@ using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal class Minus : IExpression
+    internal sealed record Minus : IExpression
     {
         private readonly IExpression _operand;
 
@@ -25,8 +26,8 @@ namespace Bloc.Operators
 
         private static Value Operation(Value value)
         {
-            if (value.Is(out Number? number))
-                return new Number(-number!.Value);
+            if (value is IScalar scalar)
+                return new Number(-scalar.GetDouble());
 
             throw new Throw($"Cannot apply operator '-' on type {value.GetType().ToString().ToLower()}");
         }

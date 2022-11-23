@@ -1,25 +1,22 @@
 ﻿using System.Collections.Generic;
-using Bloc.Interfaces;
 using Bloc.Results;
 
 namespace Bloc.Values
 {
-    public class Range : Value, IIterable
+    public sealed class Range : Value
     {
-        public Range() : this(null, null) { }
-
-        public Range(int? start, int? end, int step = 1)
+        public Range(int? start, int? end, int? step)
         {
             Start = start;
             End = end;
-            Step = step;
+            Step = step ?? 1;
         }
 
         public int? Start { get; }
         public int? End { get; }
         public int Step { get; }
 
-        public override ValueType GetType() => ValueType.Range;
+        internal override ValueType GetType() => ValueType.Range;
 
         public override bool Equals(Value other)
         {
@@ -38,47 +35,45 @@ namespace Bloc.Values
             return true;
         }
 
-        public override T Implicit<T>()
+        internal static Range Construct(List<Value> values)
         {
-            if (typeof(T) == typeof(Null))
-                return (Null.Value as T)!;
-
-            if (typeof(T) == typeof(Bool))
-                return (Bool.True as T)!;
-
-            if (typeof(T) == typeof(Range))
-                return (this as T)!;
-
-            if (typeof(T) == typeof(String))
-                return (new String(ToString()) as T)!;
-
-            throw new Throw($"Cannot implicitly cast range as {typeof(T).Name.ToLower()}");
-        }
-
-        public override Value Explicit(ValueType type)
-        {
-            return type switch
+            return values.Count switch
             {
-                ValueType.Null => Null.Value,
-                ValueType.Bool => Bool.True,
-                ValueType.Range => this,
-                ValueType.String => new String(ToString()),
-                _ => throw new Throw($"Cannot cast range as {type.ToString().ToLower()}")
+                0 => new(null, null, null),
+                1 => values[0] switch
+                {
+                    Null => new(null, null, null),
+                    Number end => new(null, end.GetInt(), null),
+                    Range range => range,
+                    var value => throw new Throw($"'range' does not have a constructor that takes a '{value.GetType().ToString().ToLower()}'")
+                },
+                2 => (values[0], values[1]) switch
+                {
+                    (Null, Null) => new(null, null, null),
+                    (Number start, Null) => new(start.GetInt(), null, null),
+                    (Null, Number end) => new(null, end.GetInt(), null),
+                    (Number start, Number end) => new(start.GetInt(), end.GetInt(), null),
+                    var value => throw new Throw($"'range' does not have a constructor that takes a '{value.Item1.GetType().ToString().ToLower()}' and a '{value.Item2.GetType().ToString().ToLower()}'")
+                },
+                3 => (values[0], values[1], values[2]) switch
+                {
+                    (Null, Null, Null) => new(null, null, null),
+                    (Number start, Null, Null) => new(start.GetInt(), null, null),
+                    (Null, Number end, Null) => new(null, end.GetInt(), null),
+                    (Number start, Number end, Null) => new(start.GetInt(), end.GetInt(), null),
+                    (Null, Null, Number step) => new(null, null, step.GetInt()),
+                    (Number start, Null, Number step) => new(start.GetInt(), null, step.GetInt()),
+                    (Null, Number end, Number step) => new(null, end.GetInt(), step.GetInt()),
+                    (Number start, Number end, Number step) => new(start.GetInt(), end.GetInt(), step.GetInt()),
+                    var value => throw new Throw($"'range' does not have a constructor that takes a '{value.Item1.GetType().ToString().ToLower()}', a '{value.Item2.GetType().ToString().ToLower()}' and a '{value.Item3.GetType().ToString().ToLower()}'")
+                },
+                _ => throw new Throw($"'range' does not have a constructor that takes {values.Count} arguments")
             };
         }
 
         public override string ToString(int _)
         {
             return $"{Start}..{End}{(Step != 1 ? $"..{Step}" : "")}";
-        }
-
-        public IEnumerable<Value> Iterate()
-        {
-            double start = Start ?? (Step >= 0 ? 0 : -1);
-            double end = End ?? (Step >= 0 ? double.PositiveInfinity : double.NegativeInfinity);
-
-            for (var i = start; i * Step < end * Step; i += Step)
-                yield return new Number(i);
         }
     }
 }

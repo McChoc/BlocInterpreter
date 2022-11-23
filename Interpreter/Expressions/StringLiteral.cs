@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Bloc.Memory;
 using Bloc.Pointers;
-using Bloc.Results;
 using Bloc.Values;
 
 namespace Bloc.Expressions
 {
-    internal class StringLiteral : IExpression
+    internal sealed class StringLiteral : IExpression
     {
         private readonly string _baseString;
         private readonly List<(int, IExpression)> _expressions;
@@ -28,14 +28,32 @@ namespace Bloc.Expressions
             {
                 var value = expression.Evaluate(call).Value;
 
-                if (!value.Is(out String? str))
-                    throw new Throw("Cannot implicitly convert to string");
+                var @string = String.ImplicitCast(value);
 
-                builder.Insert(index + offset, str!.Value);
-                offset += str.Value.Length;
+                builder.Insert(index + offset, @string.Value);
+                offset += @string.Value.Length;
             }
 
             return new String(builder.ToString());
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is not StringLiteral @string)
+                return false;
+
+            if (_baseString != @string._baseString)
+                return false;
+
+            if (!_expressions.SequenceEqual(@string._expressions))
+                return false;
+
+            return true;
+        }
+
+        public override int GetHashCode()
+        {
+            return System.HashCode.Combine(_baseString);
         }
     }
 }

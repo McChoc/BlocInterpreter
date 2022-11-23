@@ -7,7 +7,7 @@ using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal class Delete : IExpression
+    internal sealed record Delete : IExpression
     {
         private readonly IExpression _operand;
 

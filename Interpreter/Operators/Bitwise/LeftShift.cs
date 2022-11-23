@@ -1,4 +1,5 @@
 ﻿using Bloc.Expressions;
+using Bloc.Interfaces;
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
@@ -7,7 +8,7 @@ using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal class LeftShift : IExpression
+    internal sealed record LeftShift : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
@@ -26,12 +27,12 @@ namespace Bloc.Operators
             return OperatorUtil.RecursivelyCall(left, right, Operation, call);
         }
 
-        internal static Value Operation(Value left, Value right)
+        internal static Value Operation(Value a, Value b)
         {
-            if (left.Is(out Number? leftNumber) && right.Is(out Number? rightNumber))
-                return new Number(leftNumber!.ToInt() << rightNumber!.ToInt());
+            if (a is IScalar left && b is IScalar right)
+                return new Number(left.GetInt() << right.GetInt());
 
-            throw new Throw($"Cannot apply operator '<<' on operands of types {left.GetType().ToString().ToLower()} and {right.GetType().ToString().ToLower()}");
+            throw new Throw($"Cannot apply operator '<<' on operands of types {a.GetType().ToString().ToLower()} and {b.GetType().ToString().ToLower()}");
         }
     }
 }

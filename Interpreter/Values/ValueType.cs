@@ -11,10 +11,25 @@
         Array,
         Struct,
         Tuple,
-        Function,
+        Func,
         Task,
+        Iter,
         Reference,
-        Complex,
+        Extern,
         Type
+    }
+
+    internal enum FunctionType
+    {
+        Synchronous,
+        Asynchronous,
+        Generator
+    }
+
+    internal enum CaptureMode
+    {
+        None,
+        Value,
+        Reference
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
@@ -7,12 +8,20 @@ using Bloc.Values;
 
 namespace Bloc.Statements
 {
-    internal class ForStatement : Statement
+    internal sealed record ForStatement : Statement, IEnumerable
     {
         internal IExpression? Initialisation { get; set; }
         internal IExpression? Condition { get; set; }
         internal IExpression? Increment { get; set; }
-        internal List<Statement> Statements { get; set; } = default!;
+        internal List<Statement> Statements { get; set; }
+
+        internal ForStatement(IExpression? initialisation, IExpression? condition, IExpression? increment)
+        {
+            Initialisation = initialisation;
+            Condition = condition;
+            Increment = increment;
+            Statements = new();
+        }
 
         internal override Result? Execute(Call call)
         {
@@ -31,10 +40,10 @@ namespace Bloc.Statements
                     {
                         var value = Condition.Evaluate(call).Value;
 
-                        if (!value.Is(out Bool? @bool))
+                        if (!Bool.TryImplicitCast(value, out var @bool))
                             return new Throw("Cannot implicitly convert to bool");
 
-                        if (!@bool!.Value)
+                        if (!@bool.Value)
                             break;
                     }
 
@@ -75,5 +84,9 @@ namespace Bloc.Statements
 
             return null;
         }
+
+        IEnumerator IEnumerable.GetEnumerator() => Statements.GetEnumerator();
+        internal void Add(Statement statement) => Statements.Add(statement);
+        internal void Add(List<Statement> statements) => Statements.AddRange(statements);
     }
 }

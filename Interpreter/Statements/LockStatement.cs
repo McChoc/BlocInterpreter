@@ -7,10 +7,10 @@ using Bloc.Utils;
 
 namespace Bloc.Statements
 {
-    internal class LockStatement : Statement
+    internal sealed record LockStatement : Statement
     {
-        internal IExpression Expression { get; set; } = default!;
-        internal List<Statement> Statements { get; set; } = default!;
+        internal IExpression Expression { get; set; } = null!;
+        internal List<Statement> Statements { get; set; } = null!;
 
         internal override Result? Execute(Call call)
         {

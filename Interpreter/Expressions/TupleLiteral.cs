@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Values;
 
 namespace Bloc.Expressions
 {
-    internal class TupleLiteral : IExpression
+    internal sealed class TupleLiteral : IExpression
     {
         private readonly List<IExpression> _expressions;
 
@@ -22,6 +23,22 @@ namespace Bloc.Expressions
                 values.Add(expression.Evaluate(call));
 
             return new Tuple(values);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is not TupleLiteral tuple)
+                return false;
+
+            if (!_expressions.SequenceEqual(tuple._expressions))
+                return false;
+
+            return true;
+        }
+
+        public override int GetHashCode()
+        {
+            return 0;
         }
     }
 }

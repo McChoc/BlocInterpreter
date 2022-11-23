@@ -1,17 +1,17 @@
-﻿using System.Globalization;
+﻿using System.Collections.Generic;
+using System.Globalization;
+using Bloc.Interfaces;
 using Bloc.Results;
 
 namespace Bloc.Values
 {
-    public class Number : Value
+    public sealed class Number : Value, IScalar
     {
-        public Number() => Value = 0;
-
         public Number(double value) => Value = value;
 
         public double Value { get; }
 
-        public override ValueType GetType() => ValueType.Number;
+        internal override ValueType GetType() => ValueType.Number;
 
         public override bool Equals(Value other)
         {
@@ -21,33 +21,62 @@ namespace Bloc.Values
             return false;
         }
 
-        public override T Implicit<T>()
+        internal static Number Construct(List<Value> values)
         {
-            if (typeof(T) == typeof(Null))
-                return (Null.Value as T)!;
-
-            if (typeof(T) == typeof(Bool))
-                return (new Bool(Value is not (0 or double.NaN)) as T)!;
-
-            if (typeof(T) == typeof(Number))
-                return (this as T)!;
-
-            if (typeof(T) == typeof(String))
-                return (new String(ToString()) as T)!;
-
-            throw new Throw($"Cannot implicitly cast number as {typeof(T).Name.ToLower()}");
+            return values.Count switch
+            {
+                0 => new(0),
+                1 => values[0] switch
+                {
+                    Null => new(0),
+                    Bool @bool => new(@bool.Value ? 1 : 0),
+                    Number @number => number,
+                    String @string => @string.Value.Trim() switch
+                    {
+                        "nan" => new(double.NaN),
+                        "infinity" => new(double.PositiveInfinity),
+                        "-infinity" => new(double.NegativeInfinity),
+                        var value => double.TryParse(value, out var result)
+                            ? new(result)
+                            : throw new Throw("Input string was not in a correct format") // TODO parse integers with 0x, 0o and 0b prefixes
+                    },
+                    var value => throw new Throw($"'number' does not have a constructor that takes a '{value.GetType().ToString().ToLower()}'")
+                },
+                _ => throw new Throw($"'number' does not have a constructor that takes {values.Count} arguments")
+            };
         }
 
-        public override Value Explicit(ValueType type)
+        internal static bool TryImplicitCast(Value value, out Number number)
         {
-            return type switch
+            try
             {
-                ValueType.Null => Null.Value,
-                ValueType.Bool => new Bool(Value is not (0 or double.NaN)),
-                ValueType.Number => this,
-                ValueType.String => new String(ToString()),
-                _ => throw new Throw($"Cannot cast number as {type.ToString().ToLower()}")
-            };
+                number = Construct(new() { value });
+                return true;
+            }
+            catch
+            {
+                number = null!;
+                return false;
+            }
+        }
+
+        public int GetInt()
+        {
+            if (double.IsNaN(Value))
+                return 0;
+
+            if (Value > int.MaxValue)
+                return int.MaxValue;
+
+            if (Value < int.MinValue)
+                return int.MinValue;
+
+            return (int)Value;
+        }
+
+        public double GetDouble()
+        {
+            return Value;
         }
 
         public override string ToString(int _)
@@ -62,20 +91,6 @@ namespace Bloc.Values
                 return "-infinity";
 
             return Value.ToString(CultureInfo.InvariantCulture);
-        }
-
-        public int ToInt()
-        {
-            if (double.IsNaN(Value))
-                return 0;
-
-            if (Value > int.MaxValue)
-                return int.MaxValue;
-
-            if (Value < int.MinValue)
-                return int.MinValue;
-
-            return (int)Value;
         }
     }
 }

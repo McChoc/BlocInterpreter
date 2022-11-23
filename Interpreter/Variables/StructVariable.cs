@@ -2,7 +2,7 @@
 
 namespace Bloc.Variables
 {
-    internal class StructVariable : Variable
+    internal sealed class StructVariable : Variable
     {
         private readonly Struct _parent;
 

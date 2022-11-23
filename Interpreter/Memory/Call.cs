@@ -7,7 +7,7 @@ using Bloc.Variables;
 
 namespace Bloc.Memory
 {
-    public class Call
+    public sealed class Call
     {
         private readonly int _stack;
 
@@ -18,7 +18,19 @@ namespace Bloc.Memory
             Push();
         }
 
-        internal Call(Call parent, Scope captures, Function recall, List<Value> @params)
+        internal Call(Call parent, Scope? captures)
+            : this(parent.Engine)
+        {
+            _stack = parent._stack + 1;
+
+            if (_stack > Engine.StackLimit)
+                throw new Throw("The stack limit was reached");
+
+            Parent = parent;
+            Captures = captures;
+        }
+
+        internal Call(Call parent, Scope? captures, Func recall, List<Value> @params)
             : this(parent.Engine)
         {
             _stack = parent._stack + 1;
@@ -72,7 +84,7 @@ namespace Bloc.Memory
                 if (Scopes[i].Variables.TryGetValue(name, out variable))
                     return new VariablePointer(variable);
 
-            if (Captures is not null && Captures.Variables.TryGetValue(name, out variable))
+            if (Captures?.Variables.TryGetValue(name, out variable) ?? false)
                 return new VariablePointer(variable);
 
             return new UndefinedPointer(name);

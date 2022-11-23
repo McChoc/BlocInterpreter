@@ -38,13 +38,13 @@ namespace Bloc.Utils
 
         private static (Value, Value) Evaluate(Value value, Adjustment adjustment, Call call)
         {
-            if (value.Is(out Reference? reference))
-                return (Adjust(reference!, adjustment, call), reference!);
+            if (value is Reference reference)
+                return (Adjust(reference, adjustment, call), reference);
 
-            if (value.Is(out Tuple? tuple))
+            if (value is Tuple tuple)
             {
-                var returnedValues = new List<IPointer>(tuple!.Values.Count);
-                var actualValues = new List<IPointer>(tuple!.Values.Count);
+                var returnedValues = new List<IPointer>(tuple.Values.Count);
+                var actualValues = new List<IPointer>(tuple.Values.Count);
 
                 foreach (var item in tuple.Values)
                 {

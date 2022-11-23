@@ -1,4 +1,5 @@
 ﻿using Bloc.Expressions;
+using Bloc.Interfaces;
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
@@ -7,7 +8,7 @@ using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal class PreIncrement : IExpression
+    internal sealed record PreIncrement : IExpression
     {
         private readonly IExpression _operand;
 
@@ -25,10 +26,10 @@ namespace Bloc.Operators
 
         private static (Value, Value) Adjustment(Value value)
         {
-            if (!value.Is(out Number? number))
+            if (value is not IScalar scalar)
                 throw new Throw($"Cannot apply operator '++' on type {value.GetType().ToString().ToLower()}");
 
-            number = new Number(number!.Value + 1);
+            var number = new Number(scalar.GetDouble() + 1);
 
             return (number, number);
         }

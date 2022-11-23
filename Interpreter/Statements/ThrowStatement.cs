@@ -4,11 +4,9 @@ using Bloc.Results;
 
 namespace Bloc.Statements
 {
-    internal class ThrowStatement : Statement
+    internal sealed record ThrowStatement : Statement
     {
-        private readonly IExpression? _expression;
-
-        internal ThrowStatement() { }
+        private readonly IExpression _expression;
 
         internal ThrowStatement(IExpression expression)
         {
@@ -19,9 +17,6 @@ namespace Bloc.Statements
         {
             try
             {
-                if (_expression is null)
-                    return new Throw();
-
                 var value = _expression.Evaluate(call).Value;
 
                 return new Throw(value);

@@ -8,7 +8,7 @@ using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal class In : IExpression
+    internal sealed record In : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
@@ -26,11 +26,11 @@ namespace Bloc.Operators
 
             right = ReferenceUtil.Dereference(right, call.Engine.HopLimit).Value;
 
-            if (right.Is(out Array? array))
-                return new Bool(array!.Values.Any(v => v.Value.Equals(left!)));
+            if (right is Array array)
+                return new Bool(array.Values.Any(v => v.Value.Equals(left)));
 
-            if (left.Is(out String? sub) && right.Is(out String? str))
-                return new Bool(str!.Value.Contains(sub!.Value));
+            if (left is String sub && right is String str)
+                return new Bool(str.Value.Contains(sub.Value));
 
             throw new Throw($"Cannot apply operator 'in' on operands of types {left.GetType().ToString().ToLower()} and {right.GetType().ToString().ToLower()}");
         }

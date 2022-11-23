@@ -7,7 +7,7 @@ using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal class NullCoalescing : IExpression
+    internal sealed record NullCoalescing : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
@@ -24,10 +24,10 @@ namespace Bloc.Operators
 
             value = ReferenceUtil.Dereference(value, call.Engine.HopLimit).Value;
 
-            if (value.GetType() == ValueType.Void)
+            if (value is Void)
                 throw new Throw("Cannot apply operator ?? to type 'void'");
 
-            if (value.GetType() == ValueType.Null)
+            if (value is Null)
                 return _right.Evaluate(call).Value;
 
             return value;

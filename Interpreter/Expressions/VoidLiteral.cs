@@ -4,7 +4,7 @@ using Bloc.Values;
 
 namespace Bloc.Expressions
 {
-    internal class VoidLiteral : IExpression
+    internal sealed record VoidLiteral : IExpression
     {
         public IPointer Evaluate(Call _) => Void.Value;
     }

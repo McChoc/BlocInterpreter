@@ -4,7 +4,7 @@ using Bloc.Values;
 
 namespace Bloc.Expressions
 {
-    internal class BoolLiteral : IExpression
+    internal sealed record BoolLiteral : IExpression
     {
         private readonly bool _bool;
 

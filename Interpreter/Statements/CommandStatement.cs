@@ -3,11 +3,12 @@ using System.Linq;
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Tokens;
+using Bloc.Utils;
 using Bloc.Values;
 
 namespace Bloc.Statements
 {
-    internal class CommandStatement : Statement
+    internal sealed record CommandStatement : Statement
     {
         internal List<List<Token>> Commands { get; } = new();
 
@@ -35,8 +36,8 @@ namespace Bloc.Statements
                 }
             }
 
-            if (value.Is(out String? str))
-                call.Engine.Log(str!.Value);
+            if (String.TryImplicitCast(value, out var @string))
+                call.Engine.Log(@string.Value);
 
             return null;
         }
@@ -54,10 +55,9 @@ namespace Bloc.Statements
                 case { Type: TokenType.Identifier, Text: string identifier }:
                     var value = call.Get(identifier).Get();
 
-                    if (!value.Is(out String? str))
-                        throw new Throw("Cannot implicitly cast to string");
+                    var @string = String.ImplicitCast(value);
 
-                    return str!.Value.Split(' ');
+                    return @string.Value.Split(' ');
 
                 default:
                     throw new System.Exception();

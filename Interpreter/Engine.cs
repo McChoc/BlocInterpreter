@@ -20,10 +20,10 @@ namespace Bloc
             GlobalScope = GlobalCall.Scopes.First();
         }
 
-        internal Dictionary<string, Command> Commands { get; set; } = default!;
+        internal Dictionary<string, Command> Commands { get; set; } = null!;
 
-        public Action<string> Log { get; private set; } = default!;
-        public Action Clear { get; private set; } = default!;
+        public Action<string> Log { get; private set; } = null!;
+        public Action Clear { get; private set; } = null!;
 
         internal int StackLimit { get; set; }
         internal int LoopLimit { get; set; }
@@ -65,10 +65,10 @@ namespace Bloc
             {
                 var result = statements[i].Execute(GlobalCall);
 
-                if (result is Throw or Exit)
+                if (result is Throw)
                     return result;
 
-                if (result is Return)
+                if (result is Return or Yield)
                     return new Throw("No function");
 
                 if (result is Continue || result is Break)

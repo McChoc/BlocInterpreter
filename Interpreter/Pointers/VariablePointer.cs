@@ -5,7 +5,7 @@ using Bloc.Variables;
 
 namespace Bloc.Pointers
 {
-    internal class VariablePointer : Pointer
+    internal sealed class VariablePointer : Pointer
     {
         internal VariablePointer(Variable? variable)
         {

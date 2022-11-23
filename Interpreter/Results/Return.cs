@@ -2,7 +2,7 @@
 
 namespace Bloc.Results
 {
-    public class Return : Result
+    public sealed class Return : Result
     {
         public Return() => Value = Void.Value;
 

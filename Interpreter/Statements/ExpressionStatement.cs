@@ -4,7 +4,7 @@ using Bloc.Results;
 
 namespace Bloc.Statements
 {
-    internal class ExpressionStatement : Statement
+    internal sealed record ExpressionStatement : Statement
     {
         internal ExpressionStatement(IExpression expression)
         {

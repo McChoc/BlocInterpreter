@@ -1,6 +1,6 @@
 ﻿namespace Bloc.Statements
 {
-    internal class Label
+    internal sealed record Label
     {
         internal Label(int index)
         {

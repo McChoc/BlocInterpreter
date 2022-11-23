@@ -7,10 +7,10 @@ using Bloc.Values;
 
 namespace Bloc.Statements
 {
-    internal class RepeatStatement : Statement
+    internal sealed record RepeatStatement : Statement
     {
-        internal IExpression Count { get; set; } = default!;
-        internal List<Statement> Statements { get; set; } = default!;
+        internal IExpression Count { get; set; } = null!;
+        internal List<Statement> Statements { get; set; } = null!;
 
         internal override Result? Execute(Call call)
         {
@@ -18,10 +18,11 @@ namespace Bloc.Statements
             {
                 var value = Count.Evaluate(call);
 
-                if (!value.Value.Is(out Number? number))
+                if (!Number.TryImplicitCast(value.Value, out var number))
                     return new Throw("Cannot implicitly convert to number");
 
-                var loopCount = number!.ToInt();
+                var loopCount = number.GetInt();
+
                 var labels = StatementUtil.GetLabels(Statements);
 
                 for (var i = 0; i < loopCount; i++)

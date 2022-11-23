@@ -3,7 +3,7 @@ using Bloc.Pointers;
 
 namespace Bloc.Expressions
 {
-    internal class Recall : IExpression
+    internal sealed record Recall : IExpression
     {
         public IPointer Evaluate(Call call) => new VariablePointer(call.Recall!);
     }

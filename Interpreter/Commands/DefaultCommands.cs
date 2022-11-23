@@ -38,26 +38,26 @@ namespace Bloc.Commands
                         return new String(message);
                     }
 
-                    if (input.Is(out String? str))
+                    if (input is String @string)
                     {
-                        if (!call.Engine.Commands.TryGetValue(str!.Value, out var command))
-                            throw new Throw("Unknown command.");
+                        if (!call.Engine.Commands.TryGetValue(@string.Value, out var command))
+                            throw new Throw("Unknown command");
 
                         return new String(command.Description);
                     }
 
-                    throw new Throw("The input could not be converted to a string.");
+                    throw new Throw("The input could not be converted to a string");
                 }
 
                 if (args.Length == 1)
                 {
                     if (!call.Engine.Commands.TryGetValue(args[0], out var command))
-                        throw new Throw("Unknown command.");
+                        throw new Throw("Unknown command");
 
                     return new String(command.Description);
                 }
 
-                throw new Throw($"'help' does not take {args.Length} arguments.\nType '/help help' to see its usage.");
+                throw new Throw($"'help' does not take {args.Length} arguments.\nType '/help help' to see its usage");
             }
         );
 
@@ -71,17 +71,12 @@ namespace Bloc.Commands
             (args, input, _) =>
             {
                 if (args.Length == 0)
-                {
-                    if (!input.Is(out String? str))
-                        throw new Throw("The input could not be converted to a string.");
-
-                    return str!;
-                }
+                    return input as String ?? throw new Throw("The input was not a string");
 
                 if (args.Length == 1)
                     return new String(args[0]);
 
-                throw new Throw($"'echo' does not take {args.Length} arguments.\nType '/help echo' to see its usage.");
+                throw new Throw($"'echo' does not take {args.Length} arguments.\nType '/help echo' to see its usage");
             }
         );
 
@@ -94,7 +89,7 @@ namespace Bloc.Commands
             (args, _, call) =>
             {
                 if (args.Length != 0)
-                    throw new Throw("'clear' does not take arguments.\nType '/help clear' to see its usage.");
+                    throw new Throw("'clear' does not take arguments.\nType '/help clear' to see its usage");
 
                 call.Engine.Clear();
                 return Void.Value;
@@ -112,16 +107,16 @@ namespace Bloc.Commands
             {
                 if (args.Length == 0)
                 {
-                    if (!input.Is(out String? str))
-                        throw new Throw("The input could not be converted to a string.");
+                    if (input is not String @string)
+                        throw new Throw("The input was not a 'string'");
 
-                    return call.Get(str!.Value).Get();
+                    return call.Get(@string.Value).Get();
                 }
 
                 if (args.Length == 1)
                     return call.Get(args[0]).Get();
 
-                throw new Throw($"'get' does not take {args.Length} arguments.\nType '/help get' to see its usage.");
+                throw new Throw($"'get' does not take {args.Length} arguments.\nType '/help get' to see its usage");
             }
         );
 
@@ -135,12 +130,12 @@ namespace Bloc.Commands
             (args, input, call) =>
             {
                 if (args.Length == 0)
-                    throw new Throw("'set' does not take 0 arguments.\nType '/help set' to see its usage.");
+                    throw new Throw("'set' does not take 0 arguments.\nType '/help set' to see its usage");
 
                 if (args.Length == 1)
                 {
                     if (input is Void)
-                        throw new Throw("The input was empty.");
+                        throw new Throw("The input was empty");
 
                     var name = args[0];
                     var value = input;
@@ -160,34 +155,34 @@ namespace Bloc.Commands
                     return Void.Value;
                 }
 
-                throw new Throw($"'set' does not take {args.Length} arguments.\nType '/help set' to see its usage.");
+                throw new Throw($"'set' does not take {args.Length} arguments.\nType '/help set' to see its usage");
             }
         );
 
         public static Command Call => new(
             "call",
 
-            "call <function> [param] ...\n" +
+            "call <func> [param] ...\n" +
             "Calls a function and passes it a list of arguments. Arguments can be accessed by the params keyword.",
 
             (args, _, call) =>
             {
                 if (args.Length == 0)
-                    throw new Throw("'call' does not take 0 arguments.\nType '/help call' to see its usage.");
+                    throw new Throw("'call' does not take 0 arguments.\nType '/help call' to see its usage");
 
                 var name = args[0];
                 var values = args[1..].Select(a => new String(a)).ToList<Value>();
 
                 var value = call.Get(name).Get();
 
-                if (!value.Is(out Function? func))
-                    throw new Throw("The variable could not be converted to a function.");
+                if (value is not Func func)
+                    throw new Throw("The variable was not a 'func'");
 
-                return func!.Invoke(values, call);
+                return func.Invoke(values, call);
             }
         );
 
-        public static Command Execute => new Command(
+        public static Command Execute => new(
             "execute",
 
             "execute <code>\n" +
@@ -196,7 +191,7 @@ namespace Bloc.Commands
             (args, _, call) =>
             {
                 if (args.Length != 1)
-                    throw new Throw($"'execute' does not take {args.Length} arguments.\nType '/help execute' to see its usage.");
+                    throw new Throw($"'execute' does not take {args.Length} arguments.\nType '/help execute' to see its usage");
 
                 try
                 {
@@ -225,10 +220,10 @@ namespace Bloc.Commands
             (args, _, call) =>
             {
                 if (args.Length != 1)
-                    throw new Throw($"'load' does not take {args.Length} arguments.\nType '/help load' to see its usage.");
+                    throw new Throw($"'load' does not take {args.Length} arguments.\nType '/help load' to see its usage");
 
                 if (!File.Exists(args[0]))
-                    throw new Throw("File does not exists.");
+                    throw new Throw("File does not exists");
 
                 var code = File.ReadAllText(args[0]);
 
@@ -272,7 +267,7 @@ namespace Bloc.Commands
                 if (args.Length == 1)
                 {
                     if (!int.TryParse(args[0], out var max))
-                        throw new Throw($"Cannot parse '{args[0]}' has number.");
+                        throw new Throw($"Cannot parse '{args[0]}' has number");
 
                     return new Number(rng.Next(max));
                 }
@@ -280,15 +275,15 @@ namespace Bloc.Commands
                 if (args.Length == 2)
                 {
                     if (!int.TryParse(args[0], out var min))
-                        throw new Throw($"Cannot parse '{args[0]}' has number.");
+                        throw new Throw($"Cannot parse '{args[0]}' has number");
 
                     if (!int.TryParse(args[1], out var max))
-                        throw new Throw($"Cannot parse '{args[1]}' has number.");
+                        throw new Throw($"Cannot parse '{args[1]}' has number");
 
                     return new Number(rng.Next(min, max));
                 }
 
-                throw new Throw($"'random' does not take {args.Length} arguments.\nType '/help random' to see its usage.");
+                throw new Throw($"'random' does not take {args.Length} arguments.\nType '/help random' to see its usage");
             }
         );
 
@@ -303,7 +298,7 @@ namespace Bloc.Commands
                 if (args.Length == 0)
                     return new String(DateTime.UtcNow.ToString());
 
-                throw new Throw("'time' does not take arguments.\nType '/help time' to see its usage.");
+                throw new Throw("'time' does not take arguments.\nType '/help time' to see its usage");
             }
         );
 

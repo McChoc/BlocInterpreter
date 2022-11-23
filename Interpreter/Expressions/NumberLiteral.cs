@@ -4,7 +4,7 @@ using Bloc.Values;
 
 namespace Bloc.Expressions
 {
-    internal class NumberLiteral : IExpression
+    internal sealed record NumberLiteral : IExpression
     {
         private readonly double _number;
 

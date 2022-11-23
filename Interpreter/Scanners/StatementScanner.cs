@@ -29,13 +29,13 @@ namespace Bloc.Scanners
             var tokens = scanner.Peek(2);
 
             if (tokens.Count >= 2 &&
-                tokens[0].Type == TokenType.Identifier &&
+                tokens[0] is (TokenType.Identifier, var lbl) &&
                 tokens[1] is (TokenType.Operator, "::"))
             {
                 scanner.GetNextToken();
                 scanner.GetNextToken();
 
-                label = tokens[0].Text;
+                label = lbl;
             }
 
             var statement = scanner.Peek() switch
@@ -55,7 +55,7 @@ namespace Bloc.Scanners
                 (TokenType.Keyword, "try") => GetTryStatement(scanner),
                 (TokenType.Keyword, "throw") => GetThrowStatement(scanner),
                 (TokenType.Keyword, "return") => GetReturnStatement(scanner),
-                (TokenType.Keyword, "exit") => GetExitStatement(scanner),
+                (TokenType.Keyword, "yield") => GetYieldStatement(scanner),
                 (TokenType.Keyword, "continue") => GetContinueStatement(scanner),
                 (TokenType.Keyword, "break") => GetBreakStatement(scanner),
                 (TokenType.Keyword, "goto") => GetGotoStatement(scanner),
@@ -118,7 +118,7 @@ namespace Bloc.Scanners
                     ? ExpressionParser.Parse(definition.GetRange((parts[0].Count + 1)..))
                     : null;
 
-                statement.Definitions.Add((identifier, value));
+                statement.Add(identifier, value);
             }
 
             return statement;
@@ -195,12 +195,12 @@ namespace Bloc.Scanners
                 if (parts.Count != 3)
                     throw new SyntaxError(expression.Start, expression.End, "Missing ')'");
 
-                return new ForStatement
+                return new ForStatement(
+                    initialisation: parts[0].Count > 0 ? ExpressionParser.Parse(parts[0]) : null,
+                    condition:      parts[1].Count > 0 ? ExpressionParser.Parse(parts[1]) : null,
+                    increment:      parts[2].Count > 0 ? ExpressionParser.Parse(parts[2]) : null)
                 {
-                    Initialisation = parts[0].Count > 0 ? ExpressionParser.Parse(parts[0]) : null,
-                    Condition = parts[1].Count > 0 ? ExpressionParser.Parse(parts[1]) : null,
-                    Increment = parts[2].Count > 0 ? ExpressionParser.Parse(parts[2]) : null,
-                    Statements = GetBody(keyword, scanner)
+                    GetBody(keyword, scanner)
                 };
             }
 
@@ -212,8 +212,8 @@ namespace Bloc.Scanners
 
             return new ForInStatement
             {
-                VariableName = tokens[0].Text,
-                Iterable = ExpressionParser.Parse(tokens.GetRange(2..)),
+                Name = tokens[0].Text,
+                Expression = ExpressionParser.Parse(tokens.GetRange(2..)),
                 Statements = GetBody(keyword, scanner)
             };
         }
@@ -284,14 +284,14 @@ namespace Bloc.Scanners
             return new ReturnStatement(ExpressionParser.Parse(line));
         }
 
-        private static Statement GetExitStatement(TokenScanner scanner)
+        private static Statement GetYieldStatement(TokenScanner scanner)
         {
             var line = GetLine(scanner).GetRange(1..);
 
             if (line.Count == 0)
-                return new ExitStatement();
+                throw new SyntaxError(0, 0, "Missing expression");
 
-            return new ExitStatement(ExpressionParser.Parse(line));
+            return new YieldStatement(ExpressionParser.Parse(line));
         }
 
         private static Statement GetThrowStatement(TokenScanner scanner)
@@ -299,7 +299,7 @@ namespace Bloc.Scanners
             var line = GetLine(scanner).GetRange(1..);
 
             if (line.Count == 0)
-                return new ThrowStatement();
+                throw new SyntaxError(0, 0, "Missing exception");
 
             return new ThrowStatement(ExpressionParser.Parse(line));
         }

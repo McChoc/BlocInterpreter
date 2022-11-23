@@ -7,7 +7,7 @@ using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal class Length : IExpression
+    internal sealed record Length : IExpression
     {
         private readonly IExpression _operand;
 
@@ -22,11 +22,11 @@ namespace Bloc.Operators
 
             value = ReferenceUtil.Dereference(value, call.Engine.HopLimit).Value;
 
-            if (value.Is(out Array? arr))
-                return new Number(arr!.Values.Count);
+            if (value is Array array)
+                return new Number(array.Values.Count);
 
-            if (value.Is(out String? str))
-                return new Number(str!.Value.Length);
+            if (value is String @string)
+                return new Number(@string.Value.Length);
 
             throw new Throw($"Cannot apply operator 'len' type {value.GetType().ToString().ToLower()}");
         }

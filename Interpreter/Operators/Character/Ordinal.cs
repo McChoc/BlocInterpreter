@@ -7,7 +7,7 @@ using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal class Ordinal : IExpression
+    internal sealed record Ordinal : IExpression
     {
         private readonly IExpression _operand;
 
@@ -22,13 +22,13 @@ namespace Bloc.Operators
 
             value = ReferenceUtil.Dereference(value, call.Engine.HopLimit).Value;
 
-            if (!value.Is(out String? str))
+            if (value is not String @string)
                 throw new Throw($"Cannot apply operator 'ord' on type {value!.GetType().ToString().ToLower()}");
 
-            if (str!.Value.Length != 1)
+            if (@string.Value.Length != 1)
                 throw new Throw("The string must contain exactly one character");
 
-            return new Number(str.Value[0]);
+            return new Number(@string.Value[0]);
         }
     }
 }

@@ -5,9 +5,9 @@ using Bloc.Utils;
 
 namespace Bloc.Statements
 {
-    internal class TryStatement : Statement
+    internal sealed record TryStatement : Statement
     {
-        internal List<Statement> Try { get; set; } = default!;
+        internal List<Statement> Try { get; set; } = null!;
         internal List<Statement> Catch { get; set; } = new();
         internal List<Statement> Finally { get; set; } = new();
 

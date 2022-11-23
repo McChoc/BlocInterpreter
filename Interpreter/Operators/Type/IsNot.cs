@@ -7,7 +7,7 @@ using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal class IsNot : IExpression
+    internal sealed record IsNot : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
@@ -25,8 +25,8 @@ namespace Bloc.Operators
 
             right = ReferenceUtil.Dereference(right, call.Engine.HopLimit).Value;
 
-            if (right.Is(out Type? type))
-                return new Bool(!type!.Value.Contains(left.GetType()));
+            if (right is Type type)
+                return new Bool(!type.Value.Contains(left.GetType()));
 
             throw new Throw($"Cannot apply operator 'is not' on operands of types {left.GetType().ToString().ToLower()} and {right.GetType().ToString().ToLower()}");
         }

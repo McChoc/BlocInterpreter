@@ -1,13 +1,12 @@
 ﻿using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Pointers;
-using Bloc.Results;
 using Bloc.Utils;
 using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal class BooleanXor : IExpression
+    internal sealed record BooleanXor : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
@@ -24,20 +23,18 @@ namespace Bloc.Operators
 
             left = ReferenceUtil.Dereference(left, call.Engine.HopLimit).Value;
 
-            if (!left.Is(out Bool? leftBool))
-                throw new Throw("Cannot implicitly convert to bool");
+            var leftBool = Bool.ImplicitCast(left);
 
             var right = _right.Evaluate(call).Value;
 
             right = ReferenceUtil.Dereference(right, call.Engine.HopLimit).Value;
 
-            if (!right.Is(out Bool? rightBool))
-                throw new Throw("Cannot implicitly convert to bool");
+            var rightBool = Bool.ImplicitCast(right);
 
-            if (leftBool!.Value && !rightBool!.Value)
+            if (leftBool.Value && !rightBool.Value)
                 return left;
 
-            if (!leftBool!.Value && rightBool!.Value)
+            if (!leftBool.Value && rightBool.Value)
                 return right;
 
             return Null.Value;

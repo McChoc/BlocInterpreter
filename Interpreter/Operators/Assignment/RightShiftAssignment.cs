@@ -5,7 +5,7 @@ using Bloc.Utils;
 
 namespace Bloc.Operators
 {
-    internal class RightShiftAssignment : IExpression
+    internal sealed record RightShiftAssignment : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;

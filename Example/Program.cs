@@ -88,11 +88,7 @@ while (true)
                     Console.WriteLine($"An exception was thrown : {t.Value}");
                     Console.ResetColor();
                 }
-                else if (result is Exit)
-                {
-                    break;
-                }
-                else if (value is not (null or Void))
+                else if (value is not null)
                 {
                     Console.WriteLine(value.ToString());
                 }

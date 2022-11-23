@@ -5,7 +5,7 @@ using Bloc.Utils;
 
 namespace Bloc.Operators
 {
-    internal class LogarithmAssignment : IExpression
+    internal sealed record LogarithmAssignment : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;

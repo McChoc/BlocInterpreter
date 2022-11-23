@@ -1,17 +1,23 @@
-﻿using Bloc.Results;
+﻿using System.Collections.Generic;
+using Bloc.Interfaces;
+using Bloc.Results;
 
 namespace Bloc.Values
 {
-    public class Bool : Value
+    public sealed class Bool : Value, IScalar
     {
         internal Bool(bool value) => Value = value;
 
-        public static Bool False { get; } = new(false);
         public static Bool True { get; } = new(true);
+        public static Bool False { get; } = new(false);
 
         public bool Value { get; }
 
-        public override ValueType GetType() => ValueType.Bool;
+        public int GetInt() => Value ? 1 : 0;
+
+        public double GetDouble() => Value ? 1 : 0;
+
+        internal override ValueType GetType() => ValueType.Bool;
 
         public override bool Equals(Value other)
         {
@@ -21,38 +27,49 @@ namespace Bloc.Values
             return false;
         }
 
-        public override T Implicit<T>()
+        internal static Bool Construct(List<Value> values)
         {
-            if (typeof(T) == typeof(Null))
-                return (Null.Value as T)!;
-
-            if (typeof(T) == typeof(Bool))
-                return (this as T)!;
-
-            if (typeof(T) == typeof(Number))
-                return (new Number(Value ? 1 : 0) as T)!;
-
-            if (typeof(T) == typeof(String))
-                return (new String(ToString()) as T)!;
-
-            throw new Throw($"Cannot implicitly cast bool as {typeof(T).Name.ToLower()}");
-        }
-
-        public override Value Explicit(ValueType type)
-        {
-            return type switch
+            return values.Count switch
             {
-                ValueType.Null => Null.Value,
-                ValueType.Bool => this,
-                ValueType.Number => new Number(Value ? 1 : 0),
-                ValueType.String => new String(ToString()),
-                _ => throw new Throw($"Cannot cast bool as {type.ToString().ToLower()}")
+                0 => False,
+                1 => values[0] switch
+                {
+                    Void => throw new Throw($"'bool' does not have a constructor that takes a 'void'"),
+                    Null => False,
+                    Bool @bool => @bool,
+                    Number number => new(number.Value is not (0 or double.NaN)),
+                    _ => True
+                },
+                _ => throw new Throw($"'bool' does not have a constructor that takes {values.Count} arguments"),
             };
         }
 
-        public override string ToString(int _)
+        internal static Bool ImplicitCast(Value value)
         {
-            return Value ? "true" : "false";
+            try
+            {
+                return Construct(new() { value });
+            }
+            catch
+            {
+                throw new Throw($"Cannot implicitly convert '{value.GetType().ToString().ToLower()}' to 'bool'");
+            }
         }
+
+        internal static bool TryImplicitCast(Value value, out Bool @bool)
+        {
+            try
+            {
+                @bool = Construct(new() { value });
+                return true;
+            }
+            catch
+            {
+                @bool = null!;
+                return false;
+            }
+        }
+
+        public override string ToString(int _) => Value ? "true" : "false";
     }
 }

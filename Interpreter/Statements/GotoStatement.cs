@@ -3,7 +3,7 @@ using Bloc.Results;
 
 namespace Bloc.Statements
 {
-    internal class GotoStatement : Statement
+    internal sealed record GotoStatement : Statement
     {
         internal GotoStatement(string label)
         {

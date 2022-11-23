@@ -6,7 +6,7 @@ using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal class NullCoalescingAssignment : IExpression
+    internal sealed record NullCoalescingAssignment : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;

@@ -2,11 +2,10 @@
 using System.Linq;
 using Bloc.Pointers;
 using Bloc.Results;
-using Bloc.Variables;
 
 namespace Bloc.Values
 {
-    public class Tuple : Value
+    public sealed class Tuple : Value
     {
         public Tuple() => Values = new();
 
@@ -14,7 +13,7 @@ namespace Bloc.Values
 
         public List<IPointer> Values { get; }
 
-        public override ValueType GetType() => ValueType.Tuple;
+        internal override ValueType GetType() => ValueType.Tuple;
 
         internal override Value Copy()
         {
@@ -42,33 +41,26 @@ namespace Bloc.Values
             return true;
         }
 
-        public override T Implicit<T>()
+        internal static Tuple Construct(List<Value> values)
         {
-            if (typeof(T) == typeof(Null))
-                return (Null.Value as T)!;
-
-            if (typeof(T) == typeof(Bool))
-                return (Bool.True as T)!;
-
-            if (typeof(T) == typeof(String))
-                return (new String(ToString()) as T)!;
-
-            if (typeof(T) == typeof(Tuple))
-                return (this as T)!;
-
-            throw new Throw($"Cannot implicitly cast tuple as {typeof(T).Name.ToLower()}");
-        }
-
-        public override Value Explicit(ValueType type)
-        {
-            return type switch
+            return values.Count switch
             {
-                ValueType.Null => Null.Value,
-                ValueType.Bool => Bool.True,
-                ValueType.String => new String(ToString()),
-                ValueType.Array => new Array(Values.Select(v => v.Value.Copy()).ToList<IVariable>()),
-                ValueType.Tuple => this,
-                _ => throw new Throw($"Cannot cast tuple as {type.ToString().ToLower()}")
+                0 => new(),
+                1 => values[0] switch
+                {
+                    Null => new(),
+                    Range range => new(),
+                    Array array => new(array.Values
+                        .Select(x => x.Value.Copy())
+                        .ToList<IPointer>()),
+                    Struct @struct => new(@struct.Values
+                        .OrderBy(x => x.Key)
+                        .Select(x => x.Value.Value.Copy())
+                        .ToList<IPointer>()),
+                    Tuple tuple => tuple,
+                    _ => throw new Throw($"'iter' does not have a constructor that takes a '{values[0].GetType().ToString().ToLower()}'")
+                },
+                _ => throw new Throw($"'iter' does not have a constructor that takes {values.Count} arguments")
             };
         }
 

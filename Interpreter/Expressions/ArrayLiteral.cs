@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Values;
@@ -6,7 +7,7 @@ using Bloc.Variables;
 
 namespace Bloc.Expressions
 {
-    internal class ArrayLiteral : IExpression
+    internal sealed class ArrayLiteral : IExpression
     {
         private readonly List<IExpression> _elements;
 
@@ -23,6 +24,22 @@ namespace Bloc.Expressions
                 values.Add(expression.Evaluate(call).Value);
 
             return new Array(values);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is not ArrayLiteral array)
+                return false;
+
+            if (!_elements.SequenceEqual(array._elements))
+                return false;
+
+            return true;
+        }
+
+        public override int GetHashCode()
+        {
+            return 0;
         }
     }
 }

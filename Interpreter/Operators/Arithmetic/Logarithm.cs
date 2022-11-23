@@ -1,4 +1,5 @@
 ﻿using Bloc.Expressions;
+using Bloc.Interfaces;
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
@@ -8,7 +9,7 @@ using static System.Math;
 
 namespace Bloc.Operators
 {
-    internal class Logarithm : IExpression
+    internal sealed record Logarithm : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
@@ -27,12 +28,12 @@ namespace Bloc.Operators
             return OperatorUtil.RecursivelyCall(left, right, Operation, call);
         }
 
-        internal static Value Operation(Value left, Value right)
+        internal static Value Operation(Value a, Value b)
         {
-            if (left.Is(out Number? leftNumber) && right.Is(out Number? rightNumber))
-                return new Number(Log(leftNumber!.Value, rightNumber!.Value));
+            if (a is IScalar left && b is IScalar right)
+                return new Number(Log(left.GetDouble(), right.GetDouble()));
 
-            throw new Throw($"Cannot apply operator '%%' on operands of types {left.GetType().ToString().ToLower()} and {right.GetType().ToString().ToLower()}");
+            throw new Throw($"Cannot apply operator '%%' on operands of types {a.GetType().ToString().ToLower()} and {b.GetType().ToString().ToLower()}");
         }
     }
 }

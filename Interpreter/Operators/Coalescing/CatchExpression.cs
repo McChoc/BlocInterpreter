@@ -5,7 +5,7 @@ using Bloc.Results;
 
 namespace Bloc.Operators
 {
-    internal class CatchExpression : IExpression
+    internal sealed record CatchExpression : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;

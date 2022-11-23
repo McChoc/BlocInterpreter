@@ -51,7 +51,7 @@ namespace Bloc
 
                 if (foundFunction)
                 {
-                    var parameters = new List<(string, IExpression)>();
+                    var parameters = new List<FuncLiteral.Parameter>();
 
                     if (paramTokens!.Count > 0)
                     {
@@ -87,26 +87,39 @@ namespace Bloc
                             if (name is not Identifier identifier)
                                 throw new SyntaxError(0, 0, "Invalid identifier");
 
-                            if (parameters.Any(x => x.Item1 == identifier.Name))
+                            if (parameters.Any(x => x.Name == identifier.Name))
                                 throw new SyntaxError(part[0].Start, part[^1].End, "Some parameters are duplicates.");
 
-                            parameters.Add((identifier.Name, value));
+                            parameters.Add(new(identifier.Name, value));
                         }
                     }
 
-                    var async = false;
+                    var type = FunctionType.Synchronous;
                     var mode = CaptureMode.None;
 
                     var j = i - 2;
 
                     while (j >= 0)
                     {
-                        if (tokens[j] is (TokenType.Keyword, "async"))
+                        if (tokens[j] is (TokenType.Keyword, "generator"))
                         {
-                            if (async)
+                            if (type == FunctionType.Asynchronous)
+                                throw new SyntaxError(tokens[j].Start, tokens[j].End, "a function cannot be both async and a generator");
+
+                            if (type == FunctionType.Generator)
+                                throw new SyntaxError(tokens[j].Start, tokens[j].End, "'generator' modifier doubled");
+
+                            type = FunctionType.Generator;
+                        }
+                        else if (tokens[j] is (TokenType.Keyword, "async"))
+                        {
+                            if (type == FunctionType.Asynchronous)
                                 throw new SyntaxError(tokens[j].Start, tokens[j].End, "'async' modifier doubled");
 
-                            async = true;
+                            if (type == FunctionType.Generator)
+                            throw new SyntaxError(tokens[j].Start, tokens[j].End, "a function cannot be both async and a generator");
+
+                            type = FunctionType.Asynchronous;
                         }
                         else if (tokens[j] is (TokenType.Keyword, "val"))
                         {
@@ -137,9 +150,9 @@ namespace Bloc
                         j--;
                     }
 
-                    var function = new FunctionLiteral(async, mode, parameters, statements!);
+                    var func = new FuncLiteral(type, mode, parameters, statements!);
 
-                    tokens.Insert(j + 1, new Literal(0, 0, function));
+                    tokens.Insert(j + 1, new Literal(0, 0, func));
 
                     return ParseFunctions(tokens, precedence);
                 }

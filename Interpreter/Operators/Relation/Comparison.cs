@@ -1,4 +1,5 @@
 ﻿using Bloc.Expressions;
+using Bloc.Interfaces;
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
@@ -8,7 +9,7 @@ using static System.Math;
 
 namespace Bloc.Operators
 {
-    internal class Comparison : IExpression
+    internal sealed record Comparison : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
@@ -27,12 +28,12 @@ namespace Bloc.Operators
             left = ReferenceUtil.Dereference(left, call.Engine.HopLimit).Value;
             right = ReferenceUtil.Dereference(right, call.Engine.HopLimit).Value;
 
-            if (left.Is(out Number? leftNumber) && right.Is(out Number? rightNumber))
+            if (left is IScalar leftScalar && right is IScalar rightScalar)
             {
-                if (double.IsNaN(leftNumber!.Value) || double.IsNaN(rightNumber!.Value))
+                if (double.IsNaN(leftScalar.GetDouble()) || double.IsNaN(rightScalar.GetDouble()))
                     return new Number(double.NaN);
 
-                return new Number(Sign(leftNumber!.Value - rightNumber!.Value));
+                return new Number(Sign(leftScalar.GetDouble() - rightScalar.GetDouble()));
             }
 
             throw new Throw($"Cannot apply operator '<=>' on operands of types {left.GetType().ToString().ToLower()} and {right.GetType().ToString().ToLower()}");

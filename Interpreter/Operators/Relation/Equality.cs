@@ -5,7 +5,7 @@ using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal class Equality : IExpression
+    internal sealed record Equality : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;

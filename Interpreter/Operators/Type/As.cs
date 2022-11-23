@@ -8,7 +8,7 @@ using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal class As : IExpression
+    internal sealed record As : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
@@ -26,13 +26,42 @@ namespace Bloc.Operators
 
             right = ReferenceUtil.Dereference(right, call.Engine.HopLimit).Value;
 
-            if (!right.Is(out Type? type))
+            if (left is Void)
                 throw new Throw($"Cannot apply operator 'as' on operands of types {left.GetType().ToString().ToLower()} and {right.GetType().ToString().ToLower()}");
 
-            if (type!.Value.Count != 1)
+            if (right is not Type type)
+                throw new Throw($"Cannot apply operator 'as' on operands of types {left.GetType().ToString().ToLower()} and {right.GetType().ToString().ToLower()}");
+
+            if (type.Value.Count != 1)
                 throw new Throw("Cannot apply operator 'as' on a composite type");
 
-            return left.Explicit(type.Value.Single());
+            try
+            {
+                return type.Value.Single() switch
+                {
+                    ValueType.Void      => Void.Construct(new() { left }),
+                    ValueType.Null      => Null.Construct(new() { left }),
+                    ValueType.Bool      => Bool.Construct(new() { left }),
+                    ValueType.Number    => Number.Construct(new() { left }),
+                    ValueType.Range     => Values.Range.Construct(new() { left }),
+                    ValueType.String    => String.Construct(new() { left }),
+                    ValueType.Array     => Array.Construct(new() { left }),
+                    ValueType.Struct    => Struct.Construct(new() { left }),
+                    ValueType.Tuple     => Tuple.Construct(new() { left }),
+                    ValueType.Func      => Func.Construct(new() { left }),
+                    ValueType.Task      => Task.Construct(new() { left }, call),
+                    ValueType.Iter      => Iter.Construct(new() { left }, call),
+                    ValueType.Reference => Reference.Construct(new() { left }, call),
+                    ValueType.Extern    => Extern.Construct(new() { left }),
+                    ValueType.Type      => Type.Construct(new() { left }),
+
+                    _ => throw new System.Exception()
+                };
+            }
+            catch
+            {
+                return Null.Value;
+            }
         }
     }
 }

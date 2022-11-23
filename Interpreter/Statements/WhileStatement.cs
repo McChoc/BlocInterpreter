@@ -7,12 +7,12 @@ using Bloc.Values;
 
 namespace Bloc.Statements
 {
-    internal class WhileStatement : Statement
+    internal sealed record WhileStatement : Statement
     {
         internal bool Do { get; set; }
         internal bool Until { get; set; }
-        internal IExpression Condition { get; set; } = default!;
-        internal List<Statement> Statements { get; set; } = default!;
+        internal IExpression Condition { get; set; } = null!;
+        internal List<Statement> Statements { get; set; } = null!;
 
         internal override Result? Execute(Call call)
         {
@@ -29,10 +29,10 @@ namespace Bloc.Statements
                     {
                         var value = Condition.Evaluate(call).Value;
 
-                        if (!value.Is(out Bool? @bool))
+                        if (!Bool.TryImplicitCast(value, out var @bool))
                             return new Throw("Cannot implicitly convert to bool");
 
-                        loop = @bool!.Value != Until;
+                        loop = @bool.Value != Until;
                     }
 
                     if (!loop)

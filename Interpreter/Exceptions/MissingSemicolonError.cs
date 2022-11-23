@@ -1,6 +1,6 @@
 ﻿namespace Bloc.Exceptions
 {
-    public class MissingSemicolonError : SyntaxError
+    public sealed class MissingSemicolonError : SyntaxError
     {
         public MissingSemicolonError(int start, int end) : base(start, end, "Missing semicolon") { }
     }

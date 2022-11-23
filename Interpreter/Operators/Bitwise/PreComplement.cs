@@ -1,4 +1,6 @@
-﻿using Bloc.Expressions;
+﻿using System.Collections.Generic;
+using Bloc.Expressions;
+using Bloc.Interfaces;
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
@@ -7,7 +9,7 @@ using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal class PreComplement : IExpression
+    internal sealed record PreComplement : IExpression
     {
         private readonly IExpression _operand;
 
@@ -25,12 +27,33 @@ namespace Bloc.Operators
 
         private static (Value, Value) Adjustment(Value value)
         {
-            if (!value.Is(out Number? number))
-                throw new Throw($"Cannot apply operator '~~' on type {value.GetType().ToString().ToLower()}");
+            return value switch
+            {
+                IScalar scalar  => ComplementScalar(scalar),
+                Type type       => ComplementType(type),
 
-            number = new Number(~number!.ToInt());
+                _ => throw new Throw($"Cannot apply operator '~~' on type {value.GetType().ToString().ToLower()}")
+            };
+        }
+
+        private static (Number, Number) ComplementScalar(IScalar scalar)
+        {
+            var number = new Number(~scalar.GetInt());
 
             return (number, number);
+        }
+
+        private static (Type, Type) ComplementType(Type type)
+        {
+            var types = new HashSet<ValueType>();
+
+            foreach (ValueType t in System.Enum.GetValues(typeof(ValueType)))
+                if (!type.Value.Contains(t))
+                    types.Add(t);
+
+            type = new Type(types);
+
+            return (type, type);
         }
     }
 }

@@ -1,13 +1,12 @@
 ﻿using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Pointers;
-using Bloc.Results;
 using Bloc.Utils;
 using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal class PreNegation : IExpression
+    internal sealed record PreNegation : IExpression
     {
         private readonly IExpression _operand;
 
@@ -25,10 +24,9 @@ namespace Bloc.Operators
 
         private static (Value, Value) Adjustment(Value value)
         {
-            if (!value.Is(out Bool? @bool))
-                throw new Throw($"Cannot apply operator '!!' on type {value.GetType().ToString().ToLower()}");
+            var @bool = Bool.ImplicitCast(value);
 
-            @bool = new Bool(!@bool!.Value);
+            @bool = new Bool(!@bool.Value);
 
             return (@bool, @bool);
         }

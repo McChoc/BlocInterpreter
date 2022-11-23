@@ -1,17 +1,18 @@
-﻿using System.Threading.Tasks;
+﻿using Bloc.Memory;
 using Bloc.Results;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Bloc.Values
 {
-    public class Task : Value
+    public sealed class Task : Value
     {
-        internal Task() : this(() => Void.Value) { }
-
-        internal Task(System.Func<Value> func) => Value = System.Threading.Tasks.Task.Run(func);
+        internal Task(Func<Value> func) => Value = System.Threading.Tasks.Task.Run(func);
 
         internal Task<Value> Value { get; }
 
-        public override ValueType GetType() => ValueType.Task;
+        internal override ValueType GetType() => ValueType.Task;
 
         public override bool Equals(Value other)
         {
@@ -24,38 +25,37 @@ namespace Bloc.Values
             return true;
         }
 
-        public override T Implicit<T>()
+        internal static Task Construct(List<Value> values, Call call)
         {
-            if (typeof(T) == typeof(Null))
-                return (Null.Value as T)!;
-
-            if (typeof(T) == typeof(Bool))
-                return (Bool.True as T)!;
-
-            if (typeof(T) == typeof(String))
-                return (new String(ToString()) as T)!;
-
-            if (typeof(T) == typeof(Task))
-                return (this as T)!;
-
-            throw new Throw($"Cannot implicitly cast task as {typeof(T).Name.ToLower()}");
-        }
-
-        public override Value Explicit(ValueType type)
-        {
-            return type switch
+            return values.Count switch
             {
-                ValueType.Null => Null.Value,
-                ValueType.Bool => Bool.True,
-                ValueType.String => new String(ToString()),
-                ValueType.Task => this,
-                _ => throw new Throw($"Cannot cast task as {type.ToString().ToLower()}")
+                0 => new(() => Void.Value),
+                1 => values[0] switch
+                {
+                    Null => new(() => Void.Value),
+                    Func func => new(() => func.Invoke(new(), call)),
+                    Task task => task,
+                    _ => throw new Throw($"'task' does not have a constructor that takes a '{values[0].GetType().ToString().ToLower()}'")
+                },
+                _ => throw new Throw($"'task' does not have a constructor that takes {values.Count} arguments")
             };
         }
 
         public override string ToString(int _)
         {
             return "[task]";
+        }
+
+        internal Value Await()
+        {
+            try
+            {
+                return Value.Result;
+            }
+            catch (AggregateException e)
+            {
+                throw e.InnerException;
+            }
         }
     }
 }

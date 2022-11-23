@@ -4,13 +4,11 @@ using Bloc.Results;
 
 namespace Bloc.Statements
 {
-    internal class ExitStatement : Statement
+    internal sealed record YieldStatement : Statement
     {
-        private readonly IExpression? _expression;
+        private readonly IExpression _expression;
 
-        internal ExitStatement() { }
-
-        internal ExitStatement(IExpression expression)
+        internal YieldStatement(IExpression expression)
         {
             _expression = expression;
         }
@@ -19,12 +17,9 @@ namespace Bloc.Statements
         {
             try
             {
-                if (_expression is null)
-                    return new Exit();
-
                 var value = _expression.Evaluate(call).Value;
 
-                return new Exit(value);
+                return new Yield(value);
             }
             catch (Result result)
             {

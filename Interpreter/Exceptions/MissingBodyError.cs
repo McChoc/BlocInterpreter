@@ -1,12 +1,11 @@
 ﻿namespace Bloc.Exceptions
 {
-    public class MissingBodyError : SyntaxError
+    public sealed class MissingBodyError : SyntaxError
     {
-        public MissingBodyError(int start, int end, bool fatal = true) : base(start, end, "Missing body")
-        {
-            Fatal = fatal;
-        }
-
         public override bool Fatal { get; }
+
+        public MissingBodyError(int start, int end, bool fatal = true)
+            : base(start, end, "Missing body")
+            => Fatal = fatal;
     }
 }

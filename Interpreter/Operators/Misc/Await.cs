@@ -1,5 +1,4 @@
-﻿using System;
-using Bloc.Expressions;
+﻿using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
@@ -8,7 +7,7 @@ using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal class Await : IExpression
+    internal sealed record Await : IExpression
     {
         private readonly IExpression _operand;
 
@@ -23,17 +22,8 @@ namespace Bloc.Operators
 
             value = ReferenceUtil.Dereference(value, call.Engine.HopLimit).Value;
 
-            if (value.Is(out Task? task))
-            {
-                try
-                {
-                    return task!.Value.Result;
-                }
-                catch (AggregateException e)
-                {
-                    throw e.InnerException;
-                }
-            }
+            if (value is Task task)
+                return task.Await();
 
             throw new Throw($"Cannot apply operator 'await' on type {value.GetType().ToString().ToLower()}");
         }

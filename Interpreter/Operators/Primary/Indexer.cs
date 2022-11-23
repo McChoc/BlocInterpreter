@@ -7,7 +7,7 @@ using Bloc.Utils;
 
 namespace Bloc.Operators
 {
-    internal class Indexer : IExpression
+    internal sealed record Indexer : IExpression
     {
         private readonly IExpression _expression;
         private readonly IExpression _index;

@@ -1,14 +1,15 @@
-﻿using Bloc.Results;
+﻿using System.Collections.Generic;
+using Bloc.Results;
 
 namespace Bloc.Values
 {
-    public class Void : Value
+    public sealed class Void : Value
     {
         private Void() { }
 
         public static Void Value { get; } = new();
 
-        public override ValueType GetType() => ValueType.Void;
+        internal override ValueType GetType() => ValueType.Void;
 
         internal override void Assign()
         {
@@ -20,20 +21,12 @@ namespace Bloc.Values
             return other is Void;
         }
 
-        public override T Implicit<T>()
+        internal static Void Construct(List<Value> values)
         {
-            if (typeof(T) == typeof(Void))
-                return (this as T)!;
+            if (values.Count != 0)
+                throw new Throw($"'void' does not have a constructor that takes {values.Count} arguments");
 
-            throw new Throw($"Cannot implicitly cast void as {typeof(T).Name.ToLower()}");
-        }
-
-        public override Value Explicit(ValueType type)
-        {
-            if (type == ValueType.Void)
-                return this;
-
-            throw new Throw($"Cannot cast void as {type.ToString().ToLower()}");
+            return new();
         }
 
         public override string ToString(int _)

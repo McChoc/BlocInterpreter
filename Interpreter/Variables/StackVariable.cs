@@ -3,7 +3,7 @@ using Bloc.Values;
 
 namespace Bloc.Variables
 {
-    public class StackVariable : Variable
+    public sealed class StackVariable : Variable
     {
         private readonly Scope _scope;
 

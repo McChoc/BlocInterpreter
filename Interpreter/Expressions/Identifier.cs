@@ -3,7 +3,7 @@ using Bloc.Pointers;
 
 namespace Bloc.Expressions
 {
-    internal class Identifier : IExpression
+    internal sealed record Identifier : IExpression
     {
         internal string Name { get; }
 

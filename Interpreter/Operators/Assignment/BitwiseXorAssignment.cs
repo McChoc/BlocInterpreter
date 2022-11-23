@@ -5,7 +5,7 @@ using Bloc.Utils;
 
 namespace Bloc.Operators
 {
-    internal class BitwiseXorAssignment : IExpression
+    internal sealed record BitwiseXorAssignment : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;

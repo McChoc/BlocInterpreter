@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text;
 using Bloc.Expressions;
+using Bloc.Interfaces;
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
@@ -10,7 +11,7 @@ using Bloc.Variables;
 
 namespace Bloc.Operators
 {
-    internal class Multiplication : IExpression
+    internal sealed record Multiplication : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
@@ -29,44 +30,53 @@ namespace Bloc.Operators
             return OperatorUtil.RecursivelyCall(left, right, Operation, call);
         }
 
-        internal static Value Operation(Value left, Value right)
+        internal static Value Operation(Value a, Value b)
         {
-            if (left.Is(out Number? leftNumber) && right.Is(out Number? rightNumber))
-                return new Number(leftNumber!.Value * rightNumber!.Value);
-
-            if ((left.Is(out Array? array) && right.Is(out Number? number)) ||
-                (left.Is(out number) && right.Is(out array)))
+            return (a, b) switch
             {
-                if (number!.Value < 0)
-                    throw new Throw("You cannot multiply an array by a negative number");
+                (IScalar left, IScalar right)       => MultiplyScalars(left, right),
+                (String @string, IScalar scalar)    => MultiplyString(@string, scalar),
+                (IScalar scalar, String @string)    => MultiplyString(@string, scalar),
+                (Array array, IScalar scalar)       => Multiply(array, scalar),
+                (IScalar scalar, Array array)       => Multiply(array, scalar),
 
-                var amount = number.ToInt();
+                _ => throw new Throw($"Cannot apply operator '*' on operands of types {a.GetType().ToString().ToLower()} and {b.GetType().ToString().ToLower()}"),
+            };
+        }
 
-                var list = new List<IVariable>(array!.Values.Count * amount);
+        private static Number MultiplyScalars(IScalar left, IScalar right)
+        {
+            return new Number(left.GetDouble() * right.GetDouble());
+        }
 
-                for (var i = 0; i < amount; i++)
-                    list.AddRange(((Array)array.Copy()).Values);
+        private static String MultiplyString(String @string, IScalar scalar)
+        {
+            int count = scalar.GetInt();
 
-                return new Array(list);
-            }
+            if (count < 0)
+                throw new Throw("You cannot multiply a string by a negative number");
 
-            if ((left.Is(out String? str) && right.Is(out number)) ||
-                (left.Is(out number) && right.Is(out str)))
-            {
-                if (number!.Value < 0)
-                    throw new Throw("You cannot multiply a string by a negative number");
+            var builder = new StringBuilder(@string.Value.Length * count);
 
-                var amount = number!.ToInt();
+            for (var i = 0; i < count; i++)
+                builder.Append(@string.Value);
 
-                var builder = new StringBuilder(str!.Value.Length * amount);
+            return new String(builder.ToString());
+        }
 
-                for (var i = 0; i < amount; i++)
-                    builder.Append(str.Value);
+        private static Array Multiply(Array array, IScalar scalar)
+        {
+            int count = scalar.GetInt();
 
-                return new String(builder.ToString());
-            }
+            if (count < 0)
+                throw new Throw("You cannot multiply an array by a negative number");
 
-            throw new Throw($"Cannot apply operator '*' on operands of types {left.GetType().ToString().ToLower()} and {right.GetType().ToString().ToLower()}");
+            var list = new List<IVariable>(array.Values.Count * count);
+
+            for (var i = 0; i < count; i++)
+                list.AddRange(((Array)array.Copy()).Values);
+
+            return new Array(list);
         }
     }
 }

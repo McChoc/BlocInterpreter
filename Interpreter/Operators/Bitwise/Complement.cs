@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Bloc.Expressions;
+using Bloc.Interfaces;
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
@@ -8,7 +9,7 @@ using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal class Complement : IExpression
+    internal sealed record Complement : IExpression
     {
         private readonly IExpression _operand;
 
@@ -24,23 +25,31 @@ namespace Bloc.Operators
             return OperatorUtil.RecursivelyCall(value, Operation, call);
         }
 
-        private static Value Operation(Value value)
+        internal static Value Operation(Value value)
         {
-            if (value.Is(out Number? number))
-                return new Number(~number!.ToInt());
-
-            if (value.Is(out Type? type))
+            return value switch
             {
-                var types = new HashSet<ValueType>();
+                IScalar scalar  => ComplementScalar(scalar),
+                Type type       => ComplementType(type),
 
-                foreach (ValueType t in System.Enum.GetValues(typeof(ValueType)))
-                    if (!type!.Value.Contains(t))
-                        types.Add(t);
+                _ => throw new Throw($"Cannot apply operator '~' on type {value.GetType().ToString().ToLower()}")
+            };
+        }
 
-                return new Type(types);
-            }
+        private static Number ComplementScalar(IScalar scalar)
+        {
+            return new Number(~scalar.GetInt());
+        }
 
-            throw new Throw($"Cannot apply operator '~' on type {value.GetType().ToString().ToLower()}");
+        private static Type ComplementType(Type type)
+        {
+            var types = new HashSet<ValueType>();
+
+            foreach (ValueType t in System.Enum.GetValues(typeof(ValueType)))
+                if (!type.Value.Contains(t))
+                    types.Add(t);
+
+            return new Type(types);
         }
     }
 }

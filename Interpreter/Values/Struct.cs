@@ -8,7 +8,7 @@ using Bloc.Variables;
 
 namespace Bloc.Values
 {
-    public class Struct : Value, IIndexable
+    public sealed class Struct : Value, IIndexable
     {
         private bool _assigned;
 
@@ -18,7 +18,7 @@ namespace Bloc.Values
 
         public Dictionary<string, IVariable> Values { get; }
 
-        public override ValueType GetType() => ValueType.Struct;
+        internal override ValueType GetType() => ValueType.Struct;
 
         internal override Value Copy()
         {
@@ -57,50 +57,19 @@ namespace Bloc.Values
             return true;
         }
 
-        public override T Implicit<T>()
+        internal static Struct Construct(List<Value> values)
         {
-            if (typeof(T) == typeof(Null))
-                return (Null.Value as T)!;
-
-            if (typeof(T) == typeof(Bool))
-                return (Bool.True as T)!;
-
-            if (typeof(T) == typeof(String))
-                return (new String(ToString()) as T)!;
-
-            if (typeof(T) == typeof(Struct))
-                return (this as T)!;
-
-            throw new Throw($"Cannot implicitly cast struct as {typeof(T).Name.ToLower()}");
-        }
-
-        public override Value Explicit(ValueType type)
-        {
-            return type switch
+            return values.Count switch
             {
-                ValueType.Null => Null.Value,
-                ValueType.Bool => Bool.True,
-                ValueType.String => new String(ToString()),
-                ValueType.Array => new Array(Values.OrderBy(x => x.Key).Select(x =>
-                    new Struct(new() {
-                        { "key", new String(x.Key) },
-                        { "value", x.Value.Value.Copy() }
-                    })).ToList<IVariable>()),
-                ValueType.Struct => this,
-                ValueType.Tuple => new Tuple(Values.OrderBy(x => x.Key).Select(x => x.Value.Value.Copy())
-                    .ToList<IPointer>()),
-                _ => throw new Throw($"Cannot cast struct as {type.ToString().ToLower()}")
+                0 => new(),
+                1 => values[0] switch
+                {
+                    Null => new(),
+                    Struct @struct => @struct,
+                    _ => throw new Throw($"'struct' does not have a constructor that takes a '{values[0].GetType().ToString().ToLower()}'")
+                },
+                _ => throw new Throw($"'struct' does not have a constructor that takes {values.Count} arguments")
             };
-        }
-
-        public override string ToString(int depth)
-        {
-            if (Values.Count == 0)
-                return "{ }";
-
-            return "{\n" +
-                   string.Join(",\n", Values.OrderBy(x => x.Key).Select(p => new string(' ', (depth + 1) * 4) + p.Key + " = " + p.Value.Value.ToString(depth + 1))) + "\n" +
-                   new string(' ', depth * 4) + "}";
         }
 
         public IPointer Index(Value index, Call _)
@@ -134,6 +103,16 @@ namespace Bloc.Values
             var variable = (Variable)value;
 
             return new VariablePointer(variable);
+        }
+
+        public override string ToString(int depth)
+        {
+            if (Values.Count == 0)
+                return "{ }";
+
+            return "{\n" +
+                   string.Join(",\n", Values.OrderBy(x => x.Key).Select(p => new string(' ', (depth + 1) * 4) + p.Key + " = " + p.Value.Value.ToString(depth + 1))) + "\n" +
+                   new string(' ', depth * 4) + "}";
         }
     }
 }

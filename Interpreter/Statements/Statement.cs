@@ -4,7 +4,7 @@ using Bloc.Results;
 
 namespace Bloc.Statements
 {
-    public abstract class Statement
+    public abstract record Statement
     {
         internal string? Label { get; set; }
 

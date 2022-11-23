@@ -1,13 +1,16 @@
-﻿using Bloc.Expressions;
+﻿using System.Collections.Generic;
+using Bloc.Expressions;
+using Bloc.Interfaces;
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Utils;
 using Bloc.Values;
+using Bloc.Variables;
 
 namespace Bloc.Operators
 {
-    internal class Substraction : IExpression
+    internal sealed record Substraction : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
@@ -26,12 +29,37 @@ namespace Bloc.Operators
             return OperatorUtil.RecursivelyCall(left, right, Operation, call);
         }
 
-        internal static Value Operation(Value left, Value right)
+        internal static Value Operation(Value a, Value b)
         {
-            if (left.Is(out Number? leftNumber) && right.Is(out Number? rightNumber))
-                return new Number(leftNumber!.Value - rightNumber!.Value);
+            return (a, b) switch
+            {
+                (IScalar left, IScalar right)   => SubstractScalars(left, right),
+                (Array array, Value value)      => RemoveFromArray(array, value),
 
-            throw new Throw($"Cannot apply operator '-' on operands of types {left.GetType().ToString().ToLower()} and {right.GetType().ToString().ToLower()}");
+                _ => throw new Throw($"Cannot apply operator '-' on operands of types {a.GetType().ToString().ToLower()} and {b.GetType().ToString().ToLower()}"),
+            };
+        }
+
+        private static Number SubstractScalars(IScalar left, IScalar right)
+        {
+            return new Number(left.GetDouble() - right.GetDouble());
+        }
+
+        private static Array RemoveFromArray(Array array, Value value)
+        {
+            bool found = false;
+
+            var list = new List<IVariable>(array.Values.Count - 1);
+
+            foreach (var item in array.Values)
+            {
+                if (!found && item.Value.Equals(value))
+                    found = true;
+                else
+                    list.Add(item.Value.Copy());
+            }
+
+            return new Array(list);
         }
     }
 }

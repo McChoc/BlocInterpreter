@@ -1,43 +1,27 @@
-﻿using Bloc.Results;
+﻿using System.Collections.Generic;
+using Bloc.Results;
 
 namespace Bloc.Values
 {
-    public class Null : Value
+    public sealed class Null : Value
     {
         private Null() { }
 
         public static Null Value { get; } = new();
 
-        public override ValueType GetType() => ValueType.Null;
+        internal override ValueType GetType() => ValueType.Null;
 
         public override bool Equals(Value other)
         {
             return other is Null;
         }
 
-        public override T Implicit<T>()
+        internal static Null Construct(List<Value> values)
         {
-            if (typeof(T) == typeof(Null))
-                return (this as T)!;
+            if (values.Count != 0)
+                throw new Throw($"'null' does not have a constructor that takes {values.Count} arguments");
 
-            if (typeof(T) == typeof(Bool))
-                return (Bool.False as T)!;
-
-            if (typeof(T) == typeof(String))
-                return (String.Empty as T)!;
-
-            throw new Throw($"Cannot implicitly cast null as {typeof(T).Name.ToLower()}");
-        }
-
-        public override Value Explicit(ValueType type)
-        {
-            return type switch
-            {
-                ValueType.Null => this,
-                ValueType.Bool => Bool.False,
-                ValueType.String => String.Empty,
-                _ => throw new Throw($"Cannot cast null as {type.ToString().ToLower()}")
-            };
+            return new();
         }
 
         public override string ToString(int _)

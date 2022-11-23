@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Bloc.Expressions;
+using Bloc.Interfaces;
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
@@ -8,7 +9,7 @@ using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal class BitwiseAnd : IExpression
+    internal sealed record BitwiseAnd : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
@@ -27,23 +28,31 @@ namespace Bloc.Operators
             return OperatorUtil.RecursivelyCall(left, right, Operation, call);
         }
 
-        internal static Value Operation(Value left, Value right)
+        internal static Value Operation(Value a, Value b)
         {
-            if (left.Is(out Number? leftNumber) && right.Is(out Number? rightNumber))
-                return new Number(leftNumber!.ToInt() & rightNumber!.ToInt());
-
-            if (left.Is(out Type? leftType) && right.Is(out Type? rightType))
+            return (a, b) switch
             {
-                var types = new HashSet<ValueType>();
+                (IScalar left, IScalar right)   => AndScalars(left, right),
+                (Type left, Type right)         => AndTypes(left, right),
 
-                foreach (ValueType type in System.Enum.GetValues(typeof(ValueType)))
-                    if (leftType!.Value.Contains(type) && rightType!.Value.Contains(type))
-                        types.Add(type);
+                _ => throw new Throw($"Cannot apply operator '&' on operands of types {a.GetType().ToString().ToLower()} and {b.GetType().ToString().ToLower()}"),
+            };
+        }
 
-                return new Type(types);
-            }
+        private static Number AndScalars(IScalar left, IScalar right)
+        {
+            return new Number(left.GetInt() & right.GetInt());
+        }
 
-            throw new Throw($"Cannot apply operator '&' on operands of types {left.GetType().ToString().ToLower()} and {right.GetType().ToString().ToLower()}");
+        private static Type AndTypes(Type left, Type right)
+        {
+            var types = new HashSet<ValueType>();
+
+            foreach (ValueType type in System.Enum.GetValues(typeof(ValueType)))
+                if (left.Value.Contains(type) && right.Value.Contains(type))
+                    types.Add(type);
+
+            return new Type(types);
         }
     }
 }

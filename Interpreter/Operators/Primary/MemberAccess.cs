@@ -7,7 +7,7 @@ using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal class MemberAccess : IExpression
+    internal sealed record MemberAccess : IExpression
     {
         private readonly IExpression _expression;
         private readonly string _member;
@@ -24,10 +24,10 @@ namespace Bloc.Operators
 
             value = ReferenceUtil.Dereference(value, call.Engine.HopLimit).Value;
 
-            if (!value.Is(out Struct? @struct))
+            if (value is not Struct @struct)
                 throw new Throw("The '.' operator can only be apllied to a struct");
 
-            return @struct!.Get(_member);
+            return @struct.Get(_member);
         }
     }
 }

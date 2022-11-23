@@ -1,4 +1,5 @@
 ﻿using Bloc.Expressions;
+using Bloc.Interfaces;
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
@@ -7,7 +8,7 @@ using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal class GreaterEqual : IExpression
+    internal sealed record GreaterEqual : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
@@ -26,8 +27,8 @@ namespace Bloc.Operators
             left = ReferenceUtil.Dereference(left, call.Engine.HopLimit).Value;
             right = ReferenceUtil.Dereference(right, call.Engine.HopLimit).Value;
 
-            if (left.Is(out Number? leftNumber) && right.Is(out Number? rightNumber))
-                return new Bool(leftNumber!.Value >= rightNumber!.Value);
+            if (left is IScalar leftScalar && right is IScalar rightScalar)
+                return new Bool(leftScalar.GetDouble() >= rightScalar.GetDouble());
 
             throw new Throw($"Cannot apply operator '>=' on operands of types {left.GetType().ToString().ToLower()} and {right.GetType().ToString().ToLower()}");
         }

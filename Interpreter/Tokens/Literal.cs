@@ -2,7 +2,7 @@
 
 namespace Bloc.Tokens
 {
-    internal class Literal : Token
+    internal sealed class Literal : Token
     {
         internal Literal(int start, int end, IExpression expression) : base(start, end)
         {

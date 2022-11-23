@@ -5,9 +5,9 @@ using Bloc.Utils;
 
 namespace Bloc.Statements
 {
-    internal class StatementBlock : Statement
+    internal sealed record StatementBlock : Statement
     {
-        internal List<Statement> Statements { get; set; } = default!;
+        internal List<Statement> Statements { get; set; } = null!;
 
         internal override Result? Execute(Call call)
         {

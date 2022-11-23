@@ -5,7 +5,7 @@ using Bloc.Utils;
 
 namespace Bloc.Operators
 {
-    internal class AdditionAssignment : IExpression
+    internal sealed record AdditionAssignment : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;

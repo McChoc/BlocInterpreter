@@ -6,7 +6,7 @@ using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal class Ref : IExpression
+    internal sealed record Ref : IExpression
     {
         private readonly IExpression _operand;
 

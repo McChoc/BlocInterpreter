@@ -6,7 +6,7 @@ using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal class Conditional : IExpression
+    internal sealed record Conditional : IExpression
     {
         private readonly IExpression _alternative;
         private readonly IExpression _condition;
@@ -25,9 +25,11 @@ namespace Bloc.Operators
 
             value = ReferenceUtil.Dereference(value, call.Engine.HopLimit).Value;
 
-            var @bool = value.Implicit<Bool>();
+            var @bool = Bool.ImplicitCast(value);
 
-            return @bool!.Value ? _consequent.Evaluate(call).Value : _alternative.Evaluate(call).Value;
+            return @bool.Value
+                ? _consequent.Evaluate(call).Value
+                : _alternative.Evaluate(call).Value;
         }
     }
 }

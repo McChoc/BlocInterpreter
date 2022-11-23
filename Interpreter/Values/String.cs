@@ -6,19 +6,18 @@ using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Utils;
-using Bloc.Variables;
 
 namespace Bloc.Values
 {
-    public class String : Value, IIterable, IIndexable
+    public sealed class String : Value, IIndexable
     {
-        public String(string value) => Value = value;
+        public String() => Value = "";
 
-        public static String Empty { get; } = new("");
+        public String(string value) => Value = value;
 
         public string Value { get; }
 
-        public override ValueType GetType() => ValueType.String;
+        internal override ValueType GetType() => ValueType.String;
 
         public override bool Equals(Value other)
         {
@@ -28,51 +27,60 @@ namespace Bloc.Values
             return false;
         }
 
-        public override T Implicit<T>()
+        internal static String Construct(List<Value> values)
         {
-            if (typeof(T) == typeof(Null))
-                return (Null.Value as T)!;
-
-            if (typeof(T) == typeof(Bool))
-                return (Bool.True as T)!;
-
-            if (typeof(T) == typeof(String))
-                return (this as T)!;
-
-            throw new Throw($"Cannot implicitly cast string as {typeof(T).Name.ToLower()}");
-        }
-
-        public override Value Explicit(ValueType type)
-        {
-            return type switch
+            return values.Count switch
             {
-                ValueType.Null => Null.Value,
-                ValueType.Bool => Bool.True,
-                ValueType.String => this,
-                ValueType.Tuple => new Tuple(Value.ToCharArray().Select(c => new String(c.ToString()))
-                    .ToList<IPointer>()),
-                ValueType.Array => new Array(Value.ToCharArray().Select(c => new String(c.ToString()))
-                    .ToList<IVariable>()),
-                _ => throw new Throw($"Cannot cast string as {type.ToString().ToLower()}")
+                0 => new(),
+                1 => values[0] switch
+                {
+                    Void => throw new Throw($"'string' does not have a constructor that takes a 'void'"),
+                    Null => new(),
+                    String @string => @string,
+                    _ => new(values[0].ToString())
+                },
+                2 => (values[0], values[1]) switch
+                {
+                    (Number number, String format) => new(number.Value.ToString(format.Value)), // TODO check formats
+                    (String @string, Array array) => new(string.Join(@string.Value, array.Values.Select(x => x.ToString()))),
+                    (var value, Number number) => new(string.Concat(Enumerable.Repeat(value.ToString(), number.GetInt()))),
+                    var value => throw new Throw($"'string' does not have a constructor that takes a '{value.Item1.GetType().ToString().ToLower()}' and a '{value.Item2.GetType().ToString().ToLower()}'")
+                },
+                _ => throw new Throw($"'string' does not have a constructor that takes {values.Count} arguments")
             };
         }
 
-        public override string ToString(int _)
+        internal static String ImplicitCast(Value value)
         {
-            return $"\"{Value}\"";
+            try
+            {
+                return Construct(new() { value });
+            }
+            catch
+            {
+                throw new Throw($"Cannot implicitly convert '{value.GetType().ToString().ToLower()}' to 'string'");
+            }
         }
 
-        public IEnumerable<Value> Iterate()
+        internal static bool TryImplicitCast(Value value, out String @string)
         {
-            foreach (var @char in Value)
-                yield return new String(@char.ToString());
+            try
+            {
+                @string = Construct(new() { value });
+                return true;
+            }
+            catch
+            {
+                @string = null!;
+                return false;
+            }
         }
 
         public IPointer Index(Value value, Call _)
         {
             if (value is Number number)
             {
-                var index = number.ToInt();
+                var index = number.GetInt();
 
                 if (index < 0)
                     index += Value.Length;
@@ -96,6 +104,11 @@ namespace Bloc.Values
             }
 
             throw new Throw("It should be a number or a range.");
+        }
+
+        public override string ToString(int _)
+        {
+            return $"\"{Value}\"";
         }
     }
 }
