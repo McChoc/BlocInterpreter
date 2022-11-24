@@ -12,40 +12,58 @@ namespace Bloc.Statements
         internal IExpression Expression { get; set; } = null!;
         internal List<Statement> Statements { get; set; } = null!;
 
-        internal override Result? Execute(Call call)
+        internal override IEnumerable<Result> Execute(Call call)
         {
-            try
+            var (value, exception) = EvaluateExpression(Expression, call);
+
+            if (exception is not null)
             {
-                var value = Expression.Evaluate(call);
-
-                if (value is not Pointer pointer)
-                    return new Throw("You can only lock a variable");
-
-                if (pointer is UndefinedPointer undefined)
-                    return new Throw($"Variable {undefined.Name} was not defined in scope");
-
-                if (pointer is SlicePointer)
-                    return new Throw("You cannot lock a slice");
-
-                var variable = (VariablePointer)pointer;
-
-                if (variable.Variable is null)
-                    return new Throw("Invalid reference");
-
-                var labels = StatementUtil.GetLabels(Statements);
-
-                lock (variable.Variable)
-                {
-                    call.Push();
-                    var result = ExecuteBlock(Statements, labels, call);
-                    call.Pop();
-
-                    return result;
-                }
+                yield return exception;
+                yield break;
             }
-            catch (Result result)
+
+            switch (value)
             {
-                return result;
+                case VariablePointer { Variable: not null } pointer:
+
+                    var labels = StatementUtil.GetLabels(Statements);
+
+                    lock (pointer.Variable)
+                    {
+                        try
+                        {
+                            call.Push();
+
+                            foreach (var result in ExecuteBlock(Statements, labels, call))
+                            {
+                                yield return result;
+
+                                if (result is not Yield)
+                                    yield break;
+                            }
+                        }
+                        finally
+                        {
+                            call.Pop();
+                        }
+                    }
+                    break;
+
+                case SlicePointer { Variables: not null }:
+                    yield return new Throw("You cannot lock a slice");
+                    yield break;
+
+                case VariablePointer or SlicePointer:
+                    yield return new Throw("Invalid reference");
+                    yield break;
+
+                case UndefinedPointer pointer:
+                    yield return new Throw($"Variable {pointer.Name} was not defined in scope");
+                    yield break;
+
+                default:
+                    yield return new Throw("You can only lock a variable");
+                    yield break;
             }
         }
     }

@@ -11,27 +11,27 @@ namespace Bloc.Statements
 {
     internal sealed record VarStatement : Statement, IEnumerable
     {
-        internal List<(IExpression, IExpression?)> Definitions { get; set; } = new();
+        internal List<(IExpression Name, IExpression? Value)> Definitions { get; set; } = new();
 
-        internal override Result? Execute(Call call)
+        internal override IEnumerable<Result> Execute(Call call)
         {
             foreach (var definition in Definitions)
             {
                 try
                 {
-                    var value = definition.Item2?.Evaluate(call) ?? Null.Value;
+                    var value = definition.Value?.Evaluate(call) ?? Null.Value;
 
-                    var identifier = definition.Item1.Evaluate(call);
+                    var identifier = definition.Name.Evaluate(call);
 
                     Define(identifier, value.Value.Copy(), call);
                 }
-                catch (Result result)
+                catch (Throw exception)
                 {
-                    return result;
+                    return new[] { exception };
                 }
             }
 
-            return null;
+            return Enumerable.Empty<Result>();
         }
 
         private void Define(IPointer identifier, Value value, Call call)

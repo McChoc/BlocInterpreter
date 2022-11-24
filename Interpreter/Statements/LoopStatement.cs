@@ -9,38 +9,52 @@ namespace Bloc.Statements
     {
         internal List<Statement> Statements { get; set; } = null!;
 
-        internal override Result? Execute(Call call)
+        internal override IEnumerable<Result> Execute(Call call)
         {
             var loopCount = 0;
             var labels = StatementUtil.GetLabels(Statements);
 
             while (true)
             {
-                loopCount++;
-
-                if (loopCount > call.Engine.LoopLimit)
-                    return new Throw("The loop limit was reached.");
+                if (++loopCount > call.Engine.LoopLimit)
+                {
+                    yield return new Throw("The loop limit was reached.");
+                    yield break;
+                }
 
                 try
                 {
                     call.Push();
 
-                    var result = ExecuteBlock(Statements, labels, call);
+                    foreach (var result in ExecuteBlock(Statements, labels, call))
+                    {
+                        switch (result)
+                        {
+                            case Continue:
+                                goto Continue;
 
-                    if (result is Continue)
-                        continue;
-                    else if (result is Break)
-                        break;
-                    else if (result is not null)
-                        return result;
+                            case Break:
+                                goto Break;
+
+                            case Yield:
+                                yield return result;
+                                break;
+
+                            default:
+                                yield return result;
+                                yield break;
+                        }
+                    }
                 }
                 finally
                 {
                     call.Pop();
                 }
+
+            Continue:;
             }
 
-            return null;
+        Break:;
         }
     }
 }

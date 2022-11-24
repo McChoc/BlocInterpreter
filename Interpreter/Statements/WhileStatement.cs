@@ -11,63 +11,75 @@ namespace Bloc.Statements
     {
         internal bool Do { get; set; }
         internal bool Until { get; set; }
-        internal IExpression Condition { get; set; } = null!;
+        internal IExpression Expression { get; set; } = null!;
         internal List<Statement> Statements { get; set; } = null!;
 
-        internal override Result? Execute(Call call)
+        internal override IEnumerable<Result> Execute(Call call)
         {
             var loopCount = 0;
             var labels = StatementUtil.GetLabels(Statements);
 
             while (true)
             {
+                if (!Do || loopCount != 0)
+                {
+                    var (value, exception) = EvaluateExpression(Expression, call);
+
+                    if (exception is not null)
+                    {
+                        yield return exception;
+                        yield break;
+                    }
+
+                    if (!Bool.TryImplicitCast(value!.Value, out var @bool))
+                    {
+                        yield return new Throw("Cannot implicitly convert to bool");
+                        yield break;
+                    }
+
+                    if (@bool.Value == Until)
+                        break;
+                }
+
+                if (++loopCount > call.Engine.LoopLimit)
+                {
+                    yield return new Throw("The loop limit was reached.");
+                    yield break;
+                }
+
                 try
                 {
-                    var loop = true;
+                    call.Push();
 
-                    if (!Do || loopCount != 0)
+                    foreach (var result in ExecuteBlock(Statements, labels, call))
                     {
-                        var value = Condition.Evaluate(call).Value;
+                        switch (result)
+                        {
+                            case Continue:
+                                goto Continue;
 
-                        if (!Bool.TryImplicitCast(value, out var @bool))
-                            return new Throw("Cannot implicitly convert to bool");
+                            case Break:
+                                goto Break;
 
-                        loop = @bool.Value != Until;
-                    }
+                            case Yield:
+                                yield return result;
+                                break;
 
-                    if (!loop)
-                        break;
-
-                    loopCount++;
-
-                    if (loopCount > call.Engine.LoopLimit)
-                        return new Throw("The loop limit was reached.");
-
-                    try
-                    {
-                        call.Push();
-
-                        var result = ExecuteBlock(Statements, labels, call);
-
-                        if (result is Continue)
-                            continue;
-                        else if (result is Break)
-                            break;
-                        else if (result is not null)
-                            return result;
-                    }
-                    finally
-                    {
-                        call.Pop();
+                            default:
+                                yield return result;
+                                yield break;
+                        }
                     }
                 }
-                catch (Result result)
+                finally
                 {
-                    return result;
+                    call.Pop();
                 }
+
+            Continue:;
             }
 
-            return null;
+        Break:;
         }
     }
 }

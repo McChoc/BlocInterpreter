@@ -1,4 +1,5 @@
-﻿using Bloc.Expressions;
+﻿using System.Collections.Generic;
+using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
 
@@ -13,18 +14,14 @@ namespace Bloc.Statements
             _expression = expression;
         }
 
-        internal override Result Execute(Call call)
+        internal override IEnumerable<Result> Execute(Call call)
         {
-            try
-            {
-                var value = _expression.Evaluate(call).Value;
+            var (value, exception) = EvaluateExpression(_expression, call);
 
-                return new Yield(value);
-            }
-            catch (Result result)
-            {
-                return result;
-            }
+            if (exception is not null)
+                yield return exception;
+            else
+                yield return new Yield(value!.Value);
         }
     }
 }

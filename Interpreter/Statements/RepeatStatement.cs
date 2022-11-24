@@ -9,52 +9,70 @@ namespace Bloc.Statements
 {
     internal sealed record RepeatStatement : Statement
     {
-        internal IExpression Count { get; set; } = null!;
+        internal IExpression Expression { get; set; } = null!;
         internal List<Statement> Statements { get; set; } = null!;
 
-        internal override Result? Execute(Call call)
+        internal override IEnumerable<Result> Execute(Call call)
         {
-            try
+            var (value, exception) = EvaluateExpression(Expression, call);
+
+            if (exception is not null)
             {
-                var value = Count.Evaluate(call);
+                yield return exception;
+                yield break;
+            }
 
-                if (!Number.TryImplicitCast(value.Value, out var number))
-                    return new Throw("Cannot implicitly convert to number");
+            if (!Number.TryImplicitCast(value!.Value, out var number))
+            {
+                yield return new Throw("Cannot implicitly convert to number");
+                yield break;
+            }
 
-                var loopCount = number.GetInt();
+            var loopCount = number.GetInt();
 
-                var labels = StatementUtil.GetLabels(Statements);
+            var labels = StatementUtil.GetLabels(Statements);
 
-                for (var i = 0; i < loopCount; i++)
+            for (var i = 0; i < loopCount; i++)
+            {
+                if (i >= call.Engine.LoopLimit)
                 {
-                    if (i >= call.Engine.LoopLimit)
-                        return new Throw("The loop limit was reached.");
+                    yield return new Throw("The loop limit was reached.");
+                    yield break;
+                }
 
-                    try
+                try
+                {
+                    call.Push();
+
+                    foreach (var result in ExecuteBlock(Statements, labels, call))
                     {
-                        call.Push();
+                        switch (result)
+                        {
+                            case Continue:
+                                goto Continue;
 
-                        var result = ExecuteBlock(Statements, labels, call);
+                            case Break:
+                                goto Break;
 
-                        if (result is Continue)
-                            continue;
-                        else if (result is Break)
-                            break;
-                        else if (result is not null)
-                            return result;
-                    }
-                    finally
-                    {
-                        call.Pop();
+                            case Yield:
+                                yield return result;
+                                break;
+
+                            default:
+                                yield return result;
+                                yield break;
+                        }
                     }
                 }
-            }
-            catch (Result result)
-            {
-                return result;
+                finally
+                {
+                    call.Pop();
+                }
+
+            Continue:;
             }
 
-            return null;
+        Break:;
         }
     }
 }

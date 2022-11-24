@@ -130,8 +130,8 @@ namespace Bloc.Scanners
 
             var statement = new IfStatement
             {
-                Condition = GetExpression(@if, scanner),
-                If = GetBody(@if, scanner)
+                Expression = GetExpression(@if, scanner),
+                Then = GetBody(@if, scanner)
             };
 
             if (scanner.HasNextToken() && scanner.Peek() is (TokenType.Keyword, "else"))
@@ -150,7 +150,7 @@ namespace Bloc.Scanners
             return new WhileStatement
             {
                 Until = keyword.Text == "until",
-                Condition = GetExpression(keyword, scanner),
+                Expression = GetExpression(keyword, scanner),
                 Statements = GetBody(keyword, scanner)
             };
         }
@@ -171,7 +171,7 @@ namespace Bloc.Scanners
                 throw new SyntaxError(@do.Start, @do.End, "Missing 'while' or 'until'");
 
             statement.Until = keyword.Text == "until";
-            statement.Condition = GetExpression(keyword, scanner);
+            statement.Expression = GetExpression(keyword, scanner);
 
             // semicolon
             if (!scanner.HasNextToken() || scanner.GetNextToken() is not (TokenType.Operator, ";"))
@@ -224,7 +224,7 @@ namespace Bloc.Scanners
 
             return new RepeatStatement
             {
-                Count = GetExpression(keyword, scanner),
+                Expression = GetExpression(keyword, scanner),
                 Statements = GetBody(keyword, scanner)
             };
         }

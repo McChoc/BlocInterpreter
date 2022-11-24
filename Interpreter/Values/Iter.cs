@@ -13,6 +13,7 @@ namespace Bloc.Values
     public sealed class Iter : Value
     {
         private int _index;
+        private IEnumerator<Result> _results;
 
         private readonly Call _call;
         private readonly List<Statement> _statements;
@@ -20,6 +21,8 @@ namespace Bloc.Values
 
         internal Iter(Call call, List<Statement> statements)
         {
+            _results = Enumerable.Empty<Result>().GetEnumerator();
+
             _call = call;
             _statements = statements;
             _labels = StatementUtil.GetLabels(statements);
@@ -57,41 +60,63 @@ namespace Bloc.Values
 
         internal Value Next()
         {
-            while (_index < _statements.Count)
+            while (true)
             {
-                var result = _statements[_index++].Execute(_call);
-
-                if (result is Continue or Break)
-                    throw new Throw("No loop");
-
-                if (result is Throw)
-                    throw result;
-
-                if (result is Return)
-                    return Void.Value;
-
-                if (result is Yield yield)
-                    return yield.Value;
-
-                if (result is Goto @goto)
+                while (!_results.MoveNext())
                 {
-                    if (_labels.TryGetValue(@goto.Label, out var label))
+                    if (_index >= _statements.Count)
                     {
-                        label.Count++;
-
-                        if (label.Count > _call.Engine.JumpLimit)
-                            throw new Throw("The jump limit was reached.");
-
-                        _index = label.Index;
-
-                        continue;
+                        End();
+                        return Void.Value;
                     }
 
-                    throw new Throw("No such label in scope");
+                    _results = _statements[_index++].Execute(_call).GetEnumerator();
+                }
+
+                switch (_results.Current)
+                {
+                    case Continue:
+                        End();
+                        throw new Throw("A continue statement can only be used inside a loop");
+
+                    case Break:
+                        End();
+                        throw new Throw("A break statement can only be used inside a loop");
+
+                    case Throw @throw:
+                        End();
+                        throw @throw;
+
+                    case Return @return:
+                        End();
+                        return @return.Value;
+
+                    case Yield yield:
+                        return yield.Value;
+
+                    case Goto @goto:
+                        if (_labels.TryGetValue(@goto.Label, out var label))
+                        {
+                            if (++label.Count > _call.Engine.JumpLimit)
+                            {
+                                End();
+                                throw new Throw("The jump limit was reached.");
+                            }
+
+                            _index = label.Index;
+                            continue;
+                        }
+
+                        End();
+                        throw new Throw("No such label in scope");
                 }
             }
 
-            return Void.Value;
+            void End()
+            {
+                _index = _statements.Count;
+                _results = Enumerable.Empty<Result>().GetEnumerator();
+            }
         }
 
         internal static Iter Construct(List<Value> values, Call call)

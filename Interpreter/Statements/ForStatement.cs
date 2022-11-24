@@ -23,13 +23,22 @@ namespace Bloc.Statements
             Statements = new();
         }
 
-        internal override Result? Execute(Call call)
+        internal override IEnumerable<Result> Execute(Call call)
         {
             try
             {
                 call.Push();
 
-                Initialisation?.Evaluate(call);
+                if (Initialisation is not null)
+                {
+                    var (_, exception) = EvaluateExpression(Initialisation, call);
+                    
+                    if (exception is not null)
+                    {
+                        yield return exception;
+                        yield break;
+                    }
+                }
 
                 var loopCount = 0;
                 var labels = StatementUtil.GetLabels(Statements);
@@ -38,51 +47,78 @@ namespace Bloc.Statements
                 {
                     if (Condition is not null)
                     {
-                        var value = Condition.Evaluate(call).Value;
+                        var (value, exception) = EvaluateExpression(Condition, call);
 
-                        if (!Bool.TryImplicitCast(value, out var @bool))
-                            return new Throw("Cannot implicitly convert to bool");
+                        if (exception is not null)
+                        {
+                            yield return exception;
+                            yield break;
+                        }
+
+                        if (!Bool.TryImplicitCast(value!.Value, out var @bool))
+                        {
+                            yield return new Throw("Cannot implicitly convert to bool");
+                            yield break;
+                        }
 
                         if (!@bool.Value)
                             break;
                     }
 
-                    loopCount++;
-
-                    if (loopCount > call.Engine.LoopLimit)
-                        return new Throw("The loop limit was reached.");
+                    if (++loopCount > call.Engine.LoopLimit)
+                    {
+                        yield return new Throw("The loop limit was reached.");
+                        yield break;
+                    }
 
                     try
                     {
                         call.Push();
 
-                        var result = ExecuteBlock(Statements, labels, call);
+                        foreach (var result in ExecuteBlock(Statements, labels, call))
+                        {
+                            switch (result)
+                            {
+                                case Continue:
+                                    goto Continue;
 
-                        if (result is Continue)
-                            continue;
-                        else if (result is Break)
-                            break;
-                        else if (result is not null)
-                            return result;
+                                case Break:
+                                    goto Break;
+
+                                case Yield:
+                                    yield return result;
+                                    break;
+
+                                default:
+                                    yield return result;
+                                    yield break;
+                            }
+                        }
                     }
                     finally
                     {
                         call.Pop();
                     }
 
-                    Increment?.Evaluate(call);
+                Continue:
+                    if (Increment is not null)
+                    {
+                        var (_, exception) = EvaluateExpression(Increment, call);
+
+                        if (exception is not null)
+                        {
+                            yield return exception;
+                            yield break;
+                        }
+                    }
                 }
-            }
-            catch (Result result)
-            {
-                return result;
+
+            Break:;
             }
             finally
             {
                 call.Pop();
             }
-
-            return null;
         }
 
         IEnumerator IEnumerable.GetEnumerator() => Statements.GetEnumerator();

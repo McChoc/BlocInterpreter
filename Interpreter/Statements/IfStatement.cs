@@ -9,31 +9,44 @@ namespace Bloc.Statements
 {
     internal sealed record IfStatement : Statement
     {
-        internal IExpression Condition { get; set; } = null!;
-        internal List<Statement> If { get; set; } = null!;
+        internal IExpression Expression { get; set; } = null!;
+        internal List<Statement> Then { get; set; } = new();
         internal List<Statement> Else { get; set; } = new();
 
-        internal override Result? Execute(Call call)
+        internal override IEnumerable<Result> Execute(Call call)
         {
+            var (value, exception) = EvaluateExpression(Expression, call);
+
+            if (exception is not null)
+            {
+                yield return exception;
+                yield break;
+            }
+
+            if (!Bool.TryImplicitCast(value!.Value, out var @bool))
+            {
+                yield return new Throw("Cannot implicitly convert to bool");
+                yield break;
+            }
+
+            var statements = @bool.Value ? Then : Else;
+            var labels = StatementUtil.GetLabels(statements);
+
             try
             {
-                var value = Condition.Evaluate(call).Value;
-
-                if (!Bool.TryImplicitCast(value, out var @bool))
-                    return new Throw("Cannot implicitly convert to bool");
-
-                var statements = @bool.Value ? If : Else;
-                var labels = StatementUtil.GetLabels(statements);
-
                 call.Push();
-                var result = ExecuteBlock(statements, labels, call);
-                call.Pop();
 
-                return result;
+                foreach (var result in ExecuteBlock(statements, labels, call))
+                {
+                    yield return result;
+
+                    if (result is not Yield)
+                        yield break;
+                }
             }
-            catch (Result result)
+            finally
             {
-                return result;
+                call.Pop();
             }
         }
     }

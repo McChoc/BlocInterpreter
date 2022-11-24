@@ -7,43 +7,87 @@ namespace Bloc.Statements
 {
     internal sealed record TryStatement : Statement
     {
-        internal List<Statement> Try { get; set; } = null!;
+        internal List<Statement> Try { get; set; } = new();
         internal List<Statement> Catch { get; set; } = new();
         internal List<Statement> Finally { get; set; } = new();
 
-        internal override Result? Execute(Call call)
+        internal override IEnumerable<Result> Execute(Call call)
         {
-            Result? result;
+            Result? result = null;
 
+            try
             {
                 var labels = StatementUtil.GetLabels(Try);
 
                 call.Push();
-                result = ExecuteBlock(Try, labels, call);
+
+                foreach (var r in ExecuteBlock(Try, labels, call))
+                {
+                    if (r is not Yield)
+                    {
+                        result = r;
+                        break;
+                    }
+
+                    yield return r;
+                }
+            }
+            finally
+            {
                 call.Pop();
             }
 
             if (result is Throw)
             {
-                var labels = StatementUtil.GetLabels(Catch);
+                result = null;
 
-                call.Push();
-                result = ExecuteBlock(Catch, labels, call);
-                call.Pop();
+                try
+                {
+                    var labels = StatementUtil.GetLabels(Catch);
 
-                if (result is not null)
-                    return result;
+                    call.Push();
+
+                    foreach (var r in ExecuteBlock(Catch, labels, call))
+                    {
+                        if (r is not Yield)
+                        {
+                            result = r;
+                            break;
+                        }
+
+                        yield return r;
+                    }
+                }
+                finally
+                {
+                    call.Pop();
+                }
             }
 
+            try
             {
                 var labels = StatementUtil.GetLabels(Finally);
 
                 call.Push();
-                var finalResult = ExecuteBlock(Finally, labels, call);
-                call.Pop();
 
-                return finalResult ?? result;
+                foreach (var r in ExecuteBlock(Finally, labels, call))
+                {
+                    if (r is not Yield)
+                    {
+                        result = r;
+                        break;
+                    }
+
+                    yield return r;
+                }
             }
+            finally
+            {
+                call.Pop();
+            }
+
+            if (result is not null)
+                yield return result;
         }
     }
 }

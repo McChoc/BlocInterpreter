@@ -9,15 +9,26 @@ namespace Bloc.Statements
     {
         internal List<Statement> Statements { get; set; } = null!;
 
-        internal override Result? Execute(Call call)
+        internal override IEnumerable<Result> Execute(Call call)
         {
             var labels = StatementUtil.GetLabels(Statements);
 
-            call.Push();
-            var result = ExecuteBlock(Statements, labels, call);
-            call.Pop();
+            try
+            {
+                call.Push();
 
-            return result;
+                foreach (var result in ExecuteBlock(Statements, labels, call))
+                {
+                    yield return result;
+
+                    if (result is not Yield)
+                        yield break;
+                }
+            }
+            finally
+            {
+                call.Pop();
+            }
         }
     }
 }

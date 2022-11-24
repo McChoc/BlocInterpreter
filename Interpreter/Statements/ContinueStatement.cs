@@ -1,13 +1,14 @@
-﻿using Bloc.Memory;
+﻿using System.Collections.Generic;
+using Bloc.Memory;
 using Bloc.Results;
 
 namespace Bloc.Statements
 {
     internal sealed record ContinueStatement : Statement
     {
-        internal override Result Execute(Call call)
+        internal override IEnumerable<Result> Execute(Call call)
         {
-            return new Continue();
+            yield return new Continue();
         }
     }
 }

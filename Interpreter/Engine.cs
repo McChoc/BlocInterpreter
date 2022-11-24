@@ -63,32 +63,35 @@ namespace Bloc
 
             for (var i = 0; i < statements.Count; i++)
             {
-                var result = statements[i].Execute(GlobalCall);
-
-                if (result is Throw)
-                    return result;
-
-                if (result is Return or Yield)
-                    return new Throw("No function");
-
-                if (result is Continue || result is Break)
-                    return new Throw("No loop");
-
-                if (result is Goto g)
+                switch (statements[i].Execute(GlobalCall).FirstOrDefault())
                 {
-                    if (labels.TryGetValue(g.Label, out var label))
-                    {
-                        label.Count++;
+                    case Continue:
+                        throw new Throw("A continue statement can only be used inside a loop");
 
-                        if (label.Count > JumpLimit)
-                            return new Throw("The jump limit was reached.");
+                    case Break:
+                        throw new Throw("A break statement can only be used inside a loop");
 
-                        i = label.Index - 1;
+                    case Yield:
+                        throw new Throw("A yield statement can only be used inside a generator");
 
-                        continue;
-                    }
+                    case Return:
+                        throw new Throw("A return statement can only be used inside a function");
 
-                    return new Throw($"Label '{g.Label}' does not exist in scope.");
+                    case Throw @throw:
+                        return @throw;
+
+                    case Goto @goto:
+                        if (labels.TryGetValue(@goto.Label, out var label))
+                        {
+                            if (++label.Count > JumpLimit)
+                                return new Throw("The jump limit was reached.");
+
+                            i = label.Index - 1;
+
+                            continue;
+                        }
+
+                        return new Throw($"Label '{@goto.Label}' does not exist in scope.");
                 }
             }
 

@@ -3,7 +3,6 @@ using System.Linq;
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Tokens;
-using Bloc.Utils;
 using Bloc.Values;
 
 namespace Bloc.Statements
@@ -12,34 +11,34 @@ namespace Bloc.Statements
     {
         internal List<List<Token>> Commands { get; } = new();
 
-        internal override Result? Execute(Call call)
+        internal override IEnumerable<Result> Execute(Call call)
         {
             Value value = Void.Value;
 
-            foreach (var command in Commands)
+            try
             {
-                try
+                foreach (var tokens in Commands)
                 {
-                    var words = command.SelectMany(t => GetText(t, call)).ToArray();
+                    var words = tokens.SelectMany(t => GetText(t, call)).ToArray();
 
                     var name = words[0];
                     var args = words[1..];
 
-                    if (!call.Engine.Commands.TryGetValue(name, out var com))
-                        throw new Throw("Unknown command.");
+                    if (!call.Engine.Commands.TryGetValue(name, out var command))
+                        return new[] { new Throw("Unknown command.") };
 
-                    value = com.Call(args, value, call);
+                    value = command.Call(args, value, call);
                 }
-                catch (Result result)
-                {
-                    return result;
-                }
+            }
+            catch (Throw exception)
+            {
+                return new[] { exception };
             }
 
             if (String.TryImplicitCast(value, out var @string))
                 call.Engine.Log(@string.Value);
 
-            return null;
+            return Enumerable.Empty<Result>();
         }
 
         private static string[] GetText(Token token, Call call)
@@ -58,10 +57,9 @@ namespace Bloc.Statements
                     var @string = String.ImplicitCast(value);
 
                     return @string.Value.Split(' ');
-
-                default:
-                    throw new System.Exception();
             }
+
+            throw new System.Exception();
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Bloc.Memory;
+﻿using System.Collections.Generic;
+using Bloc.Memory;
 using Bloc.Results;
 
 namespace Bloc.Statements
@@ -12,9 +13,9 @@ namespace Bloc.Statements
 
         internal new string Label { get; }
 
-        internal override Result Execute(Call call)
+        internal override IEnumerable<Result> Execute(Call call)
         {
-            return new Goto(Label);
+            yield return new Goto(Label);
         }
     }
 }

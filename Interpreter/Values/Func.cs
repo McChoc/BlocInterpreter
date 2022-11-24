@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Bloc.Interfaces;
 using Bloc.Memory;
 using Bloc.Results;
@@ -130,35 +131,35 @@ namespace Bloc.Values
             {
                 for (var i = 0; i < Statements.Count; i++)
                 {
-                    var result = Statements[i].Execute(call);
-
-                    if (result is Yield)
-                        throw new Throw("A yield statement can only be used inside a generator");
-
-                    if (result is Continue or Break)
-                        throw new Throw("No loop");
-
-                    if (result is Throw)
-                        throw result;
-
-                    if (result is Return r)
-                        return r.Value.Copy();
-
-                    if (result is Goto g)
+                    switch (Statements[i].Execute(call).FirstOrDefault())
                     {
-                        if (Labels.TryGetValue(g.Label, out var label))
-                        {
-                            label.Count++;
+                        case Continue:
+                            throw new Throw("A continue statement can only be used inside a loop");
 
-                            if (label.Count > call.Engine.JumpLimit)
-                                throw new Throw("The jump limit was reached.");
+                        case Break:
+                            throw new Throw("A break statement can only be used inside a loop");
 
-                            i = label.Index - 1;
+                        case Yield:
+                            throw new Throw("A yield statement can only be used inside a generator");
 
-                            continue;
-                        }
+                        case Throw @throw:
+                            throw @throw;
 
-                        throw new Throw("No such label in scope");
+                        case Return @return:
+                            return @return.Value.Copy();
+
+                        case Goto @goto:
+                            if (Labels.TryGetValue(@goto.Label, out var label))
+                            {
+                                if (++label.Count > call.Engine.JumpLimit)
+                                    throw new Throw("The jump limit was reached.");
+
+                                i = label.Index - 1;
+
+                                continue;
+                            }
+
+                            throw new Throw("No such label in scope");
                     }
                 }
 
