@@ -17,14 +17,12 @@ namespace Bloc.Utils
 
         private static IPointer Dereference(IPointer value, ref int hopCount, int hopLimit)
         {
-            while (hopCount < hopLimit)
+            while (hopCount++ < hopLimit)
             {
-                if (value is not Reference reference)
+                if (value.Value is not Reference reference)
                     return value;
 
                 value = reference.Pointer;
-
-                hopCount++;
             }
 
             throw new Throw("The hop limit was reached");
