@@ -30,6 +30,9 @@ namespace Bloc.Values
 
         internal override ValueType GetType() => ValueType.Func;
 
+        // TODO override Copy()
+        // TODO verify copy and equals for all value types
+
         public override bool Equals(Value other)
         {
             if (other is not Iter iter)
