@@ -44,21 +44,12 @@ namespace Bloc.Scanners
 
         private static readonly HashSet<string> keyWords = new()
         {
-            "chr", "ord", "len",
-            "not", "in", "is", "as",
-            "val", "ref", "new", "let",
-            "delete", "eval",
-            "nameof", "typeof",
-            "select", "where", "orderby",
-            "await", "async",
-            "next", "generator",
-            "var", "const", "pass",
-            "lock", "if", "else", 
-            "do", "while", "until",
-            "loop", "repeat", "for",
-            "try", "catch", "when", "finally",
-            "throw", "return", "yield",
-            "continue", "break", "goto"
+            "as", "async", "await", "break", "catch", "chr", "const",
+            "continue", "delete", "do", "else", "eval", "finally", "for",
+            "generator", "goto", "if", "in", "is", "len", "let", "lock",
+            "loop", "nameof", "new", "next", "not", "ord", "orderby", "pass",
+            "ref", "repeat", "return", "select", "throw", "try", "typeof",
+            "until", "val", "var", "when", "where", "while", "yield"
         };
 
         private readonly string _code;

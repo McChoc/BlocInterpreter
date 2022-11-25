@@ -21,8 +21,8 @@ namespace Bloc
                     if (i == tokens.Count - 1)
                         throw new SyntaxError(@operator.Start, @operator.End, "Missing the right part of catch expression");
 
-                    var left = ParseCoalescings(tokens.GetRange(..i), precedence);
-                    var right = Parse(tokens.GetRange((i + 1)..), precedence);
+                    var left = ParseCatchExpressions(tokens.GetRange(..i), precedence);
+                    var right = Parse(tokens.GetRange((i + 1)..), precedence - 1);
 
                     return new CatchExpression(left, right);
                 }

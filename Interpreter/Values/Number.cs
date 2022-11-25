@@ -46,6 +46,18 @@ namespace Bloc.Values
             };
         }
 
+        internal static Number ImplicitCast(Value value)
+        {
+            try
+            {
+                return Construct(new() { value });
+            }
+            catch
+            {
+                throw new Throw($"Cannot implicitly convert '{value.GetType().ToString().ToLower()}' to 'number'");
+            }
+        }
+
         internal static bool TryImplicitCast(Value value, out Number number)
         {
             try

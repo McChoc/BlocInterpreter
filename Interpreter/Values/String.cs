@@ -42,7 +42,7 @@ namespace Bloc.Values
                 2 => (values[0], values[1]) switch
                 {
                     (Number number, String format) => new(number.Value.ToString(format.Value)), // TODO check formats
-                    (String @string, Array array) => new(string.Join(@string.Value, array.Values.Select(x => x.ToString()))),
+                    (String @string, Array array) => new(string.Join(@string.Value, array.Values.Select(x => ImplicitCast(x.Value).Value))),
                     (var value, Number number) => new(string.Concat(Enumerable.Repeat(value.ToString(), number.GetInt()))),
                     var value => throw new Throw($"'string' does not have a constructor that takes a '{value.Item1.GetType().ToString().ToLower()}' and a '{value.Item2.GetType().ToString().ToLower()}'")
                 },

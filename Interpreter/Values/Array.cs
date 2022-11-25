@@ -142,11 +142,6 @@ namespace Bloc.Values
                 return new SlicePointer(variables);
             }
 
-            if (value is Func func)
-            {
-                return new Array(Values.Select(v => func.Invoke(new() { v.Value }, call)).ToList<IVariable>());
-            }
-
             throw new Throw("It should be a number or a range.");
         }
 

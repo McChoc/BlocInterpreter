@@ -22,7 +22,7 @@ namespace Bloc
                         throw new SyntaxError(@operator.Start, @operator.End, "Missing the right part of logical OR");
 
                     var left = ParseConditionalORs(tokens.GetRange(..i), precedence);
-                    var right = Parse(tokens.GetRange((i + 1)..), precedence);
+                    var right = Parse(tokens.GetRange((i + 1)..), precedence - 1);
 
                     return new BooleanOr(left, right);
                 }

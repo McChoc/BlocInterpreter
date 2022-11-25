@@ -10,25 +10,26 @@ namespace Bloc
 {
     internal static partial class ExpressionParser
     {
-        private static IExpression ParseCoalescings(List<Token> tokens, int precedence)
+        private static IExpression ParseQueries(List<Token> tokens, int precedence)
         {
             for (var i = tokens.Count - 1; i >= 0; i--)
             {
-                if (tokens[i] is (TokenType.Operator, "??" or "???") @operator)
+                if (tokens[i] is (TokenType.Keyword, "select" or "where" or "orderby") @operator)
                 {
                     if (i == 0)
-                        throw new SyntaxError(@operator.Start, @operator.End, "Missing the left part of coalescing");
+                        throw new SyntaxError(@operator.Start, @operator.End, "Missing the left part of query");
 
                     if (i == tokens.Count - 1)
-                        throw new SyntaxError(@operator.Start, @operator.End, "Missing the right part of coalescing");
+                        throw new SyntaxError(@operator.Start, @operator.End, "Missing the right part of query");
 
-                    var left = ParseCoalescings(tokens.GetRange(..i), precedence);
+                    var left = ParseQueries(tokens.GetRange(..i), precedence);
                     var right = Parse(tokens.GetRange((i + 1)..), precedence - 1);
 
                     return @operator.Text switch
                     {
-                        "??" => new NullCoalescing(left, right),
-                        "???" => new VoidCoalescing(left, right),
+                        "select" => new Select(left, right),
+                        "where" => new Where(left, right),
+                        "orderby" => new Orderby(left, right),
                         _ => throw new Exception()
                     };
                 }
