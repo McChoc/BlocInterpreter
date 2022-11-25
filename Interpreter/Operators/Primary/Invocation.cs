@@ -33,7 +33,7 @@ namespace Bloc.Operators
             var args = new List<Value>(_parameters.Count);
 
             foreach (var parameter in _parameters)
-                args.Add(parameter.Evaluate(call).Value);
+                args.Add(parameter.Evaluate(call).Value.Copy());
 
             if (args.Count == 1 && args[0] is Array array)
                 args = array.Values.Select(v => v.Value).ToList();

@@ -40,7 +40,7 @@ namespace Bloc.Scanners
 
             var statement = scanner.Peek() switch
             {
-                { Type: TokenType.Braces } => GetStatementBlock(scanner),
+                (TokenType.Braces, _) => GetStatementBlock(scanner),
                 (TokenType.Operator, ";") => GetEmptyStatement(scanner),
                 (TokenType.Operator, "/") => GetCommandStatement(scanner),
                 (TokenType.Keyword, "var") => GetVarStatement(scanner),
