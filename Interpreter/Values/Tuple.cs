@@ -1,45 +1,29 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Bloc.Pointers;
 using Bloc.Results;
+using Bloc.Variables;
 
 namespace Bloc.Values
 {
     public sealed class Tuple : Value
     {
-        public Tuple() => Values = new();
+        public Tuple() => Variables = new();
 
-        public Tuple(List<IPointer> value) => Values = value;
+        public Tuple(List<IVariable> value)
+        {
+            Variables = value;
+        }
 
-        public List<IPointer> Values { get; }
+        public Tuple(List<Value> value)
+        {
+            Variables = value
+                .Select(x => new TupleVariable(x))
+                .ToList<IVariable>();
+        }
+
+        public List<IVariable> Variables { get; }
 
         internal override ValueType GetType() => ValueType.Tuple;
-
-        internal override Value Copy()
-        {
-            return new Tuple(Values.Select(v => v.Value.Copy()).ToList<IPointer>());
-        }
-
-        internal override void Assign()
-        {
-            foreach (var value in Values)
-                value.Value.Assign();
-        }
-
-        public override bool Equals(Value other)
-        {
-            if (other is not Tuple tuple)
-                return false;
-
-            if (Values.Count != tuple.Values.Count)
-                return false;
-
-            for (var i = 0; i < Values.Count; i++)
-                if (!Values[i].Value.Equals(tuple.Values[i].Value))
-                    return false;
-
-            return true;
-        }
 
         internal static Tuple Construct(List<Value> values)
         {
@@ -50,13 +34,13 @@ namespace Bloc.Values
                 {
                     Null => new(),
                     Range range => new(),
-                    Array array => new(array.Values
+                    Array array => new(array.Variables
                         .Select(x => x.Value.Copy())
-                        .ToList<IPointer>()),
-                    Struct @struct => new(@struct.Values
+                        .ToList()),
+                    Struct @struct => new(@struct.Variables
                         .OrderBy(x => x.Key)
                         .Select(x => x.Value.Value.Copy())
-                        .ToList<IPointer>()),
+                        .ToList()),
                     Tuple tuple => tuple,
                     _ => throw new Throw($"'iter' does not have a constructor that takes a '{values[0].GetType().ToString().ToLower()}'")
                 },
@@ -64,12 +48,39 @@ namespace Bloc.Values
             };
         }
 
-        public override string ToString(int depth)
+        internal override Value Copy()
         {
-            if (!Values.Any(v => v.Value is Array or Struct or Tuple))
-                return "(" + string.Join(", ", Values.Select(v => v.Value)) + ")";
+            return new Tuple(Variables
+                .Select(x => new TupleVariable(x.Value.Copy()))
+                .ToList<IVariable>());
+        }
 
-            return "(" + string.Join(",\n", Values.Select(v => new string(' ', depth * 4) + v.Value.ToString(depth))) + ")";
+        internal override string ToString(int depth)
+        {
+            if (!Variables.Any(v => v.Value is Array or Struct or Tuple))
+                return "(" + string.Join(", ", Variables.Select(v => v.Value)) + ")";
+
+            return "(" + string.Join(",\n", Variables.Select(v => new string(' ', depth * 4) + v.Value.ToString(depth))) + ")";
+        }
+
+        public override int GetHashCode()
+        {
+            return System.HashCode.Combine(Variables.Count);
+        }
+
+        public override bool Equals(object other)
+        {
+            if (other is not Tuple tuple)
+                return false;
+
+            if (Variables.Count != tuple.Variables.Count)
+                return false;
+
+            for (var i = 0; i < Variables.Count; i++)
+                if (Variables[i].Value != tuple.Variables[i].Value)
+                    return false;
+
+            return true;
         }
     }
 }

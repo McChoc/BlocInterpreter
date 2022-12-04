@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Bloc.Expressions;
 using Bloc.Interfaces;
 using Bloc.Memory;
-using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Utils;
 using Bloc.Values;
-using Bloc.Variables;
 
 namespace Bloc.Operators
 {
@@ -22,7 +21,7 @@ namespace Bloc.Operators
             _right = right;
         }
 
-        public IPointer Evaluate(Call call)
+        public IValue Evaluate(Call call)
         {
             var left = _left.Evaluate(call).Value;
             var right = _right.Evaluate(call).Value;
@@ -71,10 +70,10 @@ namespace Bloc.Operators
             if (count < 0)
                 throw new Throw("You cannot multiply an array by a negative number");
 
-            var list = new List<IVariable>(array.Values.Count * count);
+            var list = new List<Value>(array.Variables.Count * count);
 
             for (var i = 0; i < count; i++)
-                list.AddRange(((Array)array.Copy()).Values);
+                list.AddRange(array.Variables.Select(x => x.Value.Copy()));
 
             return new Array(list);
         }

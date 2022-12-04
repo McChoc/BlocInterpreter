@@ -1,5 +1,5 @@
 ﻿using Bloc.Memory;
-using Bloc.Pointers;
+using Bloc.Values;
 
 namespace Bloc.Expressions
 {
@@ -9,6 +9,6 @@ namespace Bloc.Expressions
 
         internal Identifier(string name) => Name = name;
 
-        public IPointer Evaluate(Call call) => call.Get(Name);
+        public IValue Evaluate(Call call) => call.Get(Name);
     }
 }

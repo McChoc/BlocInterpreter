@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Text;
 using Bloc.Memory;
-using Bloc.Pointers;
 using Bloc.Values;
 
 namespace Bloc.Expressions
@@ -18,7 +17,7 @@ namespace Bloc.Expressions
             _expressions = expressions;
         }
 
-        public IPointer Evaluate(Call call)
+        public IValue Evaluate(Call call)
         {
             var offset = 0;
 
@@ -37,23 +36,16 @@ namespace Bloc.Expressions
             return new String(builder.ToString());
         }
 
-        public override bool Equals(object obj)
-        {
-            if (obj is not StringLiteral @string)
-                return false;
-
-            if (_baseString != @string._baseString)
-                return false;
-
-            if (!_expressions.SequenceEqual(@string._expressions))
-                return false;
-
-            return true;
-        }
-
         public override int GetHashCode()
         {
-            return System.HashCode.Combine(_baseString);
+            return System.HashCode.Combine(_baseString, _expressions.Count);
+        }
+
+        public override bool Equals(object other)
+        {
+            return other is StringLiteral literal &&
+                _baseString == literal._baseString &&
+                _expressions.SequenceEqual(literal._expressions);
         }
     }
 }

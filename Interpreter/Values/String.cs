@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using Bloc.Interfaces;
 using Bloc.Memory;
-using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Utils;
 
@@ -19,14 +19,6 @@ namespace Bloc.Values
 
         internal override ValueType GetType() => ValueType.String;
 
-        public override bool Equals(Value other)
-        {
-            if (other is String @string)
-                return Value == @string.Value;
-
-            return false;
-        }
-
         internal static String Construct(List<Value> values)
         {
             return values.Count switch
@@ -41,10 +33,10 @@ namespace Bloc.Values
                 },
                 2 => (values[0], values[1]) switch
                 {
-                    (Number number, String format) => new(number.Value.ToString(format.Value)), // TODO check formats
-                    (String @string, Array array) => new(string.Join(@string.Value, array.Values.Select(x => ImplicitCast(x.Value).Value))),
-                    (var value, Number number) => new(string.Concat(Enumerable.Repeat(value.ToString(), number.GetInt()))),
-                    var value => throw new Throw($"'string' does not have a constructor that takes a '{value.Item1.GetType().ToString().ToLower()}' and a '{value.Item2.GetType().ToString().ToLower()}'")
+                    (Number number, String format) => new(number.Value.ToString(format.Value, CultureInfo.InvariantCulture)), // TODO check formats
+                    (String separator, Array array) => new(string.Join(separator.Value, array.Variables.Select(x => ImplicitCast(x.Value).Value))),
+                    (var value, Number count) => new(string.Concat(Enumerable.Repeat(value.ToString(), count.GetInt()))),
+                    _ => throw new Throw($"'string' does not have a constructor that takes a '{values[0].GetType().ToString().ToLower()}' and a '{values[1].GetType().ToString().ToLower()}'")
                 },
                 _ => throw new Throw($"'string' does not have a constructor that takes {values.Count} arguments")
             };
@@ -76,7 +68,25 @@ namespace Bloc.Values
             }
         }
 
-        public IPointer Index(Value value, Call _)
+        internal override string ToString(int _)
+        {
+            return $"\"{Value}\"";
+        }
+
+        public override int GetHashCode()
+        {
+            return System.HashCode.Combine(Value);
+        }
+
+        public override bool Equals(object other)
+        {
+            if (other is String @string)
+                return Value == @string.Value;
+
+            return false;
+        }
+
+        public IValue Index(Value value, Call _)
         {
             if (value is Number number)
             {
@@ -104,11 +114,6 @@ namespace Bloc.Values
             }
 
             throw new Throw("It should be a number or a range.");
-        }
-
-        public override string ToString(int _)
-        {
-            return $"\"{Value}\"";
         }
     }
 }

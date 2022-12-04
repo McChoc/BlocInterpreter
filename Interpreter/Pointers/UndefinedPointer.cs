@@ -10,7 +10,7 @@ namespace Bloc.Pointers
 
         internal string Name { get; }
 
-        internal override Pointer Define(Value value, Call call) => call.Set(Name, value);
+        internal override Pointer Define(bool mutable, Value value, Call call) => call.Set(mutable, Name, value);
 
         internal override Value Get() => throw new Throw($"Variable {Name} was not defined in scope");
 

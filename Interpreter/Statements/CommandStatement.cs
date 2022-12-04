@@ -7,7 +7,7 @@ using Bloc.Values;
 
 namespace Bloc.Statements
 {
-    internal sealed record CommandStatement : Statement
+    internal sealed class CommandStatement : Statement
     {
         internal List<List<Token>> Commands { get; } = new();
 
@@ -39,27 +39,56 @@ namespace Bloc.Statements
                 call.Engine.Log(@string.Value);
 
             return Enumerable.Empty<Result>();
+
+            static string[] GetText(Token token, Call call)
+            {
+                switch (token)
+                {
+                    case Literal literal:
+                        return new[] { ((String)literal.Expression.Evaluate(call)).Value };
+
+                    case { Type: TokenType.Keyword }:
+                        return new[] { token.Text };
+
+                    case { Type: TokenType.Identifier, Text: string identifier }:
+                        var value = call.Get(identifier).Get();
+
+                        var @string = String.ImplicitCast(value);
+
+                        return @string.Value.Split(' ');
+                }
+
+                throw new System.Exception();
+            }
         }
 
-        private static string[] GetText(Token token, Call call)
+        public override int GetHashCode()
         {
-            switch (token)
+            return System.HashCode.Combine(Label, Commands.Count);
+        }
+
+        public override bool Equals(object other)
+        {
+            if (other is not CommandStatement statement)
+                return false;
+
+            if (Label != statement.Label)
+                return false;
+
+            if (Commands.Count != statement.Commands.Count)
+                return false;
+
+            for (int i = 0; i < Commands.Count; i++)
             {
-                case Literal literal:
-                    return new[] { ((String)literal.Expression.Evaluate(call)).Value };
+                if (Commands[i].Count != statement.Commands[i].Count)
+                    return false;
 
-                case { Type: TokenType.Keyword }:
-                    return new[] { token.Text };
-
-                case { Type: TokenType.Identifier, Text: string identifier }:
-                    var value = call.Get(identifier).Get();
-
-                    var @string = String.ImplicitCast(value);
-
-                    return @string.Value.Split(' ');
+                for (int j = 0; j < Commands[i].Count; j++)
+                    if (Commands[i][j] != statement.Commands[i][j])
+                        return false;
             }
 
-            throw new System.Exception();
+            return true;
         }
     }
 }

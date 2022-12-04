@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
@@ -7,8 +8,15 @@ using Bloc.Values;
 
 namespace Bloc.Statements
 {
-    internal sealed record WhileStatement : Statement
+    internal sealed class WhileStatement : Statement
     {
+        private bool @checked;
+        internal override bool Checked
+        {
+            get => @checked;
+            set => @checked = value;
+        }
+
         internal bool Do { get; set; }
         internal bool Until { get; set; }
         internal IExpression Expression { get; set; } = null!;
@@ -41,7 +49,7 @@ namespace Bloc.Statements
                         break;
                 }
 
-                if (++loopCount > call.Engine.LoopLimit)
+                if (Checked && ++loopCount > call.Engine.LoopLimit)
                 {
                     yield return new Throw("The loop limit was reached.");
                     yield break;
@@ -80,6 +88,22 @@ namespace Bloc.Statements
             }
 
         Break:;
+        }
+
+        public override int GetHashCode()
+        {
+            return System.HashCode.Combine(Label, Checked, Do, Until, Expression, Statements.Count);
+        }
+
+        public override bool Equals(object other)
+        {
+            return other is WhileStatement statement &&
+                Label == statement.Label &&
+                Checked == statement.Checked &&
+                Do == statement.Do &&
+                Until == statement.Until &&
+                Expression.Equals(statement.Expression) &&
+                Statements.SequenceEqual(statement.Statements);
         }
     }
 }

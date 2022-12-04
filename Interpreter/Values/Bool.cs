@@ -19,14 +19,6 @@ namespace Bloc.Values
 
         internal override ValueType GetType() => ValueType.Bool;
 
-        public override bool Equals(Value other)
-        {
-            if (other is Bool @bool)
-                return Value == @bool.Value;
-
-            return false;
-        }
-
         internal static Bool Construct(List<Value> values)
         {
             return values.Count switch
@@ -70,6 +62,22 @@ namespace Bloc.Values
             }
         }
 
-        public override string ToString(int _) => Value ? "true" : "false";
+        internal override string ToString(int _)
+        {
+            return Value ? "true" : "false";
+        }
+
+        public override int GetHashCode()
+        {
+            return System.HashCode.Combine(Value);
+        }
+
+        public override bool Equals(object other)
+        {
+            if (other is Bool @bool)
+                return Value == @bool.Value;
+
+            return false;
+        }
     }
 }

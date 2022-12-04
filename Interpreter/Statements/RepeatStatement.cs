@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
@@ -7,8 +8,15 @@ using Bloc.Values;
 
 namespace Bloc.Statements
 {
-    internal sealed record RepeatStatement : Statement
+    internal sealed class RepeatStatement : Statement
     {
+        private bool @checked;
+        internal override bool Checked
+        {
+            get => @checked;
+            set => @checked = value;
+        }
+
         internal IExpression Expression { get; set; } = null!;
         internal List<Statement> Statements { get; set; } = null!;
 
@@ -34,7 +42,7 @@ namespace Bloc.Statements
 
             for (var i = 0; i < loopCount; i++)
             {
-                if (i >= call.Engine.LoopLimit)
+                if (Checked && i >= call.Engine.LoopLimit)
                 {
                     yield return new Throw("The loop limit was reached.");
                     yield break;
@@ -73,6 +81,20 @@ namespace Bloc.Statements
             }
 
         Break:;
+        }
+
+        public override int GetHashCode()
+        {
+            return System.HashCode.Combine(Label, Checked, Expression, Statements.Count);
+        }
+
+        public override bool Equals(object other)
+        {
+            return other is RepeatStatement statement &&
+                Label == statement.Label &&
+                Checked == statement.Checked &&
+                Expression.Equals(statement.Expression) &&
+                Statements.SequenceEqual(statement.Statements);
         }
     }
 }

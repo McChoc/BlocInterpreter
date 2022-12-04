@@ -1,21 +1,19 @@
 ﻿using System.Collections.Generic;
-using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Values;
-using Bloc.Variables;
 
 namespace Bloc.Utils
 {
     internal static class ReferenceUtil
     {
-        internal static IPointer Dereference(IPointer value, int hopLimit)
+        internal static IValue Dereference(IValue value, int hopLimit)
         {
             var hopCount = 0;
 
             return Dereference(value, ref hopCount, hopLimit);
         }
 
-        private static IPointer Dereference(IPointer value, ref int hopCount, int hopLimit)
+        private static IValue Dereference(IValue value, ref int hopCount, int hopLimit)
         {
             while (hopCount++ < hopLimit)
             {
@@ -39,9 +37,9 @@ namespace Bloc.Utils
 
             if (value is Tuple tuple)
             {
-                var values = new List<IPointer>(tuple.Values.Count);
+                var values = new List<Value>(tuple.Variables.Count);
 
-                foreach (var item in tuple.Values)
+                foreach (var item in tuple.Variables)
                     values.Add(TrueValue(item.Value, hopCount, hopLimit));
 
                 return new Tuple(values);
@@ -49,9 +47,9 @@ namespace Bloc.Utils
 
             if (value is Struct @struct)
             {
-                var values = new Dictionary<string, IVariable>(@struct.Values.Count);
+                var values = new Dictionary<string, Value>(@struct.Variables.Count);
 
-                foreach (var (key, item) in @struct.Values)
+                foreach (var (key, item) in @struct.Variables)
                     values[key] = TrueValue(item.Value, hopCount, hopLimit);
 
                 return new Struct(values);
@@ -59,9 +57,9 @@ namespace Bloc.Utils
 
             if (value is Array array)
             {
-                var values = new List<IVariable>(array.Values.Count);
+                var values = new List<Value>(array.Variables.Count);
 
-                foreach (var item in array.Values)
+                foreach (var item in array.Variables)
                     values.Add(TrueValue(item.Value, hopCount, hopLimit));
 
                 return new Array(values);

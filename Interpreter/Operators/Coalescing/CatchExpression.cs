@@ -1,7 +1,7 @@
 ﻿using Bloc.Expressions;
 using Bloc.Memory;
-using Bloc.Pointers;
 using Bloc.Results;
+using Bloc.Values;
 
 namespace Bloc.Operators
 {
@@ -16,7 +16,7 @@ namespace Bloc.Operators
             _right = right;
         }
 
-        public IPointer Evaluate(Call call)
+        public IValue Evaluate(Call call)
         {
             try
             {

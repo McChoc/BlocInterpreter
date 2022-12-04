@@ -16,23 +16,23 @@ namespace Bloc.Operators
             _operand = operand;
         }
 
-        public IPointer Evaluate(Call call)
+        public IValue Evaluate(Call call)
         {
             var identifier = _operand.Evaluate(call);
 
             return Undefine(identifier);
         }
 
-        private Value Undefine(IPointer identifier)
+        private Value Undefine(IValue identifier)
         {
             if (identifier is Pointer pointer)
                 return pointer.Delete();
 
-            if (identifier is Tuple tuple)
+            if (identifier.Value is Tuple tuple)
             {
-                var values = new List<IPointer>(tuple.Values.Count);
+                var values = new List<Value>(tuple.Variables.Count);
 
-                foreach (var item in tuple.Values)
+                foreach (var item in tuple.Variables)
                     values.Add(Undefine(item));
 
                 return new Tuple(values);

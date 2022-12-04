@@ -1,29 +1,23 @@
-﻿using Bloc.Memory;
-using Bloc.Results;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Bloc.Memory;
+using Bloc.Results;
 
 namespace Bloc.Values
 {
     public sealed class Task : Value
     {
-        internal Task(Func<Value> func) => Value = System.Threading.Tasks.Task.Run(func);
+        private readonly Func<Value> _func;
+        private readonly Task<Value> _task;
 
-        internal Task<Value> Value { get; }
+        internal Task(Func<Value> func)
+        {
+            _func = func;
+            _task = System.Threading.Tasks.Task.Run(func);
+        }
 
         internal override ValueType GetType() => ValueType.Task;
-
-        public override bool Equals(Value other)
-        {
-            if (other is not Task task)
-                return false;
-
-            if (Value != task.Value)
-                return false;
-
-            return true;
-        }
 
         internal static Task Construct(List<Value> values, Call call)
         {
@@ -41,16 +35,37 @@ namespace Bloc.Values
             };
         }
 
-        public override string ToString(int _)
+        internal override Value Copy()
+        {
+            return new Task(_func);
+        }
+
+        internal override string ToString(int _)
         {
             return "[task]";
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(_task);
+        }
+
+        public override bool Equals(object other) // TODO fix task copy and equality
+        {
+            if (other is not Task task)
+                return false;
+
+            if (_func != task._func)
+                return false;
+
+            return true;
         }
 
         internal Value Await()
         {
             try
             {
-                return Value.Result;
+                return _task.Result;
             }
             catch (AggregateException e)
             {

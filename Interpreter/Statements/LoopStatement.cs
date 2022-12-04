@@ -1,12 +1,20 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Utils;
 
 namespace Bloc.Statements
 {
-    internal sealed record LoopStatement : Statement
+    internal sealed class LoopStatement : Statement
     {
+        private bool @checked;
+        internal override bool Checked
+        {
+            get => @checked;
+            set => @checked = value;
+        }
+
         internal List<Statement> Statements { get; set; } = null!;
 
         internal override IEnumerable<Result> Execute(Call call)
@@ -16,7 +24,7 @@ namespace Bloc.Statements
 
             while (true)
             {
-                if (++loopCount > call.Engine.LoopLimit)
+                if (Checked && ++loopCount > call.Engine.LoopLimit)
                 {
                     yield return new Throw("The loop limit was reached.");
                     yield break;
@@ -55,6 +63,19 @@ namespace Bloc.Statements
             }
 
         Break:;
+        }
+
+        public override int GetHashCode()
+        {
+            return System.HashCode.Combine(Label, Checked, Statements.Count);
+        }
+
+        public override bool Equals(object other)
+        {
+            return other is LoopStatement statement &&
+                Label == statement.Label &&
+                Checked == statement.Checked &&
+                Statements.SequenceEqual(statement.Statements);
         }
     }
 }

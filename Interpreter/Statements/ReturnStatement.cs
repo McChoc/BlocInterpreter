@@ -5,7 +5,7 @@ using Bloc.Results;
 
 namespace Bloc.Statements
 {
-    internal sealed record ReturnStatement : Statement
+    internal sealed class ReturnStatement : Statement
     {
         private readonly IExpression? _expression;
 
@@ -31,6 +31,18 @@ namespace Bloc.Statements
                 else
                     yield return new Return(value!.Value);
             }
+        }
+
+        public override int GetHashCode()
+        {
+            return System.HashCode.Combine(Label, _expression);
+        }
+
+        public override bool Equals(object other)
+        {
+            return other is ReturnStatement statement &&
+                Label == statement.Label &&
+                Equals(_expression, statement._expression);
         }
     }
 }

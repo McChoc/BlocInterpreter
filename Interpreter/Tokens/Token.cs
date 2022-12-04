@@ -33,17 +33,26 @@ namespace Bloc.Tokens
             text = Text;
         }
 
-        public override bool Equals(object other)
-        {
-            if (other is not Token token)
-                return false;
-
-            return Type == token.Type && Text == token.Text;
-        }
-
         public override int GetHashCode()
         {
             return HashCode.Combine(Type, Text);
+        }
+
+        public override bool Equals(object other)
+        {
+            return other is Token token &&
+                Type == token.Type &&
+                Text == token.Text;
+        }
+
+        public static bool operator ==(Token a, Token b)
+        {
+            return a.Equals(b);
+        }
+
+        public static bool operator !=(Token a, Token b)
+        {
+            return !a.Equals(b);
         }
     }
 }

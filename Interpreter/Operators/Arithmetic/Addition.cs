@@ -2,11 +2,9 @@
 using Bloc.Expressions;
 using Bloc.Interfaces;
 using Bloc.Memory;
-using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Utils;
 using Bloc.Values;
-using Bloc.Variables;
 
 namespace Bloc.Operators
 {
@@ -21,7 +19,7 @@ namespace Bloc.Operators
             _right = right;
         }
 
-        public IPointer Evaluate(Call call)
+        public IValue Evaluate(Call call)
         {
             var left = _left.Evaluate(call).Value;
             var right = _right.Evaluate(call).Value;
@@ -68,36 +66,36 @@ namespace Bloc.Operators
 
         private static Array ConcatArrays(Array left, Array right)
         {
-            var list = new List<IVariable>(left.Values.Count + right.Values.Count);
+            var list = new List<Value>(left.Variables.Count + right.Variables.Count);
 
-            foreach (var item in left.Values)
-                list.Add(item.Value.Copy());
+            foreach (var variable in left.Variables)
+                list.Add(variable.Value.Copy());
 
-            foreach (var item in right.Values)
-                list.Add(item.Value.Copy());
+            foreach (var variable in right.Variables)
+                list.Add(variable.Value.Copy());
 
             return new Array(list);
         }
 
         private static Array PrependToArray(Array array, Value value)
         {
-            var list = new List<IVariable>(array.Values.Count + 1)
+            var list = new List<Value>(array.Variables.Count + 1)
             {
                 value
             };
 
-            foreach (var item in array.Values)
-                list.Add(item.Value.Copy());
+            foreach (var variable in array.Variables)
+                list.Add(variable.Value.Copy());
 
             return new Array(list);
         }
 
         private static Array AppendToArray(Array array, Value value)
         {
-            var list = new List<IVariable>(array.Values.Count + 1);
+            var list = new List<Value>(array.Variables.Count + 1);
 
-            foreach (var item in array.Values)
-                list.Add(item.Value.Copy());
+            foreach (var variable in array.Variables)
+                list.Add(variable.Value.Copy());
 
             list.Add(value);
 
@@ -106,13 +104,13 @@ namespace Bloc.Operators
 
         private static Struct MergeStructs(Struct left, Struct right)
         {
-            var dict = new Dictionary<string, IVariable>();
+            var dict = new Dictionary<string, Value>();
 
-            foreach (var (key, value) in left.Values)
-                dict[key] = value.Value.Copy();
+            foreach (var (key, variable) in left.Variables)
+                dict[key] = variable.Value.Copy();
 
-            foreach (var (key, value) in right.Values)
-                dict[key] = value.Value.Copy();
+            foreach (var (key, variable) in right.Variables)
+                dict[key] = variable.Value.Copy();
 
             return new Struct(dict);
         }

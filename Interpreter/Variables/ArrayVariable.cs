@@ -13,7 +13,7 @@ namespace Bloc.Variables
 
         public override void Delete()
         {
-            _parent.Values.Remove(this);
+            _parent.Variables.Remove(this);
 
             base.Delete();
         }

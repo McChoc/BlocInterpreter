@@ -15,14 +15,6 @@ namespace Bloc.Values
 
         internal override ValueType GetType() => ValueType.Reference;
 
-        public override bool Equals(Value other)
-        {
-            if (other is not Reference reference)
-                return false;
-
-            return Pointer.Equals(reference.Pointer);
-        }
-
         internal static Reference Construct(List<Value> values, Call call)
         {
             return values.Count switch
@@ -43,9 +35,22 @@ namespace Bloc.Values
             };
         }
 
-        public override string ToString(int _)
+        internal override string ToString(int _)
         {
             return "[reference]";
+        }
+
+        public override int GetHashCode()
+        {
+            return 0;
+        }
+
+        public override bool Equals(object other)
+        {
+            if (other is not Reference reference)
+                return false;
+
+            return Pointer.Equals(reference.Pointer);
         }
     }
 }

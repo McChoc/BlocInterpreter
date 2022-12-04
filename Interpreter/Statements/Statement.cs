@@ -1,20 +1,43 @@
 ﻿using System.Collections.Generic;
+using Bloc.Exceptions;
 using Bloc.Expressions;
 using Bloc.Memory;
-using Bloc.Pointers;
 using Bloc.Results;
+using Bloc.Values;
 
 namespace Bloc.Statements
 {
-    public abstract record Statement
+    public abstract class Statement
     {
         internal string? Label { get; set; }
+        internal virtual bool Checked
+        {
+            get => throw new System.NotImplementedException();
+            set {
+                if (!value)
+                    throw new SyntaxError(0, 0, "unchecked is not valid for this statement");
+            }
+        }
 
         internal abstract IEnumerable<Result> Execute(Call call);
 
-        private protected static (IPointer?, Throw?) EvaluateExpression(IExpression expression, Call call)
+        public abstract override int GetHashCode();
+
+        public abstract override bool Equals(object other);
+
+        public static bool operator ==(Statement a, Statement b)
         {
-            IPointer? value = null;
+            return a.Equals(b);
+        }
+
+        public static bool operator !=(Statement a, Statement b)
+        {
+            return !a.Equals(b);
+        }
+
+        private protected static (IValue?, Throw?) EvaluateExpression(IExpression expression, Call call)
+        {
+            IValue? value = null;
             Throw? @throw = null;
 
             try

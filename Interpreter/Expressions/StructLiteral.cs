@@ -1,9 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Bloc.Memory;
-using Bloc.Pointers;
 using Bloc.Values;
-using Bloc.Variables;
 
 namespace Bloc.Expressions
 {
@@ -16,9 +13,9 @@ namespace Bloc.Expressions
             _fields = fields;
         }
 
-        public IPointer Evaluate(Call call)
+        public IValue Evaluate(Call call)
         {
-            var values = new Dictionary<string, IVariable>(_fields.Count);
+            var values = new Dictionary<string, Value>(_fields.Count);
 
             foreach (var (key, value) in _fields)
                 values.Add(key, value.Evaluate(call).Value);
@@ -26,20 +23,29 @@ namespace Bloc.Expressions
             return new Struct(values);
         }
 
-        public override bool Equals(object obj)
-        {
-            if (obj is not StructLiteral @struct)
-                return false;
-
-            if (!_fields.SequenceEqual(@struct._fields))
-                return false;
-
-            return true;
-        }
-
         public override int GetHashCode()
         {
-            return 0;
+            return System.HashCode.Combine(_fields.Count);
+        }
+
+        public override bool Equals(object other)
+        {
+            if (other is not StructLiteral literal)
+                return false;
+
+            if (_fields.Count != literal._fields.Count)
+                return false;
+
+            foreach (var key in _fields.Keys)
+            {
+                if (!literal._fields.TryGetValue(key, out var value))
+                    return false;
+
+                if (!_fields[key].Equals(value))
+                    return false;
+            }
+
+            return true;
         }
     }
 }

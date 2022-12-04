@@ -10,52 +10,17 @@ namespace Bloc.Values
 {
     public sealed class Struct : Value, IIndexable
     {
-        private bool _assigned;
+        public Struct() => Variables = new();
 
-        public Struct() => Values = new();
+        public Struct(Dictionary<string, Value> values)
+        {
+            Variables = values
+                .ToDictionary(x => x.Key, x => new StructVariable(x.Key, x.Value, this));
+        }
 
-        public Struct(Dictionary<string, IVariable> value) => Values = value;
-
-        public Dictionary<string, IVariable> Values { get; }
+        internal Dictionary<string, StructVariable> Variables { get; }
 
         internal override ValueType GetType() => ValueType.Struct;
-
-        internal override Value Copy()
-        {
-            return new Struct(Values.ToDictionary(p => p.Key, p => (IVariable)p.Value.Value.Copy()));
-        }
-
-        internal override void Assign()
-        {
-            _assigned = true;
-
-            foreach (var key in Values.Keys)
-            {
-                Values[key] = new StructVariable(key, Values[key].Value, this);
-                Values[key].Value.Assign();
-            }
-        }
-
-        internal override void Destroy()
-        {
-            foreach (var value in Values.Values.Cast<StructVariable>())
-                value.Delete();
-        }
-
-        public override bool Equals(Value other)
-        {
-            if (other is not Struct @struct)
-                return false;
-
-            if (Values.Count != @struct.Values.Count)
-                return false;
-
-            foreach (var key in Values.Keys)
-                if (!Values[key].Value.Equals(@struct.Values[key].Value))
-                    return false;
-
-            return true;
-        }
 
         internal static Struct Construct(List<Value> values)
         {
@@ -72,47 +37,70 @@ namespace Bloc.Values
             };
         }
 
-        public IPointer Index(Value index, Call _)
+        internal override Value Copy()
         {
-            if (index is not String str)
-                throw new Throw("It should be a string.");
-
-            if (!Values.ContainsKey(str.Value))
-                throw new Throw($"'{str.Value}' was not defined inside this struct");
-
-            var value = Values[str.Value];
-
-            if (!_assigned)
-                return (Value)value;
-
-            var variable = (Variable)value;
-
-            return new VariablePointer(variable);
+            return new Struct(Variables
+                .ToDictionary(x => x.Key, x => x.Value.Value.Copy()));
         }
 
-        public IPointer Get(string key)
+        internal override void Destroy()
         {
-            if (!Values.ContainsKey(key))
-                throw new Throw($"'{key}' was not defined inside this struct");
-
-            var value = Values[key];
-
-            if (!_assigned)
-                return (Value)value;
-
-            var variable = (Variable)value;
-
-            return new VariablePointer(variable);
+            foreach (var variable in Variables.Values)
+                variable.Delete();
         }
 
-        public override string ToString(int depth)
+        internal override string ToString(int depth)
         {
-            if (Values.Count == 0)
+            if (Variables.Count == 0)
                 return "{ }";
 
             return "{\n" +
-                   string.Join(",\n", Values.OrderBy(x => x.Key).Select(p => new string(' ', (depth + 1) * 4) + p.Key + " = " + p.Value.Value.ToString(depth + 1))) + "\n" +
+                   string.Join(",\n", Variables.OrderBy(x => x.Key).Select(p => new string(' ', (depth + 1) * 4) + p.Key + " = " + p.Value.Value.ToString(depth + 1))) + "\n" +
                    new string(' ', depth * 4) + "}";
+        }
+
+        public override int GetHashCode()
+        {
+            return System.HashCode.Combine(Variables.Count);
+        }
+
+        public override bool Equals(object other)
+        {
+            if (other is not Struct @struct)
+                return false;
+
+            if (Variables.Count != @struct.Variables.Count)
+                return false;
+
+            foreach (var key in Variables.Keys)
+            {
+                if (!@struct.Variables.TryGetValue(key, out var value))
+                    return false;
+
+                if (Variables[key].Value != value.Value)
+                    return false;
+            }
+
+            return true;
+        }
+
+        public IValue Index(Value index, Call _)
+        {
+            if (index is not String @string)
+                throw new Throw("It should be a string.");
+
+            if (!Variables.ContainsKey(@string.Value))
+                throw new Throw($"'{@string.Value}' was not defined inside this struct");
+
+            return new VariablePointer(Variables[@string.Value]);
+        }
+
+        public IValue Get(string key)
+        {
+            if (!Variables.ContainsKey(key))
+                throw new Throw($"'{key}' was not defined inside this struct");
+
+            return new VariablePointer(Variables[key]);
         }
     }
 }

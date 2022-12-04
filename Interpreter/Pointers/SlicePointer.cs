@@ -10,7 +10,7 @@ namespace Bloc.Pointers
 {
     internal sealed class SlicePointer : Pointer
     {
-        internal SlicePointer(List<Variable> variables)
+        internal SlicePointer(List<ArrayVariable> variables)
         {
             Variables = variables;
 
@@ -18,9 +18,9 @@ namespace Bloc.Pointers
                 variable.Pointers.Add(this);
         }
 
-        internal List<Variable>? Variables { get; private set; }
+        internal List<ArrayVariable>? Variables { get; private set; }
 
-        internal override Pointer Define(Value _0, Call _1)
+        internal override Pointer Define(bool _0, Value _1, Call _2)
         {
             throw new Throw("The left part of an assignement must be a variable");
         }
@@ -30,7 +30,9 @@ namespace Bloc.Pointers
             if (Variables is null)
                 throw new Throw("Invalid reference");
 
-            return new Array(Variables.Select(v => v.Value.Copy()).ToList<IVariable>());
+            return new Array(Variables
+                .Select(v => v.Value.Copy())
+                .ToList());
         }
 
         internal override Value Set(Value value)
@@ -41,16 +43,13 @@ namespace Bloc.Pointers
             if (value is not Array array)
                 throw new Throw("You can only assign an array to a slice");
 
-            if (Variables.Count != array.Values.Count)
+            if (Variables.Count != array.Variables.Count)
                 throw new Throw("Mismatch number of elements inside the slice and the array");
 
-            value = value.Copy();
-            value.Assign();
-
-            foreach (var (var, val) in Variables.Zip(array.Values))
+            foreach (var (var, val) in Variables.Zip(array.Variables))
             {
                 var.Value.Destroy();
-                var.Value = val.Value;
+                var.Value = val.Value.Copy();
             }
 
             return array;
@@ -61,7 +60,7 @@ namespace Bloc.Pointers
             if (Variables is null)
                 throw new Throw("Invalid reference");
 
-            var values = new List<IVariable>(Variables.Count);
+            var values = new List<Value>(Variables.Count);
 
             foreach (var variable in Variables)
             {

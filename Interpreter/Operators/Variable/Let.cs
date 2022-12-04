@@ -4,6 +4,7 @@ using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Values;
+using Bloc.Variables;
 
 namespace Bloc.Operators
 {
@@ -16,26 +17,33 @@ namespace Bloc.Operators
             _operand = operand;
         }
 
-        public IPointer Evaluate(Call call)
+        public IValue Evaluate(Call call)
         {
             var identifier = _operand.Evaluate(call);
 
             return Define(identifier, call);
         }
 
-        private IPointer Define(IPointer identifier, Call call)
+        private IValue Define(IValue identifier, Call call)
         {
             if (identifier is Pointer pointer)
-                return pointer.Define(Null.Value, call);
+                return pointer.Define(true, Null.Value, call);
 
             if (identifier.Value is Tuple tuple)
             {
-                var values = new List<IPointer>(tuple.Values.Count);
+                var variables = new List<IVariable>(tuple.Variables.Count);
 
-                foreach (var id in tuple.Values)
-                    values.Add(Define(id, call));
+                foreach (var id in tuple.Variables)
+                {
+                    var value = Define(id, call);
 
-                return new Tuple(values);
+                    if (value is IVariable variable)
+                        variables.Add(variable);
+                    else
+                        variables.Add(new TupleVariable(value.Value));
+                }
+
+                return new Tuple(variables);
             }
 
             throw new Throw("The operand must be an identifier");

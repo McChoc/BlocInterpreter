@@ -1,5 +1,4 @@
 ﻿using Bloc.Memory;
-using Bloc.Pointers;
 using Bloc.Values;
 
 namespace Bloc.Expressions
@@ -10,6 +9,6 @@ namespace Bloc.Expressions
 
         internal NumberLiteral(double number) => _number = number;
 
-        public IPointer Evaluate(Call _) => new Number(_number);
+        public IValue Evaluate(Call _) => new Number(_number);
     }
 }

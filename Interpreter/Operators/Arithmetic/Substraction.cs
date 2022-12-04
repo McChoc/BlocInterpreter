@@ -2,11 +2,9 @@
 using Bloc.Expressions;
 using Bloc.Interfaces;
 using Bloc.Memory;
-using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Utils;
 using Bloc.Values;
-using Bloc.Variables;
 
 namespace Bloc.Operators
 {
@@ -21,7 +19,7 @@ namespace Bloc.Operators
             _right = right;
         }
 
-        public IPointer Evaluate(Call call)
+        public IValue Evaluate(Call call)
         {
             var left = _left.Evaluate(call).Value;
             var right = _right.Evaluate(call).Value;
@@ -49,14 +47,14 @@ namespace Bloc.Operators
         {
             bool found = false;
 
-            var list = new List<IVariable>(array.Values.Count - 1);
+            var list = new List<Value>(array.Variables.Count - 1);
 
-            foreach (var item in array.Values)
+            foreach (var variable in array.Variables)
             {
-                if (!found && item.Value.Equals(value))
+                if (!found && variable.Value.Equals(value))
                     found = true;
                 else
-                    list.Add(item.Value.Copy());
+                    list.Add(variable.Value.Copy());
             }
 
             return new Array(list);

@@ -1,6 +1,5 @@
 ﻿using Bloc.Expressions;
 using Bloc.Memory;
-using Bloc.Pointers;
 using Bloc.Values;
 
 namespace Bloc.Operators
@@ -16,7 +15,7 @@ namespace Bloc.Operators
             _right = right;
         }
 
-        public IPointer Evaluate(Call call)
+        public IValue Evaluate(Call call)
         {
             var left = _left.Evaluate(call).Value;
             var right = _right.Evaluate(call).Value;

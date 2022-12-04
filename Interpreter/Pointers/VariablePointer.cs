@@ -15,7 +15,7 @@ namespace Bloc.Pointers
 
         internal Variable? Variable { get; private set; }
 
-        internal override Pointer Define(Value value, Call call)
+        internal override Pointer Define(bool mutable, Value value, Call call)
         {
             if (Variable is not StackVariable stackVariable)
                 throw new Throw("The left part of an assignement must be a variable");
@@ -23,7 +23,7 @@ namespace Bloc.Pointers
             if (call.Scopes[^1].Variables.ContainsKey(stackVariable.Name))
                 throw new Throw("Variable was already defined in scope");
 
-            return call.Set(stackVariable.Name, value);
+            return call.Set(mutable, stackVariable.Name, value);
         }
 
         internal override Value Get()
@@ -39,12 +39,11 @@ namespace Bloc.Pointers
             if (Variable is null)
                 throw new Throw("Invalid reference");
 
-            value = value.Copy();
-            value.Assign();
+            var old = Variable.Value;
+            Variable.Value = value.Copy();
+            old.Destroy();
 
-            Variable.Value.Destroy();
-
-            return Variable.Value = value;
+            return Variable.Value;
         }
 
         internal override Value Delete()

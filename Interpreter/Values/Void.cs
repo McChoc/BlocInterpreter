@@ -11,27 +11,27 @@ namespace Bloc.Values
 
         internal override ValueType GetType() => ValueType.Void;
 
-        internal override void Assign()
-        {
-            throw new Throw("You cannot assign void to a variable");
-        }
-
-        public override bool Equals(Value other)
-        {
-            return other is Void;
-        }
-
         internal static Void Construct(List<Value> values)
         {
             if (values.Count != 0)
                 throw new Throw($"'void' does not have a constructor that takes {values.Count} arguments");
 
-            return new();
+            return Value;
         }
 
-        public override string ToString(int _)
+        internal override string ToString(int _)
         {
             return "void";
+        }
+
+        public override int GetHashCode()
+        {
+            return 0;
+        }
+
+        public override bool Equals(object other)
+        {
+            return other is Void;
         }
     }
 }

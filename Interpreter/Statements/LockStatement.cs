@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Pointers;
@@ -7,7 +8,7 @@ using Bloc.Utils;
 
 namespace Bloc.Statements
 {
-    internal sealed record LockStatement : Statement
+    internal sealed class LockStatement : Statement
     {
         internal IExpression Expression { get; set; } = null!;
         internal List<Statement> Statements { get; set; } = null!;
@@ -65,6 +66,19 @@ namespace Bloc.Statements
                     yield return new Throw("You can only lock a variable");
                     yield break;
             }
+        }
+
+        public override int GetHashCode()
+        {
+            return System.HashCode.Combine(Label, Expression, Statements.Count);
+        }
+
+        public override bool Equals(object other)
+        {
+            return other is LockStatement statement &&
+                Label == statement.Label &&
+                Expression.Equals(statement.Expression) &&
+                Statements.SequenceEqual(statement.Statements);
         }
     }
 }

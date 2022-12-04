@@ -3,14 +3,13 @@ using System.Linq;
 using Bloc.Expressions;
 using Bloc.Interfaces;
 using Bloc.Memory;
-using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Utils;
 using Bloc.Values;
 
 namespace Bloc.Operators
 {
-    internal sealed record Invocation : IExpression
+    internal sealed class Invocation : IExpression
     {
         private readonly IExpression _expression;
         private readonly List<IExpression> _parameters;
@@ -21,7 +20,7 @@ namespace Bloc.Operators
             _parameters = parameters;
         }
 
-        public IPointer Evaluate(Call call)
+        public IValue Evaluate(Call call)
         {
             var value = _expression.Evaluate(call).Value;
 
@@ -36,9 +35,21 @@ namespace Bloc.Operators
                 args.Add(parameter.Evaluate(call).Value.Copy());
 
             if (args.Count == 1 && args[0] is Array array)
-                args = array.Values.Select(v => v.Value).ToList();
+                args = array.Variables.Select(v => v.Value).ToList();
 
             return invokable.Invoke(args, call);
+        }
+
+        public override int GetHashCode()
+        {
+            return System.HashCode.Combine(_expression, _parameters.Count);
+        }
+
+        public override bool Equals(object other)
+        {
+            return other is Invocation invocation &&
+                _expression.Equals(invocation._expression) &&
+                _parameters.SequenceEqual(invocation._parameters);
         }
     }
 }

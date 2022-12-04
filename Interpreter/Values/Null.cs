@@ -11,22 +11,27 @@ namespace Bloc.Values
 
         internal override ValueType GetType() => ValueType.Null;
 
-        public override bool Equals(Value other)
-        {
-            return other is Null;
-        }
-
         internal static Null Construct(List<Value> values)
         {
             if (values.Count != 0)
                 throw new Throw($"'null' does not have a constructor that takes {values.Count} arguments");
 
-            return new();
+            return Value;
         }
 
-        public override string ToString(int _)
+        internal override string ToString(int _)
         {
             return "null";
+        }
+
+        public override int GetHashCode()
+        {
+            return 0;
+        }
+
+        public override bool Equals(object other)
+        {
+            return other is Null;
         }
     }
 }

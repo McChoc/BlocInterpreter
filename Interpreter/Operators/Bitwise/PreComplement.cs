@@ -2,7 +2,6 @@
 using Bloc.Expressions;
 using Bloc.Interfaces;
 using Bloc.Memory;
-using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Utils;
 using Bloc.Values;
@@ -18,7 +17,7 @@ namespace Bloc.Operators
             _operand = operand;
         }
 
-        public IPointer Evaluate(Call call)
+        public IValue Evaluate(Call call)
         {
             var value = _operand.Evaluate(call);
 

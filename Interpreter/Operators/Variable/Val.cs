@@ -1,6 +1,5 @@
 ﻿using Bloc.Expressions;
 using Bloc.Memory;
-using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Utils;
 using Bloc.Values;
@@ -16,12 +15,12 @@ namespace Bloc.Operators
             _operand = operand;
         }
 
-        public IPointer Evaluate(Call call)
+        public IValue Evaluate(Call call)
         {
-            var value = _operand.Evaluate(call);
+            var value = _operand.Evaluate(call).Value;
 
-            if (value is not Reference and not Pointer)
-                throw new Throw("The 'val' operator can only be used on references and variables");
+            if (value is not Reference)
+                throw new Throw("The 'val' operator can only be used on references");
 
             return ReferenceUtil.Dereference(value, call.Engine.HopLimit);
         }

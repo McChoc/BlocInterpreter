@@ -5,7 +5,7 @@ using Bloc.Results;
 
 namespace Bloc.Statements
 {
-    internal sealed record ThrowStatement : Statement
+    internal sealed class ThrowStatement : Statement
     {
         private readonly IExpression _expression;
 
@@ -22,6 +22,18 @@ namespace Bloc.Statements
                 yield return exception;
             else
                 yield return new Throw(value!.Value);
+        }
+
+        public override int GetHashCode()
+        {
+            return System.HashCode.Combine(Label, _expression);
+        }
+
+        public override bool Equals(object other)
+        {
+            return other is ThrowStatement statement &&
+                Label == statement.Label &&
+                _expression.Equals(statement._expression);
         }
     }
 }

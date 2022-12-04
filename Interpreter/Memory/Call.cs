@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Values;
@@ -41,9 +40,8 @@ namespace Bloc.Memory
             Parent = parent;
             Captures = captures;
 
-            Recall = new HeapVariable(recall);
-            Params = new HeapVariable(new Array(@params.Cast<IVariable>().ToList()));
-            Params.Value.Assign();
+            Recall = new HeapVariable(false, recall);
+            Params = new HeapVariable(false, new Array(@params));
         }
 
         public Engine Engine { get; }
@@ -90,9 +88,9 @@ namespace Bloc.Memory
             return new UndefinedPointer(name);
         }
 
-        internal Pointer Set(string name, Value value)
+        internal Pointer Set(bool mutable, string name, Value value)
         {
-            var variable = new StackVariable(name, value, Scopes[^1]);
+            var variable = new StackVariable(mutable, name, value, Scopes[^1]);
 
             Scopes[^1].Variables[name] = variable;
 
@@ -104,8 +102,8 @@ namespace Bloc.Memory
             var captures = new Scope();
 
             foreach (var scope in Scopes)
-                foreach (var (key, value) in scope.Variables)
-                    captures.Variables[key] = new(key, value.Value.Copy(), captures);
+                foreach (var (key, variable) in scope.Variables)
+                    captures.Variables[key] = new(false, key, variable.Value.Copy(), captures);
 
             return captures;
         }
@@ -115,8 +113,8 @@ namespace Bloc.Memory
             var captures = new Scope();
 
             foreach (var scope in Scopes)
-                foreach (var (key, value) in scope.Variables)
-                    captures.Variables[key] = new(key, new Reference(new VariablePointer(value)), captures);
+                foreach (var (key, variable) in scope.Variables)
+                    captures.Variables[key] = new(false, key, new Reference(new VariablePointer(variable)), captures);
 
             return captures;
         }

@@ -4,7 +4,7 @@ using Bloc.Results;
 
 namespace Bloc.Statements
 {
-    internal sealed record GotoStatement : Statement
+    internal sealed class GotoStatement : Statement
     {
         internal GotoStatement(string label)
         {
@@ -16,6 +16,18 @@ namespace Bloc.Statements
         internal override IEnumerable<Result> Execute(Call call)
         {
             yield return new Goto(Label);
+        }
+
+        public override int GetHashCode()
+        {
+            return System.HashCode.Combine(base.Label, Label);
+        }
+
+        public override bool Equals(object other)
+        {
+            return other is GotoStatement statement &&
+                base.Label == ((Statement)statement).Label &&
+                Label == statement.Label;
         }
     }
 }

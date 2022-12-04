@@ -1,5 +1,4 @@
 ﻿using Bloc.Memory;
-using Bloc.Pointers;
 using Bloc.Values;
 
 namespace Bloc.Expressions
@@ -10,6 +9,6 @@ namespace Bloc.Expressions
 
         internal TypeLiteral(ValueType type) => _type = type;
 
-        public IPointer Evaluate(Call _) => new Type(_type);
+        public IValue Evaluate(Call _) => new Type(_type);
     }
 }

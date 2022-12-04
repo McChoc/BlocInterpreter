@@ -1,20 +1,31 @@
 ﻿using System.Collections.Generic;
 using Bloc.Pointers;
+using Bloc.Results;
 using Bloc.Values;
 
 namespace Bloc.Variables
 {
     public abstract class Variable : IVariable
     {
+        protected Value _value;
+
         public Variable(Value value)
         {
-            Value = value;
-            Pointers = new();
+            if (value is Void)
+                throw new Throw("'void' cannot be assigned to a variable");
+
+            _value = value;
         }
 
-        internal List<Pointer> Pointers { get; }
+        internal List<Pointer> Pointers { get; } = new();
 
-        public Value Value { get; set; }
+        public virtual Value Value
+        {
+            get => _value;
+            set => _value = value is not Void
+                ? value
+                : throw new Throw("'void' cannot be assigned to a variable");
+        }
 
         public virtual void Delete()
         {

@@ -2,8 +2,5 @@
 
 namespace Bloc.Variables
 {
-    public interface IVariable
-    {
-        public Value Value { get; }
-    }
+    public interface IVariable : IValue { }
 }

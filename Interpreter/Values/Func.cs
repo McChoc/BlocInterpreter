@@ -10,72 +10,27 @@ namespace Bloc.Values
 {
     public sealed class Func : Value, IInvokable
     {
-        internal FunctionType Type { get; set; }
-        internal CaptureMode Mode { get; set; }
+        private readonly FunctionType _type;
+        private readonly CaptureMode _mode;
 
-        internal Scope? Captures { get; set; }
-        internal List<Parameter> Parameters { get; set; }
-        internal List<Statement> Statements { get; set; }
-        internal Dictionary<string, Label> Labels { get; set; }
+        private readonly Scope? _captures;
+        private readonly List<Parameter> _parameters;
+        private readonly List<Statement> _statements;
+        private readonly Dictionary<string, Label> _labels;
 
         internal Func(FunctionType type, CaptureMode mode, Scope? captures, List<Parameter> parameters, List<Statement> statements)
         {
-            Type = type;
-            Mode = mode;
+            _type = type;
+            _mode = mode;
 
-            Captures = captures;
-            Parameters = parameters;
-            Statements = statements;
+            _captures = captures;
+            _parameters = parameters;
+            _statements = statements;
 
-            Labels = StatementUtil.GetLabels(statements);
+            _labels = StatementUtil.GetLabels(statements);
         }
 
         internal override ValueType GetType() => ValueType.Func;
-
-        internal override Value Copy()
-        {
-            return new Func(Type, Mode, Captures, Parameters, Statements);
-        }
-
-        public override bool Equals(Value other)
-        {
-            if (other is not Func func)
-                return false;
-
-            if (Type != func.Type)
-                return false;
-
-            if (Mode != func.Mode)
-                return false;
-
-            if (Parameters.Count != func.Parameters.Count)
-                return false;
-
-            if (Statements.Count != func.Statements.Count)
-                return false;
-
-            if (Captures is null != func.Captures is null)
-                return false;
-
-            if (Captures is not null && func.Captures is not null)
-                if (Captures.Variables.Count != func.Captures.Variables.Count)
-                    return false;
-
-            for (var i = 0; i < Parameters.Count; i++)
-                if (Parameters[i] != func.Parameters[i])
-                    return false;
-
-            for (var i = 0; i < Statements.Count; i++)
-                if (Statements[i] != func.Statements[i]) // TODO fix statement equality
-                    return false;
-
-            if (Captures is not null && func.Captures is not null)
-                foreach (var key in Captures.Variables.Keys)
-                    if (!Captures.Variables[key].Value.Equals(func.Captures.Variables[key].Value))
-                        return false;
-
-            return true;
-        }
 
         internal static Func Construct(List<Value> values)
         {
@@ -92,35 +47,78 @@ namespace Bloc.Values
             };
         }
 
-        public override string ToString(int _)
+        internal override string ToString(int _)
         {
             return "[func]";
+        }
+
+        public override int GetHashCode()
+        {
+            return System.HashCode.Combine(_type, _mode, _parameters.Count, _statements.Count);
+        }
+
+        public override bool Equals(object other)
+        {
+            if (other is not Func func)
+                return false;
+
+            if (_type != func._type)
+                return false;
+
+            if (_mode != func._mode)
+                return false;
+
+            if (!_parameters.SequenceEqual(func._parameters))
+                return false;
+
+            if (!_statements.SequenceEqual(func._statements))
+                return false;
+
+            if (_captures is null != func._captures is null)
+                return false;
+
+            if (_captures is not null && func._captures is not null)
+            {
+                if (_captures.Variables.Count != func._captures.Variables.Count)
+                    return false;
+
+                foreach (var key in _captures.Variables.Keys)
+                {
+                    if (!func._captures.Variables.TryGetValue(key, out var value))
+                        return false;
+
+                    if (_captures.Variables[key].Value != value.Value)
+                        return false;
+                }
+            }
+
+            return true;
         }
 
         public Value Invoke(List<Value> values, Call parent)
         {
             for (int i = 0; i < values.Count; i++)
                 if (values[i] == Void.Value)
-                    values[i] = i < Parameters.Count
-                        ? Parameters[i].Value
+                    values[i] = i < _parameters.Count
+                        ? _parameters[i].Value
                         : Null.Value;
 
-            var call = new Call(parent, Captures, this, values);
+            var call = new Call(parent, _captures, this, values);
 
-            for (var i = 0; i < Parameters.Count; i++)
+            for (var i = 0; i < _parameters.Count; i++)
             {
-                var (name, value) = Parameters[i];
+                var (name, value) = _parameters[i];
 
                 if (i < values.Count)
                     value = values[i];
 
-                call.Set(name, value);
+                call.Set(true, name, value);
             }
 
-            return Type switch
+            return _type switch
             {
                 FunctionType.Asynchronous => new Task(() => Execute(call)),
-                FunctionType.Generator => new Iter(call, Statements),
+                FunctionType.Generator => new Iter(call, _statements),
                 _ => Execute(call),
             };
         }
@@ -129,9 +127,9 @@ namespace Bloc.Values
         {
             try
             {
-                for (var i = 0; i < Statements.Count; i++)
+                for (var i = 0; i < _statements.Count; i++)
                 {
-                    switch (Statements[i].Execute(call).FirstOrDefault())
+                    switch (_statements[i].Execute(call).FirstOrDefault())
                     {
                         case Continue:
                             throw new Throw("A continue statement can only be used inside a loop");
@@ -149,7 +147,7 @@ namespace Bloc.Values
                             return @return.Value.Copy();
 
                         case Goto @goto:
-                            if (Labels.TryGetValue(@goto.Label, out var label))
+                            if (_labels.TryGetValue(@goto.Label, out var label))
                             {
                                 if (++label.Count > call.Engine.JumpLimit)
                                     throw new Throw("The jump limit was reached.");

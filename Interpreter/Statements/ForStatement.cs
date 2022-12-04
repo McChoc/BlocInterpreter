@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
@@ -8,8 +9,15 @@ using Bloc.Values;
 
 namespace Bloc.Statements
 {
-    internal sealed record ForStatement : Statement, IEnumerable
+    internal sealed class ForStatement : Statement, IEnumerable
     {
+        private bool @checked;
+        internal override bool Checked
+        {
+            get => @checked;
+            set => @checked = value;
+        }
+
         internal IExpression? Initialisation { get; set; }
         internal IExpression? Condition { get; set; }
         internal IExpression? Increment { get; set; }
@@ -65,7 +73,7 @@ namespace Bloc.Statements
                             break;
                     }
 
-                    if (++loopCount > call.Engine.LoopLimit)
+                    if (Checked && ++loopCount > call.Engine.LoopLimit)
                     {
                         yield return new Throw("The loop limit was reached.");
                         yield break;
@@ -119,6 +127,21 @@ namespace Bloc.Statements
             {
                 call.Pop();
             }
+        }
+
+        public override int GetHashCode()
+        {
+            return System.HashCode.Combine(Label, Checked, Initialisation, Condition, Increment, Statements.Count);
+        }
+
+        public override bool Equals(object other)
+        {
+            return other is ForStatement statement &&
+                Label == statement.Label &&
+                Equals(Initialisation, statement.Initialisation) &&
+                Equals(Condition, statement.Condition) &&
+                Equals(Increment, statement.Increment) &&
+                Statements.SequenceEqual(statement.Statements);
         }
 
         IEnumerator IEnumerable.GetEnumerator() => Statements.GetEnumerator();

@@ -6,17 +6,17 @@ namespace Bloc.Variables
     {
         private readonly Struct _parent;
 
-        internal StructVariable(string key, Value value, Struct parent) : base(value)
+        internal StructVariable(string name, Value value, Struct parent) : base(value)
         {
+            Name = name;
             _parent = parent;
-            Name = key;
         }
 
         public string Name { get; }
 
         public override void Delete()
         {
-            _parent.Values.Remove(Name);
+            _parent.Variables.Remove(Name);
 
             base.Delete();
         }

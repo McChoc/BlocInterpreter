@@ -20,14 +20,6 @@ namespace Bloc.Values
 
         internal override ValueType GetType() => ValueType.Type;
 
-        public override bool Equals(Value other)
-        {
-            if (other is Type type)
-                return Value.SetEquals(type.Value);
-
-            return false;
-        }
-
         internal static Type Construct(List<Value> values)
         {
             return values.Count switch
@@ -43,14 +35,22 @@ namespace Bloc.Values
             };
         }
 
-        public override string ToString(int _)
+        internal override string ToString(int _)
         {
-            //if (Value.Count == 0)
-            //    return "[empty type]";
-
-            //return string.Join(" | ", Value).ToLower();
-
             return "[type]";
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Value.Count);
+        }
+
+        public override bool Equals(object other)
+        {
+            if (other is Type type)
+                return Value.SetEquals(type.Value);
+
+            return false;
         }
 
         public Value Invoke(List<Value> values, Call call)
@@ -60,21 +60,21 @@ namespace Bloc.Values
 
             return Value.Single() switch
             {
-                ValueType.Void =>       Void.Construct(values),
-                ValueType.Null =>       Null.Construct(values),
-                ValueType.Bool =>       Bool.Construct(values),
-                ValueType.Number =>     Number.Construct(values),
-                ValueType.Range =>      Range.Construct(values),
-                ValueType.String =>     String.Construct(values),
-                ValueType.Array =>      Array.Construct(values),
-                ValueType.Struct =>     Struct.Construct(values),
-                ValueType.Tuple =>      Tuple.Construct(values),
-                ValueType.Func =>       Func.Construct(values),
-                ValueType.Task =>       Task.Construct(values, call),
-                ValueType.Iter =>       Iter.Construct(values, call),
-                ValueType.Reference =>  Reference.Construct(values, call),
-                ValueType.Extern =>     Extern.Construct(values),
-                ValueType.Type =>       Construct(values),
+                ValueType.Void => Void.Construct(values),
+                ValueType.Null => Null.Construct(values),
+                ValueType.Bool => Bool.Construct(values),
+                ValueType.Number => Number.Construct(values),
+                ValueType.Range => Range.Construct(values),
+                ValueType.String => String.Construct(values),
+                ValueType.Array => Array.Construct(values),
+                ValueType.Struct => Struct.Construct(values),
+                ValueType.Tuple => Tuple.Construct(values),
+                ValueType.Func => Func.Construct(values),
+                ValueType.Task => Task.Construct(values, call),
+                ValueType.Iter => Iter.Construct(values, call),
+                ValueType.Reference => Reference.Construct(values, call),
+                ValueType.Extern => Extern.Construct(values),
+                ValueType.Type => Construct(values),
                 _ => throw new Exception()
             };
         }

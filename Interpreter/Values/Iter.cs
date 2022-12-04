@@ -30,10 +30,116 @@ namespace Bloc.Values
 
         internal override ValueType GetType() => ValueType.Func;
 
-        // TODO override Copy()
-        // TODO verify copy and equals for all value types
+        internal static Iter Construct(List<Value> values, Call call)
+        {
+            switch (values.Count)
+            {
+                case 0:
+                    return new(null!, new());
 
-        public override bool Equals(Value other)
+                case 1:
+                    switch (values[0])
+                    {
+                        case Null:
+                            return new(null!, new());
+
+                        case Range range:
+                        {
+                            var inf = double.PositiveInfinity;
+
+                            var scope = new Scope();
+                            scope.Variables.Add("start", new StackVariable(false, "start", new Number(range.Start ?? (range.Step >= 0 ? 0 : -1)), scope));
+                            scope.Variables.Add("end", new StackVariable(false, "end", new Number(range.End ?? (range.Step >= 0 ? inf : -inf)), scope));
+                            scope.Variables.Add("step", new StackVariable(false, "step", new Number(range.Step), scope));
+
+                            return new(new(call, scope), new()
+                            {
+                                new ForStatement(
+                                    initialisation: new Assignment(new Let(new Identifier("i")), new Identifier("start")),
+                                    condition:      new Less(new Multiplication(new Identifier("i"), new Identifier("step")), new Multiplication(new Identifier("end"), new Identifier("step"))),
+                                    increment:      new AdditionAssignment(new Identifier("i"), new Identifier("step")))
+                                {
+                                    new YieldStatement(new Identifier("i"))
+                                }
+                            });
+                        }
+
+                        case String @string:
+                        {
+                            var scope = new Scope();
+                            scope.Variables.Add("value", new StackVariable(false, "value", @string, scope));
+
+                            return new(new(call, scope), new()
+                            {
+                                new ForStatement(
+                                    initialisation: new Assignment(new Let(new Identifier("i")), new NumberLiteral(0)),
+                                    condition:      new Less(new Identifier("i"), new NumberLiteral(@string.Value.Length)),
+                                    increment:      new PreIncrement(new Identifier("i")))
+                                {
+                                    new YieldStatement(new Indexer(new Identifier("value"), new Identifier("i")))
+                                }
+                            });
+                        }
+
+                        case Array array:
+                        {
+                            var scope = new Scope();
+                            scope.Variables.Add("items", new StackVariable(false, "items", array, scope));
+
+                            return new(new(call, scope), new()
+                            {
+                                new ForStatement(
+                                    initialisation: new Assignment(new Let(new Identifier("i")), new NumberLiteral(0)),
+                                    condition:      new Less(new Identifier("i"), new NumberLiteral(array.Variables.Count)),
+                                    increment:      new PreIncrement(new Identifier("i")))
+                                {
+                                    new YieldStatement(new Indexer(new Identifier("items"), new Identifier("i")))
+                                }
+                            });
+                        }
+
+                        case Iter iter:
+                            return iter;
+
+                        default:
+                            throw new Throw($"'iter' does not have a constructor that takes a '{values[0].GetType().ToString().ToLower()}'");
+                    }
+
+                default:
+                    throw new Throw($"'iter' does not have a constructor that takes {values.Count} arguments");
+            }
+        }
+
+        internal static bool TryImplicitCast(Value value, out Iter iter, Call call)
+        {
+            try
+            {
+                iter = Construct(new() { value }, call);
+                return true;
+            }
+            catch
+            {
+                iter = null!;
+                return false;
+            }
+        }
+
+        internal override Value Copy()
+        {
+            return new Iter(_call, _statements);
+        }
+
+        internal override string ToString(int _)
+        {
+            return "[iter]";
+        }
+
+        public override int GetHashCode()
+        {
+            return System.HashCode.Combine(_index, _statements.Count);
+        }
+
+        public override bool Equals(object other)  // TODO fix iter copy and equality
         {
             if (other is not Iter iter)
                 return false;
@@ -44,16 +150,17 @@ namespace Bloc.Values
             if (_call != iter._call)
                 return false;
 
-            if (!Enumerable.SequenceEqual(_statements, iter._statements))
+            if (!_statements.SequenceEqual(iter._statements))
                 return false;
 
-            if (!Enumerable.SequenceEqual(_labels, iter._labels))
-                return false;
+            foreach (var key in _labels.Keys)
+                if (_labels[key].Count != iter._labels[key].Count)
+                    return false;
 
             return true;
         }
 
-        public IEnumerable<Value> Iterate()
+        internal IEnumerable<Value> Iterate()
         {
             Value value;
 
@@ -120,105 +227,6 @@ namespace Bloc.Values
                 _index = _statements.Count;
                 _results = Enumerable.Empty<Result>().GetEnumerator();
             }
-        }
-
-        internal static Iter Construct(List<Value> values, Call call)
-        {
-            switch (values.Count)
-            {
-                case 0:
-                    return new(null!, new());
-
-                case 1:
-                    switch (values[0])
-                    {
-                        case Null:
-                            return new(null!, new());
-
-                        case Range range:
-                        {
-                            var inf = double.PositiveInfinity;
-
-                            var scope = new Scope();
-                            scope.Variables.Add("start", new StackVariable("start", new Number(range.Start ?? (range.Step >= 0 ? 0 : -1)), scope));
-                            scope.Variables.Add("end", new StackVariable("end", new Number(range.End ?? (range.Step >= 0 ? inf : -inf)), scope));
-                            scope.Variables.Add("step", new StackVariable("step", new Number(range.Step), scope));
-
-                            return new(new(call, scope), new()
-                            {
-                                new ForStatement(
-                                    initialisation: new Assignment(new Let(new Identifier("i")), new Identifier("start")),
-                                    condition:      new Less(new Multiplication(new Identifier("i"), new Identifier("step")), new Multiplication(new Identifier("end"), new Identifier("step"))),
-                                    increment:      new AdditionAssignment(new Identifier("i"), new Identifier("step")))
-                                {
-                                    new YieldStatement(new Identifier("i"))
-                                }
-                            });
-                        }
-
-                        case String @string:
-                        {
-                            var scope = new Scope();
-                            scope.Variables.Add("value", new StackVariable("value", @string, scope));
-
-                            return new(new(call, scope), new()
-                            {
-                                new ForStatement(
-                                    initialisation: new Assignment(new Let(new Identifier("i")), new NumberLiteral(0)),
-                                    condition:      new Less(new Identifier("i"), new NumberLiteral(@string.Value.Length)),
-                                    increment:      new PreIncrement(new Identifier("i")))
-                                {
-                                    new YieldStatement(new Indexer(new Identifier("value"), new Identifier("i")))
-                                }
-                            });
-                        }
-
-                        case Array array:
-                        {
-                            var scope = new Scope();
-                            scope.Variables.Add("items", new StackVariable("items", array, scope));
-
-                            return new(new(call, scope), new()
-                            {
-                                new ForStatement(
-                                    initialisation: new Assignment(new Let(new Identifier("i")), new NumberLiteral(0)),
-                                    condition:      new Less(new Identifier("i"), new NumberLiteral(array.Values.Count)),
-                                    increment:      new PreIncrement(new Identifier("i")))
-                                {
-                                    new YieldStatement(new Indexer(new Identifier("items"), new Identifier("i")))
-                                }
-                            });
-                        }
-
-                        case Iter iter:
-                            return iter;
-
-                        default:
-                            throw new Throw($"'iter' does not have a constructor that takes a '{values[0].GetType().ToString().ToLower()}'");
-                    }
-
-                default:
-                    throw new Throw($"'iter' does not have a constructor that takes {values.Count} arguments");
-            }
-        }
-
-        internal static bool TryImplicitCast(Value value, out Iter iter, Call call)
-        {
-            try
-            {
-                iter = Construct(new() { value }, call);
-                return true;
-            }
-            catch
-            {
-                iter = null!;
-                return false;
-            }
-        }
-
-        public override string ToString(int _)
-        {
-            return "[iter]";
         }
     }
 }

@@ -1,9 +1,9 @@
 ﻿using Bloc.Expressions;
 using Bloc.Interfaces;
 using Bloc.Memory;
-using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Utils;
+using Bloc.Values;
 
 namespace Bloc.Operators
 {
@@ -20,7 +20,7 @@ namespace Bloc.Operators
             _step = step;
         }
 
-        public IPointer Evaluate(Call call)
+        public IValue Evaluate(Call call)
         {
             int? start = null, end = null;
             int step = 1;

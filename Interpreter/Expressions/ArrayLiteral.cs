@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Bloc.Memory;
-using Bloc.Pointers;
 using Bloc.Values;
-using Bloc.Variables;
 
 namespace Bloc.Expressions
 {
@@ -16,9 +14,9 @@ namespace Bloc.Expressions
             _elements = elements;
         }
 
-        public IPointer Evaluate(Call call)
+        public IValue Evaluate(Call call)
         {
-            var values = new List<IVariable>(_elements.Count);
+            var values = new List<Value>(_elements.Count);
 
             foreach (var expression in _elements)
                 values.Add(expression.Evaluate(call).Value);
@@ -26,20 +24,15 @@ namespace Bloc.Expressions
             return new Array(values);
         }
 
-        public override bool Equals(object obj)
-        {
-            if (obj is not ArrayLiteral array)
-                return false;
-
-            if (!_elements.SequenceEqual(array._elements))
-                return false;
-
-            return true;
-        }
-
         public override int GetHashCode()
         {
-            return 0;
+            return System.HashCode.Combine(_elements.Count);
+        }
+
+        public override bool Equals(object other)
+        {
+            return other is ArrayLiteral literal &&
+                _elements.SequenceEqual(literal._elements);
         }
     }
 }

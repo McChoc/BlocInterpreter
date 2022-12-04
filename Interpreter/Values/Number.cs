@@ -11,15 +11,26 @@ namespace Bloc.Values
 
         public double Value { get; }
 
-        internal override ValueType GetType() => ValueType.Number;
-
-        public override bool Equals(Value other)
+        public int GetInt()
         {
-            if (other is Number number)
-                return Value == number.Value;
+            if (double.IsNaN(Value))
+                return 0;
 
-            return false;
+            if (Value > int.MaxValue)
+                return int.MaxValue;
+
+            if (Value < int.MinValue)
+                return int.MinValue;
+
+            return (int)Value;
         }
+
+        public double GetDouble()
+        {
+            return Value;
+        }
+
+        internal override ValueType GetType() => ValueType.Number;
 
         internal static Number Construct(List<Value> values)
         {
@@ -31,19 +42,59 @@ namespace Bloc.Values
                     Null => new(0),
                     Bool @bool => new(@bool.Value ? 1 : 0),
                     Number @number => number,
-                    String @string => @string.Value.Trim() switch
-                    {
-                        "nan" => new(double.NaN),
-                        "infinity" => new(double.PositiveInfinity),
-                        "-infinity" => new(double.NegativeInfinity),
-                        var value => double.TryParse(value, out var result)
-                            ? new(result)
-                            : throw new Throw("Input string was not in a correct format") // TODO parse integers with 0x, 0o and 0b prefixes
-                    },
+                    String @string => new(Parse(@string.Value)),
                     var value => throw new Throw($"'number' does not have a constructor that takes a '{value.GetType().ToString().ToLower()}'")
                 },
                 _ => throw new Throw($"'number' does not have a constructor that takes {values.Count} arguments")
             };
+
+            static double Parse(string text)
+            {
+                text = text.Trim();
+
+                if (text == "nan")
+                    return double.NaN;
+
+                if (text == "infinity")
+                    return double.PositiveInfinity;
+
+                if (text == "-infinity")
+                    return double.NegativeInfinity;
+
+                int @base = 10;
+
+                if (text.StartsWith("0b", true, CultureInfo.InvariantCulture))
+                {
+                    @base = 2;
+                    text = text[2..];
+                }
+                else if (text.StartsWith("0o", true, CultureInfo.InvariantCulture))
+                {
+                    @base = 8;
+                    text = text[2..];
+                }
+                else if (text.StartsWith("0x", true, CultureInfo.InvariantCulture))
+                {
+                    @base = 16;
+                    text = text[2..];
+                }
+
+                if (text.Length < 1 || text[^1] == '_')
+                    throw new Throw("Input string was not in a correct format");
+
+                text = text.Replace("_", "");
+
+                try
+                {
+                    return @base == 10
+                        ? double.Parse(text, CultureInfo.InvariantCulture)
+                        : System.Convert.ToInt32(text, @base);
+                }
+                catch
+                {
+                    throw new Throw("Input string was not in a correct format");
+                }
+            }
         }
 
         internal static Number ImplicitCast(Value value)
@@ -72,26 +123,7 @@ namespace Bloc.Values
             }
         }
 
-        public int GetInt()
-        {
-            if (double.IsNaN(Value))
-                return 0;
-
-            if (Value > int.MaxValue)
-                return int.MaxValue;
-
-            if (Value < int.MinValue)
-                return int.MinValue;
-
-            return (int)Value;
-        }
-
-        public double GetDouble()
-        {
-            return Value;
-        }
-
-        public override string ToString(int _)
+        internal override string ToString(int _)
         {
             if (double.IsNaN(Value))
                 return "nan";
@@ -103,6 +135,19 @@ namespace Bloc.Values
                 return "-infinity";
 
             return Value.ToString(CultureInfo.InvariantCulture);
+        }
+
+        public override int GetHashCode()
+        {
+            return System.HashCode.Combine(Value);
+        }
+
+        public override bool Equals(object other)
+        {
+            if (other is Number number)
+                return Value == number.Value;
+
+            return false;
         }
     }
 }

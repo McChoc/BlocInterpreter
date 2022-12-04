@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Bloc.Memory;
-using Bloc.Pointers;
 using Bloc.Values;
+using Bloc.Variables;
 
 namespace Bloc.Expressions
 {
@@ -15,30 +15,32 @@ namespace Bloc.Expressions
             _expressions = expressions;
         }
 
-        public IPointer Evaluate(Call call)
+        public IValue Evaluate(Call call)
         {
-            var values = new List<IPointer>(_expressions.Count);
+            var variables = new List<IVariable>(_expressions.Count);
 
             foreach (var expression in _expressions)
-                values.Add(expression.Evaluate(call));
+            {
+                var value = expression.Evaluate(call);
 
-            return new Tuple(values);
-        }
+                if (value is IVariable variable)
+                    variables.Add(variable);
+                else
+                    variables.Add(new TupleVariable(value.Value));
+            }
 
-        public override bool Equals(object obj)
-        {
-            if (obj is not TupleLiteral tuple)
-                return false;
-
-            if (!_expressions.SequenceEqual(tuple._expressions))
-                return false;
-
-            return true;
+            return new Tuple(variables);
         }
 
         public override int GetHashCode()
         {
-            return 0;
+            return System.HashCode.Combine(_expressions.Count);
+        }
+
+        public override bool Equals(object other)
+        {
+            return other is TupleLiteral literal &&
+                _expressions.SequenceEqual(literal._expressions);
         }
     }
 }

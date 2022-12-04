@@ -25,27 +25,38 @@ namespace Bloc.Scanners
         private static Statement GetStatement(TokenScanner scanner)
         {
             string? label = null;
+            bool @checked = true;
 
             var tokens = scanner.Peek(2);
 
             if (tokens.Count >= 2 &&
-                tokens[0] is (TokenType.Identifier, var lbl) &&
+                tokens[0] is (TokenType.Identifier, _) &&
                 tokens[1] is (TokenType.Operator, "::"))
             {
                 scanner.GetNextToken();
                 scanner.GetNextToken();
 
-                label = lbl;
+                label = tokens[0].Text;
+            }
+
+            if (tokens.Count >= 1 &&
+                tokens[0] is (TokenType.Keyword, "unchecked"))
+            {
+                scanner.GetNextToken();
+
+                @checked = false;
             }
 
             var statement = scanner.Peek() switch
             {
                 (TokenType.Braces, _) => GetStatementBlock(scanner),
-                (TokenType.Operator, ";") => GetEmptyStatement(scanner),
                 (TokenType.Operator, "/") => GetCommandStatement(scanner),
+                (TokenType.Operator, ";") => GetEmptyStatement(scanner),
+                (TokenType.Keyword, "pass") => GetPassStatement(scanner),
                 (TokenType.Keyword, "var") => GetVarStatement(scanner),
+                (TokenType.Keyword, "const") => GetConstStatement(scanner),
                 (TokenType.Keyword, "if") => GetIfStatement(scanner),
-                (TokenType.Keyword, "do") => GetDoStatement(scanner),
+                (TokenType.Keyword, "do") => GetDoWhileStatement(scanner),
                 (TokenType.Keyword, "while") => GetWhileStatement(scanner),
                 (TokenType.Keyword, "until") => GetWhileStatement(scanner),
                 (TokenType.Keyword, "for") => GetForStatement(scanner),
@@ -59,11 +70,11 @@ namespace Bloc.Scanners
                 (TokenType.Keyword, "continue") => GetContinueStatement(scanner),
                 (TokenType.Keyword, "break") => GetBreakStatement(scanner),
                 (TokenType.Keyword, "goto") => GetGotoStatement(scanner),
-                (TokenType.Keyword, "pass") => GetPassStatement(scanner),
                 _ => GetExpressionStatement(scanner)
             };
 
             statement.Label = label;
+            statement.Checked = @checked;
 
             return statement;
         }
@@ -124,6 +135,34 @@ namespace Bloc.Scanners
             return statement;
         }
 
+        private static Statement GetConstStatement(TokenScanner scanner)
+        {
+            var statement = new ConstStatement();
+
+            var keyword = scanner.GetNextToken();
+
+            var definitions = GetLine(scanner).Split(x => x is (TokenType.Operator, ","));
+
+            foreach (var definition in definitions)
+            {
+                if (definition.Count == 0)
+                    throw new SyntaxError(keyword.Start, keyword.End, "Missing identifier");
+
+                var parts = definition.Split(x => x is (TokenType.Operator, "="));
+
+                var identifier = ExpressionParser.Parse(parts[0]);
+
+                if (parts.Count == 1)
+                    throw new SyntaxError(parts[0][0].Start, parts[0][^1].End, "A const needs a value");
+
+                var value = ExpressionParser.Parse(definition.GetRange((parts[0].Count + 1)..));
+
+                statement.Add(identifier, value);
+            }
+
+            return statement;
+        }
+
         private static Statement GetIfStatement(TokenScanner scanner)
         {
             var @if = scanner.GetNextToken();
@@ -155,7 +194,7 @@ namespace Bloc.Scanners
             };
         }
 
-        private static Statement GetDoStatement(TokenScanner scanner)
+        private static Statement GetDoWhileStatement(TokenScanner scanner)
         {
             var @do = scanner.GetNextToken();
 

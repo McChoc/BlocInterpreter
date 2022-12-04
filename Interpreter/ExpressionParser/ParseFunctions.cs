@@ -101,17 +101,7 @@ namespace Bloc
 
                     while (j >= 0)
                     {
-                        if (tokens[j] is (TokenType.Keyword, "generator"))
-                        {
-                            if (type == FunctionType.Asynchronous)
-                                throw new SyntaxError(tokens[j].Start, tokens[j].End, "a function cannot be both async and a generator");
-
-                            if (type == FunctionType.Generator)
-                                throw new SyntaxError(tokens[j].Start, tokens[j].End, "'generator' modifier doubled");
-
-                            type = FunctionType.Generator;
-                        }
-                        else if (tokens[j] is (TokenType.Keyword, "async"))
+                        if (tokens[j] is (TokenType.Keyword, "async"))
                         {
                             if (type == FunctionType.Asynchronous)
                                 throw new SyntaxError(tokens[j].Start, tokens[j].End, "'async' modifier doubled");
@@ -120,6 +110,16 @@ namespace Bloc
                             throw new SyntaxError(tokens[j].Start, tokens[j].End, "a function cannot be both async and a generator");
 
                             type = FunctionType.Asynchronous;
+                        }
+                        else if (tokens[j] is (TokenType.Keyword, "gen"))
+                        {
+                            if (type == FunctionType.Asynchronous)
+                                throw new SyntaxError(tokens[j].Start, tokens[j].End, "a function cannot be both async and a generator");
+
+                            if (type == FunctionType.Generator)
+                                throw new SyntaxError(tokens[j].Start, tokens[j].End, "'generator' modifier doubled");
+
+                            type = FunctionType.Generator;
                         }
                         else if (tokens[j] is (TokenType.Keyword, "val"))
                         {

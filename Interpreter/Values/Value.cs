@@ -1,25 +1,25 @@
-﻿using Bloc.Pointers;
-using Bloc.Variables;
-
-namespace Bloc.Values
+﻿namespace Bloc.Values
 {
-    public abstract class Value : IVariable, IPointer
+    public abstract class Value : IValue
     {
-        Value IPointer.Value => this;
-        Value IVariable.Value => this;
+        Value IValue.Value => this;
 
         internal abstract new ValueType GetType();
 
         internal virtual Value Copy() => this;
 
-        internal virtual void Assign() { }
-
         internal virtual void Destroy() { }
 
-        public abstract bool Equals(Value other);
-
-        public abstract string ToString(int depth);
+        internal abstract string ToString(int depth);
 
         public override string ToString() => ToString(0);
+
+        public abstract override int GetHashCode();
+
+        public abstract override bool Equals(object other);
+
+        public static bool operator ==(Value a, Value b) => a.Equals(b);
+
+        public static bool operator !=(Value a, Value b) => !a.Equals(b);
     }
 }

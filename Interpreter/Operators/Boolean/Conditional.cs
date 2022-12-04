@@ -1,6 +1,5 @@
 ﻿using Bloc.Expressions;
 using Bloc.Memory;
-using Bloc.Pointers;
 using Bloc.Utils;
 using Bloc.Values;
 
@@ -19,7 +18,7 @@ namespace Bloc.Operators
             _alternative = alternative;
         }
 
-        public IPointer Evaluate(Call call)
+        public IValue Evaluate(Call call)
         {
             var value = _condition.Evaluate(call).Value;
 

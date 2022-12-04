@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using Bloc.Expressions;
 using Bloc.Memory;
-using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Utils;
 using Bloc.Values;
@@ -19,7 +18,7 @@ namespace Bloc.Operators
             _right = right;
         }
 
-        public IPointer Evaluate(Call call)
+        public IValue Evaluate(Call call)
         {
             var left = _left.Evaluate(call).Value;
             var right = _right.Evaluate(call).Value;
@@ -27,7 +26,7 @@ namespace Bloc.Operators
             right = ReferenceUtil.Dereference(right, call.Engine.HopLimit).Value;
 
             if (right is Array array)
-                return new Bool(array.Values.Any(v => v.Value.Equals(left)));
+                return new Bool(array.Variables.Any(v => v.Value.Equals(left)));
 
             if (left is String sub && right is String str)
                 return new Bool(str.Value.Contains(sub.Value));

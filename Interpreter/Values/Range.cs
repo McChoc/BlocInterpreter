@@ -18,23 +18,6 @@ namespace Bloc.Values
 
         internal override ValueType GetType() => ValueType.Range;
 
-        public override bool Equals(Value other)
-        {
-            if (other is not Range range)
-                return false;
-
-            if (Start != range.Start)
-                return false;
-
-            if (End != range.End)
-                return false;
-
-            if (Step != range.Step)
-                return false;
-
-            return true;
-        }
-
         internal static Range Construct(List<Value> values)
         {
             return values.Count switch
@@ -71,9 +54,31 @@ namespace Bloc.Values
             };
         }
 
-        public override string ToString(int _)
+        internal override string ToString(int _)
         {
             return $"{Start}..{End}{(Step != 1 ? $"..{Step}" : "")}";
+        }
+
+        public override int GetHashCode()
+        {
+            return System.HashCode.Combine(Start, End, Step);
+        }
+
+        public override bool Equals(object other)
+        {
+            if (other is not Range range)
+                return false;
+
+            if (Start != range.Start)
+                return false;
+
+            if (End != range.End)
+                return false;
+
+            if (Step != range.Step)
+                return false;
+
+            return true;
         }
     }
 }

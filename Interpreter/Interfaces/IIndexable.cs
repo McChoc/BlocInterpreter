@@ -6,6 +6,6 @@ namespace Bloc.Interfaces
 {
     internal interface IIndexable
     {
-        IPointer Index(Value value, Call call);
+        IValue Index(Value value, Call call);
     }
 }

@@ -34,22 +34,21 @@ namespace Bloc.Scanners
             "/", "//", "//=", "/=",
             "%", "%%", "%%=", "%=",
             "&", "&&", "&&=", "&=",
+            "|", "||", "||=", "|=",
             "^", "^^", "^^=", "^=",
-            "|", "|=", "||", "||=",
             "<", "<<", "<<=", "<=",
-            ">", ">=", ">>", ">>=",
+            ">", ">>", ">>=", ">=",
             "?", "??", "???", "??=", ":",
             "<=>", "<>", "=", "==", "=>",
         };
 
         private static readonly HashSet<string> keyWords = new()
         {
-            "as", "async", "await", "break", "catch", "chr", "const",
-            "continue", "delete", "do", "else", "eval", "finally", "for",
-            "generator", "goto", "if", "in", "is", "len", "let", "lock",
-            "loop", "nameof", "new", "next", "not", "ord", "orderby", "pass",
-            "ref", "repeat", "return", "select", "throw", "try", "typeof",
-            "until", "val", "var", "when", "where", "while", "yield"
+            "as", "async", "await", "break", "catch", "chr", "const", "continue", "delete",
+            "do", "else", "eval", "exec", "finally", "for", "gen", "goto", "if", "in", "is",
+            "len", "let", "lock", "loop", "nameof", "new", "next", "not", "ord", "orderby",
+            "pass", "ref", "repeat", "return", "select", "throw", "try", "typeof",
+            "unchecked", "until", "val", "var", "when", "where", "while", "yield"
         };
 
         private readonly string _code;
@@ -138,6 +137,9 @@ namespace Bloc.Scanners
 
             if (word is (TokenType.Keyword, "val") && HasNextToken() && Peek() is (TokenType.Keyword, "val"))
                 return new Token(word.Start, GetNextToken().End, TokenType.Keyword, "val val");
+
+            if (word is (TokenType.Keyword, "const") && HasNextToken() && Peek() is (TokenType.Keyword, "new"))
+                return new Token(word.Start, GetNextToken().End, TokenType.Keyword, "const new");
 
             return word;
         }
@@ -289,7 +291,7 @@ namespace Bloc.Scanners
             byte @base = 10;
 
             if (_code[_index] == '0' && _index < _code.Length - 1)
-                switch (_code[_index + 1])
+                switch (char.ToLower(_code[_index + 1]))
                 {
                     case 'b':
                         @base = 2;
@@ -319,7 +321,7 @@ namespace Bloc.Scanners
                     continue;
                 }
 
-                if (char.ToUpper(_code[_index]) == 'E' && !hasExp && @base == 10)
+                if (char.ToLower(_code[_index]) == 'e' && !hasExp && @base == 10)
                 {
                     _index++;
                     hasExp = true;
@@ -327,7 +329,7 @@ namespace Bloc.Scanners
                 }
 
                 if ((_code[_index] == '+' || _code[_index] == '-') && _index > 0 &&
-                    char.ToUpper(_code[_index - 1]) == 'E' && @base == 10)
+                    char.ToLower(_code[_index - 1]) == 'e' && @base == 10)
                 {
                     _index++;
                     continue;
@@ -340,12 +342,6 @@ namespace Bloc.Scanners
             }
 
             var num = _code[start.._index];
-
-            if (num[^1] == '.')
-            {
-                num = num[..^1];
-                _index--;
-            }
 
             if (num[^1] == '_')
                 throw new SyntaxError(start + _offset, _index + _offset, "Invalid number");

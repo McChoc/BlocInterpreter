@@ -13,5 +13,16 @@ namespace Bloc.Tokens
 
         internal override TokenType Type => TokenType.Literal;
         internal override string Text => "";
+
+        public override int GetHashCode()
+        {
+            return System.HashCode.Combine(Expression);
+        }
+
+        public override bool Equals(object other)
+        {
+            return other is Literal literal &&
+                Expression == literal.Expression;
+        }
     }
 }

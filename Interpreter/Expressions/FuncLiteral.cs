@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Bloc.Memory;
-using Bloc.Pointers;
 using Bloc.Statements;
 using Bloc.Values;
 
@@ -23,7 +22,7 @@ namespace Bloc.Expressions
             _statements = statements;
         }
 
-        public IPointer Evaluate(Call call)
+        public IValue Evaluate(Call call)
         {
             var captures = _mode switch
             {
@@ -39,32 +38,21 @@ namespace Bloc.Expressions
             return new Func(_type, _mode, captures, parameters, _statements);
         }
 
-        public override bool Equals(object obj)
-        {
-            if (obj is not FuncLiteral func)
-                return false;
-
-            if (_type != func._type)
-                return false;
-
-            if (_mode != func._mode)
-                return false;
-
-            if (!_parameters.SequenceEqual(func._parameters))
-                return false;
-
-            if (!_statements.SequenceEqual(func._statements))
-                return false;
-
-            return true;
-        }
-
         public override int GetHashCode()
         {
-            return HashCode.Combine(_type, _mode);
+            return HashCode.Combine(_type, _mode, _parameters.Count, _statements.Count);
         }
 
-        internal sealed class Parameter
+        public override bool Equals(object other)
+        {
+            return other is FuncLiteral literal &&
+                _type == literal._type &&
+                _mode == literal._mode &&
+                _parameters.SequenceEqual(literal._parameters) &&
+                _statements.SequenceEqual(literal._statements);
+        }
+
+        internal sealed record Parameter
         {
             internal string Name { get; }
             internal IExpression Expression { get; }

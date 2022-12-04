@@ -2,7 +2,6 @@
 using System.Linq;
 using Bloc.Expressions;
 using Bloc.Memory;
-using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Utils;
 using Bloc.Values;
@@ -20,7 +19,7 @@ namespace Bloc.Operators
             _right = right;
         }
 
-        public IPointer Evaluate(Call call)
+        public IValue Evaluate(Call call)
         {
             var left = _left.Evaluate(call).Value;
             var right = _right.Evaluate(call).Value;
@@ -32,8 +31,9 @@ namespace Bloc.Operators
             {
                 try
                 {
-                    return new Array(array.Values
-                        .OrderBy(x => x.Value, new ValueComparer(func, call))
+                    return new Array(array.Variables
+                        .Select(x => x.Value)
+                        .OrderBy(x => x, new ValueComparer(func, call))
                         .ToList());
                 }
                 catch (System.InvalidOperationException e) when (e.InnerException is Throw t)

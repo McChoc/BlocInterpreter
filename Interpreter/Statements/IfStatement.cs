@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
@@ -7,7 +8,7 @@ using Bloc.Values;
 
 namespace Bloc.Statements
 {
-    internal sealed record IfStatement : Statement
+    internal sealed class IfStatement : Statement
     {
         internal IExpression Expression { get; set; } = null!;
         internal List<Statement> Then { get; set; } = new();
@@ -48,6 +49,20 @@ namespace Bloc.Statements
             {
                 call.Pop();
             }
+        }
+
+        public override int GetHashCode()
+        {
+            return System.HashCode.Combine(Label, Expression, Then.Count, Else.Count);
+        }
+
+        public override bool Equals(object other)
+        {
+            return other is IfStatement statement &&
+                Label == statement.Label &&
+                Expression.Equals(statement.Expression) &&
+                Then.SequenceEqual(statement.Then) &&
+                Else.SequenceEqual(statement.Else);
         }
     }
 }

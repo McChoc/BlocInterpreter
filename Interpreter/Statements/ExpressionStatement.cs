@@ -5,7 +5,7 @@ using Bloc.Results;
 
 namespace Bloc.Statements
 {
-    internal sealed record ExpressionStatement : Statement
+    internal sealed class ExpressionStatement : Statement
     {
         internal ExpressionStatement(IExpression expression)
         {
@@ -20,6 +20,18 @@ namespace Bloc.Statements
 
             if (exception is not null)
                 yield return exception;
+        }
+
+        public override int GetHashCode()
+        {
+            return System.HashCode.Combine(Label, Expression);
+        }
+
+        public override bool Equals(object other)
+        {
+            return other is ExpressionStatement statement &&
+                Label == statement.Label &&
+                Expression.Equals(statement.Expression);
         }
     }
 }

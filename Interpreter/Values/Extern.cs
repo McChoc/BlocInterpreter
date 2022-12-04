@@ -13,14 +13,6 @@ namespace Bloc.Values
 
         internal override ValueType GetType() => ValueType.Extern;
 
-        public override bool Equals(Value other)
-        {
-            if (other is Extern complex)
-                return Value == complex.Value;
-
-            return false;
-        }
-
         internal static Extern Construct(List<Value> values)
         {
             return values.Count switch
@@ -36,9 +28,22 @@ namespace Bloc.Values
             };
         }
 
-        public override string ToString(int _)
+        internal override string ToString(int _)
         {
             return "[extern]";
+        }
+
+        public override int GetHashCode()
+        {
+            return System.HashCode.Combine(Value);
+        }
+
+        public override bool Equals(object other)
+        {
+            if (other is Extern complex)
+                return Value == complex.Value;
+
+            return false;
         }
     }
 }

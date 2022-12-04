@@ -10,18 +10,18 @@ namespace Bloc.Utils
 {
     internal static class AssignmentUtil
     {
-        internal static Value Assign(IPointer left, IPointer right, Call call)
+        internal static Value Assign(IValue left, IValue right, Call call)
         {
-            if (left is Tuple leftTuple && right.Value is Tuple rightTuple)
+            if (left.Value is Tuple leftTuple && right.Value is Tuple rightTuple)
             {
-                if (leftTuple.Values.Count != rightTuple.Values.Count)
+                if (leftTuple.Variables.Count != rightTuple.Variables.Count)
                     throw new Throw("Miss mathch number of elements inside the tuples");
 
-                return new Tuple(leftTuple.Values.Zip(rightTuple.Values, (a, b) => Assign(a, b, call)).ToList<IPointer>());
+                return new Tuple(leftTuple.Variables.Zip(rightTuple.Variables, (a, b) => Assign(a, b, call)).ToList());
             }
 
-            if (left is Tuple tuple)
-                return new Tuple(tuple.Values.Select(x => Assign(x, right, call)).ToList<IPointer>());
+            if (left.Value is Tuple tuple)
+                return new Tuple(tuple.Variables.Select(x => Assign(x, right, call)).ToList());
 
             if (left is Pointer pointer)
                 return pointer.Set(right.Value);
@@ -29,26 +29,26 @@ namespace Bloc.Utils
             throw new Throw("You cannot assign a value to a literal");
         }
 
-        internal static Value CompoundAssign(IPointer left, IPointer right, BinaryOperation operation, Call call)
+        internal static Value CompoundAssign(IValue left, IValue right, BinaryOperation operation, Call call)
         {
             left = ReferenceUtil.Dereference(left, call.Engine.HopLimit);
             right = ReferenceUtil.Dereference(right, call.Engine.HopLimit);
 
             if (left is Tuple tuple)
             {
-                var values = new List<IPointer>(tuple!.Values.Count);
+                var values = new List<Value>(tuple!.Variables.Count);
 
                 if (right.Value is Tuple rightTuple)
                 {
-                    if (tuple.Values.Count != rightTuple.Values.Count)
+                    if (tuple.Variables.Count != rightTuple.Variables.Count)
                         throw new Throw("Miss mathch number of elements inside the tuples");
 
-                    foreach (var (a, b) in tuple.Values.Zip(rightTuple.Values))
+                    foreach (var (a, b) in tuple.Variables.Zip(rightTuple.Variables))
                         values.Add(CompoundAssign(a, b, operation, call));
                 }
                 else
                 {
-                    foreach (var item in tuple.Values)
+                    foreach (var item in tuple.Variables)
                         values.Add(CompoundAssign(item, right, operation, call));
                 }
 
@@ -74,29 +74,29 @@ namespace Bloc.Utils
 
             int count;
 
-            IEnumerable<IPointer> leftEnumerable, rightEnumerable;
+            IEnumerable<IValue> leftEnumerable, rightEnumerable;
 
             switch (left, right)
             {
                 case (Tuple leftTuple, Tuple rightTuple):
-                    if (leftTuple.Values.Count != rightTuple.Values.Count)
+                    if (leftTuple.Variables.Count != rightTuple.Variables.Count)
                         throw new Throw("Miss mathch number of elements inside the tuples");
 
-                    count = leftTuple.Values.Count;
-                    leftEnumerable = leftTuple.Values;
-                    rightEnumerable = rightTuple.Values;
+                    count = leftTuple.Variables.Count;
+                    leftEnumerable = leftTuple.Variables;
+                    rightEnumerable = rightTuple.Variables;
                     break;
 
                 case (Tuple leftTuple, _):
-                    count = leftTuple.Values.Count;
-                    leftEnumerable = leftTuple.Values;
+                    count = leftTuple.Variables.Count;
+                    leftEnumerable = leftTuple.Variables;
                     rightEnumerable = Enumerable.Repeat(right, count);
                     break;
 
                 case (_, Tuple rightTuple):
-                    count = rightTuple.Values.Count;
+                    count = rightTuple.Variables.Count;
                     leftEnumerable = Enumerable.Repeat(left, count);
-                    rightEnumerable = rightTuple.Values;
+                    rightEnumerable = rightTuple.Variables;
                     break;
 
                 default:
@@ -104,8 +104,8 @@ namespace Bloc.Utils
                     return (value, value);
             }
 
-            var returnedValues = new List<IPointer>(count);
-            var actualValues = new List<IPointer>(count);
+            var returnedValues = new List<Value>(count);
+            var actualValues = new List<Value>(count);
 
             foreach (var (a, b) in leftEnumerable.Zip(rightEnumerable))
             {

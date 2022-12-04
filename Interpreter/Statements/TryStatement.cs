@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Utils;
 
 namespace Bloc.Statements
 {
-    internal sealed record TryStatement : Statement
+    internal sealed class TryStatement : Statement
     {
         internal List<Statement> Try { get; set; } = new();
         internal List<Statement> Catch { get; set; } = new();
@@ -88,6 +89,20 @@ namespace Bloc.Statements
 
             if (result is not null)
                 yield return result;
+        }
+
+        public override int GetHashCode()
+        {
+            return System.HashCode.Combine(Label, Try.Count, Catch.Count, Finally.Count);
+        }
+
+        public override bool Equals(object other)
+        {
+            return other is TryStatement statement &&
+                Label == statement.Label &&
+                Try.SequenceEqual(statement.Try) &&
+                Catch.SequenceEqual(statement.Catch) &&
+                Finally.SequenceEqual(statement.Finally);
         }
     }
 }
