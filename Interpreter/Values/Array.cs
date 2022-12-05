@@ -78,8 +78,8 @@ namespace Bloc.Values
 
         internal override void Destroy()
         {
-            foreach (var variable in Variables)
-                variable.Delete();
+            while (Variables.Any())
+                Variables.Last().Delete();
         }
 
         internal override string ToString(int depth)

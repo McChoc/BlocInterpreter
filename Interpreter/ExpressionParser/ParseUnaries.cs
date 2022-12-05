@@ -15,8 +15,8 @@ namespace Bloc
                 throw new SyntaxError(0, 0, "Missing value");
 
             if (tokens[0] is (TokenType.Operator or TokenType.Keyword,
-                "+" or "-" or "~" or "!" or "++" or "--" or "~~" or "!!" or "len" or "chr" or "ord" or
-                "ref" or "val" or "val val" or "let" or "new" or "const new" or "delete" or "await" or "next" or "nameof" or "typeof"))
+                "+" or "-" or "~" or "!" or "++" or "--" or "~~" or "!!" or "len" or "chr" or "ord" or "ref" or "val" or "val val" or
+                "let" or "new" or "const new" or "delete" or "global" or "await" or "next" or "nameof" or "typeof"))
             {
                 var operand = ParseUnaries(tokens.GetRange(1..), precedence);
 
@@ -40,6 +40,7 @@ namespace Bloc
                     "new" => new New(operand),
                     "const new" => new ConstNew(operand),
                     "delete" => new Delete(operand),
+                    "global" => new Global(operand),
                     "await" => new Await(operand),
                     "next" => new Next(operand),
                     "nameof" => new Nameof(operand),
