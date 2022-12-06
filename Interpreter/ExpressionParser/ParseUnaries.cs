@@ -16,7 +16,7 @@ namespace Bloc
 
             if (tokens[0] is (TokenType.Operator or TokenType.Keyword,
                 "+" or "-" or "~" or "!" or "++" or "--" or "~~" or "!!" or "len" or "chr" or "ord" or "ref" or "val" or "val val" or
-                "let" or "new" or "const new" or "delete" or "global" or "await" or "next" or "nameof" or "typeof"))
+                "let" or "new" or "const new" or "delete" or "global" or "nonlocal" or "await" or "next" or "nameof" or "typeof"))
             {
                 var operand = ParseUnaries(tokens.GetRange(1..), precedence);
 
@@ -41,6 +41,7 @@ namespace Bloc
                     "const new" => new ConstNew(operand),
                     "delete" => new Delete(operand),
                     "global" => new Global(operand),
+                    "nonlocal" => new Nonlocal(operand),
                     "await" => new Await(operand),
                     "next" => new Next(operand),
                     "nameof" => new Nameof(operand),
