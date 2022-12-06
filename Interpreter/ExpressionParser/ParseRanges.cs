@@ -11,7 +11,7 @@ namespace Bloc
     {
         private static IExpression ParseRanges(List<Token> tokens, int precedence)
         {
-            var parts = tokens.Split(x => x is (TokenType.Operator, ".."));
+            var parts = tokens.Split(x => x is (TokenType.Operator, ":"));
 
             if (parts.Count == 1)
                 return Parse(parts[0], precedence - 1);
@@ -33,7 +33,7 @@ namespace Bloc
                 return new Range(start, end, step);
             }
 
-            throw new SyntaxError(tokens[0].Start, tokens[^1].End, "Unexpected symbol '..'");
+            throw new SyntaxError(tokens[0].Start, tokens[^1].End, "Unexpected symbol ':'");
         }
     }
 }

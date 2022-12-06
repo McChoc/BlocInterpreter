@@ -31,7 +31,7 @@ namespace Bloc.Scanners
 
             if (tokens.Count >= 2 &&
                 tokens[0] is (TokenType.Identifier, _) &&
-                tokens[1] is (TokenType.Operator, "::"))
+                tokens[1] is (TokenType.Operator, ":"))
             {
                 scanner.GetNextToken();
                 scanner.GetNextToken();
@@ -418,6 +418,9 @@ namespace Bloc.Scanners
             while (scanner.HasNextToken())
             {
                 var token = scanner.GetNextToken();
+
+                if (token is (TokenType.Operator, ":"))
+                    throw new SyntaxError(token.Start, token.End, "Unexpected symbol ':'");
 
                 if (token is (TokenType.Operator, ";"))
                     return line;

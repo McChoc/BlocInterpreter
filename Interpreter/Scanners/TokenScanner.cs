@@ -24,8 +24,8 @@ namespace Bloc.Scanners
 
         private static readonly HashSet<string> operators = new()
         {
-            ".", ",", ";",
-            "..", "::", "|>",
+            ",", ";", ":", "|>",
+            ".", "..", "...",
             "!", "!!", "!=",
             "~", "~~", "~=",
             "+", "++", "+=",
