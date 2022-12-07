@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Bloc.Exceptions;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
@@ -30,12 +31,23 @@ namespace Bloc.Operators
             var tokens = new List<Token>();
             var scanner = new TokenScanner(@string.Value);
 
-            while (scanner.HasNextToken())
-                tokens.Add(scanner.GetNextToken());
+            try
+            {
+                while (scanner.HasNextToken())
+                    tokens.Add(scanner.GetNextToken());
 
-            var expression = ExpressionParser.Parse(tokens);
+                var expression = ExpressionParser.Parse(tokens);
 
-            return expression.Evaluate(call);
+                return expression.Evaluate(call);
+            }
+            catch (SyntaxError e)
+            {
+                throw new Throw(e.Text);
+            }
+            catch
+            {
+                throw new Throw("Failed to evaluate expression");
+            }
         }
     }
 }
