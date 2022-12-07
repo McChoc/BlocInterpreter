@@ -53,6 +53,7 @@ namespace Bloc.Scanners
                 (TokenType.Operator, "/") => GetCommandStatement(scanner),
                 (TokenType.Operator, ";") => GetEmptyStatement(scanner),
                 (TokenType.Keyword, "pass") => GetPassStatement(scanner),
+                (TokenType.Keyword, "exec") => GetExecStatement(scanner),
                 (TokenType.Keyword, "var") => GetVarStatement(scanner),
                 (TokenType.Keyword, "const") => GetConstStatement(scanner),
                 (TokenType.Keyword, "if") => GetIfStatement(scanner),
@@ -106,6 +107,16 @@ namespace Bloc.Scanners
                 throw new SyntaxError(line[0].Start, line[^1].End, "unexpected token");
 
             return new EmptyStatement();
+        }
+
+        private static Statement GetExecStatement(TokenScanner scanner)
+        {
+            var line = GetLine(scanner).GetRange(1..);
+
+            if (line.Count == 0)
+                throw new SyntaxError(0, 0, "Missing expression");
+
+            return new ExecStatement(ExpressionParser.Parse(line));
         }
 
         private static Statement GetVarStatement(TokenScanner scanner)
