@@ -1,51 +1,63 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Bloc.Memory;
+using Bloc.Results;
 using Bloc.Values;
 
 namespace Bloc.Expressions
 {
     internal sealed class StructLiteral : IExpression
     {
-        private readonly Dictionary<string, IExpression> _fields;
+        private readonly List<SubExpression> _expressions;
 
-        internal StructLiteral(Dictionary<string, IExpression> fields)
+        internal StructLiteral(List<SubExpression> expressions)
         {
-            _fields = fields;
+            _expressions = expressions;
         }
 
         public IValue Evaluate(Call call)
         {
-            var values = new Dictionary<string, Value>(_fields.Count);
+            var values = new Dictionary<string, Value>();
 
-            foreach (var (key, value) in _fields)
-                values.Add(key, value.Evaluate(call).Value);
+            foreach (var expression in _expressions)
+            {
+                var value = expression.Expression.Evaluate(call).Value;
+
+                if (!expression.Unpack)
+                    values.Add(expression.Name!, value);
+                else if (value is Struct @struct)
+                    foreach (var (key, variable) in @struct.Variables)
+                        values.Add(key, variable.Value);
+                else
+                    throw new Throw("Only a struct can be unpacked using the struct unpack syntax");
+            }
 
             return new Struct(values);
         }
 
         public override int GetHashCode()
         {
-            return System.HashCode.Combine(_fields.Count);
+            return System.HashCode.Combine(_expressions.Count);
         }
 
         public override bool Equals(object other)
         {
-            if (other is not StructLiteral literal)
-                return false;
+            return other is StructLiteral literal &&
+                _expressions.SequenceEqual(literal._expressions);
+        }
 
-            if (_fields.Count != literal._fields.Count)
-                return false;
+        internal record SubExpression
+        {
+            internal bool Unpack { get; }
+            internal string? Name { get; }
+            internal IExpression Expression { get; }
 
-            foreach (var key in _fields.Keys)
+            internal SubExpression(bool unpack, string? name, IExpression expression)
             {
-                if (!literal._fields.TryGetValue(key, out var value))
-                    return false;
-
-                if (!_fields[key].Equals(value))
-                    return false;
+                Unpack = unpack;
+                Name = name;
+                Expression = expression;
             }
-
-            return true;
         }
     }
 }

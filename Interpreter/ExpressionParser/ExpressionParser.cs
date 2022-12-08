@@ -61,6 +61,12 @@ namespace Bloc
                 throw new SyntaxError(token.Start, token.End,
                     "Literal is ambiguous between an empty array and an empty struct. Use 'array()' or 'struct()' instead.");
 
+            if (parts[0][0] is (TokenType.Operator, ".."))
+                return ParseArray(parts);
+
+            if (parts[0][0] is (TokenType.Operator, "..."))
+                return ParseStruct(parts);
+
             return parts[0].Any(x => x is (TokenType.Operator, "="))
                 ? ParseStruct(parts)
                 : ParseArray(parts);
@@ -68,7 +74,7 @@ namespace Bloc
 
         private static ArrayLiteral ParseArray(List<List<Token>> parts)
         {
-            var elements = new List<IExpression>();
+            var expressions = new List<ArrayLiteral.SubExpression>();
 
             foreach (var part in parts)
             {
@@ -78,48 +84,62 @@ namespace Bloc
                 if (part.Any(x => x is (TokenType.Operator, "=")))
                     throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
 
-                var expression = Parse(part);
+                if (part[0] is (TokenType.Operator, "..."))
+                    throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
 
-                elements.Add(expression);
+                if (part[0] is (TokenType.Operator, ".."))
+                    expressions.Add(new(true, Parse(part.GetRange(1..))));
+                else
+                    expressions.Add(new(false, Parse(part)));
             }
 
-            return new ArrayLiteral(elements);
+            return new ArrayLiteral(expressions);
         }
 
         private static StructLiteral ParseStruct(List<List<Token>> parts)
         {
-            var properties = new Dictionary<string, IExpression>();
+            var expressions = new List<StructLiteral.SubExpression>();
 
             foreach (var part in parts)
             {
                 if (part.Count == 0)
                     throw new SyntaxError(0, 0, "Unexpected symbol ','");
 
-                var index = part.FindIndex(x => x is (TokenType.Operator, "="));
-
-                if (index == -1)
+                if (part[0] is (TokenType.Operator, ".."))
                     throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
 
-                var keyTokens = part.GetRange(..index);
-                var valueTokens = part.GetRange((index + 1)..);
+                if (part[0] is (TokenType.Operator, "..."))
+                {
+                    expressions.Add(new(true, null, Parse(part.GetRange(1..))));
+                }
+                else
+                {
+                    var index = part.FindIndex(x => x is (TokenType.Operator, "="));
 
-                if (keyTokens.Count == 0)
-                    throw new SyntaxError(0, 0, "Missing identifier");
+                    if (index == -1)
+                        throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
 
-                if (valueTokens.Count == 0)
-                    throw new SyntaxError(0, 0, "Missing value");
+                    var keyTokens = part.GetRange(..index);
+                    var valueTokens = part.GetRange((index + 1)..);
 
-                var keyExpr = Parse(keyTokens);
+                    if (keyTokens.Count == 0)
+                        throw new SyntaxError(0, 0, "Missing identifier");
 
-                if (keyExpr is not Identifier identifier)
-                    throw new SyntaxError(0, 0, "Invalid identifier");
+                    var keyExpr = Parse(keyTokens);
 
-                var expression = Parse(valueTokens);
+                    if (keyExpr is not Identifier identifier)
+                        throw new SyntaxError(0, 0, "Invalid identifier");
 
-                properties.Add(identifier.Name, expression);
+                    if (valueTokens.Count == 0)
+                        throw new SyntaxError(0, 0, "Missing value");
+
+                    var expression = Parse(valueTokens);
+
+                    expressions.Add(new(false, identifier.Name, expression));
+                }
             }
 
-            return new StructLiteral(properties);
+            return new StructLiteral(expressions);
         }
     }
 }
