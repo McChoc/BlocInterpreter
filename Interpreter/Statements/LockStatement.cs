@@ -5,6 +5,7 @@ using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Utils;
+using Bloc.Variables;
 
 namespace Bloc.Statements
 {
@@ -23,31 +24,16 @@ namespace Bloc.Statements
                 yield break;
             }
 
+            Variable variable;
+
             switch (value)
             {
+                case UnresolvedPointer pointer:
+                    variable = pointer.Resolve().Variable!;
+                    break;
+
                 case VariablePointer { Variable: not null } pointer:
-
-                    var labels = StatementUtil.GetLabels(Statements);
-
-                    lock (pointer.Variable)
-                    {
-                        try
-                        {
-                            call.Push();
-
-                            foreach (var result in ExecuteBlock(Statements, labels, call))
-                            {
-                                yield return result;
-
-                                if (result is not Yield)
-                                    yield break;
-                            }
-                        }
-                        finally
-                        {
-                            call.Pop();
-                        }
-                    }
+                    variable = pointer.Variable;
                     break;
 
                 case SlicePointer { Variables: not null }:
@@ -58,13 +44,31 @@ namespace Bloc.Statements
                     yield return new Throw("Invalid reference");
                     yield break;
 
-                case UndefinedPointer pointer:
-                    yield return new Throw($"Variable {pointer.Name} was not defined in scope");
-                    yield break;
-
                 default:
                     yield return new Throw("You can only lock a variable");
                     yield break;
+            }
+
+            var labels = StatementUtil.GetLabels(Statements);
+
+            lock (variable)
+            {
+                try
+                {
+                    call.Push();
+
+                    foreach (var result in ExecuteBlock(Statements, labels, call))
+                    {
+                        yield return result;
+
+                        if (result is not Yield)
+                            yield break;
+                    }
+                }
+                finally
+                {
+                    call.Pop();
+                }
             }
         }
 

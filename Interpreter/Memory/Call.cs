@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Values;
@@ -10,60 +11,50 @@ namespace Bloc.Memory
     {
         private readonly int _stack;
 
-        internal Call(Engine engine)
-        {
-            Engine = engine;
-            Scopes = new List<Scope>();
-            Push();
-        }
-
-        internal Call(Call parent, Scope? captures)
-            : this(parent.Engine)
-        {
-            _stack = parent._stack + 1;
-
-            if (_stack > Engine.StackLimit)
-                throw new Throw("The stack limit was reached");
-
-            Parent = parent;
-            Captures = captures;
-        }
-
-        internal Call(Call parent, Scope? captures, Func recall, List<Value> @params)
-            : this(parent.Engine)
-        {
-            _stack = parent._stack + 1;
-
-            if (_stack > Engine.StackLimit)
-                throw new Throw("The stack limit was reached");
-
-            Parent = parent;
-            Captures = captures;
-
-            Recall = new HeapVariable(false, recall);
-            Params = new HeapVariable(false, new Array(@params));
-        }
-
         public Engine Engine { get; }
-
-        internal Call? Parent { get; }
-        internal Scope? Captures { get; }
 
         internal Variable? Params { get; }
         internal Variable? Recall { get; }
 
-        internal List<Scope> Scopes { get; }
+        internal Scope Captures { get; }
+        internal Stack<Scope> Scopes { get; }
 
-        internal void Push()
+        internal Call(Engine engine)
         {
-            Scopes.Add(new());
+            Engine = engine;
+            Captures = new();
+            Scopes = new();
+            Push();
         }
 
-        internal void Pop()
+        internal Call(Call parent, Scope captures)
+            : this(parent.Engine)
         {
-            Scopes[^1].Destroy();
-            Scopes.RemoveAt(Scopes.Count - 1);
+            _stack = parent._stack + 1;
+
+            if (_stack > Engine.StackLimit)
+                throw new Throw("The stack limit was reached");
+
+            Captures = captures;
         }
+
+        internal Call(Call parent, Scope captures, Func recall, Array @params)
+            : this(parent.Engine)
+        {
+            _stack = parent._stack + 1;
+
+            if (_stack > Engine.StackLimit)
+                throw new Throw("The stack limit was reached");
+
+            Captures = captures;
+
+            Recall = new HeapVariable(false, recall);
+            Params = new HeapVariable(false, @params);
+        }
+
+        internal void Push() => Scopes.Push(new());
+
+        internal void Pop() => Scopes.Pop().Dispose();
 
         internal void Destroy()
         {
@@ -71,28 +62,43 @@ namespace Bloc.Memory
             Params?.Delete();
 
             foreach (var scope in Scopes)
-                scope.Destroy();
+                scope.Dispose();
         }
 
-        internal Pointer Get(string name)
+        internal UnresolvedPointer Get(string name)
         {
-            StackVariable variable;
+            Stack<StackVariable> stack;
 
-            for (var i = Scopes.Count - 1; i >= 0; i--)
-                if (Scopes[i].Variables.TryGetValue(name, out variable))
-                    return new VariablePointer(variable);
+            Variable? local = null;
+            Variable? nonLocal = null;
+            Variable? global = null;
 
-            if (Captures?.Variables.TryGetValue(name, out variable) ?? false)
-                return new VariablePointer(variable);
+            foreach (var scope in Scopes)
+            {
+                if (scope.Variables.TryGetValue(name, out stack))
+                {
+                    local = stack.Peek();
+                    break;
+                }
+            }
 
-            return new UndefinedPointer(name);
+            if (Captures.Variables.TryGetValue(name, out stack))
+                nonLocal = stack.Peek();
+
+            if (Engine.GlobalScope.Variables.TryGetValue(name, out stack))
+                global = stack.Peek();
+
+            return new UnresolvedPointer(name, local, nonLocal, global);
         }
 
-        internal Pointer Set(bool mutable, string name, Value value)
+        internal VariablePointer Set(bool mask, bool mutable, string name, Value value)
         {
-            var variable = new StackVariable(mutable, name, value, Scopes[^1]);
+            if (!mask && Scopes.Peek().Variables.ContainsKey(name))
+                throw new Throw($"Variable {name} was already defined in scope");
 
-            Scopes[^1].Variables[name] = variable;
+            var variable = new StackVariable(mutable, name, value, Scopes.Peek());
+
+            Scopes.Peek().Add(variable);
 
             return new VariablePointer(variable);
         }
@@ -102,8 +108,18 @@ namespace Bloc.Memory
             var captures = new Scope();
 
             foreach (var scope in Scopes)
-                foreach (var (key, variable) in scope.Variables)
-                    captures.Variables[key] = new(false, key, variable.Value.Copy(), captures);
+            {
+                foreach (var (name, originalStack) in scope.Variables)
+                {
+                    if (!captures.Variables.ContainsKey(name))
+                        captures.Variables.Add(name, new());
+
+                    var newStack = captures.Variables[name];
+
+                    foreach (var variable in originalStack.Reverse())
+                        newStack.Push(new(false, name, variable.Value.Copy(), captures));
+                }
+            }
 
             return captures;
         }
@@ -113,8 +129,18 @@ namespace Bloc.Memory
             var captures = new Scope();
 
             foreach (var scope in Scopes)
-                foreach (var (key, variable) in scope.Variables)
-                    captures.Variables[key] = new(false, key, new Reference(new VariablePointer(variable)), captures);
+            {
+                foreach (var (name, originalStack) in scope.Variables)
+                {
+                    if (!captures.Variables.ContainsKey(name))
+                        captures.Variables.Add(name, new());
+
+                    var newStack = captures.Variables[name];
+
+                    foreach (var variable in originalStack.Reverse())
+                        newStack.Push(new(false, name, new Reference(new VariablePointer(variable)), captures));
+                }
+            }
 
             return captures;
         }

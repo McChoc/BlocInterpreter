@@ -8,11 +8,11 @@ using Bloc.Variables;
 
 namespace Bloc.Operators
 {
-    internal sealed record Nonlocal : IExpression
+    internal sealed record LetNew : IExpression
     {
         private readonly IExpression _operand;
 
-        internal Nonlocal(IExpression operand)
+        internal LetNew(IExpression operand)
         {
             _operand = operand;
         }
@@ -21,18 +21,13 @@ namespace Bloc.Operators
         {
             var identifier = _operand.Evaluate(call);
 
-            return GetCapture(identifier, call);
+            return Define(identifier, call);
         }
 
-        private IValue GetCapture(IValue identifier, Call call)
+        private IValue Define(IValue identifier, Call call)
         {
             if (identifier is UnresolvedPointer pointer)
-            {
-                if (pointer.NonLocal is null)
-                    throw new Throw($"Variable {pointer.Name} was not defined in non-local scope");
-
-                return new VariablePointer(pointer.NonLocal);
-            }
+                return pointer.Define(true, true, Null.Value, call);
 
             if (identifier.Value is Tuple tuple)
             {
@@ -40,7 +35,7 @@ namespace Bloc.Operators
 
                 foreach (var id in tuple.Variables)
                 {
-                    var value = GetCapture(id, call);
+                    var value = Define(id, call);
 
                     if (value is IVariable variable)
                         variables.Add(variable);

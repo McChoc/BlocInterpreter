@@ -48,9 +48,9 @@ namespace Bloc.Values
                             var inf = double.PositiveInfinity;
 
                             var scope = new Scope();
-                            scope.Variables.Add("start", new StackVariable(false, "start", new Number(range.Start ?? (range.Step >= 0 ? 0 : -1)), scope));
-                            scope.Variables.Add("end", new StackVariable(false, "end", new Number(range.End ?? (range.Step >= 0 ? inf : -inf)), scope));
-                            scope.Variables.Add("step", new StackVariable(false, "step", new Number(range.Step), scope));
+                            scope.Add(new(false, "start", new Number(range.Start ?? (range.Step >= 0 ? 0 : -1)), scope));
+                            scope.Add(new(false, "end", new Number(range.End ?? (range.Step >= 0 ? inf : -inf)), scope));
+                            scope.Add(new(false, "step", new Number(range.Step), scope));
 
                             return new(new(call, scope), new()
                             {
@@ -67,7 +67,7 @@ namespace Bloc.Values
                         case String @string:
                         {
                             var scope = new Scope();
-                            scope.Variables.Add("value", new StackVariable(false, "value", @string, scope));
+                            scope.Add(new(false, "value", @string, scope));
 
                             return new(new(call, scope), new()
                             {
@@ -84,7 +84,7 @@ namespace Bloc.Values
                         case Array array:
                         {
                             var scope = new Scope();
-                            scope.Variables.Add("items", new StackVariable(false, "items", array, scope));
+                            scope.Add(new(false, "items", array, scope));
 
                             return new(new(call, scope), new()
                             {

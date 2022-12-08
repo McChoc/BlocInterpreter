@@ -51,7 +51,7 @@ namespace Bloc.Statements
                 try
                 {
                     call.Push();
-                    call.Set(false, Name, item);
+                    call.Set(true, false, Name, item);
 
                     foreach (var result in ExecuteBlock(Statements, labels, call))
                     {

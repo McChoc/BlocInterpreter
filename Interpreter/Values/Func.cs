@@ -13,12 +13,12 @@ namespace Bloc.Values
         private readonly FunctionType _type;
         private readonly CaptureMode _mode;
 
-        private readonly Scope? _captures;
+        private readonly Scope _captures;
         private readonly List<Parameter> _parameters;
         private readonly List<Statement> _statements;
         private readonly Dictionary<string, Label> _labels;
 
-        internal Func(FunctionType type, CaptureMode mode, Scope? captures, List<Parameter> parameters, List<Statement> statements)
+        internal Func(FunctionType type, CaptureMode mode, Scope captures, List<Parameter> parameters, List<Statement> statements)
         {
             _type = type;
             _mode = mode;
@@ -36,10 +36,10 @@ namespace Bloc.Values
         {
             return values.Count switch
             {
-                0 => new(FunctionType.Synchronous, CaptureMode.None, null, new(), new()),
+                0 => new(FunctionType.Synchronous, CaptureMode.None, new(), new(), new()),
                 1 => values[0] switch
                 {
-                    Null => new(FunctionType.Synchronous, CaptureMode.None, null, new(), new()),
+                    Null => new(FunctionType.Synchronous, CaptureMode.None, new(), new(), new()),
                     Func func => func,
                     _ => throw new Throw($"'func' does not have a constructor that takes a '{values[0].GetType().ToString().ToLower()}'")
                 },
@@ -74,22 +74,16 @@ namespace Bloc.Values
             if (!_statements.SequenceEqual(func._statements))
                 return false;
 
-            if (_captures is null != func._captures is null)
+            if (_captures.Variables.Count != func._captures.Variables.Count)
                 return false;
 
-            if (_captures is not null && func._captures is not null)
+            foreach (var key in _captures.Variables.Keys)
             {
-                if (_captures.Variables.Count != func._captures.Variables.Count)
+                if (!func._captures.Variables.ContainsKey(key))
                     return false;
 
-                foreach (var key in _captures.Variables.Keys)
-                {
-                    if (!func._captures.Variables.TryGetValue(key, out var value))
-                        return false;
-
-                    if (_captures.Variables[key].Value != value.Value)
-                        return false;
-                }
+                if (!_captures.Variables[key].SequenceEqual(func._captures.Variables[key]))
+                    return false;
             }
 
             return true;
@@ -103,7 +97,7 @@ namespace Bloc.Values
                         ? _parameters[i].Value
                         : Null.Value;
 
-            var call = new Call(parent, _captures, this, values);
+            var call = new Call(parent, _captures, this, new(values));
 
             for (var i = 0; i < _parameters.Count; i++)
             {
@@ -112,7 +106,7 @@ namespace Bloc.Values
                 if (i < values.Count)
                     value = values[i];
 
-                call.Set(true, name, value);
+                call.Set(true, true, name, value);
             }
 
             return _type switch

@@ -38,8 +38,9 @@ var engine = new Engine.Builder(args)
             if (args.Length != 0)
                 throw new Throw("'delete_global' does not take arguments.\nType '/help delete_global' to see its usage.");
 
-            foreach (var variable in call.Engine.GlobalScope.Variables.Values)
-                variable.Delete();
+            foreach (var stack in call.Engine.GlobalScope.Variables.Values)
+                foreach (var variable in stack)
+                    variable.Delete();
 
             return Void.Value;
         }))

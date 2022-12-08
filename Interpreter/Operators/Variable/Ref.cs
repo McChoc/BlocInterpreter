@@ -22,8 +22,8 @@ namespace Bloc.Operators
             if (value is not Pointer pointer)
                 throw new Throw("The right part of a reference must be a variable");
 
-            if (pointer is UndefinedPointer undefined)
-                throw new Throw($"Variable {undefined.Name} was not defined in scope");
+            if (pointer is UnresolvedPointer unresolved)
+                pointer = unresolved.Resolve();
 
             return new Reference(pointer);
         }

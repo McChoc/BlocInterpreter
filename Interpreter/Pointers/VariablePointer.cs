@@ -1,5 +1,4 @@
-﻿using Bloc.Memory;
-using Bloc.Results;
+﻿using Bloc.Results;
 using Bloc.Values;
 using Bloc.Variables;
 
@@ -7,23 +6,12 @@ namespace Bloc.Pointers
 {
     internal sealed class VariablePointer : Pointer
     {
+        internal Variable? Variable { get; private set; }
+
         internal VariablePointer(Variable? variable)
         {
             Variable = variable;
             variable?.Pointers.Add(this);
-        }
-
-        internal Variable? Variable { get; private set; }
-
-        internal override Pointer Define(bool mutable, Value value, Call call)
-        {
-            if (Variable is not StackVariable stackVariable)
-                throw new Throw("The left part of an assignement must be a variable");
-
-            if (call.Scopes[^1].Variables.ContainsKey(stackVariable.Name))
-                throw new Throw("Variable was already defined in scope");
-
-            return call.Set(mutable, stackVariable.Name, value);
         }
 
         internal override Value Get()
@@ -63,13 +51,10 @@ namespace Bloc.Pointers
 
         internal override bool Equals(Pointer other)
         {
-            if (other is not VariablePointer pointer)
-                return false;
-
-            if (Variable is null || pointer.Variable is null)
-                return false;
-
-            return Variable == pointer.Variable;
+            return other is VariablePointer pointer &&
+                Variable is not null &&
+                pointer.Variable is not null &&
+                Variable == pointer.Variable;
         }
     }
 }

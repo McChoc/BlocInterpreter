@@ -26,8 +26,8 @@ namespace Bloc.Operators
 
         private IValue Define(IValue identifier, Call call)
         {
-            if (identifier is Pointer pointer)
-                return pointer.Define(true, Null.Value, call);
+            if (identifier is UnresolvedPointer pointer)
+                return pointer.Define(false, true, Null.Value, call);
 
             if (identifier.Value is Tuple tuple)
             {

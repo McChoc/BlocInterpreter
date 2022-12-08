@@ -139,6 +139,15 @@ namespace Bloc.Scanners
             if (word is (TokenType.Keyword, "val") && HasNextToken() && Peek() is (TokenType.Keyword, "val"))
                 return new Token(word.Start, GetNextToken().End, TokenType.Keyword, "val val");
 
+            if (word is (TokenType.Keyword, "let") && HasNextToken() && Peek() is (TokenType.Keyword, "new"))
+                return new Token(word.Start, GetNextToken().End, TokenType.Keyword, "let new");
+
+            if (word is (TokenType.Keyword, "new") && HasNextToken() && Peek() is (TokenType.Keyword, "var"))
+                return new Token(word.Start, GetNextToken().End, TokenType.Keyword, "new var");
+
+            if (word is (TokenType.Keyword, "new") && HasNextToken() && Peek() is (TokenType.Keyword, "const"))
+                return new Token(word.Start, GetNextToken().End, TokenType.Keyword, "new const");
+
             if (word is (TokenType.Keyword, "const") && HasNextToken() && Peek() is (TokenType.Keyword, "new"))
                 return new Token(word.Start, GetNextToken().End, TokenType.Keyword, "const new");
 

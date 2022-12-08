@@ -140,7 +140,7 @@ namespace Bloc.Commands
                     var name = args[0];
                     var value = input;
 
-                    call.Set(true, name, value);
+                    call.Set(true, true, name, value);
 
                     return Void.Value;
                 }
@@ -150,7 +150,7 @@ namespace Bloc.Commands
                     var name = args[0];
                     var value = new String(args[1]);
 
-                    call.Set(true, name, value);
+                    call.Set(true, true, name, value);
 
                     return Void.Value;
                 }

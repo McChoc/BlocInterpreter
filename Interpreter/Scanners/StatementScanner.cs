@@ -54,7 +54,9 @@ namespace Bloc.Scanners
                 (TokenType.Operator, ";") => GetEmptyStatement(scanner),
                 (TokenType.Keyword, "pass") => GetPassStatement(scanner),
                 (TokenType.Keyword, "var") => GetVarStatement(scanner),
+                (TokenType.Keyword, "new var") => GetNewVarStatement(scanner),
                 (TokenType.Keyword, "const") => GetConstStatement(scanner),
+                (TokenType.Keyword, "new const") => GetNewConstStatement(scanner),
                 (TokenType.Keyword, "if") => GetIfStatement(scanner),
                 (TokenType.Keyword, "do") => GetDoWhileStatement(scanner),
                 (TokenType.Keyword, "while") => GetWhileStatement(scanner),
@@ -135,9 +137,64 @@ namespace Bloc.Scanners
             return statement;
         }
 
+        private static Statement GetNewVarStatement(TokenScanner scanner)
+        {
+            var statement = new NewVarStatement();
+
+            var keyword = scanner.GetNextToken();
+
+            var definitions = GetLine(scanner).Split(x => x is (TokenType.Operator, ","));
+
+            foreach (var definition in definitions)
+            {
+                if (definition.Count == 0)
+                    throw new SyntaxError(keyword.Start, keyword.End, "Missing identifier");
+
+                var parts = definition.Split(x => x is (TokenType.Operator, "="));
+
+                var identifier = ExpressionParser.Parse(parts[0]);
+
+                var value = parts.Count > 1
+                    ? ExpressionParser.Parse(definition.GetRange((parts[0].Count + 1)..))
+                    : null;
+
+                statement.Add(identifier, value);
+            }
+
+            return statement;
+        }
+
         private static Statement GetConstStatement(TokenScanner scanner)
         {
             var statement = new ConstStatement();
+
+            var keyword = scanner.GetNextToken();
+
+            var definitions = GetLine(scanner).Split(x => x is (TokenType.Operator, ","));
+
+            foreach (var definition in definitions)
+            {
+                if (definition.Count == 0)
+                    throw new SyntaxError(keyword.Start, keyword.End, "Missing identifier");
+
+                var parts = definition.Split(x => x is (TokenType.Operator, "="));
+
+                var identifier = ExpressionParser.Parse(parts[0]);
+
+                if (parts.Count == 1)
+                    throw new SyntaxError(parts[0][0].Start, parts[0][^1].End, "A const needs a value");
+
+                var value = ExpressionParser.Parse(definition.GetRange((parts[0].Count + 1)..));
+
+                statement.Add(identifier, value);
+            }
+
+            return statement;
+        }
+
+        private static Statement GetNewConstStatement(TokenScanner scanner)
+        {
+            var statement = new NewConstStatement();
 
             var keyword = scanner.GetNextToken();
 

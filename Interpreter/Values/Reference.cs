@@ -23,11 +23,7 @@ namespace Bloc.Values
                 1 => values[0] switch
                 {
                     Null => new(),
-                    String @string => call.Get(@string.Value) switch
-                    {
-                        UndefinedPointer undefined => throw new Throw($"Variable {undefined.Name} was not defined in scope"),
-                        var pointer => new(pointer)
-                    },
+                    String @string => new(call.Get(@string.Value).Resolve()),
                     Reference reference => reference,
                     _ => throw new Throw($"'reference' does not have a constructor that takes a '{values[0].GetType().ToString().ToLower()}'")
                 },

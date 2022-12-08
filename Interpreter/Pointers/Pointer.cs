@@ -1,5 +1,4 @@
-﻿using Bloc.Memory;
-using Bloc.Values;
+﻿using Bloc.Values;
 using Bloc.Variables;
 
 namespace Bloc.Pointers
@@ -7,8 +6,6 @@ namespace Bloc.Pointers
     internal abstract class Pointer : IVariable
     {
         Value IValue.Value => Get();
-
-        internal abstract Pointer Define(bool mutable, Value value, Call call);
 
         internal abstract Value Get();
 

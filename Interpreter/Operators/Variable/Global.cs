@@ -26,19 +26,12 @@ namespace Bloc.Operators
 
         private IValue GetGlobal(IValue identifier, Call call)
         {
-            if (identifier is Pointer pointer)
+            if (identifier is UnresolvedPointer pointer)
             {
-                var name = pointer switch
-                {
-                    UndefinedPointer undefined => undefined.Name,
-                    VariablePointer { Variable: StackVariable var } => var.Name,
-                    _ => throw new Throw("The operand must be an identifier")
-                };
+                if (pointer.Global is null)
+                    throw new Throw($"Variable {pointer.Name} was not defined in global scope");
 
-                if (!call.Engine.GlobalScope.Variables.TryGetValue(name, out var variable))
-                    throw new Throw($"Variable {name} was not defined in global scope");
-
-                return new VariablePointer(variable);
+                return new VariablePointer(pointer.Global);
             }
 
             if (identifier.Value is Tuple tuple)

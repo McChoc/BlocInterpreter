@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Bloc.Extensions;
-using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Values;
 using Bloc.Variables;
@@ -10,19 +9,14 @@ namespace Bloc.Pointers
 {
     internal sealed class SlicePointer : Pointer
     {
+        internal List<ArrayVariable>? Variables { get; private set; }
+
         internal SlicePointer(List<ArrayVariable> variables)
         {
             Variables = variables;
 
             foreach (var variable in variables)
                 variable.Pointers.Add(this);
-        }
-
-        internal List<ArrayVariable>? Variables { get; private set; }
-
-        internal override Pointer Define(bool _0, Value _1, Call _2)
-        {
-            throw new Throw("The left part of an assignement must be a variable");
         }
 
         internal override Value Get()

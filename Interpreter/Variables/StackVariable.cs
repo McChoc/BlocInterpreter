@@ -29,7 +29,7 @@ namespace Bloc.Variables
 
         public override void Delete()
         {
-            _scope.Variables.Remove(Name);
+            _scope.Remove(Name);
 
             base.Delete();
         }

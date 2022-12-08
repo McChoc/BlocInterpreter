@@ -11,6 +11,7 @@ namespace Bloc.Statements
 {
     internal abstract class DeclarationStatement : Statement, IEnumerable
     {
+        protected abstract bool Mask { get; }
         protected abstract bool Mutable { get; }
 
         internal List<(IExpression Name, IExpression? Value)> Definitions { get; set; } = new();
@@ -38,9 +39,9 @@ namespace Bloc.Statements
 
         private void Define(IValue identifier, Value value, Call call)
         {
-            if (identifier is Pointer pointer)
+            if (identifier is UnresolvedPointer pointer)
             {
-                pointer.Define(Mutable, value, call);
+                pointer.Define(Mask, Mutable, value, call);
             }
             else if (identifier.Value is Tuple leftTuple)
             {
@@ -60,7 +61,7 @@ namespace Bloc.Statements
             }
             else
             {
-                throw new Throw("The left part of an assignement must be a variable");
+                throw new Throw("The left part of an assignement must be an identifier");
             }
         }
 

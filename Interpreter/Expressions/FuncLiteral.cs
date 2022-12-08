@@ -28,7 +28,7 @@ namespace Bloc.Expressions
             {
                 CaptureMode.Value => call.ValueCapture(),
                 CaptureMode.Reference => call.ReferenceCapture(),
-                _ => null
+                _ => new()
             };
 
             var parameters = _parameters
