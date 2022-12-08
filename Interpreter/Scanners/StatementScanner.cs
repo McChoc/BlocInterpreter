@@ -315,7 +315,7 @@ namespace Bloc.Scanners
                 throw new SyntaxError(tokens[0].Start, tokens[0].End, "Missing identifier");
 
             if (tokens.Count < 2 || tokens[1] is not (TokenType.Keyword, "in"))
-                throw new SyntaxError(tokens[0].Start, tokens[0].End, "Missing 'in'");
+                throw new SyntaxError(tokens[0].Start, tokens[0].End, "Missing 'in' keyword");
 
             return new ForInStatement
             {
@@ -361,15 +361,49 @@ namespace Bloc.Scanners
         {
             var statement = new TryStatement
             {
-                Try = GetBody(scanner.GetNextToken(), scanner)
+                Try = GetBody(scanner.GetNextToken(), scanner),
+                Catches = new()
             };
 
-            // catch
-            if (!scanner.HasNextToken())
-                return statement;
+            bool foundLastCatch = false;
 
-            if (scanner.Peek() is (TokenType.Keyword, "catch"))
-                statement.Catch = GetBody(scanner.GetNextToken(), scanner);
+            // catch
+            while (scanner.HasNextToken() && scanner.Peek() is (TokenType.Keyword, "catch"))
+            {
+                var keyword = scanner.GetNextToken();
+                
+                if (foundLastCatch)
+                    throw new SyntaxError(keyword.Start, keyword.End, "There cannot be another catch clause after the general catch");
+
+                if (!scanner.HasNextToken() || scanner.GetNextToken() is not { Type: TokenType.Parentheses } expression)
+                    throw new SyntaxError(keyword.Start, keyword.End, "Missing '('");
+
+                var tokens = TokenScanner.Scan(expression).ToList();
+
+                if (tokens.Count == 0)
+                    throw new SyntaxError(keyword.Start, keyword.End, "Missing identifier");
+
+                if (tokens[0].Type != TokenType.Identifier)
+                    throw new SyntaxError(tokens[0].Start, tokens[0].End, "Unexpected symbol");
+
+                if (tokens.Count > 1)
+                    throw new SyntaxError(tokens[1].Start, tokens[1].End, "Unexpected symbol");
+
+                var identifier = tokens[0].Text;
+                IExpression? when;
+
+                if (scanner.Peek() is (TokenType.Keyword, "when"))
+                {
+                    when = GetExpression(scanner.GetNextToken(), scanner);
+                }
+                else
+                {
+                    when = null;
+                    foundLastCatch = true;
+                }
+
+                statement.Catches.Add(new(identifier, when, GetBody(keyword, scanner)));
+            }
 
             // finally
             if (!scanner.HasNextToken())
