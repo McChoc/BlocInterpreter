@@ -27,7 +27,7 @@ namespace Bloc.Values
                 1 => values[0] switch
                 {
                     Null => new(() => Void.Value),
-                    Func func => new(() => func.Invoke(new(), call)),
+                    Func func => new(() => func.Invoke(new(), new(), call)),
                     Task task => task,
                     _ => throw new Throw($"'task' does not have a constructor that takes a '{values[0].GetType().ToString().ToLower()}'")
                 },

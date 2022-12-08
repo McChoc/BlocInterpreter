@@ -58,7 +58,7 @@ namespace Bloc.Operators
 
             public int Compare(Value a, Value b)
             {
-                var value = _func.Invoke(new() { a.Copy(), b.Copy() }, _call);
+                var value = _func.Invoke(new() { a.Copy(), b.Copy() }, new(), _call);
 
                 return Number.ImplicitCast(value).GetInt();
             }

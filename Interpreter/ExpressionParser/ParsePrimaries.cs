@@ -48,20 +48,51 @@ namespace Bloc
                 {
                     var content = TokenScanner.Scan(tokens[i]).ToList();
 
-                    var parameters = new List<IExpression>();
+                    var args = new List<IExpression>();
+                    var kwargs = new Dictionary<string, IExpression>();
 
                     if (content.Count > 0)
                     {
                         foreach (var part in content.Split(x => x is (TokenType.Operator, ",")))
                         {
                             if (part.Count == 0)
-                                parameters.Add(new VoidLiteral());
+                            {
+                                args.Add(new VoidLiteral());
+                            }
                             else
-                                parameters.Add(Parse(part));
+                            {
+                                var index = part.FindIndex(x => x is (TokenType.Operator, "="));
+
+                                if (index == -1)
+                                {
+                                    args.Add(Parse(part));
+                                }
+                                else
+                                {
+                                    var keyTokens = part.GetRange(..index);
+                                    var valueTokens = part.GetRange((index + 1)..);
+
+                                    if (keyTokens.Count == 0)
+                                        throw new SyntaxError(0, 0, "Missing identifier");
+
+                                    var keyExpr = Parse(keyTokens);
+
+                                    if (keyExpr is not Identifier identifier)
+                                        throw new SyntaxError(0, 0, "Invalid identifier");
+
+                                    if (kwargs.ContainsKey(identifier.Name))
+                                        throw new SyntaxError(0, 0, $"Parameter named {identifier.Name} cannot be specified multiple times");
+
+                                    if (valueTokens.Count == 0)
+                                        throw new SyntaxError(0, 0, "Missing value");
+
+                                    kwargs.Add(identifier.Name, Parse(valueTokens));
+                                }
+                            }
                         }
                     }
 
-                    expression = new Invocation(expression, parameters);
+                    expression = new Invocation(expression, args, kwargs);
                 }
                 else
                 {

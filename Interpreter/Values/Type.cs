@@ -53,28 +53,31 @@ namespace Bloc.Values
             return false;
         }
 
-        public Value Invoke(List<Value> values, Call call)
+        public Value Invoke(List<Value> args, Dictionary<string, Value> kwargs, Call call)
         {
             if (Value.Count != 1)
                 throw new Throw("Cannot instantiate a composite type");
 
+            if (kwargs.Count != 0)
+                throw new Throw("Constructors do not support named parameters");
+
             return Value.Single() switch
             {
-                ValueType.Void => Void.Construct(values),
-                ValueType.Null => Null.Construct(values),
-                ValueType.Bool => Bool.Construct(values),
-                ValueType.Number => Number.Construct(values),
-                ValueType.Range => Range.Construct(values),
-                ValueType.String => String.Construct(values),
-                ValueType.Array => Array.Construct(values),
-                ValueType.Struct => Struct.Construct(values),
-                ValueType.Tuple => Tuple.Construct(values),
-                ValueType.Func => Func.Construct(values),
-                ValueType.Task => Task.Construct(values, call),
-                ValueType.Iter => Iter.Construct(values, call),
-                ValueType.Reference => Reference.Construct(values, call),
-                ValueType.Extern => Extern.Construct(values),
-                ValueType.Type => Construct(values),
+                ValueType.Void => Void.Construct(args),
+                ValueType.Null => Null.Construct(args),
+                ValueType.Bool => Bool.Construct(args),
+                ValueType.Number => Number.Construct(args),
+                ValueType.Range => Range.Construct(args),
+                ValueType.String => String.Construct(args),
+                ValueType.Array => Array.Construct(args),
+                ValueType.Struct => Struct.Construct(args),
+                ValueType.Tuple => Tuple.Construct(args),
+                ValueType.Func => Func.Construct(args),
+                ValueType.Task => Task.Construct(args, call),
+                ValueType.Iter => Iter.Construct(args, call),
+                ValueType.Reference => Reference.Construct(args, call),
+                ValueType.Extern => Extern.Construct(args),
+                ValueType.Type => Construct(args),
                 _ => throw new Exception()
             };
         }

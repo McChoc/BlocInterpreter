@@ -90,19 +90,42 @@ namespace Bloc.Values
             return true;
         }
 
-        public Value Invoke(List<Value> values, Call parent)
+        public Value Invoke(List<Value> args, Dictionary<string, Value> kwargs, Call parent)
         {
             var @params = new Scope();
 
-            for (int i = 0; i < _parameters.Count; i++)
+            var remainingParameters = new List<Parameter>(_parameters);
+
+            foreach (var (name, value) in kwargs)
             {
-                var value = i < values.Count && values[i] != Void.Value
-                    ? values[i]
-                    : _parameters[i].Value;
+                if (!_parameters.Any(x => x.Name == name))
+                    throw new Throw($"This function does not have a parameter named '{name}'");
 
-                var variable = new StackVariable(true, _parameters[i].Name, value, @params);
+                remainingParameters.RemoveAll(x => x.Name == name);
 
-                @params.Add(variable);
+                @params.Add(new(true, name, value, @params));
+            }
+
+            foreach (var arg in args)
+            {
+                if (remainingParameters.Count == 0)
+                    throw new Throw($"This function does not take {args.Count + kwargs.Count} arguments");
+
+                var parameter = remainingParameters[0];
+                remainingParameters.RemoveAt(0);
+
+                var name = parameter.Name;
+
+                var value = arg != Void.Value
+                    ? arg
+                    : parameter.Value;
+
+                @params.Add(new(true, name, value, @params));
+            }
+
+            foreach (var parameter in remainingParameters)
+            {
+                @params.Add(new(true, parameter.Name, parameter.Value, @params));
             }
 
             var call = new Call(parent, _captures, @params, this);

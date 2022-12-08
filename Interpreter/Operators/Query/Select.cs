@@ -28,7 +28,7 @@ namespace Bloc.Operators
 
             if (left is Array array && right is Func func)
                 return new Array(array.Variables
-                    .Select(x => func.Invoke(new() { x.Value.Copy() }, call))
+                    .Select(x => func.Invoke(new() { x.Value.Copy() }, new(), call))
                     .ToList());
 
             throw new Throw($"Cannot apply operator 'select' on operands of types {left.GetType().ToString().ToLower()} and {right.GetType().ToString().ToLower()}");

@@ -29,7 +29,7 @@ namespace Bloc.Operators
             if (left is Array array && right is Func func)
                 return new Array(array.Variables
                     .Select(x => x.Value)
-                    .Where(x => Bool.ImplicitCast(func.Invoke(new() { x.Copy() }, call)).Value)
+                    .Where(x => Bool.ImplicitCast(func.Invoke(new() { x.Copy() }, new(), call)).Value)
                     .ToList());
 
             throw new Throw($"Cannot apply operator 'where' on operands of types {left.GetType().ToString().ToLower()} and {right.GetType().ToString().ToLower()}");

@@ -178,7 +178,7 @@ namespace Bloc.Commands
                 if (value is not Func func)
                     throw new Throw("The variable was not a 'func'");
 
-                return func.Invoke(values, call);
+                return func.Invoke(values, new(), call);
             }
         );
 

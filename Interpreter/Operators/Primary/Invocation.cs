@@ -12,12 +12,14 @@ namespace Bloc.Operators
     internal sealed class Invocation : IExpression
     {
         private readonly IExpression _expression;
-        private readonly List<IExpression> _parameters;
+        private readonly List<IExpression> _posParameters;
+        private readonly Dictionary<string, IExpression> _nameParameters;
 
-        internal Invocation(IExpression expression, List<IExpression> parameters)
+        internal Invocation(IExpression expression, List<IExpression> posParameters, Dictionary<string, IExpression> nameParameters)
         {
             _expression = expression;
-            _parameters = parameters;
+            _posParameters = posParameters;
+            _nameParameters = nameParameters;
         }
 
         public IValue Evaluate(Call call)
@@ -27,29 +29,43 @@ namespace Bloc.Operators
             value = ReferenceUtil.Dereference(value, call.Engine.HopLimit).Value;
 
             if (value is not IInvokable invokable)
-                throw new Throw("The '()' operator can only be apllied to a func or a type");
+                throw new Throw("The '()' operator can only be applied to a func or a type");
 
-            var args = new List<Value>(_parameters.Count);
+            var args = _posParameters.Select(x => x.Evaluate(call).Value.Copy()).ToList();
+            var kwargs = _nameParameters.ToDictionary(x => x.Key, x => x.Value.Evaluate(call).Value.Copy());
 
-            foreach (var parameter in _parameters)
-                args.Add(parameter.Evaluate(call).Value.Copy());
-
-            if (args.Count == 1 && args[0] is Array array)
-                args = array.Variables.Select(v => v.Value).ToList();
-
-            return invokable.Invoke(args, call);
+            return invokable.Invoke(args, kwargs, call);
         }
 
         public override int GetHashCode()
         {
-            return System.HashCode.Combine(_expression, _parameters.Count);
+            return System.HashCode.Combine(_expression, _posParameters.Count, _nameParameters.Count);
         }
 
         public override bool Equals(object other)
         {
-            return other is Invocation invocation &&
-                _expression.Equals(invocation._expression) &&
-                _parameters.SequenceEqual(invocation._parameters);
+            if (other is not Invocation invocation)
+                return false;
+
+            if (!_expression.Equals(invocation._expression))
+                return false;
+
+            if (!_posParameters.SequenceEqual(invocation._posParameters))
+                return false;
+
+            if (_nameParameters.Count != invocation._nameParameters.Count)
+                return false;
+
+            foreach (var key in _nameParameters.Keys)
+            {
+                if (!invocation._nameParameters.TryGetValue(key, out var expression))
+                    return false;
+
+                if (!_nameParameters[key].Equals(expression))
+                    return false;
+            }
+
+            return true;
         }
     }
 }
