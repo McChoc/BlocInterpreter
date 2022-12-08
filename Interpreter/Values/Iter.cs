@@ -6,7 +6,6 @@ using Bloc.Operators;
 using Bloc.Results;
 using Bloc.Statements;
 using Bloc.Utils;
-using Bloc.Variables;
 
 namespace Bloc.Values
 {
@@ -47,12 +46,12 @@ namespace Bloc.Values
                         {
                             var inf = double.PositiveInfinity;
 
-                            var scope = new Scope();
-                            scope.Add(new(false, "start", new Number(range.Start ?? (range.Step >= 0 ? 0 : -1)), scope));
-                            scope.Add(new(false, "end", new Number(range.End ?? (range.Step >= 0 ? inf : -inf)), scope));
-                            scope.Add(new(false, "step", new Number(range.Step), scope));
+                            var @params = new Scope();
+                            @params.Add(new(false, "start", new Number(range.Start ?? (range.Step >= 0 ? 0 : -1)), @params));
+                            @params.Add(new(false, "end", new Number(range.End ?? (range.Step >= 0 ? inf : -inf)), @params));
+                            @params.Add(new(false, "step", new Number(range.Step), @params));
 
-                            return new(new(call, scope), new()
+                            return new(new(call, new(), @params), new()
                             {
                                 new ForStatement(
                                     initialisation: new Assignment(new Let(new Identifier("i")), new Identifier("start")),
@@ -66,10 +65,10 @@ namespace Bloc.Values
 
                         case String @string:
                         {
-                            var scope = new Scope();
-                            scope.Add(new(false, "value", @string, scope));
+                            var @params = new Scope();
+                            @params.Add(new(false, "value", @string, @params));
 
-                            return new(new(call, scope), new()
+                            return new(new(call, new(), @params), new()
                             {
                                 new ForStatement(
                                     initialisation: new Assignment(new Let(new Identifier("i")), new NumberLiteral(0)),
@@ -83,10 +82,10 @@ namespace Bloc.Values
 
                         case Array array:
                         {
-                            var scope = new Scope();
-                            scope.Add(new(false, "items", array, scope));
+                            var @params = new Scope();
+                            @params.Add(new(false, "items", array, @params));
 
-                            return new(new(call, scope), new()
+                            return new(new(call, new(), @params), new()
                             {
                                 new ForStatement(
                                     initialisation: new Assignment(new Let(new Identifier("i")), new NumberLiteral(0)),

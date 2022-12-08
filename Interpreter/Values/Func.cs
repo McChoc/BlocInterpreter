@@ -5,6 +5,7 @@ using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Statements;
 using Bloc.Utils;
+using Bloc.Variables;
 
 namespace Bloc.Values
 {
@@ -91,23 +92,20 @@ namespace Bloc.Values
 
         public Value Invoke(List<Value> values, Call parent)
         {
-            for (int i = 0; i < values.Count; i++)
-                if (values[i] == Void.Value)
-                    values[i] = i < _parameters.Count
-                        ? _parameters[i].Value
-                        : Null.Value;
+            var @params = new Scope();
 
-            var call = new Call(parent, _captures, this, new(values));
-
-            for (var i = 0; i < _parameters.Count; i++)
+            for (int i = 0; i < _parameters.Count; i++)
             {
-                var (name, value) = _parameters[i];
+                var value = i < values.Count && values[i] != Void.Value
+                    ? values[i]
+                    : _parameters[i].Value;
 
-                if (i < values.Count)
-                    value = values[i];
+                var variable = new StackVariable(true, _parameters[i].Name, value, @params);
 
-                call.Set(true, true, name, value);
+                @params.Add(variable);
             }
+
+            var call = new Call(parent, _captures, @params, this);
 
             return _type switch
             {

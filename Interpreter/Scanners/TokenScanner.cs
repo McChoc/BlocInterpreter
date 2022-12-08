@@ -46,8 +46,8 @@ namespace Bloc.Scanners
             "as", "async", "await", "break", "catch", "chr", "const", "continue",
             "delete", "do", "else", "eval", "exec", "finally", "for", "gen",
             "global", "goto", "if", "in", "is", "len", "let", "lock", "loop",
-            "nameof", "new", "next", "nonlocal", "not", "ord", "orderby", "pass",
-            "ref", "repeat", "return", "select", "throw", "try", "typeof",
+            "nameof", "new", "next", "nonlocal", "not", "ord", "orderby", "param",
+            "pass", "ref", "repeat", "return", "select", "throw", "try", "typeof",
             "unchecked", "until", "val", "var", "when", "where", "while", "yield"
         };
 
@@ -256,6 +256,8 @@ namespace Bloc.Scanners
 
             IExpression? expression = word switch
             {
+                "recall" => new Recall(),
+
                 "void" => new VoidLiteral(),
                 "null" => new NullLiteral(),
                 "false" => new BoolLiteral(false),
@@ -276,9 +278,6 @@ namespace Bloc.Scanners
                 "reference" => new TypeLiteral(ValueType.Reference),
                 "extern" => new TypeLiteral(ValueType.Extern),
                 "type" => new TypeLiteral(ValueType.Type),
-
-                "recall" => new Recall(),
-                "params" => new Params(),
 
                 _ => null
             };

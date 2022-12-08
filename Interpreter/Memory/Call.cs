@@ -13,21 +13,21 @@ namespace Bloc.Memory
 
         public Engine Engine { get; }
 
-        internal Variable? Params { get; }
         internal Variable? Recall { get; }
-
         internal Scope Captures { get; }
+        internal Scope Params { get; }
         internal Stack<Scope> Scopes { get; }
 
         internal Call(Engine engine)
         {
             Engine = engine;
             Captures = new();
+            Params = new();
             Scopes = new();
             Push();
         }
 
-        internal Call(Call parent, Scope captures)
+        internal Call(Call parent, Scope captures, Scope @params)
             : this(parent.Engine)
         {
             _stack = parent._stack + 1;
@@ -36,9 +36,10 @@ namespace Bloc.Memory
                 throw new Throw("The stack limit was reached");
 
             Captures = captures;
+            Params = @params;
         }
 
-        internal Call(Call parent, Scope captures, Func recall, Array @params)
+        internal Call(Call parent, Scope captures, Scope @params, Func recall)
             : this(parent.Engine)
         {
             _stack = parent._stack + 1;
@@ -47,9 +48,9 @@ namespace Bloc.Memory
                 throw new Throw("The stack limit was reached");
 
             Captures = captures;
+            Params = @params;
 
             Recall = new HeapVariable(false, recall);
-            Params = new HeapVariable(false, @params);
         }
 
         internal void Push() => Scopes.Push(new());
@@ -59,7 +60,6 @@ namespace Bloc.Memory
         internal void Destroy()
         {
             Recall?.Delete();
-            Params?.Delete();
 
             foreach (var scope in Scopes)
                 scope.Dispose();
@@ -70,6 +70,7 @@ namespace Bloc.Memory
             Stack<StackVariable> stack;
 
             Variable? local = null;
+            Variable? param = null;
             Variable? nonLocal = null;
             Variable? global = null;
 
@@ -82,13 +83,16 @@ namespace Bloc.Memory
                 }
             }
 
+            if (Params.Variables.TryGetValue(name, out stack))
+                param = stack.Peek();
+
             if (Captures.Variables.TryGetValue(name, out stack))
                 nonLocal = stack.Peek();
 
             if (Engine.GlobalScope.Variables.TryGetValue(name, out stack))
                 global = stack.Peek();
 
-            return new UnresolvedPointer(name, local, nonLocal, global);
+            return new UnresolvedPointer(name, local, param, nonLocal, global);
         }
 
         internal VariablePointer Set(bool mask, bool mutable, string name, Value value)
