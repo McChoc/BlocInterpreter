@@ -31,7 +31,7 @@ namespace Bloc.Scanners
 
             if (tokens.Count >= 2 &&
                 tokens[0] is (TokenType.Identifier, _) &&
-                tokens[1] is (TokenType.Operator, "::"))
+                tokens[1] is (TokenType.Operator, ":"))
             {
                 scanner.GetNextToken();
                 scanner.GetNextToken();
@@ -53,6 +53,7 @@ namespace Bloc.Scanners
                 (TokenType.Operator, "/") => GetCommandStatement(scanner),
                 (TokenType.Operator, ";") => GetEmptyStatement(scanner),
                 (TokenType.Keyword, "pass") => GetPassStatement(scanner),
+                (TokenType.Keyword, "exec") => GetExecStatement(scanner),
                 (TokenType.Keyword, "var") => GetVarStatement(scanner),
                 (TokenType.Keyword, "new var") => GetNewVarStatement(scanner),
                 (TokenType.Keyword, "const") => GetConstStatement(scanner),
@@ -108,6 +109,16 @@ namespace Bloc.Scanners
                 throw new SyntaxError(line[0].Start, line[^1].End, "unexpected token");
 
             return new EmptyStatement();
+        }
+
+        private static Statement GetExecStatement(TokenScanner scanner)
+        {
+            var line = GetLine(scanner).GetRange(1..);
+
+            if (line.Count == 0)
+                throw new SyntaxError(0, 0, "Missing expression");
+
+            return new ExecStatement(ExpressionParser.Parse(line));
         }
 
         private static Statement GetVarStatement(TokenScanner scanner)
@@ -475,6 +486,9 @@ namespace Bloc.Scanners
             while (scanner.HasNextToken())
             {
                 var token = scanner.GetNextToken();
+
+                if (token is (TokenType.Operator, ":"))
+                    throw new SyntaxError(token.Start, token.End, "Unexpected symbol ':'");
 
                 if (token is (TokenType.Operator, ";"))
                     return line;

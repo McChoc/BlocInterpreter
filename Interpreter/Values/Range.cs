@@ -56,7 +56,7 @@ namespace Bloc.Values
 
         internal override string ToString(int _)
         {
-            return $"{Start}..{End}{(Step != 1 ? $"..{Step}" : "")}";
+            return $"{Start}:{End}{(Step != 1 ? $":{Step}" : "")}";
         }
 
         public override int GetHashCode()
