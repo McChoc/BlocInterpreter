@@ -48,8 +48,7 @@ namespace Bloc
                 {
                     var content = TokenScanner.Scan(tokens[i]).ToList();
 
-                    var args = new List<IExpression>();
-                    var kwargs = new Dictionary<string, IExpression>();
+                    var arguments = new List<Invocation.Argument>();
 
                     if (content.Count > 0)
                     {
@@ -57,7 +56,15 @@ namespace Bloc
                         {
                             if (part.Count == 0)
                             {
-                                args.Add(new VoidLiteral());
+                                arguments.Add(new(null, Invocation.ArgumentType.Positional, new VoidLiteral()));
+                            }
+                            else if (part[0] is (TokenType.Operator, ".."))
+                            {
+                                arguments.Add(new(null, Invocation.ArgumentType.UnpackedArray, Parse(part.GetRange(1..))));
+                            }
+                            else if (part[0] is (TokenType.Operator, "..."))
+                            {
+                                arguments.Add(new(null, Invocation.ArgumentType.UnpackedStruct, Parse(part.GetRange(1..))));
                             }
                             else
                             {
@@ -65,7 +72,7 @@ namespace Bloc
 
                                 if (index == -1)
                                 {
-                                    args.Add(Parse(part));
+                                    arguments.Add(new(null, Invocation.ArgumentType.Positional, Parse(part)));
                                 }
                                 else
                                 {
@@ -80,19 +87,19 @@ namespace Bloc
                                     if (keyExpr is not Identifier identifier)
                                         throw new SyntaxError(0, 0, "Invalid identifier");
 
-                                    if (kwargs.ContainsKey(identifier.Name))
+                                    if (arguments.Any(x => x.Name == identifier.Name))
                                         throw new SyntaxError(0, 0, $"Parameter named {identifier.Name} cannot be specified multiple times");
 
                                     if (valueTokens.Count == 0)
                                         throw new SyntaxError(0, 0, "Missing value");
 
-                                    kwargs.Add(identifier.Name, Parse(valueTokens));
+                                    arguments.Add(new(identifier.Name, Invocation.ArgumentType.Named, Parse(valueTokens)));
                                 }
                             }
                         }
                     }
 
-                    expression = new Invocation(expression, args, kwargs);
+                    expression = new Invocation(expression, arguments);
                 }
                 else
                 {

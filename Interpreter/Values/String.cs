@@ -35,7 +35,7 @@ namespace Bloc.Values
                 {
                     (Number number, String format) => new(number.Value.ToString(format.Value, CultureInfo.InvariantCulture)), // TODO check formats
                     (String separator, Array array) => new(string.Join(separator.Value, array.Variables.Select(x => ImplicitCast(x.Value).Value))),
-                    (var value, Number count) => new(string.Concat(Enumerable.Repeat(value.ToString(), count.GetInt()))),
+                    (var value, Number count) => new(string.Concat(Enumerable.Repeat(ImplicitCast(value).Value, count.GetInt()))),
                     _ => throw new Throw($"'string' does not have a constructor that takes a '{values[0].GetType().ToString().ToLower()}' and a '{values[1].GetType().ToString().ToLower()}'")
                 },
                 _ => throw new Throw($"'string' does not have a constructor that takes {values.Count} arguments")
