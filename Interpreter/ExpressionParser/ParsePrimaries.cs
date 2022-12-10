@@ -56,10 +56,16 @@ namespace Bloc
                         {
                             if (part.Count == 0)
                             {
+                                if (arguments.Count > 0 && arguments[^1].Type is Invocation.ArgumentType.Named or Invocation.ArgumentType.UnpackedStruct)
+                                    throw new SyntaxError(0, 0, "All the positional arguments must apear before any named arguments");
+
                                 arguments.Add(new(null, Invocation.ArgumentType.Positional, new VoidLiteral()));
                             }
                             else if (part[0] is (TokenType.Operator, ".."))
                             {
+                                if (arguments.Count > 0 && arguments[^1].Type is Invocation.ArgumentType.Named or Invocation.ArgumentType.UnpackedStruct)
+                                    throw new SyntaxError(part[0].Start, part[^1].End, "All the positional arguments must apear before any named arguments");
+
                                 arguments.Add(new(null, Invocation.ArgumentType.UnpackedArray, Parse(part.GetRange(1..))));
                             }
                             else if (part[0] is (TokenType.Operator, "..."))
@@ -72,6 +78,9 @@ namespace Bloc
 
                                 if (index == -1)
                                 {
+                                    if (arguments.Count > 0 && arguments[^1].Type is Invocation.ArgumentType.Named or Invocation.ArgumentType.UnpackedStruct)
+                                        throw new SyntaxError(part[0].Start, part[^1].End, "All the positional arguments must apear before any named arguments");
+
                                     arguments.Add(new(null, Invocation.ArgumentType.Positional, Parse(part)));
                                 }
                                 else
@@ -86,9 +95,6 @@ namespace Bloc
 
                                     if (keyExpr is not Identifier identifier)
                                         throw new SyntaxError(0, 0, "Invalid identifier");
-
-                                    if (arguments.Any(x => x.Name == identifier.Name))
-                                        throw new SyntaxError(0, 0, $"Parameter named {identifier.Name} cannot be specified multiple times");
 
                                     if (valueTokens.Count == 0)
                                         throw new SyntaxError(0, 0, "Missing value");

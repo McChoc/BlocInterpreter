@@ -5,7 +5,6 @@ using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Statements;
 using Bloc.Utils;
-using Bloc.Variables;
 
 namespace Bloc.Values
 {
@@ -15,16 +14,27 @@ namespace Bloc.Values
         private readonly CaptureMode _mode;
 
         private readonly Scope _captures;
+        private readonly Parameter? _argsContainer;
+        private readonly Parameter? _kwargsContainer;
         private readonly List<Parameter> _parameters;
         private readonly List<Statement> _statements;
         private readonly Dictionary<string, Label> _labels;
 
-        internal Func(FunctionType type, CaptureMode mode, Scope captures, List<Parameter> parameters, List<Statement> statements)
+        internal Func(
+            FunctionType type,
+            CaptureMode mode,
+            Scope captures,
+            Parameter? argsContainer,
+            Parameter? kwargsContainer,
+            List<Parameter> parameters,
+            List<Statement> statements)
         {
             _type = type;
             _mode = mode;
 
             _captures = captures;
+            _argsContainer = argsContainer;
+            _kwargsContainer = kwargsContainer;
             _parameters = parameters;
             _statements = statements;
 
@@ -37,10 +47,10 @@ namespace Bloc.Values
         {
             return values.Count switch
             {
-                0 => new(FunctionType.Synchronous, CaptureMode.None, new(), new(), new()),
+                0 => new(FunctionType.Synchronous, CaptureMode.None, new(), null, null, new(), new()),
                 1 => values[0] switch
                 {
-                    Null => new(FunctionType.Synchronous, CaptureMode.None, new(), new(), new()),
+                    Null => new(FunctionType.Synchronous, CaptureMode.None, new(), null, null, new(), new()),
                     Func func => func,
                     _ => throw new Throw($"'func' does not have a constructor that takes a '{values[0].GetType().ToString().ToLower()}'")
                 },
@@ -94,38 +104,75 @@ namespace Bloc.Values
         {
             var @params = new Scope();
 
+            Array? restArray = null;
+            Struct? restStruct = null;
+
+            if (_argsContainer is not null)
+                @params.Add(new(true, _argsContainer.Name, restArray = new(), @params));
+
+            if (_kwargsContainer is not null)
+                @params.Add(new(true, _kwargsContainer.Name, restStruct = new(), @params));
+
             var remainingParameters = new List<Parameter>(_parameters);
 
             foreach (var (name, value) in kwargs)
             {
-                if (!_parameters.Any(x => x.Name == name))
+                if (remainingParameters.Any(x => x.Name == name))
+                {
+                    var parameter = remainingParameters.First(x => x.Name == name);
+                    remainingParameters.RemoveAll(x => x.Name == name);
+
+                    var val = value != Void.Value
+                        ? value
+                        : parameter.Value
+                        ?? throw new Throw($"A non-void value must be provided for the required parameter '{name}'");
+
+                    @params.Add(new(true, name, value, @params));
+                }
+                else if (restStruct is not null)
+                {
+                    if (value != Void.Value)
+                        restStruct.Variables.Add(name, new(name, value, restStruct));
+                }
+                else
+                {
                     throw new Throw($"This function does not have a parameter named '{name}'");
-
-                remainingParameters.RemoveAll(x => x.Name == name);
-
-                @params.Add(new(true, name, value, @params));
+                }
             }
 
-            foreach (var arg in args)
+            foreach (var value in args)
             {
-                if (remainingParameters.Count == 0)
-                    throw new Throw($"This function does not take {args.Count + kwargs.Count} arguments");
+                if (remainingParameters.Count > 0)
+                {
+                    var parameter = remainingParameters[0];
+                    remainingParameters.RemoveAt(0);
 
-                var parameter = remainingParameters[0];
-                remainingParameters.RemoveAt(0);
+                    var name = parameter.Name;
 
-                var name = parameter.Name;
+                    var val = value != Void.Value
+                        ? value
+                        : parameter.Value
+                        ?? throw new Throw($"A non-void value must be provided for the required parameter '{name}'");
 
-                var value = arg != Void.Value
-                    ? arg
-                    : parameter.Value;
-
-                @params.Add(new(true, name, value, @params));
+                    @params.Add(new(true, name, val, @params));
+                }
+                else if (restArray is not null)
+                {
+                    if (value != Void.Value)
+                        restArray.Variables.Add(new(value, restArray));
+                }
+                else
+                {
+                    throw new Throw($"This function does not take this many positional arguments");
+                }
             }
 
             foreach (var parameter in remainingParameters)
             {
-                @params.Add(new(true, parameter.Name, parameter.Value, @params));
+                if (parameter.Value is not null)
+                    @params.Add(new(true, parameter.Name, parameter.Value, @params));
+                else
+                    throw new Throw($"A non-void value must be provided for the required parameter '{parameter.Name}'");
             }
 
             var call = new Call(parent, _captures, @params, this);
@@ -187,15 +234,15 @@ namespace Bloc.Values
         internal sealed record Parameter
         {
             internal string Name { get; }
-            internal Value Value { get; }
+            internal Value? Value { get; }
 
-            internal Parameter(string name, Value value)
+            internal Parameter(string name, Value? value)
             {
                 Name = name;
                 Value = value;
             }
 
-            internal void Deconstruct(out string name, out Value value)
+            internal void Deconstruct(out string name, out Value? value)
             {
                 name = Name;
                 value = Value;

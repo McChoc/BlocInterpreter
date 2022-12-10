@@ -42,7 +42,10 @@ namespace Bloc.Operators
                         args.Add(val);
                         break;
                     case ArgumentType.Named:
-                        kwargs.Add(argument.Name!, val);
+                        if (!kwargs.ContainsKey(argument.Name!))
+                            kwargs.Add(argument.Name!, val);
+                        else
+                            throw new Throw($"Parameter named '{argument.Name!}' cannot be specified multiple times");
                         break;
                     case ArgumentType.UnpackedArray:
                         if (val is Array array)
@@ -53,7 +56,10 @@ namespace Bloc.Operators
                     case ArgumentType.UnpackedStruct:
                         if (val is Struct @struct)
                             foreach (var (key, variable) in @struct.Variables)
-                                kwargs.Add(key, variable.Value);
+                                if (!kwargs.ContainsKey(key))
+                                    kwargs.Add(key, variable.Value);
+                                else
+                                    throw new Throw($"Parameter named '{key}' cannot be specified multiple times");
                         else
                             throw new Throw("Only a struct can be unpacked using the struct unpack syntax");
                         break;

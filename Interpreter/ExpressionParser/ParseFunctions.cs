@@ -53,44 +53,88 @@ namespace Bloc
                 {
                     var parameters = new List<FuncLiteral.Parameter>();
 
+                    FuncLiteral.Parameter? argsContainer = null;
+                    FuncLiteral.Parameter? kwargsContainer = null;
+
                     if (paramTokens!.Count > 0)
                     {
                         foreach (var part in paramTokens.Split(x => x is (TokenType.Operator, ",")))
                         {
                             if (part.Count == 0)
-                                throw new SyntaxError(0, 0, "Unexpected symbol ','");
-
-                            IExpression name, value;
-
-                            var index = part.FindIndex(x => x is (TokenType.Operator, "="));
-
-                            if (index == -1)
                             {
-                                name = Parse(part);
-                                value = new NullLiteral();
+                                throw new SyntaxError(0, 0, "Unexpected symbol ','");
+                            }
+                            else if (part[0] is (TokenType.Operator, ".."))
+                            {
+                                if (argsContainer is not null)
+                                    throw new SyntaxError(0, 0, "The array unpack syntax may only be used once in a function literal");
+
+                                if (kwargsContainer is not null)
+                                    throw new SyntaxError(0, 0, "The array unpack syntax must be used before the struct unpack syntax");
+
+                                var name = Parse(part.GetRange(1..));
+
+                                if (name is not Identifier identifier)
+                                    throw new SyntaxError(0, 0, "Invalid identifier");
+
+                                if (parameters.Any(x => x.Name == identifier.Name))
+                                    throw new SyntaxError(part[0].Start, part[^1].End, "Some parameters are duplicates.");
+
+                                argsContainer = new(identifier.Name, null);
+                            }
+                            else if (part[0] is (TokenType.Operator, "..."))
+                            {
+                                if (kwargsContainer is not null)
+                                    throw new SyntaxError(0, 0, "The struct unpack syntax may only be used once in a function literal");
+
+                                var name = Parse(part.GetRange(1..));
+
+                                if (name is not Identifier identifier)
+                                    throw new SyntaxError(0, 0, "Invalid identifier");
+
+                                if (parameters.Any(x => x.Name == identifier.Name))
+                                    throw new SyntaxError(part[0].Start, part[^1].End, "Some parameters are duplicates.");
+
+                                kwargsContainer = new(identifier.Name, null);
                             }
                             else
                             {
-                                var nameTokens = part.GetRange(..index);
-                                var valueTokens = part.GetRange((index + 1)..);
+                                if (argsContainer is not null || kwargsContainer is not null)
+                                    throw new SyntaxError(0, 0, "All the parameters must apear before any unpack syntax");
 
-                                if (nameTokens.Count == 0)
-                                    throw new SyntaxError(0, 0, "Missing identifier");
+                                IExpression name;
+                                IExpression? defaultValue;
 
-                                if (valueTokens.Count == 0)
-                                    throw new SyntaxError(0, 0, "Missing value");
+                                var index = part.FindIndex(x => x is (TokenType.Operator, "="));
 
-                                name = Parse(nameTokens);
-                                value = Parse(valueTokens);
+                                if (index == -1)
+                                {
+                                    name = Parse(part);
+                                    defaultValue = null;
+                                }
+                                else
+                                {
+                                    var nameTokens = part.GetRange(..index);
+                                    var valueTokens = part.GetRange((index + 1)..);
+
+                                    if (nameTokens.Count == 0)
+                                        throw new SyntaxError(0, 0, "Missing identifier");
+
+                                    if (valueTokens.Count == 0)
+                                        throw new SyntaxError(0, 0, "Missing value");
+
+                                    name = Parse(nameTokens);
+                                    defaultValue = Parse(valueTokens);
+                                }
+
+                                if (name is not Identifier identifier)
+                                    throw new SyntaxError(0, 0, "Invalid identifier");
+
+                                if (parameters.Any(x => x.Name == identifier.Name))
+                                    throw new SyntaxError(part[0].Start, part[^1].End, "Some parameters are duplicates.");
+
+                                parameters.Add(new(identifier.Name, defaultValue));
                             }
-
-                            if (name is not Identifier identifier)
-                                throw new SyntaxError(0, 0, "Invalid identifier");
-
-                            if (parameters.Any(x => x.Name == identifier.Name))
-                                throw new SyntaxError(part[0].Start, part[^1].End, "Some parameters are duplicates.");
-
-                            parameters.Add(new(identifier.Name, value));
                         }
                     }
 
@@ -150,7 +194,7 @@ namespace Bloc
                         j--;
                     }
 
-                    var func = new FuncLiteral(type, mode, parameters, statements!);
+                    var func = new FuncLiteral(type, mode, argsContainer, kwargsContainer, parameters, statements!);
 
                     tokens.Insert(j + 1, new Literal(0, 0, func));
 

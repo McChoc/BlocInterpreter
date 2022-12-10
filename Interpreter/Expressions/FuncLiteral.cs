@@ -11,13 +11,23 @@ namespace Bloc.Expressions
     {
         private readonly FunctionType _type;
         private readonly CaptureMode _mode;
+        private readonly Parameter? _argsContainer;
+        private readonly Parameter? _kwargsContainer;
         private readonly List<Parameter> _parameters;
         private readonly List<Statement> _statements;
 
-        internal FuncLiteral(FunctionType type, CaptureMode mode, List<Parameter> parameters, List<Statement> statements)
+        internal FuncLiteral(
+            FunctionType type,
+            CaptureMode mode,
+            Parameter? argsContainer,
+            Parameter? kwargsContainer,
+            List<Parameter> parameters,
+            List<Statement> statements)
         {
             _type = type;
             _mode = mode;
+            _argsContainer = argsContainer;
+            _kwargsContainer = kwargsContainer;
             _parameters = parameters;
             _statements = statements;
         }
@@ -31,11 +41,19 @@ namespace Bloc.Expressions
                 _ => new()
             };
 
+            var argsContainer = _argsContainer is not null
+                ? new Func.Parameter(_argsContainer.Name, null)
+                : null;
+
+            var kwargsContainer = _kwargsContainer is not null
+                ? new Func.Parameter(_kwargsContainer.Name, null)
+                : null;
+
             var parameters = _parameters
-                .Select(x => new Func.Parameter(x.Name, x.Expression.Evaluate(call).Value))
+                .Select(x => new Func.Parameter(x.Name, x.Expression?.Evaluate(call).Value))
                 .ToList();
 
-            return new Func(_type, _mode, captures, parameters, _statements);
+            return new Func(_type, _mode, captures, argsContainer, kwargsContainer, parameters, _statements);
         }
 
         public override int GetHashCode()
@@ -55,9 +73,9 @@ namespace Bloc.Expressions
         internal sealed record Parameter
         {
             internal string Name { get; }
-            internal IExpression Expression { get; }
+            internal IExpression? Expression { get; }
 
-            internal Parameter(string name, IExpression expression)
+            internal Parameter(string name, IExpression? expression)
             {
                 Name = name;
                 Expression = expression;
