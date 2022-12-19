@@ -4,6 +4,7 @@ namespace Bloc.Variables
 {
     internal sealed class TupleVariable : Variable
     {
-        internal TupleVariable(Value value) : base(value) { }
+        internal TupleVariable(Value value)
+            : base(false, value) { }
     }
 }

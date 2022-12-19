@@ -92,6 +92,24 @@ namespace Bloc.Commands
                     throw new Throw("'clear' does not take arguments.\nType '/help clear' to see its usage");
 
                 call.Engine.Clear();
+
+                return Void.Value;
+            }
+        );
+
+        public static Command Exit => new(
+            "exit",
+
+            "exit\n" +
+            "Exits the application",
+
+            (args, _, call) =>
+            {
+                if (args.Length != 0)
+                    throw new Throw("'exit' does not take arguments.\nType '/help exit' to see its usage.");
+
+                call.Engine.Exit();
+
                 return Void.Value;
             }
         );

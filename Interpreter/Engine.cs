@@ -14,16 +14,11 @@ namespace Bloc
 {
     public class Engine
     {
-        private Engine()
-        {
-            GlobalCall = new Call(this);
-            GlobalScope = GlobalCall.Scopes.First();
-        }
-
         internal Dictionary<string, Command> Commands { get; set; } = null!;
 
         public Action<string> Log { get; private set; } = null!;
         public Action Clear { get; private set; } = null!;
+        public Action Exit { get; private set; } = null!;
 
         internal int StackLimit { get; set; }
         internal int LoopLimit { get; set; }
@@ -32,6 +27,12 @@ namespace Bloc
 
         public Call GlobalCall { get; }
         public Scope GlobalScope { get; }
+
+        private Engine()
+        {
+            GlobalCall = new Call(this);
+            GlobalScope = GlobalCall.Scopes.First();
+        }
 
         public static void Compile(string code, out IExpression? expression, out List<Statement> statements)
         {
@@ -104,8 +105,9 @@ namespace Bloc
 
             private Action<string> _log = _ => { };
             private Action _clear = () => { };
+            private Action _exit = () => { };
 
-            private int _hopLimit = 100;
+            private int _hopLimit = 1000;
             private int _jumpLimit = 1000;
             private int _loopLimit = 1000;
             private int _stackLimit = 1000;
@@ -148,6 +150,12 @@ namespace Bloc
                 return this;
             }
 
+            public Builder OnExit(Action actionn)
+            {
+                _exit = actionn;
+                return this;
+            }
+
             public Builder AddCommand(Command command)
             {
                 _commands.Add(command.Name, command);
@@ -161,6 +169,7 @@ namespace Bloc
                     Commands = _commands,
                     Log = _log,
                     Clear = _clear,
+                    Exit = _exit,
                     StackLimit = _stackLimit,
                     LoopLimit = _loopLimit,
                     JumpLimit = _jumpLimit,

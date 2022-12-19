@@ -20,6 +20,19 @@ namespace Bloc.Values
         private readonly List<Statement> _statements;
         private readonly Dictionary<string, Label> _labels;
 
+        internal Func()
+        {
+            _type = FunctionType.Synchronous;
+            _mode = CaptureMode.None;
+
+            _captures = new();
+            _argsContainer = null;
+            _kwargsContainer = null;
+            _parameters = new();
+            _statements = new();
+            _labels = new();
+        }
+
         internal Func(
             FunctionType type,
             CaptureMode mode,
@@ -47,10 +60,10 @@ namespace Bloc.Values
         {
             return values.Count switch
             {
-                0 => new(FunctionType.Synchronous, CaptureMode.None, new(), null, null, new(), new()),
+                0 => new(),
                 1 => values[0] switch
                 {
-                    Null => new(FunctionType.Synchronous, CaptureMode.None, new(), null, null, new(), new()),
+                    Null => new(),
                     Func func => func,
                     _ => throw new Throw($"'func' does not have a constructor that takes a '{values[0].GetType().ToString().ToLower()}'")
                 },
@@ -185,7 +198,7 @@ namespace Bloc.Values
             };
         }
 
-        private Value Execute(Call call)
+        internal Value Execute(Call call)
         {
             try
             {

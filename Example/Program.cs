@@ -15,20 +15,8 @@ bool running = true;
 var engine = new Engine.Builder(args)
     .OnLog(Console.WriteLine)
     .OnClear(Console.Clear)
+    .OnExit(() => running = false)
     .AddDefaultCommands()
-    .AddCommand(new(
-        "exit",
-        "exit\n" +
-        "exits the application",
-        (args, _, _) =>
-        {
-            if (args.Length != 0)
-                throw new Throw("'exit' does not take arguments.\nType '/help exit' to see its usage.");
-
-            running = false;
-
-            return Void.Value;
-        }))
     .AddCommand(new(
         "delete_global",
         "delete_global\n" +

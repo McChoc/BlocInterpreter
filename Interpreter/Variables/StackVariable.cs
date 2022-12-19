@@ -1,5 +1,4 @@
 ﻿using Bloc.Memory;
-using Bloc.Results;
 using Bloc.Values;
 
 namespace Bloc.Variables
@@ -8,23 +7,13 @@ namespace Bloc.Variables
     {
         private readonly Scope _scope;
 
-        internal StackVariable(bool mutable, string name, Value value, Scope scope) : base(value)
-        {
-            Mutable = mutable;
-            Name = name;
-            _scope = scope;
-        }
-
-        internal bool Mutable { get; }
-
         internal string Name { get; }
 
-        public override Value Value
+        internal StackVariable(bool mutable, string name, Value value, Scope scope)
+            : base(mutable, value)
         {
-            get => _value;
-            set => base.Value = Mutable
-                ? value
-                : throw new Throw("Cannot assign a value to a readonly variable");
+            _scope = scope;
+            Name = name;
         }
 
         public override void Delete()

@@ -265,6 +265,8 @@ namespace Bloc.Scanners
                 "nan" => new NumberLiteral(double.NaN),
                 "infinity" => new NumberLiteral(double.PositiveInfinity),
 
+                "void_t" => new TypeLiteral(ValueType.Void),
+                "null_t" => new TypeLiteral(ValueType.Null),
                 "bool" => new TypeLiteral(ValueType.Bool),
                 "number" => new TypeLiteral(ValueType.Number),
                 "range" => new TypeLiteral(ValueType.Range),

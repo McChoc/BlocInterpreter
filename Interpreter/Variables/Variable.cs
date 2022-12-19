@@ -7,24 +7,34 @@ namespace Bloc.Variables
 {
     public abstract class Variable : IVariable
     {
-        protected Value _value;
+        private readonly bool _mutable;
 
-        public Variable(Value value)
+        private Value _value;
+
+        internal List<Pointer> Pointers { get; } = new();
+
+        public Value Value
+        {
+            get => _value;
+            set
+            {
+                if (value is Void)
+                    throw new Throw("'void' cannot be assigned to a variable");
+
+                if (!_mutable)
+                    throw new Throw("Cannot assign a value to a readonly variable");
+
+                _value = value;
+            }
+        }
+
+        public Variable(bool mutable, Value value)
         {
             if (value is Void)
                 throw new Throw("'void' cannot be assigned to a variable");
 
+            _mutable = mutable;
             _value = value;
-        }
-
-        internal List<Pointer> Pointers { get; } = new();
-
-        public virtual Value Value
-        {
-            get => _value;
-            set => _value = value is not Void
-                ? value
-                : throw new Throw("'void' cannot be assigned to a variable");
         }
 
         public virtual void Delete()
