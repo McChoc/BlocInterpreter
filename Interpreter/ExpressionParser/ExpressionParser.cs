@@ -8,11 +8,11 @@ using Bloc.Tokens;
 
 namespace Bloc
 {
-    internal delegate IExpression ParseDelegate(List<Token> tokens, int precedence);
-
     internal static partial class ExpressionParser
     {
-        private static readonly ParseDelegate[] operations =
+        private delegate IExpression ParseCallback(List<Token> tokens, int precedence);
+
+        private static readonly ParseCallback[] operations =
         {
             ParsePrimaries,
             ParseUnaries,
