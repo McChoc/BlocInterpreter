@@ -1,15 +1,14 @@
-﻿namespace Bloc.Statements
+﻿namespace Bloc.Statements;
+
+internal sealed record Label
 {
-    internal sealed record Label
+    internal int Index { get; }
+
+    internal int Count { get; set; }
+
+    internal Label(int index)
     {
-        internal Label(int index)
-        {
-            Index = index;
-            Count = 0;
-        }
-
-        internal int Index { get; }
-
-        internal int Count { get; set; }
+        Index = index;
+        Count = 0;
     }
 }

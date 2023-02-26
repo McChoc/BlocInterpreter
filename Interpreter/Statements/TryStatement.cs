@@ -1,157 +1,144 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
-using Bloc.Utils;
 using Bloc.Values;
 
-namespace Bloc.Statements
+namespace Bloc.Statements;
+
+internal sealed class TryStatement : Statement
 {
-    internal sealed class TryStatement : Statement
+    internal required Statement Try { get; init; }
+    internal required List<Catch> Catches { get; init; }
+    internal required Statement? Finally { get; init; }
+
+    internal override IEnumerable<Result> Execute(Call call)
     {
-        internal List<Statement> Try { get; set; } = new();
-        internal List<Catch> Catches { get; set; } = new();
-        internal List<Statement> Finally { get; set; } = new();
+        Result? mainResult = null;
 
-        internal override IEnumerable<Result> Execute(Call call)
+        using (call.MakeScope())
         {
-            Result? result = null;
-
+            foreach (var result in ExecuteStatement(Try, call))
             {
-                var labels = StatementUtil.GetLabels(Try);
-
-                call.Push();
-
-                foreach (var r in ExecuteBlock(Try, labels, call))
+                if (result is Yield)
                 {
-                    if (r is not Yield)
-                    {
-                        result = r;
-                        break;
-                    }
-
-                    yield return r;
+                    yield return result;
                 }
-
-                call.Pop();
-            }
-
-            if (result is Throw @throw)
-            {
-                foreach (var @catch in Catches)
+                else
                 {
-                    bool caugth;
+                    mainResult = result;
+                    break;
+                }
+            }
+        }
 
-                    call.Push();
+        if (mainResult is Throw @throw)
+        {
+            foreach (var @catch in Catches)
+            {
+                using (call.MakeScope())
+                {
                     call.Set(true, true, @catch.Name, @throw.Value);
 
-                    if (@catch.Expression is null)
+                    if (@catch.Expression is not null)
                     {
-                        caugth = true;
-                    }
-                    else
-                    {
-                        if (!Bool.TryImplicitCast(@catch.Expression.Evaluate(call).Value, out var @bool))
+                        if (Bool.TryImplicitCast(@catch.Expression.Evaluate(call).Value, out var @bool))
                         {
-                            yield return new Throw("Cannot implicitly convert to bool");
-                            yield break;
+                            if (!@bool.Value)
+                                continue;
                         }
-
-                        caugth = @bool.Value;
-                    }
-
-                    if (!caugth)
-                    {
-                        call.Pop();
-                    }
-                    else
-                    {
-                        result = null;
-
-                        var labels = StatementUtil.GetLabels(@catch.Statements);
-
-                        foreach (var r in ExecuteBlock(@catch.Statements, labels, call))
+                        else
                         {
-                            if (r is not Yield)
-                            {
-                                result = r;
-                                break;
-                            }
-
-                            yield return r;
+                            mainResult = new Throw("Cannot implicitly convert to bool");
+                            break;
                         }
-
-                        call.Pop();
-                        break;
                     }
+
+                    mainResult = null;
+
+                    foreach (var result in ExecuteStatement(@catch.Statement, call))
+                    {
+                        if (result is Yield)
+                        {
+                            yield return result;
+                        }
+                        else
+                        {
+                            mainResult = result;
+                            break;
+                        }
+                    }
+
+                    break;
                 }
             }
+        }
 
+        if (Finally is not null)
+        {
+            using (call.MakeScope())
             {
-                var labels = StatementUtil.GetLabels(Finally);
-
-                call.Push();
-
-                foreach (var r in ExecuteBlock(Finally, labels, call))
+                foreach (var result in ExecuteStatement(Finally, call))
                 {
-                    if (r is not Yield)
+                    if (result is Yield)
                     {
-                        result = r;
+                        yield return result;
+                    }
+                    else
+                    {
+                        mainResult = result;
                         break;
                     }
-
-                    yield return r;
                 }
-
-                call.Pop();
             }
+        }
 
-            if (result is not null)
-                yield return result;
+        if (mainResult is not null)
+            yield return mainResult;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Label, Try, Catches.Count, Finally);
+    }
+
+    public override bool Equals(object other)
+    {
+        return other is TryStatement statement &&
+            Label == statement.Label &&
+            Try == statement.Try &&
+            Catches.SequenceEqual(statement.Catches) &&
+            Finally == statement.Finally;
+    }
+
+    internal sealed class Catch
+    {
+        internal string Name { get; set; }
+
+        internal IExpression? Expression { get; set; }
+
+        internal Statement Statement { get; set; }
+
+        internal Catch(string name, IExpression? expression, Statement statement)
+        {
+            Name = name;
+            Expression = expression;
+            Statement = statement;
         }
 
         public override int GetHashCode()
         {
-            return System.HashCode.Combine(Label, Try.Count, Catches.Count, Finally.Count);
+            return HashCode.Combine(Name, Expression, Statement);
         }
 
         public override bool Equals(object other)
         {
-            return other is TryStatement statement &&
-                Label == statement.Label &&
-                Try.SequenceEqual(statement.Try) &&
-                Catches.SequenceEqual(statement.Catches) &&
-                Finally.SequenceEqual(statement.Finally);
-        }
-
-        internal sealed class Catch
-        {
-            internal string Name { get; set; }
-
-            internal IExpression? Expression { get; set; }
-
-            internal List<Statement> Statements { get; set; }
-
-            internal Catch(string name, IExpression? expression, List<Statement> statements)
-            {
-                Name = name;
-                Expression = expression;
-                Statements = statements;
-            }
-
-            public override int GetHashCode()
-            {
-                return System.HashCode.Combine(Name, Expression, Statements.Count);
-            }
-
-            public override bool Equals(object other)
-            {
-                return other is Catch @catch &&
-                       Name == @catch.Name &&
-                       Equals(Expression, @catch.Expression) &&
-                       Statements.SequenceEqual(@catch.Statements);
-            }
+            return other is Catch @catch &&
+                Name == @catch.Name &&
+                Equals(Expression, @catch.Expression) &&
+                Statement == @catch.Statement;
         }
     }
 }

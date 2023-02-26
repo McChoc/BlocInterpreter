@@ -1,100 +1,96 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System;
+using System.Collections.Generic;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
-using Bloc.Utils;
 using Bloc.Values;
 
-namespace Bloc.Statements
+namespace Bloc.Statements;
+
+internal sealed class RepeatStatement : Statement
 {
-    internal sealed class RepeatStatement : Statement
+    private readonly bool _checked;
+
+    internal required IExpression Expression { get; init; }
+    internal required Statement Statement { get; init; }
+
+    internal RepeatStatement(bool @checked)
     {
-        private bool @checked;
-        internal override bool Checked
+        _checked = @checked;
+    }
+
+    internal override IEnumerable<Result> Execute(Call call)
+    {
+        if (!EvaluateExpression(Expression, call, out var value, out var exception))
         {
-            get => @checked;
-            set => @checked = value;
+            yield return exception!;
+            yield break;
         }
 
-        internal IExpression Expression { get; set; } = null!;
-        internal List<Statement> Statements { get; set; } = null!;
-
-        internal override IEnumerable<Result> Execute(Call call)
+        if (!Number.TryImplicitCast(value!.Value, out var number))
         {
-            var (value, exception) = EvaluateExpression(Expression, call);
+            yield return new Throw("Cannot implicitly convert to number");
+            yield break;
+        }
 
-            if (exception is not null)
+        int loopCount = number.GetInt();
+
+        for (int i = 0; i < loopCount; i++)
+        {
+            if (_checked && i >= call.Engine.LoopLimit)
             {
-                yield return exception;
+                yield return new Throw("The loop limit was reached.");
                 yield break;
             }
 
-            if (!Number.TryImplicitCast(value!.Value, out var number))
+            bool @break = false;
+
+            using (call.MakeScope())
             {
-                yield return new Throw("Cannot implicitly convert to number");
-                yield break;
-            }
-
-            var loopCount = number.GetInt();
-
-            var labels = StatementUtil.GetLabels(Statements);
-
-            for (var i = 0; i < loopCount; i++)
-            {
-                if (Checked && i >= call.Engine.LoopLimit)
+                foreach (var result in ExecuteStatement(Statement, call))
                 {
-                    yield return new Throw("The loop limit was reached.");
-                    yield break;
-                }
+                    bool @continue = false;
 
-                try
-                {
-                    call.Push();
-
-                    foreach (var result in ExecuteBlock(Statements, labels, call))
+                    switch (result)
                     {
-                        switch (result)
-                        {
-                            case Continue:
-                                goto Continue;
+                        case Continue:
+                            @continue = true;
+                            break;
 
-                            case Break:
-                                goto Break;
+                        case Break:
+                            @break = true;
+                            break;
 
-                            case Yield:
-                                yield return result;
-                                break;
+                        case Yield:
+                            yield return result;
+                            break;
 
-                            default:
-                                yield return result;
-                                yield break;
-                        }
+                        default:
+                            yield return result;
+                            yield break;
                     }
-                }
-                finally
-                {
-                    call.Pop();
-                }
 
-            Continue:;
+                    if (@continue || @break)
+                        break;
+                }
             }
 
-        Break:;
+            if (@break)
+                break;
         }
+    }
 
-        public override int GetHashCode()
-        {
-            return System.HashCode.Combine(Label, Checked, Expression, Statements.Count);
-        }
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Label, _checked, Expression, Statement);
+    }
 
-        public override bool Equals(object other)
-        {
-            return other is RepeatStatement statement &&
-                Label == statement.Label &&
-                Checked == statement.Checked &&
-                Expression.Equals(statement.Expression) &&
-                Statements.SequenceEqual(statement.Statements);
-        }
+    public override bool Equals(object other)
+    {
+        return other is RepeatStatement statement &&
+            Label == statement.Label &&
+            _checked == statement._checked &&
+            Expression.Equals(statement.Expression) &&
+            Statement == statement.Statement;
     }
 }

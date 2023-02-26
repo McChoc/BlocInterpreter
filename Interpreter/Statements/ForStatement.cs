@@ -1,151 +1,127 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
-using Bloc.Utils;
 using Bloc.Values;
 
-namespace Bloc.Statements
+namespace Bloc.Statements;
+
+internal sealed class ForStatement : Statement
 {
-    internal sealed class ForStatement : Statement, IEnumerable
+    private readonly bool _checked;
+
+    internal required IExpression? Initialisation { get; init; }
+    internal required IExpression? Condition { get; init; }
+    internal required IExpression? Increment { get; init; }
+    internal required Statement Statement { get; init; }
+
+    internal ForStatement(bool @checked)
     {
-        private bool @checked;
-        internal override bool Checked
-        {
-            get => @checked;
-            set => @checked = value;
-        }
+        _checked = @checked;
+    }
 
-        internal IExpression? Initialisation { get; set; }
-        internal IExpression? Condition { get; set; }
-        internal IExpression? Increment { get; set; }
-        internal List<Statement> Statements { get; set; }
-
-        internal ForStatement(IExpression? initialisation, IExpression? condition, IExpression? increment)
+    internal override IEnumerable<Result> Execute(Call call)
+    {
+        using (call.MakeScope())
         {
-            Initialisation = initialisation;
-            Condition = condition;
-            Increment = increment;
-            Statements = new();
-        }
-
-        internal override IEnumerable<Result> Execute(Call call)
-        {
-            try
+            if (Initialisation is not null)
             {
-                call.Push();
-
-                if (Initialisation is not null)
+                if (!EvaluateExpression(Initialisation, call, out var _, out var exception))
                 {
-                    var (_, exception) = EvaluateExpression(Initialisation, call);
-                    
-                    if (exception is not null)
+                    yield return exception!;
+                    yield break;
+                }
+            }
+
+            int loopCount = 0;
+
+            while (true)
+            {
+                if (Condition is not null)
+                {
+                    if (!EvaluateExpression(Condition, call, out var value, out var exception))
                     {
-                        yield return exception;
+                        yield return exception!;
                         yield break;
                     }
+
+                    if (!Bool.TryImplicitCast(value!.Value, out var @bool))
+                    {
+                        yield return new Throw("Cannot implicitly convert to bool");
+                        yield break;
+                    }
+
+                    if (!@bool.Value)
+                        break;
                 }
 
-                var loopCount = 0;
-                var labels = StatementUtil.GetLabels(Statements);
-
-                while (true)
+                if (_checked && ++loopCount > call.Engine.LoopLimit)
                 {
-                    if (Condition is not null)
+                    yield return new Throw("The loop limit was reached.");
+                    yield break;
+                }
+
+                bool @break = false;
+
+                using (call.MakeScope())
+                {
+                    foreach (var result in ExecuteStatement(Statement, call))
                     {
-                        var (value, exception) = EvaluateExpression(Condition, call);
+                        bool @continue = false;
 
-                        if (exception is not null)
+                        switch (result)
                         {
-                            yield return exception;
-                            yield break;
+                            case Continue:
+                                @continue = true;
+                                break;
+
+                            case Break:
+                                @break = true;
+                                break;
+
+                            case Yield:
+                                yield return result;
+                                break;
+
+                            default:
+                                yield return result;
+                                yield break;
                         }
 
-                        if (!Bool.TryImplicitCast(value!.Value, out var @bool))
-                        {
-                            yield return new Throw("Cannot implicitly convert to bool");
-                            yield break;
-                        }
-
-                        if (!@bool.Value)
+                        if (@continue || @break)
                             break;
                     }
-
-                    if (Checked && ++loopCount > call.Engine.LoopLimit)
-                    {
-                        yield return new Throw("The loop limit was reached.");
-                        yield break;
-                    }
-
-                    try
-                    {
-                        call.Push();
-
-                        foreach (var result in ExecuteBlock(Statements, labels, call))
-                        {
-                            switch (result)
-                            {
-                                case Continue:
-                                    goto Continue;
-
-                                case Break:
-                                    goto Break;
-
-                                case Yield:
-                                    yield return result;
-                                    break;
-
-                                default:
-                                    yield return result;
-                                    yield break;
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        call.Pop();
-                    }
-
-                Continue:
-                    if (Increment is not null)
-                    {
-                        var (_, exception) = EvaluateExpression(Increment, call);
-
-                        if (exception is not null)
-                        {
-                            yield return exception;
-                            yield break;
-                        }
-                    }
                 }
 
-            Break:;
+                if (@break)
+                    break;
+
+                if (Increment is not null)
+                {
+                    if (!EvaluateExpression(Increment, call, out var _, out var exception))
+                    {
+                        yield return exception!;
+                        yield break;
+                    }
+                }
             }
-            finally
-            {
-                call.Pop();
-            }
         }
+    }
 
-        public override int GetHashCode()
-        {
-            return System.HashCode.Combine(Label, Checked, Initialisation, Condition, Increment, Statements.Count);
-        }
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Label, _checked, Initialisation, Condition, Increment, Statement);
+    }
 
-        public override bool Equals(object other)
-        {
-            return other is ForStatement statement &&
-                Label == statement.Label &&
-                Equals(Initialisation, statement.Initialisation) &&
-                Equals(Condition, statement.Condition) &&
-                Equals(Increment, statement.Increment) &&
-                Statements.SequenceEqual(statement.Statements);
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() => Statements.GetEnumerator();
-        internal void Add(Statement statement) => Statements.Add(statement);
-        internal void Add(List<Statement> statements) => Statements.AddRange(statements);
+    public override bool Equals(object other)
+    {
+        return other is ForStatement statement &&
+            Label == statement.Label &&
+            _checked == statement._checked &&
+            Equals(Initialisation, statement.Initialisation) &&
+            Equals(Condition, statement.Condition) &&
+            Equals(Increment, statement.Increment) &&
+            Statement == statement.Statement;
     }
 }

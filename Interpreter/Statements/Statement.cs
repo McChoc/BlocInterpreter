@@ -1,90 +1,128 @@
-﻿using System.Collections.Generic;
-using Bloc.Exceptions;
+﻿using System;
+using System.Collections.Generic;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
+using Bloc.Utils;
 using Bloc.Values;
 
-namespace Bloc.Statements
+namespace Bloc.Statements;
+
+public abstract class Statement
 {
-    public abstract class Statement
+    internal string? Label { get; set; }
+
+    internal abstract IEnumerable<Result> Execute(Call call);
+
+    public override int GetHashCode()
     {
-        internal string? Label { get; set; }
-        internal virtual bool Checked
+        return HashCode.Combine(Label);
+    }
+
+    public override bool Equals(object other)
+    {
+        return other is Statement statement &&
+            GetType() == statement.GetType() &&
+            Label == statement.Label;
+    }
+
+    public static bool operator ==(Statement? a, Statement? b) => Equals(a, b);
+
+    public static bool operator !=(Statement? a, Statement? b) => !Equals(a, b);
+
+    private protected static bool EvaluateExpression(IExpression expression, Call call, out IValue? value, out Throw? exception)
+    {
+        try
         {
-            get => throw new System.NotImplementedException();
-            set {
-                if (!value)
-                    throw new SyntaxError(0, 0, "unchecked is not valid for this statement");
-            }
+            value = expression.Evaluate(call);
+            exception = null;
+            return true;
         }
-
-        internal abstract IEnumerable<Result> Execute(Call call);
-
-        public abstract override int GetHashCode();
-
-        public abstract override bool Equals(object other);
-
-        public static bool operator ==(Statement a, Statement b)
+        catch (Throw e)
         {
-            return a.Equals(b);
+            value = null;
+            exception = e;
+            return false;
         }
+    }
 
-        public static bool operator !=(Statement a, Statement b)
+    private protected static IEnumerable<Result> ExecuteStatement(Statement statement, Call call)
+    {
+        bool rerun;
+        int jumpCount = 0;
+
+        do
         {
-            return !a.Equals(b);
-        }
+            rerun = false;
 
-        private protected static (IValue?, Throw?) EvaluateExpression(IExpression expression, Call call)
-        {
-            IValue? value = null;
-            Throw? @throw = null;
-
-            try
+            foreach (var result in statement.Execute(call))
             {
-                value = expression.Evaluate(call);
-            }
-            catch (Throw t)
-            {
-                @throw = t;
-            }
-
-            return (value, @throw);
-        }
-
-        private protected static IEnumerable<Result> ExecuteBlock(List<Statement> statements, Dictionary<string, Label> labels, Call call)
-        {
-            for (var i = 0; i < statements.Count; i++)
-            {
-                foreach (var result in statements[i].Execute(call))
+                switch (result)
                 {
-                    switch (result)
-                    {
-                        case Goto @goto:
-                            if (!labels.TryGetValue(@goto.Label, out var label))
-                                goto default;
-
-                            if (++label.Count > call.Engine.JumpLimit)
-                            {
-                                yield return new Throw("The jump limit was reached.");
-                                yield break;
-                            }
-
-                            i = label.Index - 1;
-
-                            goto Next;
-
-                        case Yield:
-                            yield return result;
+                    case Goto @goto when @goto.Label == statement.Label:
+                        if (jumpCount++ < call.Engine.JumpLimit)
+                        {
+                            rerun = true;
                             break;
-
-                        default:
-                            yield return result;
+                        }
+                        else
+                        {
+                            yield return new Throw("The jump limit was reached.");
                             yield break;
-                    }
+                        }
+
+                    case Yield:
+                        yield return result;
+                        break;
+
+                    default:
+                        yield return result;
+                        yield break;
                 }
 
-            Next:;
+                if (rerun)
+                    break;
+            }
+        }
+        while (rerun);
+    }
+
+    private protected static IEnumerable<Result> ExecuteStatements(List<Statement> statements, Call call)
+    {
+        var labels = StatementUtil.GetLabels(statements);
+
+        for (var i = 0; i < statements.Count; i++)
+        {
+            foreach (var result in statements[i].Execute(call))
+            {
+                bool done = false;
+
+                switch (result)
+                {
+                    case Goto @goto when labels.TryGetValue(@goto.Label, out var label):
+                        if (label.Count++ < call.Engine.JumpLimit)
+                        {
+                            i = label.Index - 1;
+                            done = true;
+                            break;
+                        }
+                        else
+                        {
+                            yield return new Throw("The jump limit was reached.");
+                            yield break;
+                        }
+
+                    case Yield:
+                        yield return result;
+                        break;
+
+                    default:
+                        yield return result;
+                        yield break;
+                }
+
+                if (done)
+                    break;
             }
         }
     }

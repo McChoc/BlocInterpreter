@@ -1,9 +1,8 @@
-﻿namespace Bloc.Results
-{
-    public sealed class Goto : Result
-    {
-        public Goto(string label) => Label = label;
+﻿namespace Bloc.Results;
 
-        public string Label { get; }
-    }
+public sealed class Goto : Result
+{
+    public string Label { get; }
+
+    public Goto(string label) => Label = label;
 }

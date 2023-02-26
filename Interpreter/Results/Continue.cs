@@ -1,4 +1,3 @@
-﻿namespace Bloc.Results
-{
-    public sealed class Continue : Result { }
-}
+﻿namespace Bloc.Results;
+
+public sealed class Continue : Result { }

@@ -1,13 +1,12 @@
 ﻿using Bloc.Values;
 
-namespace Bloc.Results
+namespace Bloc.Results;
+
+public sealed class Return : Result
 {
-    public sealed class Return : Result
-    {
-        public Return() => Value = Void.Value;
+    public Value Value { get; }
 
-        public Return(Value value) => Value = value;
+    public Return() => Value = Void.Value;
 
-        public Value Value { get; }
-    }
+    public Return(Value value) => Value = value;
 }

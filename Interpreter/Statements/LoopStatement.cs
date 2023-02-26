@@ -1,81 +1,80 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System;
+using System.Collections.Generic;
 using Bloc.Memory;
 using Bloc.Results;
-using Bloc.Utils;
 
-namespace Bloc.Statements
+namespace Bloc.Statements;
+
+internal sealed class LoopStatement : Statement
 {
-    internal sealed class LoopStatement : Statement
+    private readonly bool _checked;
+
+    internal required Statement Statement { get; init; }
+
+    internal LoopStatement(bool @checked)
     {
-        private bool @checked;
-        internal override bool Checked
+        _checked = @checked;
+    }
+
+    internal override IEnumerable<Result> Execute(Call call)
+    {
+        int loopCount = 0;
+
+        while (true)
         {
-            get => @checked;
-            set => @checked = value;
-        }
-
-        internal List<Statement> Statements { get; set; } = null!;
-
-        internal override IEnumerable<Result> Execute(Call call)
-        {
-            var loopCount = 0;
-            var labels = StatementUtil.GetLabels(Statements);
-
-            while (true)
+            if (_checked && ++loopCount > call.Engine.LoopLimit)
             {
-                if (Checked && ++loopCount > call.Engine.LoopLimit)
-                {
-                    yield return new Throw("The loop limit was reached.");
-                    yield break;
-                }
-
-                try
-                {
-                    call.Push();
-
-                    foreach (var result in ExecuteBlock(Statements, labels, call))
-                    {
-                        switch (result)
-                        {
-                            case Continue:
-                                goto Continue;
-
-                            case Break:
-                                goto Break;
-
-                            case Yield:
-                                yield return result;
-                                break;
-
-                            default:
-                                yield return result;
-                                yield break;
-                        }
-                    }
-                }
-                finally
-                {
-                    call.Pop();
-                }
-
-            Continue:;
+                yield return new Throw("The loop limit was reached.");
+                yield break;
             }
 
-        Break:;
-        }
+            bool @break = false;
 
-        public override int GetHashCode()
-        {
-            return System.HashCode.Combine(Label, Checked, Statements.Count);
-        }
+            using (call.MakeScope())
+            {
+                foreach (var result in ExecuteStatement(Statement, call))
+                {
+                    bool @continue = false;
 
-        public override bool Equals(object other)
-        {
-            return other is LoopStatement statement &&
-                Label == statement.Label &&
-                Checked == statement.Checked &&
-                Statements.SequenceEqual(statement.Statements);
+                    switch (result)
+                    {
+                        case Continue:
+                            @continue = true;
+                            break;
+
+                        case Break:
+                            @break = true;
+                            break;
+
+                        case Yield:
+                            yield return result;
+                            break;
+
+                        default:
+                            yield return result;
+                            yield break;
+                    }
+
+                    if (@continue || @break)
+                        break;
+                }
+            }
+
+            if (@break)
+                break;
         }
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Label, _checked, Statement);
+    }
+
+    public override bool Equals(object other)
+    {
+        return other is LoopStatement statement &&
+            Label == statement.Label &&
+            _checked == statement._checked &&
+            Statement == statement.Statement;
     }
 }

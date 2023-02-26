@@ -1,37 +1,35 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
 
-namespace Bloc.Statements
+namespace Bloc.Statements;
+
+internal sealed class ExpressionStatement : Statement
 {
-    internal sealed class ExpressionStatement : Statement
+    internal IExpression Expression { get; }
+
+    internal ExpressionStatement(IExpression expression)
     {
-        internal ExpressionStatement(IExpression expression)
-        {
-            Expression = expression;
-        }
+        Expression = expression;
+    }
 
-        internal IExpression Expression { get; }
+    internal override IEnumerable<Result> Execute(Call call)
+    {
+        if (!EvaluateExpression(Expression, call, out var _, out var exception))
+            yield return exception!;
+    }
 
-        internal override IEnumerable<Result> Execute(Call call)
-        {
-            var (_, exception) = EvaluateExpression(Expression, call);
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Label, Expression);
+    }
 
-            if (exception is not null)
-                yield return exception;
-        }
-
-        public override int GetHashCode()
-        {
-            return System.HashCode.Combine(Label, Expression);
-        }
-
-        public override bool Equals(object other)
-        {
-            return other is ExpressionStatement statement &&
-                Label == statement.Label &&
-                Expression.Equals(statement.Expression);
-        }
+    public override bool Equals(object other)
+    {
+        return other is ExpressionStatement statement &&
+            Label == statement.Label &&
+            Expression.Equals(statement.Expression);
     }
 }

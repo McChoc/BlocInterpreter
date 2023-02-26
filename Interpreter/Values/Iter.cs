@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Bloc.Expressions;
 using Bloc.Memory;
@@ -46,53 +47,53 @@ namespace Bloc.Values
                         {
                             var inf = double.PositiveInfinity;
 
-                            var @params = new Scope();
+                            var @params = new VariableCollection();
                             @params.Add(new(false, "start", new Number(range.Start ?? (range.Step >= 0 ? 0 : -1)), @params));
                             @params.Add(new(false, "end", new Number(range.End ?? (range.Step >= 0 ? inf : -inf)), @params));
                             @params.Add(new(false, "step", new Number(range.Step), @params));
 
                             return new(new(call, new(), @params), new()
                             {
-                                new ForStatement(
-                                    initialisation: new Assignment(new Let(new Identifier("i")), new Identifier("start")),
-                                    condition:      new Less(new Multiplication(new Identifier("i"), new Identifier("step")), new Multiplication(new Identifier("end"), new Identifier("step"))),
-                                    increment:      new AdditionAssignment(new Identifier("i"), new Identifier("step")))
+                                new ForStatement(false)
                                 {
-                                    new YieldStatement(new Identifier("i"))
+                                    Initialisation = new Assignment(new Let(new Identifier("i")), new Identifier("start")),
+                                    Condition = new Less(new Multiplication(new Identifier("i"), new Identifier("step")), new Multiplication(new Identifier("end"), new Identifier("step"))),
+                                    Increment = new AdditionAssignment(new Identifier("i"), new Identifier("step")),
+                                    Statement = new YieldStatement(new Identifier("i"))
                                 }
                             });
                         }
 
                         case String @string:
                         {
-                            var @params = new Scope();
+                            var @params = new VariableCollection();
                             @params.Add(new(false, "value", @string, @params));
 
                             return new(new(call, new(), @params), new()
                             {
-                                new ForStatement(
-                                    initialisation: new Assignment(new Let(new Identifier("i")), new NumberLiteral(0)),
-                                    condition:      new Less(new Identifier("i"), new NumberLiteral(@string.Value.Length)),
-                                    increment:      new PreIncrement(new Identifier("i")))
+                                new ForStatement(false)
                                 {
-                                    new YieldStatement(new Indexer(new Identifier("value"), new Identifier("i")))
+                                    Initialisation = new Assignment(new Let(new Identifier("i")), new NumberLiteral(0)),
+                                    Condition = new Less(new Identifier("i"), new NumberLiteral(@string.Value.Length)),
+                                    Increment = new PreIncrement(new Identifier("i")),
+                                    Statement = new YieldStatement(new Indexer(new Identifier("value"), new Identifier("i")))
                                 }
                             });
                         }
 
                         case Array array:
                         {
-                            var @params = new Scope();
+                            var @params = new VariableCollection();
                             @params.Add(new(false, "items", array, @params));
 
                             return new(new(call, new(), @params), new()
                             {
-                                new ForStatement(
-                                    initialisation: new Assignment(new Let(new Identifier("i")), new NumberLiteral(0)),
-                                    condition:      new Less(new Identifier("i"), new NumberLiteral(array.Variables.Count)),
-                                    increment:      new PreIncrement(new Identifier("i")))
+                                new ForStatement(false)
                                 {
-                                    new YieldStatement(new Indexer(new Identifier("items"), new Identifier("i")))
+                                    Initialisation = new Assignment(new Let(new Identifier("i")), new NumberLiteral(0)),
+                                    Condition = new Less(new Identifier("i"), new NumberLiteral(array.Variables.Count)),
+                                    Increment = new PreIncrement(new Identifier("i")),
+                                    Statement = new YieldStatement(new Indexer(new Identifier("items"), new Identifier("i")))
                                 }
                             });
                         }

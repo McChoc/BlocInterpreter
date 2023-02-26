@@ -1,68 +1,69 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System;
+using System.Collections.Generic;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
-using Bloc.Utils;
 using Bloc.Values;
 
-namespace Bloc.Statements
+namespace Bloc.Statements;
+
+internal sealed class IfStatement : Statement
 {
-    internal sealed class IfStatement : Statement
+    private readonly bool _reversed;
+
+    internal required IExpression Expression { get; init; }
+    internal required Statement Then { get; init; }
+    internal required Statement? Else { get; init; }
+
+    internal IfStatement(bool reversed)
     {
-        internal IExpression Expression { get; set; } = null!;
-        internal List<Statement> Then { get; set; } = new();
-        internal List<Statement> Else { get; set; } = new();
+        _reversed = reversed;
+    }
 
-        internal override IEnumerable<Result> Execute(Call call)
+    internal override IEnumerable<Result> Execute(Call call)
+    {
+        if (!EvaluateExpression(Expression, call, out var value, out var exception))
         {
-            var (value, exception) = EvaluateExpression(Expression, call);
-
-            if (exception is not null)
-            {
-                yield return exception;
-                yield break;
-            }
-
-            if (!Bool.TryImplicitCast(value!.Value, out var @bool))
-            {
-                yield return new Throw("Cannot implicitly convert to bool");
-                yield break;
-            }
-
-            var statements = @bool.Value ? Then : Else;
-            var labels = StatementUtil.GetLabels(statements);
-
-            try
-            {
-                call.Push();
-
-                foreach (var result in ExecuteBlock(statements, labels, call))
-                {
-                    yield return result;
-
-                    if (result is not Yield)
-                        yield break;
-                }
-            }
-            finally
-            {
-                call.Pop();
-            }
+            yield return exception!;
+            yield break;
         }
 
-        public override int GetHashCode()
+        if (!Bool.TryImplicitCast(value!.Value, out var @bool))
         {
-            return System.HashCode.Combine(Label, Expression, Then.Count, Else.Count);
+            yield return new Throw("Cannot implicitly convert to bool");
+            yield break;
         }
 
-        public override bool Equals(object other)
+        var statement = @bool.Value != _reversed
+            ? Then
+            : Else;
+
+        if (statement is null)
+            yield break;
+
+        using (call.MakeScope())
         {
-            return other is IfStatement statement &&
-                Label == statement.Label &&
-                Expression.Equals(statement.Expression) &&
-                Then.SequenceEqual(statement.Then) &&
-                Else.SequenceEqual(statement.Else);
+            foreach (var result in ExecuteStatement(statement, call))
+            {
+                yield return result;
+
+                if (result is not Yield)
+                    yield break;
+            }
         }
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Label, Expression, Then, Else);
+    }
+
+    public override bool Equals(object other)
+    {
+        return other is IfStatement statement &&
+            Label == statement.Label &&
+            Expression.Equals(statement.Expression) &&
+            Then == statement.Then &&
+            Else == statement.Else;
     }
 }

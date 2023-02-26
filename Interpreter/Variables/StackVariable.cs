@@ -5,20 +5,20 @@ namespace Bloc.Variables
 {
     public sealed class StackVariable : Variable
     {
-        private readonly Scope _scope;
+        private readonly VariableCollection _collection;
 
         internal string Name { get; }
 
-        internal StackVariable(bool mutable, string name, Value value, Scope scope)
+        internal StackVariable(bool mutable, string name, Value value, VariableCollection collection)
             : base(mutable, value)
         {
-            _scope = scope;
+            _collection = collection;
             Name = name;
         }
 
         public override void Delete()
         {
-            _scope.Remove(Name);
+            _collection.Remove(Name);
 
             base.Delete();
         }

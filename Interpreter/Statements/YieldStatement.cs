@@ -1,39 +1,37 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
 
-namespace Bloc.Statements
+namespace Bloc.Statements;
+
+internal sealed class YieldStatement : Statement
 {
-    internal sealed class YieldStatement : Statement
+    private readonly IExpression _expression;
+
+    internal YieldStatement(IExpression expression)
     {
-        private readonly IExpression _expression;
+        _expression = expression;
+    }
 
-        internal YieldStatement(IExpression expression)
-        {
-            _expression = expression;
-        }
+    internal override IEnumerable<Result> Execute(Call call)
+    {
+        if (EvaluateExpression(_expression, call, out var value, out var exception))
+            yield return new Yield(value!.Value);
+        else
+            yield return exception!;
+    }
 
-        internal override IEnumerable<Result> Execute(Call call)
-        {
-            var (value, exception) = EvaluateExpression(_expression, call);
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Label, _expression);
+    }
 
-            if (exception is not null)
-                yield return exception;
-            else
-                yield return new Yield(value!.Value);
-        }
-
-        public override int GetHashCode()
-        {
-            return System.HashCode.Combine(Label, _expression);
-        }
-
-        public override bool Equals(object other)
-        {
-            return other is YieldStatement statement &&
-                Label == statement.Label &&
-                _expression.Equals(statement._expression);
-        }
+    public override bool Equals(object other)
+    {
+        return other is YieldStatement statement &&
+            Label == statement.Label &&
+            _expression.Equals(statement._expression);
     }
 }

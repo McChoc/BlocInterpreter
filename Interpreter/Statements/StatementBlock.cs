@@ -1,24 +1,20 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Bloc.Memory;
 using Bloc.Results;
-using Bloc.Utils;
 
 namespace Bloc.Statements
 {
     internal sealed class StatementBlock : Statement
     {
-        internal List<Statement> Statements { get; set; } = null!;
+        internal required List<Statement> Statements { get; set; }
 
         internal override IEnumerable<Result> Execute(Call call)
         {
-            var labels = StatementUtil.GetLabels(Statements);
-
-            try
+            using (call.MakeScope())
             {
-                call.Push();
-
-                foreach (var result in ExecuteBlock(Statements, labels, call))
+                foreach (var result in ExecuteStatements(Statements, call))
                 {
                     yield return result;
 
@@ -26,15 +22,11 @@ namespace Bloc.Statements
                         yield break;
                 }
             }
-            finally
-            {
-                call.Pop();
-            }
         }
 
         public override int GetHashCode()
         {
-            return System.HashCode.Combine(Label, Statements.Count);
+            return HashCode.Combine(Label, Statements.Count);
         }
 
         public override bool Equals(object other)

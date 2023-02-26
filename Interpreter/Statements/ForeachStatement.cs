@@ -7,44 +7,53 @@ using Bloc.Values;
 
 namespace Bloc.Statements;
 
-internal sealed class WhileStatement : Statement
+internal sealed class ForeachStatement : Statement
 {
     private readonly bool _checked;
-    private readonly bool _reversed;
-    private readonly bool _executeAtLeastOnce;
 
-    internal required IExpression Expression { get; set; }
-    internal required Statement Statement { get; set; }
+    internal required string Name { get; init; }
+    internal required IExpression Expression { get; init; }
+    internal required Statement Statement { get; init; }
 
-    internal WhileStatement(bool @checked, bool reversed, bool executeAtLeastOnce)
+    internal ForeachStatement(bool @checked)
     {
         _checked = @checked;
-        _reversed = reversed;
-        _executeAtLeastOnce = executeAtLeastOnce;
     }
 
     internal override IEnumerable<Result> Execute(Call call)
     {
+        if (!EvaluateExpression(Expression, call, out var value, out var exception))
+        {
+            yield return exception!;
+            yield break;
+        }
+
+        if (!Iter.TryImplicitCast(value!.Value, out var iter, call))
+        {
+            yield return new Throw("Cannot implicitly convert to iter");
+            yield break;
+        }
+
+        using var enumerator = iter.Iterate().GetEnumerator();
+
         int loopCount = 0;
 
         while (true)
         {
-            if (!_executeAtLeastOnce || loopCount != 0)
+            try
             {
-                if (!EvaluateExpression(Expression, call, out var value, out var exception))
-                {
-                    yield return exception!;
-                    yield break;
-                }
-
-                if (!Bool.TryImplicitCast(value!.Value, out var @bool))
-                {
-                    yield return new Throw("Cannot implicitly convert to bool");
-                    yield break;
-                }
-
-                if (@bool.Value == _reversed)
+                if (!enumerator.MoveNext())
                     break;
+            }
+            catch (Throw e)
+            {
+                exception = e;
+            }
+
+            if (exception is not null)
+            {
+                yield return exception;
+                yield break;
             }
 
             if (_checked && ++loopCount > call.Engine.LoopLimit)
@@ -57,6 +66,8 @@ internal sealed class WhileStatement : Statement
 
             using (call.MakeScope())
             {
+                call.Set(true, false, Name, enumerator.Current);
+
                 foreach (var result in ExecuteStatement(Statement, call))
                 {
                     bool @continue = false;
@@ -92,16 +103,15 @@ internal sealed class WhileStatement : Statement
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(Label, _checked, _reversed, _executeAtLeastOnce, Expression, Statement);
+        return HashCode.Combine(Label, _checked, Name, Expression, Statement);
     }
 
     public override bool Equals(object other)
     {
-        return other is WhileStatement statement &&
+        return other is ForeachStatement statement &&
             Label == statement.Label &&
             _checked == statement._checked &&
-            _reversed == statement._reversed &&
-            _executeAtLeastOnce == statement._executeAtLeastOnce &&
+            Name == statement.Name &&
             Expression.Equals(statement.Expression) &&
             Statement == statement.Statement;
     }

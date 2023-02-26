@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Bloc.Exceptions;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Scanners;
-using Bloc.Utils;
-using Bloc.Values;
+using String = Bloc.Values.String;
 
 namespace Bloc.Statements
 {
@@ -20,11 +20,9 @@ namespace Bloc.Statements
 
         internal override IEnumerable<Result> Execute(Call call)
         {
-            var (value, exception) = EvaluateExpression(_expression, call);
-
-            if (exception is not null)
+            if (!EvaluateExpression(_expression, call, out var value, out var exception))
             {
-                yield return exception;
+                yield return exception!;
                 yield break;
             }
             
@@ -35,7 +33,6 @@ namespace Bloc.Statements
             }
 
             List<Statement>? statements = null;
-            Result? error = null;
 
             try
             {
@@ -43,22 +40,20 @@ namespace Bloc.Statements
             }
             catch (SyntaxError e)
             {
-                error = new Throw(e.Text);
+                exception = new Throw(e.Text);
             }
             catch
             {
-                error = new Throw("Failed to execute statements");
+                exception = new Throw("Failed to execute statements");
             }
 
-            if (error is not null)
+            if (exception is not null)
             {
-                yield return error;
+                yield return exception;
                 yield break;
             }
 
-            var labels = StatementUtil.GetLabels(statements!);
-
-            foreach (var result in ExecuteBlock(statements!, labels, call))
+            foreach (var result in ExecuteStatements(statements!, call))
             {
                 yield return result;
 
@@ -69,7 +64,7 @@ namespace Bloc.Statements
 
         public override int GetHashCode()
         {
-            return System.HashCode.Combine(Label, _expression);
+            return HashCode.Combine(Label, _expression);
         }
 
         public override bool Equals(object other)

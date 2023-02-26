@@ -1,13 +1,12 @@
 ﻿using Bloc.Values;
 
-namespace Bloc.Results
+namespace Bloc.Results;
+
+public sealed class Throw : Result
 {
-    public sealed class Throw : Result
-    {
-        public Throw(Value value) => Value = value;
+    public Value Value { get; }
 
-        public Throw(string text) => Value = new String(text);
+    public Throw(Value value) => Value = value;
 
-        public Value Value { get; }
-    }
+    public Throw(string text) => Value = new String(text);
 }

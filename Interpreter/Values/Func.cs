@@ -13,7 +13,7 @@ namespace Bloc.Values
         private readonly FunctionType _type;
         private readonly CaptureMode _mode;
 
-        private readonly Scope _captures;
+        private readonly VariableCollection _captures;
         private readonly Parameter? _argsContainer;
         private readonly Parameter? _kwargsContainer;
         private readonly List<Parameter> _parameters;
@@ -36,7 +36,7 @@ namespace Bloc.Values
         internal Func(
             FunctionType type,
             CaptureMode mode,
-            Scope captures,
+            VariableCollection captures,
             Parameter? argsContainer,
             Parameter? kwargsContainer,
             List<Parameter> parameters,
@@ -115,7 +115,7 @@ namespace Bloc.Values
 
         public Value Invoke(List<Value> args, Dictionary<string, Value> kwargs, Call parent)
         {
-            var @params = new Scope();
+            var @params = new VariableCollection();
 
             Array? restArray = null;
             Struct? restStruct = null;
