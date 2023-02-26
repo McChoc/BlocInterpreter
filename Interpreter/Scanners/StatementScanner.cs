@@ -342,6 +342,8 @@ internal static class StatementScanner
 
     private static Statement GetTryStatement(TokenScanner scanner)
     {
+        scanner.Skip();
+
         var @try = GetStatement(scanner);
         var catches = new List<TryStatement.Catch>();
 
