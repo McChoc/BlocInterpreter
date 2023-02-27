@@ -17,7 +17,7 @@ public sealed class Call
     internal Variable? Recall { get; }
     internal VariableCollection Captures { get; }
     internal VariableCollection Params { get; }
-    internal LinkedList<Scope> Scopes { get; }
+    internal List<Scope> Scopes { get; }
 
     internal Call(Engine engine)
     {
@@ -63,8 +63,8 @@ public sealed class Call
     {
         Recall?.Delete();
 
-        foreach (var scope in Scopes)
-            scope.Dispose();
+        while (Scopes.Count > 0)
+            Scopes[^1].Dispose();
     }
 
     internal UnresolvedPointer Get(string name)
@@ -99,12 +99,12 @@ public sealed class Call
 
     internal VariablePointer Set(bool mask, bool mutable, string name, Value value)
     {
-        if (!mask && Scopes.Last.Value.Variables.ContainsKey(name))
+        if (!mask && Scopes[^1].Variables.ContainsKey(name))
             throw new Throw($"Variable {name} was already defined in scope");
 
-        var variable = new StackVariable(mutable, name, value, Scopes.Last.Value);
+        var variable = new StackVariable(mutable, name, value, Scopes[^1]);
 
-        Scopes.Last.Value.Add(variable);
+        Scopes[^1].Add(variable);
 
         return new VariablePointer(variable);
     }

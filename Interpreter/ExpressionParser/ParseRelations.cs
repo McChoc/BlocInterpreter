@@ -5,44 +5,52 @@ using Bloc.Expressions;
 using Bloc.Extensions;
 using Bloc.Operators;
 using Bloc.Tokens;
+using Bloc.Utils;
 
-namespace Bloc
+namespace Bloc;
+
+internal static partial class ExpressionParser
 {
-    internal static partial class ExpressionParser
+    private static IExpression ParseRelations(List<Token> tokens, int precedence)
     {
-        private static IExpression ParseRelations(List<Token> tokens, int precedence)
+        for (var i = tokens.Count - 1; i >= 0; i--)
         {
-            for (var i = tokens.Count - 1; i >= 0; i--)
+            if (IsRelation(tokens[i]))
             {
-                if (tokens[i] is (TokenType.Operator or TokenType.Keyword,
-                    "<" or "<=" or ">" or ">=" or "in" or "not in" or "is" or "is not" or "as") @operator)
+                var @operator = tokens[i];
+
+                if (i == 0)
+                    throw new SyntaxError(@operator.Start, @operator.End, "Missing the left part of relation");
+
+                if (i > tokens.Count - 1)
+                    throw new SyntaxError(@operator.Start, @operator.End, "Missing the right part of relation");
+
+                var left = ParseRelations(tokens.GetRange(..i), precedence);
+                var right = Parse(tokens.GetRange((i + 1)..), precedence - 1);
+
+                return @operator.Text switch
                 {
-                    if (i == 0)
-                        throw new SyntaxError(@operator.Start, @operator.End, "Missing the left part of relation");
-
-                    if (i > tokens.Count - 1)
-                        throw new SyntaxError(@operator.Start, @operator.End, "Missing the right part of relation");
-
-                    var left = ParseRelations(tokens.GetRange(..i), precedence);
-                    var right = Parse(tokens.GetRange((i + 1)..), precedence - 1);
-
-                    return @operator.Text switch
-                    {
-                        "<" => new Less(left, right),
-                        "<=" => new LessEqual(left, right),
-                        ">" => new Greater(left, right),
-                        ">=" => new GreaterEqual(left, right),
-                        "in" => new In(left, right),
-                        "not in" => new NotIn(left, right),
-                        "is" => new Is(left, right),
-                        "is not" => new IsNot(left, right),
-                        "as" => new As(left, right),
-                        _ => throw new Exception()
-                    };
-                }
+                    Symbol.LESS_THAN    => new Less(left, right),
+                    Symbol.LESS_EQUAL   => new LessEqual(left, right),
+                    Symbol.MORE_THAN    => new Greater(left, right),
+                    Symbol.MORE_EQUAL   => new GreaterEqual(left, right),
+                    Keyword.IN          => new In(left, right),
+                    Keyword.NOT_IN      => new NotIn(left, right),
+                    Keyword.IS          => new Is(left, right),
+                    Keyword.IS_NOT      => new IsNot(left, right),
+                    Keyword.AS          => new As(left, right),
+                    _ => throw new Exception()
+                };
             }
-
-            return Parse(tokens, precedence - 1);
         }
+
+        return Parse(tokens, precedence - 1);
+    }
+
+    private static bool IsRelation(Token token)
+    {
+        return token is
+            (TokenType.Symbol, Symbol.LESS_THAN or Symbol.LESS_EQUAL or Symbol.MORE_THAN or Symbol.MORE_EQUAL) or
+            (TokenType.Keyword, Keyword.IN or Keyword.NOT_IN or Keyword.IS or Keyword.IS_NOT or Keyword.AS);
     }
 }

@@ -5,141 +5,141 @@ using Bloc.Expressions;
 using Bloc.Extensions;
 using Bloc.Scanners;
 using Bloc.Tokens;
+using Bloc.Utils;
 
-namespace Bloc
+namespace Bloc;
+
+internal static partial class ExpressionParser
 {
-    internal static partial class ExpressionParser
+    private delegate IExpression ParseCallback(List<Token> tokens, int precedence);
+
+    private static readonly ParseCallback[] operations =
     {
-        private delegate IExpression ParseCallback(List<Token> tokens, int precedence);
+        ParsePrimaries,
+        ParseUnaries,
+        ParseRanges,
+        ParseQueries,
+        ParseExponentials,
+        ParseMultiplicatives,
+        ParseAdditives,
+        ParseShifts,
+        ParseComparisons,
+        ParseRelations,
+        ParseEqualities,
+        ParseLogicalANDs,
+        ParseLogicalXORs,
+        ParseLogicalORs,
+        ParseConditionalANDs,
+        ParseConditionalXORs,
+        ParseConditionalORs,
+        ParseCatchExpressions,
+        ParseCoalescings,
+        ParseTernaries,
+        ParseAssignments,
+        ParseFunctions,
+        ParseTuples
+    };
 
-        private static readonly ParseCallback[] operations =
-        {
-            ParsePrimaries,
-            ParseUnaries,
-            ParseRanges,
-            ParseQueries,
-            ParseExponentials,
-            ParseMultiplicatives,
-            ParseAdditives,
-            ParseShifts,
-            ParseComparisons,
-            ParseRelations,
-            ParseEqualities,
-            ParseLogicalANDs,
-            ParseLogicalXORs,
-            ParseLogicalORs,
-            ParseConditionalANDs,
-            ParseConditionalXORs,
-            ParseConditionalORs,
-            ParseCatchExpressions,
-            ParseCoalescings,
-            ParseTernaries,
-            ParseAssignments,
-            ParseFunctions,
-            ParseTuples
-        };
+    internal static IExpression Parse(List<Token> expression)
+    {
+        return Parse(expression, operations.Length - 1);
+    }
 
-        internal static IExpression Parse(List<Token> expression)
+    private static IExpression Parse(List<Token> expression, int precedence)
+    {
+        return operations[precedence](expression, precedence);
+    }
+
+    private static IExpression ParseBlock(Token token)
+    {
+        var tokens = TokenScanner.Scan(token).ToList();
+        var parts = tokens.Split(x => x is (TokenType.Symbol, Symbol.COMMA));
+
+        if (parts[^1].Count == 0)
+            parts.RemoveAt(parts.Count - 1);
+
+        if (parts.Count == 0)
+            throw new SyntaxError(token.Start, token.End,
+                "Literal is ambiguous between an empty array and an empty struct. Use 'array()' or 'struct()' instead.");
+
+        if (parts[0][0] is (TokenType.Symbol, Symbol.UNPACK_ARRAY))
+            return ParseArray(parts);
+
+        if (parts[0][0] is (TokenType.Symbol, Symbol.UNPACK_STRUCT))
+            return ParseStruct(parts);
+
+        return parts[0].Any(x => x is (TokenType.Symbol, Symbol.ASSIGN))
+            ? ParseStruct(parts)
+            : ParseArray(parts);
+    }
+
+    private static ArrayLiteral ParseArray(List<List<Token>> parts)
+    {
+        var expressions = new List<ArrayLiteral.SubExpression>();
+
+        foreach (var part in parts)
         {
-            return Parse(expression, operations.Length - 1);
+            if (part.Count == 0)
+                throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COMMA}'");
+
+            if (part.Any(x => x is (TokenType.Symbol, Symbol.ASSIGN)))
+                throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
+
+            if (part[0] is (TokenType.Symbol, Symbol.UNPACK_STRUCT))
+                throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
+
+            if (part[0] is (TokenType.Symbol, Symbol.UNPACK_ARRAY))
+                expressions.Add(new(true, Parse(part.GetRange(1..))));
+            else
+                expressions.Add(new(false, Parse(part)));
         }
 
-        private static IExpression Parse(List<Token> expression, int precedence)
+        return new ArrayLiteral(expressions);
+    }
+
+    private static StructLiteral ParseStruct(List<List<Token>> parts)
+    {
+        var expressions = new List<StructLiteral.SubExpression>();
+
+        foreach (var part in parts)
         {
-            return operations[precedence](expression, precedence);
-        }
+            if (part.Count == 0)
+                throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COMMA}'");
 
-        private static IExpression ParseBlock(Token token)
-        {
-            var tokens = TokenScanner.Scan(token).ToList();
-            var parts = tokens.Split(x => x is (TokenType.Operator, ","));
+            if (part[0] is (TokenType.Symbol, Symbol.UNPACK_ARRAY))
+                throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
 
-            if (parts[^1].Count == 0)
-                parts.RemoveAt(parts.Count - 1);
-
-            if (parts.Count == 0)
-                throw new SyntaxError(token.Start, token.End,
-                    "Literal is ambiguous between an empty array and an empty struct. Use 'array()' or 'struct()' instead.");
-
-            if (parts[0][0] is (TokenType.Operator, ".."))
-                return ParseArray(parts);
-
-            if (parts[0][0] is (TokenType.Operator, "..."))
-                return ParseStruct(parts);
-
-            return parts[0].Any(x => x is (TokenType.Operator, "="))
-                ? ParseStruct(parts)
-                : ParseArray(parts);
-        }
-
-        private static ArrayLiteral ParseArray(List<List<Token>> parts)
-        {
-            var expressions = new List<ArrayLiteral.SubExpression>();
-
-            foreach (var part in parts)
+            if (part[0] is (TokenType.Symbol, Symbol.UNPACK_STRUCT))
             {
-                if (part.Count == 0)
-                    throw new SyntaxError(0, 0, "Unexpected symbol ','");
-
-                if (part.Any(x => x is (TokenType.Operator, "=")))
-                    throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
-
-                if (part[0] is (TokenType.Operator, "..."))
-                    throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
-
-                if (part[0] is (TokenType.Operator, ".."))
-                    expressions.Add(new(true, Parse(part.GetRange(1..))));
-                else
-                    expressions.Add(new(false, Parse(part)));
+                expressions.Add(new(true, null, Parse(part.GetRange(1..))));
             }
-
-            return new ArrayLiteral(expressions);
-        }
-
-        private static StructLiteral ParseStruct(List<List<Token>> parts)
-        {
-            var expressions = new List<StructLiteral.SubExpression>();
-
-            foreach (var part in parts)
+            else
             {
-                if (part.Count == 0)
-                    throw new SyntaxError(0, 0, "Unexpected symbol ','");
+                var index = part.FindIndex(x => x is (TokenType.Symbol, Symbol.ASSIGN));
 
-                if (part[0] is (TokenType.Operator, ".."))
+                if (index == -1)
                     throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
 
-                if (part[0] is (TokenType.Operator, "..."))
-                {
-                    expressions.Add(new(true, null, Parse(part.GetRange(1..))));
-                }
-                else
-                {
-                    var index = part.FindIndex(x => x is (TokenType.Operator, "="));
+                var keyTokens = part.GetRange(..index);
+                var valueTokens = part.GetRange((index + 1)..);
 
-                    if (index == -1)
-                        throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
+                if (keyTokens.Count == 0)
+                    throw new SyntaxError(0, 0, "Missing identifier");
 
-                    var keyTokens = part.GetRange(..index);
-                    var valueTokens = part.GetRange((index + 1)..);
+                var keyExpr = Parse(keyTokens);
 
-                    if (keyTokens.Count == 0)
-                        throw new SyntaxError(0, 0, "Missing identifier");
+                if (keyExpr is not Identifier identifier)
+                    throw new SyntaxError(0, 0, "Invalid identifier");
 
-                    var keyExpr = Parse(keyTokens);
+                if (valueTokens.Count == 0)
+                    throw new SyntaxError(0, 0, "Missing value");
 
-                    if (keyExpr is not Identifier identifier)
-                        throw new SyntaxError(0, 0, "Invalid identifier");
+                var expression = Parse(valueTokens);
 
-                    if (valueTokens.Count == 0)
-                        throw new SyntaxError(0, 0, "Missing value");
-
-                    var expression = Parse(valueTokens);
-
-                    expressions.Add(new(false, identifier.Name, expression));
-                }
+                expressions.Add(new(false, identifier.Name, expression));
             }
-
-            return new StructLiteral(expressions);
         }
+
+        return new StructLiteral(expressions);
     }
 }

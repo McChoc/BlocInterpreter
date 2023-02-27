@@ -7,7 +7,7 @@ public sealed class Scope : VariableCollection
     public Scope(Call call)
     {
         _call = call;
-        _call.Scopes.AddLast(this);
+        _call.Scopes.Add(this);
     }
 
     public override void Dispose()

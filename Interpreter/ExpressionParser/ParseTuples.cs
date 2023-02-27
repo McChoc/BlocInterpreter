@@ -2,24 +2,24 @@
 using Bloc.Expressions;
 using Bloc.Extensions;
 using Bloc.Tokens;
+using Bloc.Utils;
 
-namespace Bloc
+namespace Bloc;
+
+internal static partial class ExpressionParser
 {
-    internal static partial class ExpressionParser
+    private static IExpression ParseTuples(List<Token> tokens, int precedence)
     {
-        private static IExpression ParseTuples(List<Token> tokens, int precedence)
-        {
-            var parts = tokens.Split(x => x is (TokenType.Operator, ","));
+        var parts = tokens.Split(x => x is (TokenType.Symbol, Symbol.COMMA));
 
-            if (parts.Count == 1)
-                return Parse(tokens, precedence - 1);
+        if (parts.Count == 1)
+            return Parse(tokens, precedence - 1);
 
-            var expressions = new List<IExpression>();
+        var expressions = new List<IExpression>();
 
-            foreach (var part in parts)
-                expressions.Add(Parse(part, precedence - 1));
+        foreach (var part in parts)
+            expressions.Add(Parse(part, precedence - 1));
 
-            return new TupleLiteral(expressions);
-        }
+        return new TupleLiteral(expressions);
     }
 }

@@ -3,9 +3,12 @@
     internal enum TokenType
     {
         Literal,
+        Word,
         Identifier,
-        Operator,
         Keyword,
+        AccessKeyword,
+        LiteralKeyword,
+        Symbol,
         Parentheses,
         Brackets,
         Braces

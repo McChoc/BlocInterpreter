@@ -5,6 +5,7 @@ using Bloc.Expressions;
 using Bloc.Extensions;
 using Bloc.Statements;
 using Bloc.Tokens;
+using Bloc.Utils;
 
 namespace Bloc.Scanners;
 
@@ -31,28 +32,28 @@ internal static class StatementScanner
         var statement = scanner.Peek() switch
         {
             (TokenType.Braces, _) => GetStatementBlock(scanner),
-            (TokenType.Operator, ";") => GetEmptyStatement(scanner),
-            (TokenType.Operator, "/") => GetCommandStatement(scanner),
-            (TokenType.Keyword, "exec") => GetExecStatement(scanner),
-            (TokenType.Keyword, "var") => GetVarStatement(scanner, mask),
-            (TokenType.Keyword, "const") => GetConstStatement(scanner, mask),
-            (TokenType.Keyword, "if") => GetIfStatement(scanner, false),
-            (TokenType.Keyword, "unless") => GetIfStatement(scanner, true),
-            (TokenType.Keyword, "do") => GetDoWhileStatement(scanner, check),
-            (TokenType.Keyword, "while") => GetWhileStatement(scanner, check, false),
-            (TokenType.Keyword, "until") => GetWhileStatement(scanner, check, true),
-            (TokenType.Keyword, "loop") => GetLoopStatement(scanner, check),
-            (TokenType.Keyword, "repeat") => GetRepeatStatement(scanner, check),
-            (TokenType.Keyword, "for") => GetForStatement(scanner, check),
-            (TokenType.Keyword, "foreach") => GetForeachStatement(scanner, check),
-            (TokenType.Keyword, "lock") => GetLockStatement(scanner),
-            (TokenType.Keyword, "try") => GetTryStatement(scanner),
-            (TokenType.Keyword, "throw") => GetThrowStatement(scanner),
-            (TokenType.Keyword, "return") => GetReturnStatement(scanner),
-            (TokenType.Keyword, "yield") => GetYieldStatement(scanner),
-            (TokenType.Keyword, "continue") => GetContinueStatement(scanner),
-            (TokenType.Keyword, "break") => GetBreakStatement(scanner),
-            (TokenType.Keyword, "goto") => GetGotoStatement(scanner),
+            (TokenType.Symbol, Symbol.SEMICOLON) => GetEmptyStatement(scanner),
+            (TokenType.Symbol, Symbol.SLASH) => GetCommandStatement(scanner),
+            (TokenType.Keyword, Keyword.EXEC) => GetExecStatement(scanner),
+            (TokenType.Keyword, Keyword.VAR) => GetVarStatement(scanner, mask),
+            (TokenType.Keyword, Keyword.CONST) => GetConstStatement(scanner, mask),
+            (TokenType.Keyword, Keyword.IF) => GetIfStatement(scanner, false),
+            (TokenType.Keyword, Keyword.UNLESS) => GetIfStatement(scanner, true),
+            (TokenType.Keyword, Keyword.DO) => GetDoWhileStatement(scanner, check),
+            (TokenType.Keyword, Keyword.WHILE) => GetWhileStatement(scanner, check, false),
+            (TokenType.Keyword, Keyword.UNTIL) => GetWhileStatement(scanner, check, true),
+            (TokenType.Keyword, Keyword.LOOP) => GetLoopStatement(scanner, check),
+            (TokenType.Keyword, Keyword.REPEAT) => GetRepeatStatement(scanner, check),
+            (TokenType.Keyword, Keyword.FOR) => GetForStatement(scanner, check),
+            (TokenType.Keyword, Keyword.FOREACH) => GetForeachStatement(scanner, check),
+            (TokenType.Keyword, Keyword.LOCK) => GetLockStatement(scanner),
+            (TokenType.Keyword, Keyword.TRY) => GetTryStatement(scanner),
+            (TokenType.Keyword, Keyword.THROW) => GetThrowStatement(scanner),
+            (TokenType.Keyword, Keyword.RETURN) => GetReturnStatement(scanner),
+            (TokenType.Keyword, Keyword.YIELD) => GetYieldStatement(scanner),
+            (TokenType.Keyword, Keyword.CONTINUE) => GetContinueStatement(scanner),
+            (TokenType.Keyword, Keyword.BREAK) => GetBreakStatement(scanner),
+            (TokenType.Keyword, Keyword.GOTO) => GetGotoStatement(scanner),
             _ => GetExpressionStatement(scanner)
         };
 
@@ -65,8 +66,8 @@ internal static class StatementScanner
     {
         if (scanner.Peek(2) is
         [
-            (TokenType.Identifier, var label),
-            (TokenType.Operator, ":")
+            (TokenType.Word or TokenType.Identifier, var label),
+            (TokenType.Symbol, Symbol.COLON)
         ])
         {
             scanner.Skip(2);
@@ -80,12 +81,11 @@ internal static class StatementScanner
     {
         if (scanner.Peek(2) is
         [
-            (TokenType.Keyword, "new"),
-            (TokenType.Keyword, "var") or
-            (TokenType.Keyword, "const")
+            (TokenType.Keyword, Keyword.NEW),
+            (TokenType.Keyword, Keyword.VAR) or (TokenType.Keyword, Keyword.CONST)
         ])
         {
-            scanner.Skip(1);
+            scanner.Skip();
             return true;
         }
 
@@ -96,17 +96,17 @@ internal static class StatementScanner
     {
         if (scanner.Peek(2) is
         [
-            (TokenType.Keyword, "unchecked"),
-            (TokenType.Keyword, "do") or
-            (TokenType.Keyword, "while") or
-            (TokenType.Keyword, "until") or
-            (TokenType.Keyword, "loop") or
-            (TokenType.Keyword, "repeat") or
-            (TokenType.Keyword, "for") or
-            (TokenType.Keyword, "foreach")
+            (TokenType.Word, Keyword.UNCHECKED),
+            (TokenType.Keyword, Keyword.DO) or
+            (TokenType.Keyword, Keyword.WHILE) or
+            (TokenType.Keyword, Keyword.UNTIL) or
+            (TokenType.Keyword, Keyword.LOOP) or
+            (TokenType.Keyword, Keyword.REPEAT) or
+            (TokenType.Keyword, Keyword.FOR) or
+            (TokenType.Keyword, Keyword.FOREACH)
         ])
         {
-            scanner.Skip(1);
+            scanner.Skip();
             return false;
         }
 
@@ -156,14 +156,14 @@ internal static class StatementScanner
 
         var keyword = scanner.GetNextToken();
 
-        var definitions = GetLine(scanner).Split(x => x is (TokenType.Operator, ","));
+        var definitions = GetLine(scanner).Split(x => x is (TokenType.Symbol, Symbol.COMMA));
 
         foreach (var definition in definitions)
         {
             if (definition.Count == 0)
                 throw new SyntaxError(keyword.Start, keyword.End, "Missing identifier");
 
-            var parts = definition.Split(x => x is (TokenType.Operator, "="));
+            var parts = definition.Split(x => x is (TokenType.Symbol, Symbol.ASSIGN));
 
             var identifier = ExpressionParser.Parse(parts[0]);
 
@@ -183,14 +183,14 @@ internal static class StatementScanner
 
         var keyword = scanner.GetNextToken();
 
-        var definitions = GetLine(scanner).Split(x => x is (TokenType.Operator, ","));
+        var definitions = GetLine(scanner).Split(x => x is (TokenType.Symbol, Symbol.COMMA));
 
         foreach (var definition in definitions)
         {
             if (definition.Count == 0)
                 throw new SyntaxError(keyword.Start, keyword.End, "Missing identifier");
 
-            var parts = definition.Split(x => x is (TokenType.Operator, "="));
+            var parts = definition.Split(x => x is (TokenType.Symbol, Symbol.ASSIGN));
 
             var identifier = ExpressionParser.Parse(parts[0]);
 
@@ -214,7 +214,7 @@ internal static class StatementScanner
 
         Statement? @else = null;
 
-        if (scanner.HasNextToken() && scanner.Peek() is  (TokenType.Keyword, "else"))
+        if (scanner.HasNextToken() && scanner.Peek() is  (TokenType.Keyword, Keyword.ELSE))
         {
             scanner.Skip();
             @else = GetStatement(scanner);
@@ -245,15 +245,15 @@ internal static class StatementScanner
 
         var statement = GetStatement(scanner);
 
-        if (!scanner.HasNextToken() || scanner.GetNextToken() is not (TokenType.Keyword, "while" or "until") keyword)
-            throw new SyntaxError(@do.Start, @do.End, "Missing 'while' or 'until'");
+        if (!scanner.HasNextToken() || scanner.GetNextToken() is not (TokenType.Keyword, Keyword.WHILE or Keyword.UNTIL) keyword)
+            throw new SyntaxError(@do.Start, @do.End, $"Missing '{Keyword.WHILE}' or '{Keyword.UNTIL}'");
 
         var expression = GetExpression(keyword, scanner);
 
-        if (!scanner.HasNextToken() || scanner.GetNextToken() is not (TokenType.Operator, ";"))
+        if (!scanner.HasNextToken() || scanner.GetNextToken() is not (TokenType.Symbol, Symbol.SEMICOLON))
             throw new MissingSemicolonError(keyword.Start, keyword.End);
 
-        return new WhileStatement(@checked, keyword.Text == "Until", true)
+        return new WhileStatement(@checked, keyword.Text == Keyword.UNTIL, true)
         {
             Expression = expression,
             Statement = statement
@@ -265,13 +265,13 @@ internal static class StatementScanner
         var keyword = scanner.GetNextToken();
 
         if (!scanner.HasNextToken() || scanner.GetNextToken() is not { Type: TokenType.Parentheses } expression)
-            throw new SyntaxError(keyword.Start, keyword.End, "Missing '('");
+            throw new SyntaxError(keyword.Start, keyword.End, $"Missing '{Symbol.PAREN_L}'");
 
         var tokens = TokenScanner.Scan(expression).ToList();
-        var parts = tokens.Split(x => x is (TokenType.Operator, ";"));
+        var parts = tokens.Split(x => x is (TokenType.Symbol, Symbol.SEMICOLON));
 
         if (parts.Count != 3)
-            throw new SyntaxError(expression.Start, expression.End, "Missing ')'");
+            throw new SyntaxError(expression.Start, expression.End, $"Missing '{Symbol.PAREN_R}'");
 
         return new ForStatement(@checked)
         {
@@ -287,15 +287,15 @@ internal static class StatementScanner
         var keyword = scanner.GetNextToken();
 
         if (!scanner.HasNextToken() || scanner.GetNextToken() is not { Type: TokenType.Parentheses } expression)
-            throw new SyntaxError(keyword.Start, keyword.End, "Missing '('");
+            throw new SyntaxError(keyword.Start, keyword.End, $"Missing '{Symbol.PAREN_L}'");
 
         var tokens = TokenScanner.Scan(expression).ToList();
 
-        if (tokens.Count < 1 || tokens[0].Type != TokenType.Identifier)
+        if (tokens.Count < 1 || tokens[0].Type is not TokenType.Word or TokenType.Identifier)
             throw new SyntaxError(tokens[0].Start, tokens[0].End, "Missing identifier");
 
-        if (tokens.Count < 2 || tokens[1] is not (TokenType.Keyword, "in"))
-            throw new SyntaxError(tokens[0].Start, tokens[0].End, "Missing 'in' keyword");
+        if (tokens.Count < 2 || tokens[1] is not (TokenType.Keyword, Keyword.IN))
+            throw new SyntaxError(tokens[0].Start, tokens[0].End, $"Missing '{Keyword.IN}' keyword");
 
         if (tokens.Count < 3)
             throw new SyntaxError(tokens[0].Start, tokens[0].End, "Missing expression");
@@ -349,7 +349,7 @@ internal static class StatementScanner
 
         bool foundLastCatch = false;
 
-        while (scanner.HasNextToken() && scanner.Peek() is (TokenType.Keyword, "catch"))
+        while (scanner.HasNextToken() && scanner.Peek() is (TokenType.Keyword, Keyword.CATCH))
         {
             var keyword = scanner.GetNextToken();
                 
@@ -357,14 +357,14 @@ internal static class StatementScanner
                 throw new SyntaxError(keyword.Start, keyword.End, "There cannot be another catch clause after the general catch");
 
             if (!scanner.HasNextToken() || scanner.GetNextToken() is not { Type: TokenType.Parentheses } expression)
-                throw new SyntaxError(keyword.Start, keyword.End, "Missing '('");
+                throw new SyntaxError(keyword.Start, keyword.End, $"Missing '{Symbol.PAREN_L}'");
 
             var tokens = TokenScanner.Scan(expression).ToList();
 
             if (tokens.Count == 0)
                 throw new SyntaxError(keyword.Start, keyword.End, "Missing identifier");
 
-            if (tokens[0].Type != TokenType.Identifier)
+            if (tokens[0].Type is not TokenType.Word or TokenType.Identifier)
                 throw new SyntaxError(tokens[0].Start, tokens[0].End, "Unexpected symbol");
 
             if (tokens.Count > 1)
@@ -373,7 +373,7 @@ internal static class StatementScanner
             var identifier = tokens[0].Text;
             IExpression? when;
 
-            if (scanner.Peek() is (TokenType.Keyword, "when"))
+            if (scanner.Peek() is (TokenType.Keyword, Keyword.WHEN))
             {
                 when = GetExpression(scanner.GetNextToken(), scanner);
             }
@@ -388,7 +388,7 @@ internal static class StatementScanner
 
         Statement? @finally = null;
 
-        if (scanner.Peek(1) is [(TokenType.Keyword, "finally")])
+        if (scanner.Peek(1) is [(TokenType.Keyword, Keyword.FINALLY)])
         {
             scanner.Skip();
             @finally = GetStatement(scanner);
@@ -460,7 +460,7 @@ internal static class StatementScanner
         if (line.Count == 0)
             throw new SyntaxError(keyword.Start, keyword.End, "Missing label.");
 
-        if (line[0].Type != TokenType.Identifier)
+        if (line[0].Type is not TokenType.Word or TokenType.Identifier)
             throw new SyntaxError(line[0].Start, line[0].End, "Unexpected symbol.");
 
         if (line.Count > 1)
@@ -480,7 +480,7 @@ internal static class StatementScanner
         {
             var token = scanner.GetNextCommandToken();
 
-            if (token is (TokenType.Operator, ";"))
+            if (token is (TokenType.Symbol, Symbol.SEMICOLON))
             {
                 if (statement.Commands[^1].Count == 0)
                     throw new SyntaxError(token.Start, token.End, "Missing command");
@@ -488,7 +488,7 @@ internal static class StatementScanner
                 return statement;
             }
 
-            if (token is (TokenType.Operator, "|>"))
+            if (token is (TokenType.Symbol, Symbol.PIPE))
                 statement.Commands.Add(new());
             else
                 statement.Commands[^1].Add(token);
@@ -503,7 +503,7 @@ internal static class StatementScanner
     private static IExpression GetExpression(Token keyword, TokenScanner scanner)
     {
         if (!scanner.HasNextToken() || scanner.GetNextToken() is not { Type: TokenType.Parentheses } expression)
-            throw new SyntaxError(keyword.Start, keyword.End, "Missing '('");
+            throw new SyntaxError(keyword.Start, keyword.End, $"Missing '{Symbol.PAREN_L}'");
 
         return ExpressionParser.Parse(TokenScanner.Scan(expression).ToList());
     }
@@ -516,10 +516,10 @@ internal static class StatementScanner
         {
             var token = scanner.GetNextToken();
 
-            if (token is (TokenType.Operator, ":"))
-                throw new SyntaxError(token.Start, token.End, "Unexpected symbol ':'");
+            if (token is (TokenType.Symbol, Symbol.COLON))
+                throw new SyntaxError(token.Start, token.End, $"Unexpected symbol '{Symbol.COLON}'");
 
-            if (token is (TokenType.Operator, ";"))
+            if (token is (TokenType.Symbol, Symbol.SEMICOLON))
                 return line;
 
             line.Add(token);

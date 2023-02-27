@@ -1,57 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 using Bloc.Exceptions;
 using Bloc.Expressions;
 using Bloc.Tokens;
-using Bloc.Values;
+using Bloc.Utils;
 
 namespace Bloc.Scanners;
 
 internal sealed class TokenScanner
 {
-    private static readonly HashSet<char> symbols = new()
-    {
-        '@', '$', '=', '<', '>',
-        '!', '~', '&', '|', '^',
-        '+', '-', '*', '/', '%',
-        '?', ':', '.', ',', ';',
-        '\\', '\'', '\"', '`', '#',
-        '(', ')', '[', ']', '{', '}'
-    };
-
-    private static readonly HashSet<string> operators = new()
-    {
-        ",", ";", ":", "|>",
-        ".", "..", "...",
-        "!", "!!", "!=",
-        "~", "~~", "~=",
-        "+", "++", "+=",
-        "-", "--", "-=",
-        "*", "**", "**=", "*=",
-        "/", "//", "//=", "/=",
-        "%", "%%", "%%=", "%=",
-        "&", "&&", "&&=", "&=",
-        "|", "||", "||=", "|=",
-        "^", "^^", "^^=", "^=",
-        "<", "<<", "<<=", "<=",
-        ">", ">>", ">>=", ">=",
-        "?", "??", "???", "??=", ":",
-        "<=>", "<>", "=", "==", "=>",
-    };
-
-    private static readonly HashSet<string> keyWords = new()
-    {
-        "as", "async", "await", "break", "catch", "chr", "const",
-        "continue", "delete", "do", "else", "eval", "exec",
-        "finally", "for", "foreach", "generator", "global",
-        "goto", "if", "in", "is", "len", "let", "lock", "loop",
-        "nameof", "new", "next", "nonlocal", "not", "ord",
-        "orderby", "param", "ref", "repeat", "return", "select",
-        "throw", "try", "typeof", "unchecked", "unless",
-        "until", "val", "var", "when", "where", "while", "yield"
-    };
+    private static readonly HashSet<char> reservedCharacters = "!\"#$%&'()*+,-./:;<=>?@[\\]^`{|}~".ToHashSet();
 
     private readonly string _code;
     private readonly int _offset;
@@ -79,7 +41,7 @@ internal sealed class TokenScanner
 
     internal bool HasNextToken()
     {
-        SkipWhiteSpace();
+        SkipWhiteSpaceAndComments();
 
         return _index < _code.Length;
     }
@@ -118,12 +80,11 @@ internal sealed class TokenScanner
     internal Token GetNextToken()
     {
         if (_index >= _code.Length)
-            throw new System.Exception();
+            throw new InvalidOperationException();
 
-        SkipWhiteSpace();
+        SkipWhiteSpaceAndComments();
 
-        if (char.IsDigit(_code[_index]) ||
-            (_code[_index] == '.' && _index < _code.Length - 1 && char.IsDigit(_code[_index + 1])))
+        if (char.IsDigit(_code[_index]) || (_index < _code.Length - 1 && _code[_index] == '.' && char.IsDigit(_code[_index + 1])))
             return GetNumber();
 
         if (_code[_index] is '\'' or '"' or '`')
@@ -132,25 +93,47 @@ internal sealed class TokenScanner
         if (_code[_index] is '(' or '{' or '[')
             return GetBlock();
 
-        if (symbols.Contains(_code[_index]) && _code[_index] != '$')
-            return GetOperator();
+        if (reservedCharacters.Contains(_code[_index]))
+        {
+            var symbol = GetSymbol();
 
-        var word = GetWord();
+            if (symbol.Text != Symbol.VARIABLE)
+                return symbol;
 
-        if (word is (TokenType.Keyword, "not") && Peek(1) is [(TokenType.Keyword, "in")])
-            return new Token(word.Start, GetNextToken().End, TokenType.Keyword, "not in");
+            if (_index >= _code.Length - 1)
+                throw new SyntaxError(0, 0, "Missing variable name.");
 
-        if (word is (TokenType.Keyword, "is") && Peek(1) is [(TokenType.Keyword, "not")])
-            return new Token(word.Start, GetNextToken().End, TokenType.Keyword, "is not");
+            if (char.IsDigit(_code[_index]) || (_index < _code.Length - 1 && _code[_index] == '.' && char.IsDigit(_code[_index + 1])))
+                throw new SyntaxError(0, 0, "Missing variable name.");
 
-        if (word is (TokenType.Keyword, "val") && Peek(1) is [(TokenType.Keyword, "val")])
-            return new Token(word.Start, GetNextToken().End, TokenType.Keyword, "val val");
+            if (_code[_index] is '\'' or '"' or '`')
+                throw new SyntaxError(0, 0, "Missing variable name.");
 
-        if (word is (TokenType.Keyword, "let") && Peek(1) is [(TokenType.Keyword, "new")])
-            return new Token(word.Start, GetNextToken().End, TokenType.Keyword, "let new");
+            if (_code[_index] is '(' or '{' or '[')
+                throw new SyntaxError(0, 0, "Missing variable name.");
 
-        if (word is (TokenType.Keyword, "const") && Peek(1) is [(TokenType.Keyword, "new")])
-            return new Token(word.Start, GetNextToken().End, TokenType.Keyword, "const new");
+            if (reservedCharacters.Contains(_code[_index]))
+                throw new SyntaxError(0, 0, "Missing variable name.");
+
+            return GetWord(true);
+        }
+
+        var word = GetWord(false);
+
+        if (word is (TokenType.Keyword, Keyword.NOT) && Peek(1) is [(TokenType.Keyword, Keyword.IN)])
+            return new Token(word.Start, GetNextToken().End, TokenType.Keyword, Keyword.NOT_IN);
+
+        if (word is (TokenType.Keyword, Keyword.IS) && Peek(1) is [(TokenType.Keyword, Keyword.NOT)])
+            return new Token(word.Start, GetNextToken().End, TokenType.Keyword, Keyword.IS_NOT);
+
+        if (word is (TokenType.Keyword, Keyword.VAL) && Peek(1) is [(TokenType.Keyword, Keyword.VAL)])
+            return new Token(word.Start, GetNextToken().End, TokenType.Keyword, Keyword.VAL_VAL);
+
+        if (word is (TokenType.Keyword, Keyword.LET) && Peek(1) is [(TokenType.Keyword, Keyword.NEW)])
+            return new Token(word.Start, GetNextToken().End, TokenType.Keyword, Keyword.LET_NEW);
+
+        if (word is (TokenType.Keyword, Keyword.CONST) && Peek(1) is [(TokenType.Keyword, Keyword.NEW)])
+            return new Token(word.Start, GetNextToken().End, TokenType.Keyword, Keyword.CONST_NEW);
 
         return word;
     }
@@ -158,18 +141,21 @@ internal sealed class TokenScanner
     internal Token GetNextCommandToken()
     {
         if (_index >= _code.Length)
-            throw new System.Exception();
+            throw new InvalidOperationException();
 
-        SkipWhiteSpace();
+        SkipWhiteSpaceAndComments();
 
         if (_index < _code.Length - 1 && _code.Substring(_index, 2) == "|>")
-            return new Token(_index + _offset, (_index += 2) + _offset, TokenType.Operator, "|>");
+            return new Token(_index + _offset, (_index += 2) + _offset, TokenType.Symbol, Symbol.PIPE);
 
         if (_code[_index] == ';')
-            return new Token(_index + _offset, ++_index + _offset, TokenType.Operator, ";");
+            return new Token(_index + _offset, ++_index + _offset, TokenType.Symbol, Symbol.SEMICOLON);
 
         if (_code[_index] == '$')
-            return GetWord();
+        {
+            _index++;
+            return GetWord(true);
+        }
 
         if (_code[_index] is '\'' or '"' or '`')
             return GetString();
@@ -177,7 +163,7 @@ internal sealed class TokenScanner
         return GetCommand();
     }
 
-    private void SkipWhiteSpace()
+    private void SkipWhiteSpaceAndComments()
     {
         var start = _index;
         bool skip;
@@ -186,7 +172,7 @@ internal sealed class TokenScanner
         {
             skip = false;
 
-            if (_index < _code.Length - 1 && _code.Substring(_index, 2) == "#*")
+            if (_index < _code.Length - 1 && _code.Substring(_index, 2) == Symbol.COMMENT_L)
             {
                 skip = true;
 
@@ -195,9 +181,9 @@ internal sealed class TokenScanner
                 while (true)
                 {
                     if (_index >= _code.Length - 1)
-                        throw new SyntaxError(start, start + 2, "missing '*#'");
+                        throw new SyntaxError(start, start + 2, $"missing '{Symbol.COMMENT_R}'");
 
-                    if (_code.Substring(_index, 2) == "*#")
+                    if (_code.Substring(_index, 2) == Symbol.COMMENT_R)
                     {
                         _index += 2;
                         break;
@@ -236,63 +222,29 @@ internal sealed class TokenScanner
         } while (skip);
     }
 
-    private Token GetWord()
+    private Token GetWord(bool forceIdentifier)
     {
-        var start = _index++;
+        var start = _index;
 
-        while (true)
-        {
-            if (_index == _code.Length)
-                break;
-
-            if (char.IsWhiteSpace(_code[_index]) || symbols.Contains(_code[_index]))
-                break;
-
+        while (_index < _code.Length && !char.IsWhiteSpace(_code[_index]) && !reservedCharacters.Contains(_code[_index]))
             _index++;
-        }
 
-        var word = _code[start.._index];
+        var text = _code[start.._index];
 
-        if (word == "$")
-            throw new SyntaxError(start + _offset, _index + _offset, "Missing variable name.");
+        TokenType type;
 
-        IExpression? expression = word switch
-        {
-            "recall" => new Recall(),
+        if (forceIdentifier)
+            type = TokenType.Identifier;
+        else if (Keyword.AccessKeywords.Contains(text))
+            type = TokenType.AccessKeyword;
+        else if (Keyword.LiteralKeywords.Contains(text))
+            type = TokenType.LiteralKeyword;
+        else if (Keyword.HardKeywords.Contains(text))
+            type = TokenType.Keyword;
+        else
+            type = TokenType.Word;
 
-            "void" => new VoidLiteral(),
-            "null" => new NullLiteral(),
-            "false" => new BoolLiteral(false),
-            "true" => new BoolLiteral(true),
-            "nan" => new NumberLiteral(double.NaN),
-            "infinity" => new NumberLiteral(double.PositiveInfinity),
-
-            "void_t" => new TypeLiteral(ValueType.Void),
-            "null_t" => new TypeLiteral(ValueType.Null),
-            "bool" => new TypeLiteral(ValueType.Bool),
-            "number" => new TypeLiteral(ValueType.Number),
-            "range" => new TypeLiteral(ValueType.Range),
-            "string" => new TypeLiteral(ValueType.String),
-            "array" => new TypeLiteral(ValueType.Array),
-            "struct" => new TypeLiteral(ValueType.Struct),
-            "tuple" => new TypeLiteral(ValueType.Tuple),
-            "func" => new TypeLiteral(ValueType.Func),
-            "task" => new TypeLiteral(ValueType.Task),
-            "iter" => new TypeLiteral(ValueType.Iter),
-            "reference" => new TypeLiteral(ValueType.Reference),
-            "extern" => new TypeLiteral(ValueType.Extern),
-            "type" => new TypeLiteral(ValueType.Type),
-
-            _ => null
-        };
-
-        if (expression is not null)
-            return new Literal(start + _offset, _index + _offset, expression);
-
-        if (keyWords.Contains(word))
-            return new Token(start + _offset, _index + _offset, TokenType.Keyword, word);
-
-        return new Token(start + _offset, _index + _offset, TokenType.Identifier, word.TrimStart('$'));
+        return new Token(start + _offset, _index + _offset, type, text);
     }
 
     private Token GetNumber()
@@ -364,7 +316,7 @@ internal sealed class TokenScanner
         {
             var number = @base == 10
                 ? double.Parse(num, CultureInfo.InvariantCulture)
-                : System.Convert.ToInt32(num, @base);
+                : Convert.ToInt32(num, @base);
             return new Literal(start + _offset, _index + _offset, new NumberLiteral(number));
         }
         catch
@@ -538,11 +490,11 @@ internal sealed class TokenScanner
             '(' => TokenType.Parentheses,
             '[' => TokenType.Brackets,
             '{' => TokenType.Braces,
-            _ => throw new System.Exception()
+            _ => throw new Exception()
         }, text);
     }
 
-    private Token GetOperator()
+    private Token GetSymbol()
     {
         var start = _index;
 
@@ -551,7 +503,7 @@ internal sealed class TokenScanner
             if (_index == _code.Length)
                 break;
 
-            if (operators.Contains(_code[start..(_index + 1)]))
+            if (Symbol.Symbols.Contains(_code[start..(_index + 1)]))
                 _index++;
             else
                 break;
@@ -560,7 +512,7 @@ internal sealed class TokenScanner
         if (start == _index)
             throw new SyntaxError(start + _offset, start + _offset + 1, "unknown operator");
 
-        return new Token(start + _offset, _index + _offset, TokenType.Operator, _code[start.._index]);
+        return new Token(start + _offset, _index + _offset, TokenType.Symbol, _code[start.._index]);
     }
 
     private Token GetCommand()
