@@ -235,8 +235,6 @@ internal sealed class TokenScanner
 
         if (forceIdentifier)
             type = TokenType.Identifier;
-        else if (Keyword.AccessKeywords.Contains(text))
-            type = TokenType.AccessKeyword;
         else if (Keyword.LiteralKeywords.Contains(text))
             type = TokenType.LiteralKeyword;
         else if (Keyword.HardKeywords.Contains(text))

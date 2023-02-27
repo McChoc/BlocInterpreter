@@ -188,7 +188,7 @@ namespace Bloc.Values
                     throw new Throw($"A non-void value must be provided for the required parameter '{parameter.Name}'");
             }
 
-            var call = new Call(parent, _captures, @params, this);
+            var call = new Call(parent, _captures, @params);
 
             return _type switch
             {

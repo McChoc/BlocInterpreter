@@ -14,7 +14,6 @@ public sealed class Call
 
     public Engine Engine { get; }
 
-    internal Variable? Recall { get; }
     internal VariableCollection Captures { get; }
     internal VariableCollection Params { get; }
     internal List<Scope> Scopes { get; }
@@ -40,20 +39,6 @@ public sealed class Call
         Params = @params;
     }
 
-    internal Call(Call parent, VariableCollection captures, VariableCollection @params, Func recall)
-        : this(parent.Engine)
-    {
-        _stack = parent._stack + 1;
-
-        if (_stack > Engine.StackLimit)
-            throw new Throw("The stack limit was reached");
-
-        Captures = captures;
-        Params = @params;
-
-        Recall = new HeapVariable(false, recall);
-    }
-
     internal Scope MakeScope()
     {
         return new Scope(this);
@@ -61,8 +46,6 @@ public sealed class Call
 
     internal void Destroy()
     {
-        Recall?.Delete();
-
         while (Scopes.Count > 0)
             Scopes[^1].Dispose();
     }

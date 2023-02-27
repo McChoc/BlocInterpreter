@@ -6,7 +6,6 @@
         Word,
         Identifier,
         Keyword,
-        AccessKeyword,
         LiteralKeyword,
         Symbol,
         Parentheses,

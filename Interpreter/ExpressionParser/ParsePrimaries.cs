@@ -23,8 +23,6 @@ internal static partial class ExpressionParser
             { Type: TokenType.Parentheses } => Parse(TokenScanner.Scan(tokens[0]).ToList()),
             { Type: TokenType.Word or TokenType.Identifier } => new Identifier(tokens[0].Text),
 
-            (TokenType.AccessKeyword, Keyword.RECALL) => new Recall(),
-
             (TokenType.LiteralKeyword, Keyword.VOID)        => new VoidLiteral(),
             (TokenType.LiteralKeyword, Keyword.NULL)        => new NullLiteral(),
             (TokenType.LiteralKeyword, Keyword.FALSE)       => new BoolLiteral(false),

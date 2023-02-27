@@ -8,12 +8,6 @@ namespace Bloc.Utils;
 
 internal static class Keyword
 {
-    #region Access Keywords
-
-    [AccessKeyword] internal const string RECALL = "recall";
-
-    #endregion
-
     #region Literal Keywords
 
     [LiteralKeyword] internal const string VOID      = "void";
@@ -111,27 +105,22 @@ internal static class Keyword
 
     #endregion
 
-    internal static IReadOnlyCollection<string> AccessKeywords { get; }
     internal static IReadOnlyCollection<string> LiteralKeywords { get; }
     internal static IReadOnlyCollection<string> HardKeywords { get; }
 
     static Keyword()
     {
-        var accessKeywords = new HashSet<string>();
         var literalKeywords = new HashSet<string>();
         var hardKeywords = new HashSet<string>();
 
         foreach (var field in typeof(Keyword).GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static))
         {
-            if (Attribute.IsDefined(field, typeof(AccessKeywordAttribute)))
-                accessKeywords.Add(field.GetValue(null).ToString());
-            else if (Attribute.IsDefined(field, typeof(LiteralKeywordAttribute)))
+            if (Attribute.IsDefined(field, typeof(LiteralKeywordAttribute)))
                 literalKeywords.Add(field.GetValue(null).ToString());
             else if (Attribute.IsDefined(field, typeof(HardKeywordAttribute)))
                 hardKeywords.Add(field.GetValue(null).ToString());
         }
 
-        AccessKeywords = accessKeywords;
         LiteralKeywords = literalKeywords;
         HardKeywords = hardKeywords;
     }
