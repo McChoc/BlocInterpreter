@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Bloc.Extensions;
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
+using Bloc.Utils.Extensions;
 using Bloc.Values;
 
-namespace Bloc.Utils
+namespace Bloc.Utils.Helpers
 {
     internal static class AssignmentUtil
     {

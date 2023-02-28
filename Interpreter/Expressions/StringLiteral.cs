@@ -1,20 +1,22 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Bloc.Memory;
 using Bloc.Values;
+using String = Bloc.Values.String;
 
 namespace Bloc.Expressions
 {
     internal sealed class StringLiteral : IExpression
     {
         private readonly string _baseString;
-        private readonly List<(int, IExpression)> _expressions;
+        private readonly List<Interpolation> _interpolations;
 
-        internal StringLiteral(string baseString, List<(int, IExpression)> expressions)
+        internal StringLiteral(string baseString, List<Interpolation> interpolations)
         {
             _baseString = baseString;
-            _expressions = expressions;
+            _interpolations = interpolations;
         }
 
         public IValue Evaluate(Call call)
@@ -23,13 +25,13 @@ namespace Bloc.Expressions
 
             var builder = new StringBuilder(_baseString);
 
-            foreach (var (index, expression) in _expressions)
+            foreach (var interpolation in _interpolations)
             {
-                var value = expression.Evaluate(call).Value;
+                var value = interpolation.Expression.Evaluate(call).Value;
 
                 var @string = String.ImplicitCast(value);
 
-                builder.Insert(index + offset, @string.Value);
+                builder.Insert(interpolation.Index + offset, @string.Value);
                 offset += @string.Value.Length;
             }
 
@@ -38,14 +40,38 @@ namespace Bloc.Expressions
 
         public override int GetHashCode()
         {
-            return System.HashCode.Combine(_baseString, _expressions.Count);
+            return HashCode.Combine(_baseString, _interpolations.Count);
         }
 
         public override bool Equals(object other)
         {
             return other is StringLiteral literal &&
                 _baseString == literal._baseString &&
-                _expressions.SequenceEqual(literal._expressions);
+                _interpolations.SequenceEqual(literal._interpolations);
+        }
+
+        public sealed class Interpolation
+        {
+            public int Index { get; }
+            public IExpression Expression { get; }
+
+            public Interpolation(int index, IExpression expression)
+            {
+                Index = index;
+                Expression = expression;
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(Index, Expression);
+            }
+
+            public override bool Equals(object other)
+            {
+                return other is Interpolation interpolation &&
+                    Index == interpolation.Index &&
+                    Expression.Equals(interpolation.Expression);
+            }
         }
     }
 }

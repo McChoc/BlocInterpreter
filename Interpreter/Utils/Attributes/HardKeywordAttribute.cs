@@ -1,4 +1,5 @@
 ﻿using System;
-namespace Bloc.Attributes;
+
+namespace Bloc.Utils.Attributes;
 
 internal sealed class HardKeywordAttribute : Attribute { }

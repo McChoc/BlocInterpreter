@@ -2,7 +2,7 @@
 using Bloc.Results;
 using Bloc.Values;
 
-namespace Bloc.Utils
+namespace Bloc.Utils.Helpers
 {
     internal static class ReferenceUtil
     {

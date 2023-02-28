@@ -10,9 +10,7 @@
 
         internal virtual void Destroy() { }
 
-        internal abstract string ToString(int depth);
-
-        public override string ToString() => ToString(0);
+        public abstract override string ToString();
 
         public abstract override int GetHashCode();
 

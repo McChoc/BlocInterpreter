@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Bloc.Utils.Extensions;
 
-namespace Bloc.Extensions
+namespace Bloc.Utils.Extensions
 {
     public static class EnumerableExtensions
     {

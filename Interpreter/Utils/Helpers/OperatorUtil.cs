@@ -3,7 +3,7 @@ using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Values;
 
-namespace Bloc.Utils
+namespace Bloc.Utils.Helpers
 {
     internal delegate Value UnaryOperation(Value value);
 

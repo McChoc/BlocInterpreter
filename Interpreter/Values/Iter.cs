@@ -6,7 +6,7 @@ using Bloc.Memory;
 using Bloc.Operators;
 using Bloc.Results;
 using Bloc.Statements;
-using Bloc.Utils;
+using Bloc.Utils.Helpers;
 
 namespace Bloc.Values
 {
@@ -129,7 +129,7 @@ namespace Bloc.Values
             return new Iter(_call, _statements);
         }
 
-        internal override string ToString(int _)
+        public override string ToString()
         {
             return "[iter]";
         }

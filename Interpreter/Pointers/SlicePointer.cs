@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Bloc.Extensions;
 using Bloc.Results;
+using Bloc.Utils.Extensions;
 using Bloc.Values;
 using Bloc.Variables;
 

@@ -6,6 +6,7 @@ using Bloc.Exceptions;
 using Bloc.Results;
 using Bloc.Values;
 using Void = Bloc.Values.Void;
+using ConsoleColor = Example.ConsoleColor;
 
 const byte RED = 9;
 const byte ORANGE = 208;
@@ -27,8 +28,8 @@ var engine = new Engine.Builder(args)
                 throw new Throw("'delete_global' does not take arguments.\nType '/help delete_global' to see its usage.");
 
             foreach (var stack in call.Engine.GlobalScope.Variables.Values)
-                foreach (var variable in stack)
-                    variable.Delete();
+                while (stack.Count > 0)
+                    stack.Peek().Delete();
 
             return Void.Value;
         }))

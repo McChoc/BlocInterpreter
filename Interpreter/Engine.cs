@@ -4,17 +4,18 @@ using System.Linq;
 using Bloc.Commands;
 using Bloc.Expressions;
 using Bloc.Memory;
+using Bloc.Parsers;
 using Bloc.Results;
 using Bloc.Scanners;
 using Bloc.Statements;
-using Bloc.Utils;
+using Bloc.Utils.Helpers;
 using Bloc.Values;
 
 namespace Bloc
 {
     public class Engine
     {
-        internal Dictionary<string, Command> Commands { get; set; } = null!;
+        internal Dictionary<string, CommandInfo> Commands { get; set; } = null!;
 
         public Action<string> Log { get; private set; } = null!;
         public Action Clear { get; private set; } = null!;
@@ -36,7 +37,8 @@ namespace Bloc
 
         public static void Compile(string code, out IExpression? expression, out List<Statement> statements)
         {
-            statements = StatementScanner.GetStatements(code);
+            var provider = new Tokenizer(code);
+            statements = StatementParser.Parse(provider);
 
             if (statements.Count == 1 && statements[0] is ExpressionStatement statement)
                 expression = statement.Expression;
@@ -101,7 +103,7 @@ namespace Bloc
 
         public class Builder
         {
-            private readonly Dictionary<string, Command> _commands = new();
+            private readonly Dictionary<string, CommandInfo> _commands = new();
 
             private Action<string> _log = _ => { };
             private Action _clear = () => { };
@@ -156,7 +158,7 @@ namespace Bloc
                 return this;
             }
 
-            public Builder AddCommand(Command command)
+            public Builder AddCommand(CommandInfo command)
             {
                 _commands.Add(command.Name, command);
                 return this;

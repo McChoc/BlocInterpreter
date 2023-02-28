@@ -55,12 +55,9 @@ namespace Bloc.Values
                 .ToList<IVariable>());
         }
 
-        internal override string ToString(int depth)
+        public override string ToString()
         {
-            if (!Variables.Any(v => v.Value is Array or Struct or Tuple))
-                return "(" + string.Join(", ", Variables.Select(v => v.Value)) + ")";
-
-            return "(" + string.Join(",\n", Variables.Select(v => new string(' ', depth * 4) + v.Value.ToString(depth))) + ")";
+            return "(" + string.Join(", ", Variables.Select(v => v.Value)) + ")";
         }
 
         public override int GetHashCode()

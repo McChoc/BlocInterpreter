@@ -1,11 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System.Linq;
 using Bloc.Exceptions;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Scanners;
-using Bloc.Tokens;
-using Bloc.Utils;
+using Bloc.Utils.Helpers;
 using Bloc.Values;
 
 namespace Bloc.Operators
@@ -28,14 +27,9 @@ namespace Bloc.Operators
             if (value is not String @string)
                 throw new Throw($"Cannot apply operator 'eval' on type {value.GetType().ToString().ToLower()}");
 
-            var tokens = new List<Token>();
-            var scanner = new TokenScanner(@string.Value);
-
             try
             {
-                while (scanner.HasNextToken())
-                    tokens.Add(scanner.GetNextToken());
-
+                var tokens = Tokenizer.Tokenize(@string.Value).ToList();
                 var expression = ExpressionParser.Parse(tokens);
 
                 return expression.Evaluate(call);

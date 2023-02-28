@@ -49,14 +49,12 @@ namespace Bloc.Values
                 variable.Delete();
         }
 
-        internal override string ToString(int depth)
+        public override string ToString()
         {
             if (Variables.Count == 0)
                 return "{ }";
 
-            return "{\n" +
-                   string.Join(",\n", Variables.OrderBy(x => x.Key).Select(p => new string(' ', (depth + 1) * 4) + p.Key + " = " + p.Value.Value.ToString(depth + 1))) + "\n" +
-                   new string(' ', depth * 4) + "}";
+            return "{ " + string.Join(", ", Variables.OrderBy(x => x.Key).Select(x => $"{x.Key} = {x.Value.Value}")) + " }";
         }
 
         public override int GetHashCode()

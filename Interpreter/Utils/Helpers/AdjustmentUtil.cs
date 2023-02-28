@@ -4,7 +4,7 @@ using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Values;
 
-namespace Bloc.Utils
+namespace Bloc.Utils.Helpers
 {
     internal delegate (Value, Value) Adjustment(Value value);
 

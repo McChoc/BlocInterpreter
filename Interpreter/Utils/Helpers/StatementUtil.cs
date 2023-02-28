@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Bloc.Statements;
 
-namespace Bloc.Utils
+namespace Bloc.Utils.Helpers
 {
     internal static class StatementUtil
     {

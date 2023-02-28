@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Bloc.Exceptions;
 using Bloc.Expressions;
 using Bloc.Memory;
+using Bloc.Parsers;
 using Bloc.Results;
 using Bloc.Scanners;
 using String = Bloc.Values.String;
@@ -36,7 +37,8 @@ namespace Bloc.Statements
 
             try
             {
-                statements = StatementScanner.GetStatements(@string.Value);
+                var provider = new Tokenizer(@string.Value);
+                statements = StatementParser.Parse(provider);
             }
             catch (SyntaxError e)
             {

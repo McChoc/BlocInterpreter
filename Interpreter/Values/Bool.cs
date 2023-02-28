@@ -62,7 +62,7 @@ namespace Bloc.Values
             }
         }
 
-        internal override string ToString(int _)
+        public override string ToString()
         {
             return Value ? "true" : "false";
         }

@@ -4,7 +4,7 @@ using Bloc.Interfaces;
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
-using Bloc.Utils;
+using Bloc.Utils.Helpers;
 using Bloc.Variables;
 
 namespace Bloc.Values
@@ -82,17 +82,12 @@ namespace Bloc.Values
                 Variables.Last().Delete();
         }
 
-        internal override string ToString(int depth)
+        public override string ToString()
         {
             if (Variables.Count == 0)
                 return "{ }";
 
-            if (!Variables.Any(v => v.Value is Array or Struct or Tuple))
-                return "{ " + string.Join(", ", Variables.Select(v => v.Value.ToString())) + " }";
-
-            return "{\n" +
-                   string.Join(",\n", Variables.Select(v => new string(' ', (depth + 1) * 4) + v.Value.ToString(depth + 1))) + "\n" +
-                   new string(' ', depth * 4) + "}";
+            return "{ " + string.Join(", ", Variables.Select(v => v.Value)) + " }";
         }
 
         public override int GetHashCode()

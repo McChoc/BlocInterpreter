@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Bloc.Extensions
+namespace Bloc.Utils.Extensions
 {
     public static class ListExtensions
     {

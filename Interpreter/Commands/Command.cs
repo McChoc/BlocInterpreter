@@ -1,24 +1,25 @@
-﻿using Bloc.Memory;
+﻿using System.Collections.Generic;
+using Bloc.Memory;
 using Bloc.Values;
 
-namespace Bloc.Commands
+namespace Bloc.Commands;
+
+internal sealed class Command
 {
-    public delegate Value CommandCallback(string[] command, Value input, Call call);
+    private readonly List<CommandCall> _commandCalls;
 
-    public sealed class Command
+    internal Command(List<CommandCall> commandCalls)
     {
-        private readonly CommandCallback _callback;
+        _commandCalls = commandCalls;
+    }
 
-        public string Name { get; }
-        public string Description { get; }
+    internal Value Execute(Call call)
+    {
+        Value value = Void.Value;
 
-        public Command(string name, string description, CommandCallback callback)
-        {
-            Name = name;
-            Description = description;
-            _callback = callback;
-        }
+        foreach (var commandCall in _commandCalls)
+            value = commandCall.Execute(value, call);
 
-        public Value Call(string[] command, Value input, Call call) => _callback(command, input, call);
+        return value;
     }
 }

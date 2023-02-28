@@ -4,7 +4,7 @@ using Bloc.Interfaces;
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Statements;
-using Bloc.Utils;
+using Bloc.Utils.Helpers;
 
 namespace Bloc.Values
 {
@@ -71,7 +71,7 @@ namespace Bloc.Values
             };
         }
 
-        internal override string ToString(int _)
+        public override string ToString()
         {
             return "[func]";
         }

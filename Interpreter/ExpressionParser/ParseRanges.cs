@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
+using Bloc.Constants;
 using Bloc.Exceptions;
 using Bloc.Expressions;
-using Bloc.Extensions;
 using Bloc.Operators;
 using Bloc.Tokens;
-using Bloc.Utils;
+using Bloc.Utils.Extensions;
 
 namespace Bloc;
 
@@ -12,7 +12,7 @@ internal static partial class ExpressionParser
 {
     private static IExpression ParseRanges(List<Token> tokens, int precedence)
     {
-        var parts = tokens.Split(x => x is (TokenType.Symbol, Symbol.COLON));
+        var parts = tokens.Split(x => x is SymbolToken(Symbol.COLON));
 
         if (parts.Count == 1)
             return Parse(parts[0], precedence - 1);

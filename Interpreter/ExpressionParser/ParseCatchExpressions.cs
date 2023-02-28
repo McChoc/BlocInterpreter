@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
+using Bloc.Constants;
 using Bloc.Exceptions;
 using Bloc.Expressions;
-using Bloc.Extensions;
 using Bloc.Operators;
 using Bloc.Tokens;
-using Bloc.Utils;
+using Bloc.Utils.Extensions;
 
 namespace Bloc;
 
@@ -14,7 +14,7 @@ internal static partial class ExpressionParser
     {
         for (var i = tokens.Count - 1; i >= 0; i--)
         {
-            if (tokens[i] is (TokenType.Keyword, Keyword.CATCH) @operator)
+            if (tokens[i] is KeywordToken(Keyword.CATCH) @operator)
             {
                 if (i == 0)
                     throw new SyntaxError(@operator.Start, @operator.End, "Missing the left part of catch expression");

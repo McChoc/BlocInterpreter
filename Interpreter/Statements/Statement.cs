@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using Bloc.Commands;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
-using Bloc.Utils;
+using Bloc.Utils.Helpers;
 using Bloc.Values;
 
 namespace Bloc.Statements;
@@ -35,6 +36,22 @@ public abstract class Statement
         try
         {
             value = expression.Evaluate(call);
+            exception = null;
+            return true;
+        }
+        catch (Throw e)
+        {
+            value = null;
+            exception = e;
+            return false;
+        }
+    }
+
+    private protected static bool ExecuteCommand(Command command, Call call, out Value? value, out Throw? exception)
+    {
+        try
+        {
+            value = command.Execute(call);
             exception = null;
             return true;
         }

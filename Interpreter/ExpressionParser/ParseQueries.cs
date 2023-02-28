@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using Bloc.Constants;
 using Bloc.Exceptions;
 using Bloc.Expressions;
-using Bloc.Extensions;
 using Bloc.Operators;
 using Bloc.Tokens;
-using Bloc.Utils;
+using Bloc.Utils.Extensions;
 
 namespace Bloc;
 
@@ -15,20 +15,18 @@ internal static partial class ExpressionParser
     {
         for (var i = tokens.Count - 1; i >= 0; i--)
         {
-            if (IsQuery(tokens[i]))
+            if (IsQuery(tokens[i], out var @operator))
             {
-                var @operator = tokens[i];
-
                 if (i == 0)
-                    throw new SyntaxError(@operator.Start, @operator.End, "Missing the left part of query");
+                    throw new SyntaxError(@operator!.Start, @operator.End, "Missing the left part of query");
 
                 if (i == tokens.Count - 1)
-                    throw new SyntaxError(@operator.Start, @operator.End, "Missing the right part of query");
+                    throw new SyntaxError(@operator!.Start, @operator.End, "Missing the right part of query");
 
                 var left = ParseQueries(tokens.GetRange(..i), precedence);
                 var right = Parse(tokens.GetRange((i + 1)..), precedence - 1);
 
-                return @operator.Text switch
+                return @operator!.Text switch
                 {
                     Keyword.SELECT  => new Select(left, right),
                     Keyword.WHERE   => new Where(left, right),
@@ -41,11 +39,17 @@ internal static partial class ExpressionParser
         return Parse(tokens, precedence - 1);
     }
 
-    private static bool IsQuery(Token token)
+    private static bool IsQuery(Token token, out TextToken? @operator)
     {
-        return token is (TokenType.Keyword,
-            Keyword.SELECT or
-            Keyword.WHERE or
-            Keyword.ORDERBY);
+        if (token is KeywordToken(Keyword.SELECT or Keyword.WHERE or Keyword.ORDERBY))
+        {
+            @operator = (TextToken)token;
+            return true;
+        }
+        else
+        {
+            @operator = null;
+            return false;
+        }
     }
 }

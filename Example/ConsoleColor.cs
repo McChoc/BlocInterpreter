@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
+namespace Example;
+
 public static class ConsoleColor
 {
     static ConsoleColor()

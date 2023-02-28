@@ -2,7 +2,7 @@
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
-using Bloc.Utils;
+using Bloc.Utils.Helpers;
 using Bloc.Values;
 
 namespace Bloc.Operators
