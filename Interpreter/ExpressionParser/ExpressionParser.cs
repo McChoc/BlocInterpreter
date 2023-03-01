@@ -14,7 +14,7 @@ internal static partial class ExpressionParser
         ParseUnaries,
         ParseRanges,
         ParseQueries,
-        ParseExponentials,
+        ParseExponentiations,
         ParseMultiplicatives,
         ParseAdditives,
         ParseShifts,

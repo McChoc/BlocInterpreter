@@ -34,9 +34,8 @@ internal static partial class ExpressionParser
                     Symbol.ASSIGN_PRODUCT   => new MultiplicationAssignment(left, right),
                     Symbol.ASSIGN_QUOTIENT  => new DivisionAssignment(left, right),
                     Symbol.ASSIGN_REMAINDER => new RemainderAssignment(left, right),
+                    Symbol.ASSIGN_MODULO    => new ModuloAssignment(left, right),
                     Symbol.ASSIGN_POWER     => new PowerAssignment(left, right),
-                    Symbol.ASSIGN_ROOT      => new RootAssignment(left, right),
-                    Symbol.ASSIGN_LOGARITHM => new LogarithmAssignment(left, right),
                     Symbol.ASSIGN_BOOL_AND  => new BooleanAndAssignment(left, right),
                     Symbol.ASSIGN_BOOL_OR   => new BooleanOrAssignment(left, right),
                     Symbol.ASSIGN_BOOL_XOR  => new BooleanXorAssignment(left, right),
@@ -63,9 +62,8 @@ internal static partial class ExpressionParser
             Symbol.ASSIGN_PRODUCT or
             Symbol.ASSIGN_QUOTIENT or
             Symbol.ASSIGN_REMAINDER or
+            Symbol.ASSIGN_MODULO or
             Symbol.ASSIGN_POWER or
-            Symbol.ASSIGN_ROOT or
-            Symbol.ASSIGN_LOGARITHM or
             Symbol.ASSIGN_BOOL_AND or
             Symbol.ASSIGN_BOOL_OR or
             Symbol.ASSIGN_BOOL_XOR or

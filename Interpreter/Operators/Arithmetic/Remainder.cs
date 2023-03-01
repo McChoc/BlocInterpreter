@@ -30,13 +30,13 @@ namespace Bloc.Operators
         {
             return (a, b) switch
             {
-                (IScalar left, IScalar right) => ModScalars(left, right),
+                (IScalar left, IScalar right) => RemScalars(left, right),
 
                 _ => throw new Throw($"Cannot apply operator '%' on operands of types {a.GetType().ToString().ToLower()} and {b.GetType().ToString().ToLower()}"),
             };
         }
 
-        private static Number ModScalars(IScalar left, IScalar right)
+        private static Number RemScalars(IScalar left, IScalar right)
         {
             return new Number(left.GetDouble() % right.GetDouble());
         }

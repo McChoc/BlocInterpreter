@@ -13,9 +13,8 @@ internal static class Symbol
     internal const string TIMES = "*";
     internal const string SLASH = "/";
     internal const string REMAINDER = "%";
+    internal const string MODULO = "%%";
     internal const string POWER = "**";
-    internal const string ROOT = "//";
-    internal const string LOGARITHM = "%%";
     internal const string INCREMENT = "++";
     internal const string DECREMENT = "--";
     internal const string SHIFT_L = "<<";
@@ -38,9 +37,8 @@ internal static class Symbol
     internal const string ASSIGN_PRODUCT = "*=";
     internal const string ASSIGN_QUOTIENT = "/=";
     internal const string ASSIGN_REMAINDER = "%=";
+    internal const string ASSIGN_MODULO = "%%=";
     internal const string ASSIGN_POWER = "**=";
-    internal const string ASSIGN_ROOT = "//=";
-    internal const string ASSIGN_LOGARITHM = "%%=";
     internal const string ASSIGN_SHIFT_L = "<<=";
     internal const string ASSIGN_SHIFT_R = ">>=";
     internal const string ASSIGN_BIT_AND = "&=";

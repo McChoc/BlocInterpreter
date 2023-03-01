@@ -4,16 +4,15 @@ using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Utils.Helpers;
 using Bloc.Values;
-using static System.Math;
 
 namespace Bloc.Operators
 {
-    internal sealed record Logarithm : IExpression
+    internal sealed record Modulo : IExpression
     {
         private readonly IExpression _left;
         private readonly IExpression _right;
 
-        internal Logarithm(IExpression left, IExpression right)
+        internal Modulo(IExpression left, IExpression right)
         {
             _left = left;
             _right = right;
@@ -29,10 +28,20 @@ namespace Bloc.Operators
 
         internal static Value Operation(Value a, Value b)
         {
-            if (a is IScalar left && b is IScalar right)
-                return new Number(Log(left.GetDouble(), right.GetDouble()));
+            return (a, b) switch
+            {
+                (IScalar left, IScalar right) => ModScalars(left, right),
 
-            throw new Throw($"Cannot apply operator '%%' on operands of types {a.GetType().ToString().ToLower()} and {b.GetType().ToString().ToLower()}");
+                _ => throw new Throw($"Cannot apply operator '%%' on operands of types {a.GetType().ToString().ToLower()} and {b.GetType().ToString().ToLower()}"),
+            };
+        }
+
+        private static Number ModScalars(IScalar left, IScalar right)
+        {
+            var dividend = left.GetDouble();
+            var divisor = right.GetDouble();
+
+            return new Number((dividend % divisor + divisor) % divisor);
         }
     }
 }

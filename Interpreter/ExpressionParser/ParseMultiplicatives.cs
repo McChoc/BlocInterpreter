@@ -31,6 +31,7 @@ internal static partial class ExpressionParser
                     Symbol.TIMES =>   new Multiplication(left, right),
                     Symbol.SLASH =>  new Division(left, right),
                     Symbol.REMAINDER => new Remainder(left, right),
+                    Symbol.MODULO => new Modulo(left, right),
                     _ => throw new Exception()
                 };
             }
@@ -41,7 +42,11 @@ internal static partial class ExpressionParser
 
     private static bool IsMultiplicative(Token token, out TextToken? @operator)
     {
-        if (token is SymbolToken(Symbol.TIMES or Symbol.SLASH or Symbol.REMAINDER))
+        if (token is SymbolToken(
+            Symbol.TIMES or
+            Symbol.SLASH or
+            Symbol.REMAINDER or
+            Symbol.MODULO))
         {
             @operator = (TextToken)token;
             return true;
