@@ -97,10 +97,13 @@ internal sealed class Tokenizer : ITokenProvider
         {
             var symbol = GetSymbol();
 
-            if (symbol.Text == Symbol.VARIABLE && IsWord())
+            if (symbol is not SymbolToken(Symbol.VARIABLE))
+                return symbol;
+
+            if (IsWord())
                 return GetWord(true);
 
-            return symbol;
+            throw new SyntaxError(symbol.Start, symbol.End, "Missing identifier name");
         }
 
         var word = GetWord(false);
@@ -497,11 +500,11 @@ internal sealed class Tokenizer : ITokenProvider
 
         if (IsCodeBlock(tokens))
             return new CodeBlockToken(start, _index, tokens);
-        
-        if (tokens.Any(x => x is SymbolToken(Symbol.ASSIGN)))
+
+        if (IsStruct(tokens))
             return new StructToken(start, _index, tokens);
-        else
-            return new ArrayToken(start, _index, tokens);
+
+        return new ArrayToken(start, _index, tokens);
     }
 
     private string GetBlock()
@@ -534,6 +537,13 @@ internal sealed class Tokenizer : ITokenProvider
         }
 
         return _code[(start + 1)..(_index - 1)];
+    }
+
+    private static bool IsStruct(List<Token> tokens)
+    {
+        var token = tokens.FirstOrDefault(x => x is SymbolToken(Symbol.COMMA or Symbol.ASSIGN or Symbol.UNPACK_ARRAY or Symbol.UNPACK_STRUCT));
+
+        return token is SymbolToken(Symbol.ASSIGN or Symbol.UNPACK_STRUCT);
     }
 
     private static bool IsCodeBlock(List<Token> tokens)
