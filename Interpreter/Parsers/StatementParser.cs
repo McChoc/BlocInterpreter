@@ -19,7 +19,12 @@ internal static class StatementParser
         while (provider.HasNext())
             statements.Add(GetStatement(provider));
 
-        if (statements.GroupBy(x => x.Label).Any(x => x.Count() > 1))
+        bool duplicate = statements
+            .Where(x => x.Label is not null)
+            .GroupBy(x => x.Label)
+            .Any(x => x.Count() > 1);
+
+        if (duplicate)
             throw new SyntaxError(0, 0, "Duplicate labels");
 
         return statements;
