@@ -27,6 +27,9 @@ namespace Bloc.Operators
             left = ReferenceUtil.Dereference(left, call.Engine.HopLimit).Value;
             right = ReferenceUtil.Dereference(right, call.Engine.HopLimit).Value;
 
+            if (left is String leftString && right is String rightString)
+                return new Number(Sign(string.CompareOrdinal(leftString.Value, rightString.Value)));
+
             if (left is IScalar leftScalar && right is IScalar rightScalar)
             {
                 if (double.IsNaN(leftScalar.GetDouble()) || double.IsNaN(rightScalar.GetDouble()))
