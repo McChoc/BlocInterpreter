@@ -68,9 +68,9 @@ internal static class Symbol
     internal const string PIPE = "|>";
     internal const string VARIABLE = "$";
     internal const string ATTRIBUTE = "@";
-    internal const string COMMENT = "#";
-    internal const string COMMENT_L = "#*";
-    internal const string COMMENT_R = "*#";
+    internal const string COMMENT = "//";
+    internal const string COMMENT_L = "/*";
+    internal const string COMMENT_R = "*/";
     internal const string PAREN_L = "(";
     internal const string PAREN_R = ")";
     internal const string BRACKET_L = "[";

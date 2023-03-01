@@ -197,7 +197,7 @@ internal sealed class Tokenizer : ITokenProvider
                 }
             }
 
-            if (_index < _code.Length && _code[_index] == '#')
+            if (_index < _code.Length - 1 && _code.Substring(_index, 2) == Symbol.COMMENT)
             {
                 skip = true;
 
@@ -223,7 +223,8 @@ internal sealed class Tokenizer : ITokenProvider
                 skip = true;
                 _index++;
             }
-        } while (skip);
+        }
+        while (skip);
     }
 
     private TextToken GetWord(bool forceIdentifier)
