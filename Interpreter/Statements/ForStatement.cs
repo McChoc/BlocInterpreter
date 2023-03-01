@@ -56,7 +56,7 @@ internal sealed class ForStatement : Statement
                         break;
                 }
 
-                if (_checked && ++loopCount > call.Engine.LoopLimit)
+                if (++loopCount > call.Engine.LoopLimit && _checked)
                 {
                     yield return new Throw("The loop limit was reached.");
                     yield break;

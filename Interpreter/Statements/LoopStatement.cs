@@ -22,7 +22,7 @@ internal sealed class LoopStatement : Statement
 
         while (true)
         {
-            if (_checked && ++loopCount > call.Engine.LoopLimit)
+            if (++loopCount > call.Engine.LoopLimit && _checked)
             {
                 yield return new Throw("The loop limit was reached.");
                 yield break;
