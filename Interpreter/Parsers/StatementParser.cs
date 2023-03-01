@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Bloc.Constants;
 using Bloc.Exceptions;
 using Bloc.Expressions;
@@ -17,6 +18,9 @@ internal static class StatementParser
 
         while (provider.HasNext())
             statements.Add(GetStatement(provider));
+
+        if (statements.GroupBy(x => x.Label).Any(x => x.Count() > 1))
+            throw new SyntaxError(0, 0, "Duplicate labels");
 
         return statements;
     }
