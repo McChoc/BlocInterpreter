@@ -1,60 +1,63 @@
-﻿using Bloc.Results;
+﻿using System;
+using Bloc.Results;
 using Bloc.Values;
 using Bloc.Variables;
 
-namespace Bloc.Pointers
+namespace Bloc.Pointers;
+
+internal sealed class VariablePointer : Pointer
 {
-    internal sealed class VariablePointer : Pointer
+    internal Variable? Variable { get; private set; }
+
+    internal VariablePointer(Variable? variable)
     {
-        internal Variable? Variable { get; private set; }
+        Variable = variable;
+        variable?.Pointers.Add(this);
+    }
 
-        internal VariablePointer(Variable? variable)
-        {
-            Variable = variable;
-            variable?.Pointers.Add(this);
-        }
+    internal override Value Get()
+    {
+        if (Variable is null)
+            throw new Throw("Invalid reference");
 
-        internal override Value Get()
-        {
-            if (Variable is null)
-                throw new Throw("Invalid reference");
+        return Variable.Value;
+    }
 
-            return Variable.Value;
-        }
+    internal override Value Set(Value value)
+    {
+        if (Variable is null)
+            throw new Throw("Invalid reference");
 
-        internal override Value Set(Value value)
-        {
-            if (Variable is null)
-                throw new Throw("Invalid reference");
+        value = value.GetOrCopy(true);
+        Variable.Value.Destroy();
+        return Variable.Value = value;
+    }
 
-            var old = Variable.Value;
-            Variable.Value = value.Copy();
-            old.Destroy();
+    internal override Value Delete()
+    {
+        if (Variable is null)
+            throw new Throw("Invalid reference");
 
-            return Variable.Value;
-        }
+        var value = Variable.Value.GetOrCopy();
+        Variable.Delete();
+        return value;
+    }
 
-        internal override Value Delete()
-        {
-            if (Variable is null)
-                throw new Throw("Invalid reference");
+    internal override void Invalidate()
+    {
+        Variable = null;
+    }
 
-            var value = Variable.Value.Copy();
-            Variable.Delete();
-            return value;
-        }
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Variable);
+    }
 
-        internal override void Invalidate()
-        {
-            Variable = null;
-        }
-
-        internal override bool Equals(Pointer other)
-        {
-            return other is VariablePointer pointer &&
-                Variable is not null &&
-                pointer.Variable is not null &&
-                Variable == pointer.Variable;
-        }
+    public override bool Equals(object other)
+    {
+        return other is VariablePointer pointer &&
+            Variable is not null &&
+            pointer.Variable is not null &&
+            Variable == pointer.Variable;
     }
 }

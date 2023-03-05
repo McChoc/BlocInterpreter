@@ -11,173 +11,92 @@ using Bloc.Statements;
 using Bloc.Utils.Helpers;
 using Bloc.Values;
 
-namespace Bloc
+namespace Bloc;
+
+public sealed partial class Engine
 {
-    public class Engine
+    public Call GlobalCall { get; }
+    public Scope GlobalScope { get; }
+
+    internal int StackLimit { get; private set; }
+    internal int LoopLimit { get; private set; }
+    internal int JumpLimit { get; private set; }
+    internal int HopLimit { get; private set; }
+
+    public required Action<string> Log { get; init; }
+    public required Action Clear { get; init; }
+    public required Action Exit { get; init; }
+
+    public required Dictionary<string, CommandInfo> Commands { get; init; }
+
+    private Engine()
     {
-        internal Dictionary<string, CommandInfo> Commands { get; set; } = null!;
+        GlobalCall = new Call(this);
+        GlobalScope = GlobalCall.Scopes.First();
+    }
 
-        public Action<string> Log { get; private set; } = null!;
-        public Action Clear { get; private set; } = null!;
-        public Action Exit { get; private set; } = null!;
+    public static void Compile(string code, out IExpression? expression, out List<Statement> statements)
+    {
+        var tokenizer = new Tokenizer(code);
+        statements = StatementParser.Parse(tokenizer);
 
-        internal int StackLimit { get; set; }
-        internal int LoopLimit { get; set; }
-        internal int JumpLimit { get; set; }
-        internal int HopLimit { get; set; }
+        expression = statements is [ExpressionStatement statement]
+            ? statement.Expression
+            : null;
+    }
 
-        public Call GlobalCall { get; }
-        public Scope GlobalScope { get; }
-
-        private Engine()
+    public Throw? Evaluate(IExpression expression, out Value? value)
+    {
+        try
         {
-            GlobalCall = new Call(this);
-            GlobalScope = GlobalCall.Scopes.First();
-        }
-
-        public static void Compile(string code, out IExpression? expression, out List<Statement> statements)
-        {
-            var provider = new Tokenizer(code);
-            statements = StatementParser.Parse(provider);
-
-            if (statements.Count == 1 && statements[0] is ExpressionStatement statement)
-                expression = statement.Expression;
-            else
-                expression = null;
-        }
-
-        public Result? Evaluate(IExpression expression, out Value? value)
-        {
-            try
-            {
-                value = expression.Evaluate(GlobalCall).Value.Copy();
-                return null;
-            }
-            catch (Result result)
-            {
-                value = null;
-                return result;
-            }
-        }
-
-        public Result? Execute(List<Statement> statements)
-        {
-            var labels = StatementUtil.GetLabels(statements);
-
-            for (var i = 0; i < statements.Count; i++)
-            {
-                switch (statements[i].Execute(GlobalCall).FirstOrDefault())
-                {
-                    case Continue:
-                        throw new Throw("A continue statement can only be used inside a loop");
-
-                    case Break:
-                        throw new Throw("A break statement can only be used inside a loop");
-
-                    case Yield:
-                        throw new Throw("A yield statement can only be used inside a generator");
-
-                    case Return:
-                        throw new Throw("A return statement can only be used inside a function");
-
-                    case Throw @throw:
-                        return @throw;
-
-                    case Goto @goto:
-                        if (labels.TryGetValue(@goto.Label, out var label))
-                        {
-                            if (++label.Count > JumpLimit)
-                                return new Throw("The jump limit was reached.");
-
-                            i = label.Index - 1;
-
-                            continue;
-                        }
-
-                        return new Throw($"Label '{@goto.Label}' does not exist in scope.");
-                }
-            }
-
+            value = expression.Evaluate(GlobalCall).Value;
             return null;
         }
-
-        public class Builder
+        catch (Throw @throw)
         {
-            private readonly Dictionary<string, CommandInfo> _commands = new();
+            value = null;
+            return @throw;
+        }
+    }
 
-            private Action<string> _log = _ => { };
-            private Action _clear = () => { };
-            private Action _exit = () => { };
+    public Throw? Execute(List<Statement> statements)
+    {
+        var labels = StatementHelper.GetLabels(statements);
 
-            private int _hopLimit = 1000;
-            private int _jumpLimit = 1000;
-            private int _loopLimit = 1000;
-            private int _stackLimit = 1000;
-
-            public Builder(params string[] _) { }
-
-            public Builder SetStackLimit(int limit)
+        for (var i = 0; i < statements.Count; i++)
+        {
+            switch (statements[i].Execute(GlobalCall).FirstOrDefault())
             {
-                _stackLimit = limit;
-                return this;
-            }
+                case Continue:
+                    throw new Throw("A continue statement can only be used inside a loop");
 
-            public Builder SetLoopLimit(int limit)
-            {
-                _loopLimit = limit;
-                return this;
-            }
+                case Break:
+                    throw new Throw("A break statement can only be used inside a loop");
 
-            public Builder SetJumpLimit(int limit)
-            {
-                _jumpLimit = limit;
-                return this;
-            }
+                case Yield:
+                    throw new Throw("A yield statement can only be used inside a generator");
 
-            public Builder SetHopLimit(int limit)
-            {
-                _hopLimit = limit;
-                return this;
-            }
+                case Return:
+                    throw new Throw("A return statement can only be used inside a function");
 
-            public Builder OnLog(Action<string> action)
-            {
-                _log = action;
-                return this;
-            }
+                case Throw @throw:
+                    return @throw;
 
-            public Builder OnClear(Action action)
-            {
-                _clear = action;
-                return this;
-            }
+                case Goto @goto:
+                    if (labels.TryGetValue(@goto.Label, out var label))
+                    {
+                        if (++label.Count > JumpLimit)
+                            return new Throw("The jump limit was reached.");
 
-            public Builder OnExit(Action actionn)
-            {
-                _exit = actionn;
-                return this;
-            }
+                        i = label.Index - 1;
 
-            public Builder AddCommand(CommandInfo command)
-            {
-                _commands.Add(command.Name, command);
-                return this;
-            }
+                        continue;
+                    }
 
-            public Engine Build()
-            {
-                return new()
-                {
-                    Commands = _commands,
-                    Log = _log,
-                    Clear = _clear,
-                    Exit = _exit,
-                    StackLimit = _stackLimit,
-                    LoopLimit = _loopLimit,
-                    JumpLimit = _jumpLimit,
-                    HopLimit = _hopLimit
-                };
+                    return new Throw($"Label '{@goto.Label}' does not exist in scope.");
             }
         }
+
+        return null;
     }
 }

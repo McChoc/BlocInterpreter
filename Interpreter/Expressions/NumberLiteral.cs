@@ -1,14 +1,13 @@
 ﻿using Bloc.Memory;
 using Bloc.Values;
 
-namespace Bloc.Expressions
+namespace Bloc.Expressions;
+
+internal sealed record NumberLiteral : IExpression
 {
-    internal sealed record NumberLiteral : IExpression
-    {
-        private readonly double _number;
+    private readonly double _number;
 
-        internal NumberLiteral(double number) => _number = number;
+    internal NumberLiteral(double number) => _number = number;
 
-        public IValue Evaluate(Call _) => new Number(_number);
-    }
+    public IValue Evaluate(Call _) => new Number(_number);
 }

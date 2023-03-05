@@ -1,10 +1,9 @@
 ﻿using Bloc.Values;
 
-namespace Bloc.Variables
+namespace Bloc.Variables;
+
+public sealed class HeapVariable : Variable
 {
-    public sealed class HeapVariable : Variable
-    {
-        internal HeapVariable(bool mutable, Value value)
-            : base(mutable, value) { }
-    }
+    internal HeapVariable(bool mutable, Value value)
+        : base(mutable, value) { }
 }

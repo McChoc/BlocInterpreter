@@ -1,26 +1,25 @@
 ﻿using Bloc.Memory;
 using Bloc.Values;
 
-namespace Bloc.Variables
+namespace Bloc.Variables;
+
+public sealed class StackVariable : Variable
 {
-    public sealed class StackVariable : Variable
+    private readonly VariableCollection _collection;
+
+    internal string Name { get; }
+
+    internal StackVariable(bool mutable, string name, Value value, VariableCollection collection)
+        : base(mutable, value)
     {
-        private readonly VariableCollection _collection;
+        _collection = collection;
+        Name = name;
+    }
 
-        internal string Name { get; }
+    public override void Delete()
+    {
+        _collection.Remove(Name);
 
-        internal StackVariable(bool mutable, string name, Value value, VariableCollection collection)
-            : base(mutable, value)
-        {
-            _collection = collection;
-            Name = name;
-        }
-
-        public override void Delete()
-        {
-            _collection.Remove(Name);
-
-            base.Delete();
-        }
+        base.Delete();
     }
 }

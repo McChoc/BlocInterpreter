@@ -1,20 +1,20 @@
 ﻿using Bloc.Values;
-using Bloc.Variables;
 
-namespace Bloc.Pointers
+namespace Bloc.Pointers;
+
+internal abstract class Pointer : IValue
 {
-    internal abstract class Pointer : IVariable
-    {
-        Value IValue.Value => Get();
+    Value IValue.Value => Get();
 
-        internal abstract Value Get();
+    internal abstract Value Get();
+    internal abstract Value Set(Value value);
+    internal abstract Value Delete();
 
-        internal abstract Value Set(Value value);
+    internal abstract void Invalidate();
 
-        internal abstract Value Delete();
+    public abstract override int GetHashCode();
+    public abstract override bool Equals(object other);
 
-        internal abstract void Invalidate();
-
-        internal abstract bool Equals(Pointer other);
-    }
+    public static bool operator ==(Pointer left, Pointer right) => Equals(left, right);
+    public static bool operator !=(Pointer left, Pointer right) => !Equals(left, right);
 }

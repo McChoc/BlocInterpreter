@@ -13,7 +13,7 @@ public abstract class Statement
 {
     internal string? Label { get; set; }
 
-    internal abstract IEnumerable<Result> Execute(Call call);
+    internal abstract IEnumerable<IResult> Execute(Call call);
 
     public override int GetHashCode()
     {
@@ -63,7 +63,7 @@ public abstract class Statement
         }
     }
 
-    private protected static IEnumerable<Result> ExecuteStatement(Statement statement, Call call)
+    private protected static IEnumerable<IResult> ExecuteStatement(Statement statement, Call call)
     {
         bool rerun;
         int jumpCount = 0;
@@ -104,9 +104,9 @@ public abstract class Statement
         while (rerun);
     }
 
-    private protected static IEnumerable<Result> ExecuteStatements(List<Statement> statements, Call call)
+    private protected static IEnumerable<IResult> ExecuteStatements(List<Statement> statements, Call call)
     {
-        var labels = StatementUtil.GetLabels(statements);
+        var labels = StatementHelper.GetLabels(statements);
 
         for (var i = 0; i < statements.Count; i++)
         {

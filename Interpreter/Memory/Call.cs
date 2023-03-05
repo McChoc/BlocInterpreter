@@ -83,7 +83,7 @@ public sealed class Call
     internal VariablePointer Set(bool mask, bool mutable, string name, Value value)
     {
         if (!mask && Scopes[^1].Variables.ContainsKey(name))
-            throw new Throw($"Variable {name} was already defined in scope");
+            throw new Throw($"Variable '{name}' was already defined in scope");
 
         var variable = new StackVariable(mutable, name, value, Scopes[^1]);
 
@@ -103,10 +103,10 @@ public sealed class Call
                 if (!captures.Variables.ContainsKey(name))
                     captures.Variables.Add(name, new());
 
-                var newStack = captures.Variables[name];
+                var stack = captures.Variables[name];
 
                 foreach (var variable in originalStack.Reverse())
-                    newStack.Push(new(false, name, variable.Value.Copy(), captures));
+                    stack.Push(new(false, name, variable.Value.GetOrCopy(true), captures));
             }
         }
 
@@ -124,10 +124,10 @@ public sealed class Call
                 if (!captures.Variables.ContainsKey(name))
                     captures.Variables.Add(name, new());
 
-                var newStack = captures.Variables[name];
+                var stack = captures.Variables[name];
 
                 foreach (var variable in originalStack.Reverse())
-                    newStack.Push(new(false, name, new Reference(new VariablePointer(variable)), captures));
+                    stack.Push(new(false, name, new Reference(new VariablePointer(variable)), captures));
             }
         }
 

@@ -21,7 +21,7 @@ internal sealed class ForStatement : Statement
         _checked = @checked;
     }
 
-    internal override IEnumerable<Result> Execute(Call call)
+    internal override IEnumerable<IResult> Execute(Call call)
     {
         using (call.MakeScope())
         {

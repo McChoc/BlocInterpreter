@@ -23,17 +23,17 @@ internal class DeclarationStatement : Statement
         _mutable = mutable;
     }
 
-    internal override IEnumerable<Result> Execute(Call call)
+    internal override IEnumerable<IResult> Execute(Call call)
     {
         foreach (var definition in Definitions)
         {
             try
             {
-                var value = definition.Value?.Evaluate(call) ?? Null.Value;
+                var value = definition.Value?.Evaluate(call).Value ?? Null.Value;
 
                 var identifier = definition.Name.Evaluate(call);
 
-                Define(identifier, value.Value.Copy(), call);
+                Define(identifier, value, call);
             }
             catch (Throw exception)
             {
@@ -41,7 +41,7 @@ internal class DeclarationStatement : Statement
             }
         }
 
-        return Enumerable.Empty<Result>();
+        return Enumerable.Empty<IResult>();
     }
 
     private void Define(IValue identifier, Value value, Call call)
@@ -54,15 +54,15 @@ internal class DeclarationStatement : Statement
         {
             if (value is not Tuple rightTuple)
             {
-                foreach (var id in leftTuple.Variables)
+                foreach (var id in leftTuple.Values)
                     Define(id, value, call);
             }
             else
             {
-                if (leftTuple.Variables.Count != rightTuple.Variables.Count)
+                if (leftTuple.Values.Count != rightTuple.Values.Count)
                     throw new Throw("Miss match number of elements in tuples.");
 
-                foreach (var (id, val) in leftTuple.Variables.Zip(rightTuple.Variables, (i, v) => (i, v.Value)))
+                foreach (var (id, val) in leftTuple.Values.Zip(rightTuple.Values, (i, v) => (i, v.Value)))
                     Define(id, val, call);
             }
         }

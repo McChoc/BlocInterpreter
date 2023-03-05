@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -27,10 +26,10 @@ internal sealed class Tokenizer : ITokenProvider
 
     internal static IEnumerable<Token> Tokenize(string code, int offset = 0)
     {
-        var scanner = new Tokenizer(code, offset);
+        var tokenizer = new Tokenizer(code, offset);
 
-        while (scanner.HasNext())
-            yield return scanner.Next();
+        while (tokenizer.HasNext())
+            yield return tokenizer.Next();
     }
 
     public bool HasNext()

@@ -2,7 +2,6 @@
 using Bloc.Constants;
 using Bloc.Exceptions;
 using Bloc.Expressions;
-using Bloc.Operators;
 using Bloc.Tokens;
 using Bloc.Utils.Extensions;
 
@@ -22,7 +21,7 @@ internal static partial class ExpressionParser
             var start = parts[0].Count > 0 ? Parse(parts[0], precedence - 1) : null;
             var end = parts[1].Count > 0 ? Parse(parts[1], precedence - 1) : null;
 
-            return new Range(start, end, null);
+            return new RangeLiteral(start, end, null);
         }
 
         if (parts.Count == 3)
@@ -31,7 +30,7 @@ internal static partial class ExpressionParser
             var end = parts[1].Count > 0 ? Parse(parts[1], precedence - 1) : null;
             var step = parts[2].Count > 0 ? Parse(parts[2], precedence - 1) : null;
 
-            return new Range(start, end, step);
+            return new RangeLiteral(start, end, step);
         }
 
         throw new SyntaxError(tokens[0].Start, tokens[^1].End, $"Unexpected symbol '{Symbol.COLON}'");

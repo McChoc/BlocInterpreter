@@ -20,7 +20,7 @@ internal sealed class ForeachStatement : Statement
         _checked = @checked;
     }
 
-    internal override IEnumerable<Result> Execute(Call call)
+    internal override IEnumerable<IResult> Execute(Call call)
     {
         if (!EvaluateExpression(Expression, call, out var value, out var exception))
         {
@@ -66,7 +66,7 @@ internal sealed class ForeachStatement : Statement
 
             using (call.MakeScope())
             {
-                call.Set(true, false, Name, enumerator.Current);
+                call.Set(true, false, Name, enumerator.Current.GetOrCopy(true));
 
                 foreach (var result in ExecuteStatement(Statement, call))
                 {

@@ -28,9 +28,9 @@ internal static partial class ExpressionParser
 
                 return @operator!.Text switch
                 {
-                    Keyword.SELECT  => new Select(left, right),
-                    Keyword.WHERE   => new Where(left, right),
-                    Keyword.ORDERBY => new Orderby(left, right),
+                    Keyword.SELECT  => new SelectOperator(left, right),
+                    Keyword.WHERE   => new WhereOperator(left, right),
+                    Keyword.ORDERBY => new OrderbyOperator(left, right),
                     _ => throw new Exception()
                 };
             }

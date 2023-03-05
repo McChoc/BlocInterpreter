@@ -28,8 +28,8 @@ internal static partial class ExpressionParser
 
                 return @operator!.Text switch
                 {
-                    Symbol.SHIFT_L => new LeftShift(left, right),
-                    Symbol.SHIFT_R => new RightShift(left, right),
+                    Symbol.SHIFT_L => new LeftShiftOperator(left, right),
+                    Symbol.SHIFT_R => new RightShiftOperator(left, right),
                     _ => throw new Exception()
                 };
             }

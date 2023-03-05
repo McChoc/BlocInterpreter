@@ -14,9 +14,9 @@ internal sealed class TryStatement : Statement
     internal required List<Catch> Catches { get; init; }
     internal required Statement? Finally { get; init; }
 
-    internal override IEnumerable<Result> Execute(Call call)
+    internal override IEnumerable<IResult> Execute(Call call)
     {
-        Result? mainResult = null;
+        IResult? mainResult = null;
 
         using (call.MakeScope())
         {
@@ -40,7 +40,7 @@ internal sealed class TryStatement : Statement
             {
                 using (call.MakeScope())
                 {
-                    call.Set(true, true, @catch.Name, @throw.Value);
+                    call.Set(true, true, @catch.Name, @throw.Value.Copy(true));
 
                     if (@catch.Expression is not null)
                     {

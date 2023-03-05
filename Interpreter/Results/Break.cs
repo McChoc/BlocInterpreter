@@ -1,3 +1,3 @@
 ﻿namespace Bloc.Results;
 
-public sealed class Break : Result { }
+public sealed class Break : IResult { }

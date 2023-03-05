@@ -1,14 +1,13 @@
 ﻿using Bloc.Memory;
 using Bloc.Values;
 
-namespace Bloc.Expressions
+namespace Bloc.Expressions;
+
+internal sealed record Identifier : IExpression
 {
-    internal sealed record Identifier : IExpression
-    {
-        internal string Name { get; }
+    internal string Name { get; }
 
-        internal Identifier(string name) => Name = name;
+    internal Identifier(string name) => Name = name;
 
-        public IValue Evaluate(Call call) => call.Get(Name);
-    }
+    public IValue Evaluate(Call call) => call.Get(Name);
 }

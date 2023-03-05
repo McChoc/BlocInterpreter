@@ -1,37 +1,53 @@
 ﻿using System.Collections.Generic;
 using Bloc.Results;
 
-namespace Bloc.Values
+namespace Bloc.Values;
+
+public sealed class Void : Value
 {
-    public sealed class Void : Value
+    public static Void Value { get; } = new();
+
+    private Void() { }
+
+    internal override ValueType GetType() => ValueType.Void;
+
+    internal static Void Construct(List<Value> values)
     {
-        private Void() { }
-
-        public static Void Value { get; } = new();
-
-        internal override ValueType GetType() => ValueType.Void;
-
-        internal static Void Construct(List<Value> values)
+        return values switch
         {
-            if (values.Count != 0)
-                throw new Throw($"'void' does not have a constructor that takes {values.Count} arguments");
+            [] => Value,
+            [..] => throw new Throw($"'void' does not have a constructor that takes {values.Count} arguments"),
+        };
+    }
 
-            return Value;
-        }
+    internal override Value Copy(bool assign)
+    {
+        if (assign)
+            throw new Throw("'void' is not assignable");
 
-        public override string ToString()
-        {
-            return "void";
-        }
+        return this;
+    }
 
-        public override int GetHashCode()
-        {
-            return 0;
-        }
+    internal override Value GetOrCopy(bool assign)
+    {
+        if (assign)
+            throw new Throw("'void' is not assignable");
 
-        public override bool Equals(object other)
-        {
-            return other is Void;
-        }
+        return this;
+    }
+
+    public override string ToString()
+    {
+        return "void";
+    }
+
+    public override int GetHashCode()
+    {
+        return 0;
+    }
+
+    public override bool Equals(object other)
+    {
+        return other is Void;
     }
 }

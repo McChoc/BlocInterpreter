@@ -26,8 +26,8 @@ internal static partial class ExpressionParser
                 var right = Parse(tokens.GetRange((i + 1)..), precedence - 1);
 
                 return @operator!.Text == Symbol.IS_EQUAL
-                    ? new Equality(left, right)
-                    : new Inequality(left, right);
+                    ? new EqualOperator(left, right)
+                    : new NotEqualOperator(left, right);
             }
         }
 

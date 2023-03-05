@@ -14,7 +14,7 @@ internal sealed class GotoStatement : Statement
         _label = label;
     }
 
-    internal override IEnumerable<Result> Execute(Call call)
+    internal override IEnumerable<IResult> Execute(Call call)
     {
         yield return new Goto(_label);
     }

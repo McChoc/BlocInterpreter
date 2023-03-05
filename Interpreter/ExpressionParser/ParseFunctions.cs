@@ -141,7 +141,7 @@ internal static partial class ExpressionParser
 
             while (j >= 0)
             {
-                if (tokens[j] is SymbolToken(Keyword.ASYNC))
+                if (tokens[j] is WordToken(Keyword.ASYNC))
                 {
                     if (type == FunctionType.Asynchronous)
                         throw new SyntaxError(tokens[j].Start, tokens[j].End, $"'{Keyword.ASYNC}' modifier doubled");
@@ -151,7 +151,7 @@ internal static partial class ExpressionParser
 
                     type = FunctionType.Asynchronous;
                 }
-                else if (tokens[j] is SymbolToken(Keyword.GENERATOR))
+                else if (tokens[j] is WordToken(Keyword.GENERATOR))
                 {
                     if (type == FunctionType.Asynchronous)
                         throw new SyntaxError(tokens[j].Start, tokens[j].End, "a function cannot be both async and a generator");

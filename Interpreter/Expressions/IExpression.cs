@@ -1,10 +1,9 @@
 ﻿using Bloc.Memory;
 using Bloc.Values;
 
-namespace Bloc.Expressions
+namespace Bloc.Expressions;
+
+public interface IExpression
 {
-    public interface IExpression
-    {
-        IValue Evaluate(Call call);
-    }
+    IValue Evaluate(Call call);
 }

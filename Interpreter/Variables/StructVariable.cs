@@ -1,25 +1,24 @@
 ﻿using Bloc.Values;
 
-namespace Bloc.Variables
+namespace Bloc.Variables;
+
+internal sealed class StructVariable : Variable
 {
-    internal sealed class StructVariable : Variable
+    private readonly Struct _parent;
+
+    public string Name { get; }
+
+    internal StructVariable(string name, Value value, Struct parent)
+        : base(true, value)
     {
-        private readonly Struct _parent;
+        _parent = parent;
+        Name = name;
+    }
 
-        public string Name { get; }
+    public override void Delete()
+    {
+        _parent.Values.Remove(Name);
 
-        internal StructVariable(string name, Value value, Struct parent)
-            : base(true, value)
-        {
-            _parent = parent;
-            Name = name;
-        }
-
-        public override void Delete()
-        {
-            _parent.Variables.Remove(Name);
-
-            base.Delete();
-        }
+        base.Delete();
     }
 }

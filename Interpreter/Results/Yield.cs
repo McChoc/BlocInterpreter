@@ -2,7 +2,7 @@
 
 namespace Bloc.Results;
 
-public sealed class Yield : Result
+public sealed class Yield : IResult
 {
     public Value Value { get; }
 

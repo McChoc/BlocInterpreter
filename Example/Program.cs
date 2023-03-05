@@ -78,7 +78,7 @@ while (running)
             {
                 Engine.Compile(code, out var expression, out var statements);
 
-                Result result;
+                IResult result;
                 Value value = null;
 
                 if (expression is not null)

@@ -1,22 +1,21 @@
 ﻿using Bloc.Values;
 
-namespace Bloc.Variables
+namespace Bloc.Variables;
+
+internal sealed class ArrayVariable : Variable
 {
-    internal sealed class ArrayVariable : Variable
+    private readonly Array _parent;
+
+    internal ArrayVariable(Value value, Array parent)
+        : base(true, value)
     {
-        private readonly Array _parent;
+        _parent = parent;
+    }
 
-        internal ArrayVariable(Value value, Array parent)
-            : base(true, value)
-        {
-            _parent = parent;
-        }
+    public override void Delete()
+    {
+        _parent.Values.Remove(this);
 
-        public override void Delete()
-        {
-            _parent.Variables.Remove(this);
-
-            base.Delete();
-        }
+        base.Delete();
     }
 }

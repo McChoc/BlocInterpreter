@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using Bloc.Exceptions;
+using Bloc.Memory;
 using Bloc.Results;
+using Bloc.Statements;
 using Bloc.Values;
 using String = Bloc.Values.String;
 using Void = Bloc.Values.Void;
@@ -16,15 +19,15 @@ public static class DefaultCommands
 
     public static CommandInfo Help => new(
         "help",
-
-        "help\n" +
-        "Returns a list of all commands.\n" +
-        "\n" +
-        "help <command>\n" +
-        "<command: string> |> help\n" +
-        "Returns the description of the given command.",
-
-        (args, input, call) =>
+        """
+        help
+        Returns a list of all commands.
+        
+        help <command_name>
+        <command_name: string> |> help
+        Returns the description of the given command.
+        """,
+        delegate (string[] args, Value input, Call call)
         {
             if (args.Length == 0)
             {
@@ -58,17 +61,16 @@ public static class DefaultCommands
             }
 
             throw new Throw($"'help' does not take {args.Length} arguments.\nType '/help help' to see its usage");
-        }
-    );
+        });
 
     public static CommandInfo Echo => new(
         "echo",
-
-        "echo <message>\n" +
-        "<message: string> |> echo\n" +
-        "Returns the message.",
-
-        (args, input, _) =>
+        """
+        echo <message>
+        <message: string> |> echo
+        Returns the message.
+        """,
+        delegate (string[] args, Value input, Call call)
         {
             if (args.Length == 0)
                 return input as String ?? throw new Throw("The input was not a string");
@@ -77,16 +79,15 @@ public static class DefaultCommands
                 return new String(args[0]);
 
             throw new Throw($"'echo' does not take {args.Length} arguments.\nType '/help echo' to see its usage");
-        }
-    );
+        });
 
     public static CommandInfo Clear => new(
         "clear",
-
-        "clear\n" +
-        "Clears the console.",
-
-        (args, _, call) =>
+        """
+        clear
+        Clears the console.
+        """,
+        delegate (string[] args, Value input, Call call)
         {
             if (args.Length != 0)
                 throw new Throw("'clear' does not take arguments.\nType '/help clear' to see its usage");
@@ -94,16 +95,15 @@ public static class DefaultCommands
             call.Engine.Clear();
 
             return Void.Value;
-        }
-    );
+        });
 
     public static CommandInfo Exit => new(
         "exit",
-
-        "exit\n" +
-        "Exits the application",
-
-        (args, _, call) =>
+        """
+        exit
+        Exits the application.
+        """,
+        delegate (string[] args, Value input, Call call)
         {
             if (args.Length != 0)
                 throw new Throw("'exit' does not take arguments.\nType '/help exit' to see its usage.");
@@ -111,17 +111,16 @@ public static class DefaultCommands
             call.Engine.Exit();
 
             return Void.Value;
-        }
-    );
+        });
 
     public static CommandInfo Get => new(
         "get",
-
-        "get <name>\n" +
-        "<name: string> |> get\n" +
-        "Gets the value of the variable with the specified name.",
-
-        (args, input, call) =>
+        """
+        get <name>
+        <name: string> |> get
+        Gets the value of the variable with the specified name.
+        """,
+        delegate (string[] args, Value input, Call call)
         {
             if (args.Length == 0)
             {
@@ -135,17 +134,16 @@ public static class DefaultCommands
                 return call.Get(args[0]).Get();
 
             throw new Throw($"'get' does not take {args.Length} arguments.\nType '/help get' to see its usage");
-        }
-    );
+        });
 
     public static CommandInfo Set => new(
         "set",
-
-        "set <name> <value>\n" +
-        "<value> |> set <name>\n" +
-        "Sets a value to a variable with a specified name. It doesn't matter if the variable was previously defined or not. The variable will always be set inside the current scope.",
-
-        (args, input, call) =>
+        """
+        set <name> <value>
+        <value> |> set <name>
+        Creates a new variable with a specified name and value in the current scope.
+        """,
+        delegate (string[] args, Value input, Call call)
         {
             if (args.Length == 0)
                 throw new Throw("'set' does not take 0 arguments.\nType '/help set' to see its usage");
@@ -158,7 +156,7 @@ public static class DefaultCommands
                 var name = args[0];
                 var value = input;
 
-                call.Set(true, true, name, value);
+                call.Set(true, true, name, value.GetOrCopy(true));
 
                 return Void.Value;
             }
@@ -168,22 +166,21 @@ public static class DefaultCommands
                 var name = args[0];
                 var value = new String(args[1]);
 
-                call.Set(true, true, name, value);
+                call.Set(true, true, name, value.GetOrCopy(true));
 
                 return Void.Value;
             }
 
             throw new Throw($"'set' does not take {args.Length} arguments.\nType '/help set' to see its usage");
-        }
-    );
+        });
 
     public static CommandInfo Call => new(
         "call",
-
-        "call <func> [param] ...\n" +
-        "Calls a function and passes it a list of arguments. Arguments can be accessed by the params keyword.",
-
-        (args, _, call) =>
+        """
+        call <func> [param] ...
+        Calls a function and passes it a list of positional arguments.
+        """,
+        delegate (string[] args, Value input, Call call)
         {
             if (args.Length == 0)
                 throw new Throw("'call' does not take 0 arguments.\nType '/help call' to see its usage");
@@ -197,45 +194,47 @@ public static class DefaultCommands
                 throw new Throw("The variable was not a 'func'");
 
             return func.Invoke(values, new(), call);
-        }
-    );
+        });
 
     public static CommandInfo Execute => new(
         "execute",
-
-        "execute <code>\n" +
-        "Executes a piece of code.",
-
-        (args, _, call) =>
+        """
+        execute <code>
+        Executes a piece of code.
+        """,
+        delegate (string[] args, Value input, Call call)
         {
             if (args.Length != 1)
                 throw new Throw($"'execute' does not take {args.Length} arguments.\nType '/help execute' to see its usage");
 
+            var code = args[0];
+
+            List<Statement> statements;
+
             try
             {
-                Engine.Compile(args[0], out var _, out var statements);
-
-                var result = call.Engine.Execute(statements);
-
-                if (result is not null)
-                    throw result;
+                Engine.Compile(code, out var _, out statements);
             }
             catch (SyntaxError e)
             {
                 throw new Throw($"Syntax error : {e.Message}");
             }
 
+            var result = call.Engine.Execute(statements);
+
+            if (result is not null)
+                throw result;
+
             return Void.Value;
-        }
-    );
+        });
 
     public static CommandInfo Load => new(
         "load",
-
-        "load <path>\n" +
-        "Loads and execute the code stored in a text file.",
-
-        (args, _, call) =>
+        """
+        load <path>
+        Loads and execute the code stored in a text file.
+        """,
+        delegate (string[] args, Value input, Call call)
         {
             if (args.Length != 1)
                 throw new Throw($"'load' does not take {args.Length} arguments.\nType '/help load' to see its usage");
@@ -245,37 +244,38 @@ public static class DefaultCommands
 
             var code = File.ReadAllText(args[0]);
 
+            List<Statement> statements;
+
             try
             {
-                Engine.Compile(code, out var _, out var statements);
-
-                var result = call.Engine.Execute(statements);
-
-                if (result is not null)
-                    throw result;
+                Engine.Compile(code, out var _, out statements);
             }
             catch (SyntaxError e)
             {
                 throw new Throw($"Syntax error : {e.Message}");
             }
 
+            var result = call.Engine.Execute(statements);
+
+            if (result is not null)
+                throw result;
+
             return Void.Value;
-        }
-    );
+        });
 
     public static CommandInfo Random => new(
         "random",
-
-        "random\n" +
-        "Returns a pseudo-random number between 0 and 1.\n" +
-        "\n" +
-        "random <max>\n" +
-        "Returns a pseudo-random integer between 0 and max, the max value is excluded.\n" +
-        "\n" +
-        "random <min> <max>\n" +
-        "Returns a pseudo-random integer between min and max, the max value is excluded.",
-
-        (args, pipe, _) =>
+        """
+        random
+        Returns a pseudo-random number between 0 and 1.
+        
+        random <max>
+        Returns a pseudo-random integer between 0 and max, the max value is excluded.
+        
+        random <min> <max>
+        Returns a pseudo-random integer between min and max, the max value is excluded.
+        """,
+        delegate (string[] args, Value input, Call call)
         {
             new Number(rng.NextDouble());
 
@@ -302,28 +302,29 @@ public static class DefaultCommands
             }
 
             throw new Throw($"'random' does not take {args.Length} arguments.\nType '/help random' to see its usage");
-        }
-    );
+        });
 
     public static CommandInfo Time => new(
         "time",
-
-        "time\n" +
-        "Returns the current time.",
-
-        (args, pipe, _) =>
+        """
+        time
+        Returns the current time.
+        """,
+        delegate (string[] args, Value input, Call call)
         {
             if (args.Length == 0)
                 return new String(DateTime.UtcNow.ToString());
 
             throw new Throw("'time' does not take arguments.\nType '/help time' to see its usage");
-        }
-    );
+        });
 
     public static Engine.Builder AddDefaultCommands(this Engine.Builder engineBuilder)
     {
-        typeof(DefaultCommands).GetProperties(BindingFlags.Public | BindingFlags.Static).ToList()
-            .ForEach(p => engineBuilder.AddCommand((CommandInfo)p.GetValue(null)));
+        typeof(DefaultCommands)
+            .GetProperties(BindingFlags.Public | BindingFlags.Static)
+            .ToList()
+            .ForEach(x => engineBuilder.AddCommand((CommandInfo)x.GetValue(null)));
+
         return engineBuilder;
     }
 }

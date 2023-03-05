@@ -1,7 +1,6 @@
-﻿namespace Bloc.Values
+﻿namespace Bloc.Values;
+
+public interface IValue
 {
-    public interface IValue
-    {
-        public Value Value { get; }
-    }
+    public Value Value { get; }
 }

@@ -1,37 +1,37 @@
 ﻿using System.Collections.Generic;
 using Bloc.Results;
 
-namespace Bloc.Values
+namespace Bloc.Values;
+
+public sealed class Null : Value
 {
-    public sealed class Null : Value
+    public static Null Value { get; } = new();
+
+    private Null() { }
+
+    internal override ValueType GetType() => ValueType.Null;
+
+    internal static Null Construct(List<Value> values)
     {
-        private Null() { }
-
-        public static Null Value { get; } = new();
-
-        internal override ValueType GetType() => ValueType.Null;
-
-        internal static Null Construct(List<Value> values)
+        return values switch
         {
-            if (values.Count != 0)
-                throw new Throw($"'null' does not have a constructor that takes {values.Count} arguments");
+            [] => Value,
+            [..] => throw new Throw($"'null' does not have a constructor that takes {values.Count} arguments"),
+        };
+    }
 
-            return Value;
-        }
+    public override string ToString()
+    {
+        return "null";
+    }
 
-        public override string ToString()
-        {
-            return "null";
-        }
+    public override int GetHashCode()
+    {
+        return 0;
+    }
 
-        public override int GetHashCode()
-        {
-            return 0;
-        }
-
-        public override bool Equals(object other)
-        {
-            return other is Null;
-        }
+    public override bool Equals(object other)
+    {
+        return other is Null;
     }
 }

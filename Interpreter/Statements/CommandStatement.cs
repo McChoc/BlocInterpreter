@@ -16,7 +16,7 @@ internal sealed class CommandStatement : Statement
         Command = command;
     }
 
-    internal override IEnumerable<Result> Execute(Call call)
+    internal override IEnumerable<IResult> Execute(Call call)
     {
         if (!ExecuteCommand(Command, call, out var value, out var exception))
             yield return exception!;

@@ -1,46 +1,52 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Bloc.Memory;
+using Bloc.Pointers;
+using Bloc.Results;
 using Bloc.Values;
-using Bloc.Variables;
+using Tuple = Bloc.Values.Tuple;
+using Void = Bloc.Values.Void;
 
-namespace Bloc.Expressions
+namespace Bloc.Expressions;
+
+internal sealed class TupleLiteral : IExpression
 {
-    internal sealed class TupleLiteral : IExpression
+    private readonly List<IExpression> _expressions;
+
+    internal TupleLiteral(List<IExpression> expressions)
     {
-        private readonly List<IExpression> _expressions;
+        _expressions = expressions;
+    }
 
-        internal TupleLiteral(List<IExpression> expressions)
+    public IValue Evaluate(Call call)
+    {
+        var values = new List<IValue>();
+
+        foreach (var expression in _expressions)
         {
-            _expressions = expressions;
+            var value = expression.Evaluate(call);
+
+            if (value is Void)
+                throw new Throw("'void' is not assignable");
+
+            if (value is Pointer)
+                values.Add(value);
+            else
+                values.Add(value.Value.GetOrCopy());
         }
 
-        public IValue Evaluate(Call call)
-        {
-            var variables = new List<IVariable>(_expressions.Count);
+        return new Tuple(values);
+    }
 
-            foreach (var expression in _expressions)
-            {
-                var value = expression.Evaluate(call);
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(_expressions.Count);
+    }
 
-                if (value is IVariable variable)
-                    variables.Add(variable);
-                else
-                    variables.Add(new TupleVariable(value.Value));
-            }
-
-            return new Tuple(variables);
-        }
-
-        public override int GetHashCode()
-        {
-            return System.HashCode.Combine(_expressions.Count);
-        }
-
-        public override bool Equals(object other)
-        {
-            return other is TupleLiteral literal &&
-                _expressions.SequenceEqual(literal._expressions);
-        }
+    public override bool Equals(object other)
+    {
+        return other is TupleLiteral literal &&
+            _expressions.SequenceEqual(literal._expressions);
     }
 }

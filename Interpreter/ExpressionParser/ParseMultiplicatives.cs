@@ -28,10 +28,10 @@ internal static partial class ExpressionParser
 
                 return @operator!.Text switch
                 {
-                    Symbol.TIMES =>   new Multiplication(left, right),
-                    Symbol.SLASH =>  new Division(left, right),
-                    Symbol.REMAINDER => new Remainder(left, right),
-                    Symbol.MODULO => new Modulo(left, right),
+                    Symbol.TIMES =>     new MultiplicationOperator(left, right),
+                    Symbol.SLASH =>     new DivisionOperator(left, right),
+                    Symbol.REMAINDER => new RemainderOperator(left, right),
+                    Symbol.MODULO =>    new ModuloOperator(left, right),
                     _ => throw new Exception()
                 };
             }

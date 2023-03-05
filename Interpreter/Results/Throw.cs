@@ -1,8 +1,10 @@
-﻿using Bloc.Values;
+﻿using System;
+using Bloc.Values;
+using String = Bloc.Values.String;
 
 namespace Bloc.Results;
 
-public sealed class Throw : Result
+public sealed class Throw : Exception, IResult
 {
     public Value Value { get; }
 

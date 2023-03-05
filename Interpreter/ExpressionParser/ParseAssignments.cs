@@ -28,7 +28,7 @@ internal static partial class ExpressionParser
 
                 return @operator!.Text switch
                 {
-                    Symbol.ASSIGN           => new Assignment(left, right),
+                    Symbol.ASSIGN           => new AssignmentOperator(left, right),
                     Symbol.ASSIGN_SUM       => new AdditionAssignment(left, right),
                     Symbol.ASSIGN_DIF       => new SubstractionAssignment(left, right),
                     Symbol.ASSIGN_PRODUCT   => new MultiplicationAssignment(left, right),

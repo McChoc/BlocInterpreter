@@ -6,7 +6,7 @@ namespace Bloc.Statements;
 
 internal sealed class ContinueStatement : Statement
 {
-    internal override IEnumerable<Result> Execute(Call call)
+    internal override IEnumerable<IResult> Execute(Call call)
     {
         yield return new Continue();
     }

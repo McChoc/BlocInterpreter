@@ -6,7 +6,6 @@ using Bloc.Expressions;
 using Bloc.Operators;
 using Bloc.Tokens;
 using Bloc.Utils.Extensions;
-using Nullable = Bloc.Operators.Nullable;
 
 namespace Bloc;
 
@@ -23,33 +22,33 @@ internal static partial class ExpressionParser
 
             return prefix!.Text switch
             {
-                Symbol.PLUS         => new Plus(operand),
-                Symbol.MINUS        => new Minus(operand),
-                Symbol.BIT_NOT      => new Complement(operand),
-                Symbol.BOOL_NOT     => new Negation(operand),
-                Symbol.INCREMENT    => new PreIncrement(operand),
-                Symbol.DECREMENT    => new PreDecrement(operand),
-                Symbol.BIT_INV      => new PreComplement(operand),
-                Symbol.BOOL_INV     => new PreNegation(operand),
-                Keyword.LEN         => new Length(operand),
-                Keyword.CHR         => new Character(operand),
-                Keyword.ORD         => new Ordinal(operand),
-                Keyword.REF         => new Ref(operand),
-                Keyword.VAL         => new Val(operand),
-                Keyword.VAL_VAL     => new ValVal(operand),
-                Keyword.LET         => new Let(operand),
-                Keyword.LET_NEW     => new LetNew(operand),
-                Keyword.NEW         => new New(operand),
-                Keyword.CONST_NEW   => new ConstNew(operand),
-                Keyword.DELETE      => new Delete(operand),
-                Keyword.GLOBAL      => new Global(operand),
-                Keyword.NONLOCAL    => new Nonlocal(operand),
-                Keyword.PARAM       => new Param(operand),
-                Keyword.AWAIT       => new Await(operand),
-                Keyword.NEXT        => new Next(operand),
-                Keyword.NAMEOF      => new Nameof(operand),
-                Keyword.TYPEOF      => new Typeof(operand),
-                Keyword.EVAL        => new Eval(operand),
+                Symbol.PLUS         => new PositiveOperator(operand),
+                Symbol.MINUS        => new NegativeOperator(operand),
+                Symbol.BIT_NOT      => new ComplementOperator(operand),
+                Symbol.BOOL_NOT     => new NegationOperator(operand),
+                Symbol.INCREMENT    => new IncrementPrefix(operand),
+                Symbol.DECREMENT    => new DecrementPrefix(operand),
+                Symbol.BIT_INV      => new ComplementPrefix(operand),
+                Symbol.BOOL_INV     => new NegationPrefix(operand),
+                Keyword.LEN         => new LengthOperator(operand),
+                Keyword.CHR         => new CharacterOperator(operand),
+                Keyword.ORD         => new OrdinalOperator(operand),
+                Keyword.REF         => new RefOperator(operand),
+                Keyword.VAL         => new ValOperator(operand),
+                Keyword.VAL_VAL     => new ValValOperator(operand),
+                Keyword.LET         => new LetOperator(operand),
+                Keyword.LET_NEW     => new LetNewOperator(operand),
+                Keyword.NEW         => new NewOperator(operand),
+                Keyword.CONST_NEW   => new ConstNewOperator(operand),
+                Keyword.DELETE      => new DeleteOperator(operand),
+                Keyword.GLOBAL      => new GlobalOperator(operand),
+                Keyword.NONLOCAL    => new NonlocalOperator(operand),
+                Keyword.PARAM       => new ParamOperator(operand),
+                Keyword.AWAIT       => new AwaitOperator(operand),
+                Keyword.NEXT        => new NextOperator(operand),
+                Keyword.NAMEOF      => new NameofOperator(operand),
+                Keyword.TYPEOF      => new TypeofOperator(operand),
+                Keyword.EVAL        => new EvalOperator(operand),
                 _ => throw new Exception()
             };
         }
@@ -60,11 +59,11 @@ internal static partial class ExpressionParser
 
             return postfix!.Text switch
             {
-                Symbol.INCREMENT    => new PostIncrement(operand),
-                Symbol.DECREMENT    => new PostDecrement(operand),
-                Symbol.BIT_INV      => new PostComplement(operand),
-                Symbol.BOOL_INV     => new PostNegation(operand),
-                Symbol.QUESTION     => new Nullable(operand),
+                Symbol.INCREMENT    => new IncrementPostfix(operand),
+                Symbol.DECREMENT    => new DecrementPostfix(operand),
+                Symbol.BIT_INV      => new ComplementPostfix(operand),
+                Symbol.BOOL_INV     => new NegationPostfix(operand),
+                Symbol.QUESTION     => new NullableOperator(operand),
                 _ => throw new Exception()
             };
         }

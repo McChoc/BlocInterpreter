@@ -16,7 +16,7 @@ internal sealed class LoopStatement : Statement
         _checked = @checked;
     }
 
-    internal override IEnumerable<Result> Execute(Call call)
+    internal override IEnumerable<IResult> Execute(Call call)
     {
         int loopCount = 0;
 

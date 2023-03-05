@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
+using Bloc.Values;
 
 namespace Bloc.Statements;
 
@@ -15,10 +16,10 @@ internal sealed class YieldStatement : Statement
         _expression = expression;
     }
 
-    internal override IEnumerable<Result> Execute(Call call)
+    internal override IEnumerable<IResult> Execute(Call call)
     {
         if (EvaluateExpression(_expression, call, out var value, out var exception))
-            yield return new Yield(value!.Value);
+            yield return new Yield(value!.Value.GetOrCopy());
         else
             yield return exception!;
     }

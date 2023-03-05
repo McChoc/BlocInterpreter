@@ -15,7 +15,7 @@ internal sealed class ExpressionStatement : Statement
         Expression = expression;
     }
 
-    internal override IEnumerable<Result> Execute(Call call)
+    internal override IEnumerable<IResult> Execute(Call call)
     {
         if (!EvaluateExpression(Expression, call, out var _, out var exception))
             yield return exception!;

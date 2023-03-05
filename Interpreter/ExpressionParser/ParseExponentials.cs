@@ -25,7 +25,7 @@ internal static partial class ExpressionParser
                 var left = ParseExponentiations(tokens.GetRange(..i), precedence);
                 var right = Parse(tokens.GetRange((i + 1)..), precedence - 1);
 
-                return new Power(left, right);
+                return new PowerOperator(left, right);
             }
         }
 

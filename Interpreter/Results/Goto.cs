@@ -1,6 +1,6 @@
 ﻿namespace Bloc.Results;
 
-public sealed class Goto : Result
+public sealed class Goto : IResult
 {
     public string Label { get; }
 

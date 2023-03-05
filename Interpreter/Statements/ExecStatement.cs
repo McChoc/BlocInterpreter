@@ -8,72 +8,71 @@ using Bloc.Results;
 using Bloc.Scanners;
 using String = Bloc.Values.String;
 
-namespace Bloc.Statements
+namespace Bloc.Statements;
+
+internal sealed class ExecStatement : Statement
 {
-    internal sealed class ExecStatement : Statement
+    private readonly IExpression _expression;
+
+    internal ExecStatement(IExpression expression)
     {
-        private readonly IExpression _expression;
+        _expression = expression;
+    }
 
-        internal ExecStatement(IExpression expression)
+    internal override IEnumerable<IResult> Execute(Call call)
+    {
+        if (!EvaluateExpression(_expression, call, out var value, out var exception))
         {
-            _expression = expression;
+            yield return exception!;
+            yield break;
         }
-
-        internal override IEnumerable<Result> Execute(Call call)
-        {
-            if (!EvaluateExpression(_expression, call, out var value, out var exception))
-            {
-                yield return exception!;
-                yield break;
-            }
             
-            if (value!.Value is not String @string)
-            {
-                yield return new Throw("The expression of an 'exec' statement must be a 'string'");
-                yield break;
-            }
-
-            List<Statement>? statements = null;
-
-            try
-            {
-                var provider = new Tokenizer(@string.Value);
-                statements = StatementParser.Parse(provider);
-            }
-            catch (SyntaxError e)
-            {
-                exception = new Throw(e.Text);
-            }
-            catch
-            {
-                exception = new Throw("Failed to execute statements");
-            }
-
-            if (exception is not null)
-            {
-                yield return exception;
-                yield break;
-            }
-
-            foreach (var result in ExecuteStatements(statements!, call))
-            {
-                yield return result;
-
-                if (result is not Yield)
-                    yield break;
-            }
-        }
-
-        public override int GetHashCode()
+        if (value!.Value is not String @string)
         {
-            return HashCode.Combine(Label, _expression);
+            yield return new Throw("The expression of an 'exec' statement must be a 'string'");
+            yield break;
         }
 
-        public override bool Equals(object other)
+        List<Statement>? statements = null;
+
+        try
         {
-            return other is ExecStatement statement &&
-                Label == statement.Label &&
-                _expression.Equals(statement._expression);
+            var tokenizer = new Tokenizer(@string.Value);
+            statements = StatementParser.Parse(tokenizer);
         }
+        catch (SyntaxError e)
+        {
+            exception = new Throw(e.Text);
+        }
+        catch
+        {
+            exception = new Throw("Failed to execute statements");
+        }
+
+        if (exception is not null)
+        {
+            yield return exception;
+            yield break;
+        }
+
+        foreach (var result in ExecuteStatements(statements!, call))
+        {
+            yield return result;
+
+            if (result is not Yield)
+                yield break;
+        }
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Label, _expression);
+    }
+
+    public override bool Equals(object other)
+    {
+        return other is ExecStatement statement &&
+            Label == statement.Label &&
+            _expression.Equals(statement._expression);
     }
 }

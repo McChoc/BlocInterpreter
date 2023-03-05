@@ -28,8 +28,8 @@ internal static partial class ExpressionParser
 
                 return @operator!.Text switch
                 {
-                    Symbol.COALESCE_NULL => new NullCoalescing(left, right),
-                    Symbol.COALESCE_VOID => new VoidCoalescing(left, right),
+                    Symbol.COALESCE_NULL => new NullCoalescingOperator(left, right),
+                    Symbol.COALESCE_VOID => new VoidCoalescingOperator(left, right),
                     _ => throw new Exception()
                 };
             }

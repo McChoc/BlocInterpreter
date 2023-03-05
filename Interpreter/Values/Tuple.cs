@@ -1,83 +1,108 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Bloc.Results;
-using Bloc.Variables;
 
-namespace Bloc.Values
+namespace Bloc.Values;
+
+public sealed class Tuple : Value
 {
-    public sealed class Tuple : Value
+    private bool _assigned = false;
+
+    public List<IValue> Values { get; private set; }
+
+    public Tuple() => Values = new();
+
+    public Tuple(List<IValue> values)
     {
-        public Tuple() => Variables = new();
+        Values = values;
+    }
 
-        public Tuple(List<IVariable> value)
+    public Tuple(List<Value> values)
+    {
+        Values = values.ToList<IValue>();
+    }
+
+    internal override ValueType GetType() => ValueType.Tuple;
+
+    internal static Tuple Construct(List<Value> values)
+    {
+        return values switch
         {
-            Variables = value;
-        }
+            [] or [Null] => new(),
 
-        public Tuple(List<Value> value)
-        {
-            Variables = value
-                .Select(x => new TupleVariable(x))
-                .ToList<IVariable>();
-        }
+            [Tuple tuple] => tuple,
 
-        public List<IVariable> Variables { get; }
+            [Array array] => new(array.Values
+                .Select(x => x.Value)
+                .ToList()),
 
-        internal override ValueType GetType() => ValueType.Tuple;
+            [Struct @struct] => new(@struct.Values
+                .OrderBy(x => x.Key)
+                .Select(x => x.Value.Value)
+                .ToList()),
 
-        internal static Tuple Construct(List<Value> values)
-        {
-            return values.Count switch
+            [Range range] => new(new List<Value>()
             {
-                0 => new(),
-                1 => values[0] switch
-                {
-                    Null => new(),
-                    Range range => new(),
-                    Array array => new(array.Variables
-                        .Select(x => x.Value.Copy())
-                        .ToList()),
-                    Struct @struct => new(@struct.Variables
-                        .OrderBy(x => x.Key)
-                        .Select(x => x.Value.Value.Copy())
-                        .ToList()),
-                    Tuple tuple => tuple,
-                    _ => throw new Throw($"'iter' does not have a constructor that takes a '{values[0].GetType().ToString().ToLower()}'")
-                },
-                _ => throw new Throw($"'iter' does not have a constructor that takes {values.Count} arguments")
-            };
-        }
+                range.Start is int n ? new Number(n) : Null.Value,
+                range.End is int m ? new Number(m) : Null.Value,
+                new Number(range.Step)
+            }),
 
-        internal override Value Copy()
-        {
-            return new Tuple(Variables
-                .Select(x => new TupleVariable(x.Value.Copy()))
-                .ToList<IVariable>());
-        }
+            [_] => throw new Throw($"'iter' does not have a constructor that takes a '{values[0].GetTypeName()}'"),
+            [..] => throw new Throw($"'iter' does not have a constructor that takes {values.Count} arguments")
+        };
+    }
 
-        public override string ToString()
+    internal override Value Copy(bool assign)
+    {
+        return new Tuple
         {
-            return "(" + string.Join(", ", Variables.Select(v => v.Value)) + ")";
-        }
+            _assigned = assign,
 
-        public override int GetHashCode()
-        {
-            return System.HashCode.Combine(Variables.Count);
-        }
+            Values = Values
+                .Select(x => x.Value.GetOrCopy(assign))
+                .ToList<IValue>()
+        };
+    }
 
-        public override bool Equals(object other)
-        {
-            if (other is not Tuple tuple)
+    internal override Value GetOrCopy(bool assign)
+    {
+        var tuple = _assigned
+            ? new Tuple()
+            : this;
+
+        tuple._assigned = assign;
+
+        tuple.Values = Values
+            .Select(x => x.Value.GetOrCopy(assign))
+            .ToList<IValue>();
+
+        return tuple;
+    }
+
+    public override string ToString()
+    {
+        return "(" + string.Join(", ", Values.Select(v => v.Value)) + ")";
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Values.Count);
+    }
+
+    public override bool Equals(object other)
+    {
+        if (other is not Tuple tuple)
+            return false;
+
+        if (Values.Count != tuple.Values.Count)
+            return false;
+
+        for (var i = 0; i < Values.Count; i++)
+            if (Values[i].Value != tuple.Values[i].Value)
                 return false;
 
-            if (Variables.Count != tuple.Variables.Count)
-                return false;
-
-            for (var i = 0; i < Variables.Count; i++)
-                if (Variables[i].Value != tuple.Variables[i].Value)
-                    return false;
-
-            return true;
-        }
+        return true;
     }
 }

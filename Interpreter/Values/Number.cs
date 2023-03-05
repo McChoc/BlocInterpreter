@@ -1,153 +1,147 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using Bloc.Interfaces;
 using Bloc.Results;
 
-namespace Bloc.Values
+namespace Bloc.Values;
+
+public sealed class Number : Value, IScalar
 {
-    public sealed class Number : Value, IScalar
+    public double Value { get; }
+
+    public Number(double value) => Value = value;
+
+    public int GetInt()
     {
-        public Number(double value) => Value = value;
+        if (double.IsNaN(Value))
+            return 0;
 
-        public double Value { get; }
+        if (Value > int.MaxValue)
+            return int.MaxValue;
 
-        public int GetInt()
+        if (Value < int.MinValue)
+            return int.MinValue;
+
+        return (int)Value;
+    }
+
+    public double GetDouble()
+    {
+        return Value;
+    }
+
+    internal override ValueType GetType() => ValueType.Number;
+
+    internal static Number Construct(List<Value> values)
+    {
+        return values switch
         {
-            if (double.IsNaN(Value))
-                return 0;
+            [] or [Null] => new(0),
+            [Number @number] => number,
+            [Bool @bool] => new(@bool.Value ? 1 : 0),
+            [String @string] => new(Parse(@string.Value)),
+            [_] => throw new Throw($"'number' does not have a constructor that takes a '{values[0].GetTypeName()}'"),
+            [..] => throw new Throw($"'number' does not have a constructor that takes {values.Count} arguments")
+        };
 
-            if (Value > int.MaxValue)
-                return int.MaxValue;
-
-            if (Value < int.MinValue)
-                return int.MinValue;
-
-            return (int)Value;
-        }
-
-        public double GetDouble()
+        static double Parse(string text)
         {
-            return Value;
-        }
+            text = text.Trim();
 
-        internal override ValueType GetType() => ValueType.Number;
+            if (text == "nan")
+                return double.NaN;
 
-        internal static Number Construct(List<Value> values)
-        {
-            return values.Count switch
+            if (text == "infinity")
+                return double.PositiveInfinity;
+
+            if (text == "-infinity")
+                return double.NegativeInfinity;
+
+            int @base = 10;
+
+            if (text.StartsWith("0b", true, CultureInfo.InvariantCulture))
             {
-                0 => new(0),
-                1 => values[0] switch
-                {
-                    Null => new(0),
-                    Bool @bool => new(@bool.Value ? 1 : 0),
-                    Number @number => number,
-                    String @string => new(Parse(@string.Value)),
-                    var value => throw new Throw($"'number' does not have a constructor that takes a '{value.GetType().ToString().ToLower()}'")
-                },
-                _ => throw new Throw($"'number' does not have a constructor that takes {values.Count} arguments")
-            };
-
-            static double Parse(string text)
-            {
-                text = text.Trim();
-
-                if (text == "nan")
-                    return double.NaN;
-
-                if (text == "infinity")
-                    return double.PositiveInfinity;
-
-                if (text == "-infinity")
-                    return double.NegativeInfinity;
-
-                int @base = 10;
-
-                if (text.StartsWith("0b", true, CultureInfo.InvariantCulture))
-                {
-                    @base = 2;
-                    text = text[2..];
-                }
-                else if (text.StartsWith("0o", true, CultureInfo.InvariantCulture))
-                {
-                    @base = 8;
-                    text = text[2..];
-                }
-                else if (text.StartsWith("0x", true, CultureInfo.InvariantCulture))
-                {
-                    @base = 16;
-                    text = text[2..];
-                }
-
-                if (text.Length < 1 || text[^1] == '_')
-                    throw new Throw("Input string was not in a correct format");
-
-                text = text.Replace("_", "");
-
-                try
-                {
-                    return @base == 10
-                        ? double.Parse(text, CultureInfo.InvariantCulture)
-                        : System.Convert.ToInt32(text, @base);
-                }
-                catch
-                {
-                    throw new Throw("Input string was not in a correct format");
-                }
+                @base = 2;
+                text = text[2..];
             }
-        }
+            else if (text.StartsWith("0o", true, CultureInfo.InvariantCulture))
+            {
+                @base = 8;
+                text = text[2..];
+            }
+            else if (text.StartsWith("0x", true, CultureInfo.InvariantCulture))
+            {
+                @base = 16;
+                text = text[2..];
+            }
 
-        internal static Number ImplicitCast(Value value)
-        {
+            if (text.Length < 1 || text[^1] == '_')
+                throw new Throw("Input string was not in a correct format");
+
+            text = text.Replace("_", "");
+
             try
             {
-                return Construct(new() { value });
+                return @base == 10
+                    ? double.Parse(text, CultureInfo.InvariantCulture)
+                    : Convert.ToInt32(text, @base);
             }
             catch
             {
-                throw new Throw($"Cannot implicitly convert '{value.GetType().ToString().ToLower()}' to 'number'");
+                throw new Throw("Input string was not in a correct format");
             }
         }
+    }
 
-        internal static bool TryImplicitCast(Value value, out Number number)
+    internal static Number ImplicitCast(Value value)
+    {
+        try
         {
-            try
-            {
-                number = Construct(new() { value });
-                return true;
-            }
-            catch
-            {
-                number = null!;
-                return false;
-            }
+            return Construct(new() { value });
         }
-
-        public override string ToString()
+        catch
         {
-            if (double.IsNaN(Value))
-                return "nan";
-
-            if (double.IsPositiveInfinity(Value))
-                return "infinity";
-
-            if (double.IsNegativeInfinity(Value))
-                return "-infinity";
-
-            return Value.ToString(CultureInfo.InvariantCulture);
+            throw new Throw($"Cannot implicitly convert '{value.GetType().ToString().ToLower()}' to 'number'");
         }
+    }
 
-        public override int GetHashCode()
+    internal static bool TryImplicitCast(Value value, out Number number)
+    {
+        try
         {
-            return System.HashCode.Combine(Value);
+            number = Construct(new() { value });
+            return true;
         }
-
-        public override bool Equals(object other)
+        catch
         {
-            if (other is Number number)
-                return Value == number.Value;
-
+            number = null!;
             return false;
         }
+    }
+
+    public override string ToString()
+    {
+        if (double.IsNaN(Value))
+            return "nan";
+
+        if (double.IsPositiveInfinity(Value))
+            return "infinity";
+
+        if (double.IsNegativeInfinity(Value))
+            return "-infinity";
+
+        return Value.ToString(CultureInfo.InvariantCulture);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Value);
+    }
+
+    public override bool Equals(object other)
+    {
+        return other is Number number &&
+            Value == number.Value;
     }
 }

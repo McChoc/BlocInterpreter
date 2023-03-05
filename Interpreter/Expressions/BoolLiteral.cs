@@ -1,14 +1,13 @@
 ﻿using Bloc.Memory;
 using Bloc.Values;
 
-namespace Bloc.Expressions
+namespace Bloc.Expressions;
+
+internal sealed record BoolLiteral : IExpression
 {
-    internal sealed record BoolLiteral : IExpression
-    {
-        private readonly bool _bool;
+    private readonly bool _bool;
 
-        internal BoolLiteral(bool @bool) => _bool = @bool;
+    internal BoolLiteral(bool @bool) => _bool = @bool;
 
-        public IValue Evaluate(Call _) => _bool ? Bool.True : Bool.False;
-    }
+    public IValue Evaluate(Call _) => _bool ? Bool.True : Bool.False;
 }

@@ -37,8 +37,8 @@ internal static partial class ExpressionParser
 
                 return @operator!.Text switch
                 {
-                    Symbol.PLUS     => new Addition(left, right),
-                    Symbol.MINUS    => new Substraction(left, right),
+                    Symbol.PLUS     => new AdditionOperator(left, right),
+                    Symbol.MINUS    => new SubstractionOperator(left, right),
                     _ => throw new Exception()
                 };
             }

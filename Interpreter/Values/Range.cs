@@ -1,86 +1,71 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Bloc.Results;
 
-namespace Bloc.Values
+namespace Bloc.Values;
+
+public sealed class Range : Value
 {
-    public sealed class Range : Value
+    public int? Start { get; }
+    public int? End { get; }
+    public int Step { get; }
+
+    public Range(int? start, int? end, int? step)
     {
-        public Range(int? start, int? end, int? step)
+        Start = start;
+        End = end;
+        Step = step ?? 1;
+    }
+
+    internal override ValueType GetType() => ValueType.Range;
+
+    internal static Range Construct(List<Value> values)
+    {
+        return values switch
         {
-            Start = start;
-            End = end;
-            Step = step ?? 1;
-        }
+            [] => new(null, null, null),
 
-        public int? Start { get; }
-        public int? End { get; }
-        public int Step { get; }
+            [Range range] => range,
 
-        internal override ValueType GetType() => ValueType.Range;
+            [Null or Range] => new(
+                null,
+                values[0] is Number end ? end.GetInt() : null,
+                null),
 
-        internal static Range Construct(List<Value> values)
-        {
-            return values.Count switch
-            {
-                0 => new(null, null, null),
-                1 => values[0] switch
-                {
-                    Null => new(null, null, null),
-                    Number end => new(null, end.GetInt(), null),
-                    Range range => range,
-                    var value => throw new Throw($"'range' does not have a constructor that takes a '{value.GetType().ToString().ToLower()}'")
-                },
-                2 => (values[0], values[1]) switch
-                {
-                    (Null, Null) => new(null, null, null),
-                    (Number start, Null) => new(start.GetInt(), null, null),
-                    (Null, Number end) => new(null, end.GetInt(), null),
-                    (Number start, Number end) => new(start.GetInt(), end.GetInt(), null),
-                    var value => throw new Throw($"'range' does not have a constructor that takes a '{value.Item1.GetType().ToString().ToLower()}' and a '{value.Item2.GetType().ToString().ToLower()}'")
-                },
-                3 => (values[0], values[1], values[2]) switch
-                {
-                    (Null, Null, Null) => new(null, null, null),
-                    (Number start, Null, Null) => new(start.GetInt(), null, null),
-                    (Null, Number end, Null) => new(null, end.GetInt(), null),
-                    (Number start, Number end, Null) => new(start.GetInt(), end.GetInt(), null),
-                    (Null, Null, Number step) => new(null, null, step.GetInt()),
-                    (Number start, Null, Number step) => new(start.GetInt(), null, step.GetInt()),
-                    (Null, Number end, Number step) => new(null, end.GetInt(), step.GetInt()),
-                    (Number start, Number end, Number step) => new(start.GetInt(), end.GetInt(), step.GetInt()),
-                    var value => throw new Throw($"'range' does not have a constructor that takes a '{value.Item1.GetType().ToString().ToLower()}', a '{value.Item2.GetType().ToString().ToLower()}' and a '{value.Item3.GetType().ToString().ToLower()}'")
-                },
-                _ => throw new Throw($"'range' does not have a constructor that takes {values.Count} arguments")
-            };
-        }
+            [Null or Number, Null or Number] => new(
+                values[0] is Number start ? start.GetInt() : null,
+                values[1] is Number end ? end.GetInt() : null,
+                null),
 
-        public override string ToString()
-        {
-            return Step == 1
-                ? $"{Start}:{End}"
-                : $"{Start}:{End}:{Step}";
-        }
+            [Null or Number, Null or Number, Null or Number] => new(
+                values[0] is Number start ? start.GetInt() : null,
+                values[1] is Number end ? end.GetInt() : null,
+                values[2] is Number step ? step.GetInt() : null),
 
-        public override int GetHashCode()
-        {
-            return System.HashCode.Combine(Start, End, Step);
-        }
+            [_] => throw new Throw($"'range' does not have a constructor that takes a '{values[0].GetTypeName()}'"),
+            [_, _] => throw new Throw($"'range' does not have a constructor that takes a '{values[0].GetTypeName()}' and a '{values[1].GetTypeName()}'"),
+            [_, _, _] => throw new Throw($"'range' does not have a constructor that takes a '{values[0].GetTypeName()}', a '{values[1].GetTypeName()}' and a '{values[2].GetTypeName()}'"),
+            [..] => throw new Throw($"'range' does not have a constructor that takes {values.Count} arguments")
+        };
+    }
 
-        public override bool Equals(object other)
-        {
-            if (other is not Range range)
-                return false;
+    public override string ToString()
+    {
+        return Step == 1
+            ? $"{Start}:{End}"
+            : $"{Start}:{End}:{Step}";
+    }
 
-            if (Start != range.Start)
-                return false;
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Start, End, Step);
+    }
 
-            if (End != range.End)
-                return false;
-
-            if (Step != range.Step)
-                return false;
-
-            return true;
-        }
+    public override bool Equals(object other)
+    {
+        return other is Range range &&
+            Start == range.Start &&
+            End == range.End &&
+            Step == range.Step;
     }
 }

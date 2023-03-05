@@ -28,15 +28,15 @@ internal static partial class ExpressionParser
 
                 return @operator!.Text switch
                 {
-                    Symbol.LESS_THAN    => new Less(left, right),
-                    Symbol.LESS_EQUAL   => new LessEqual(left, right),
-                    Symbol.MORE_THAN    => new Greater(left, right),
-                    Symbol.MORE_EQUAL   => new GreaterEqual(left, right),
-                    Keyword.IN          => new In(left, right),
-                    Keyword.NOT_IN      => new NotIn(left, right),
-                    Keyword.IS          => new Is(left, right),
-                    Keyword.IS_NOT      => new IsNot(left, right),
-                    Keyword.AS          => new As(left, right),
+                    Symbol.LESS_THAN    => new LessThanOperator(left, right),
+                    Symbol.LESS_EQUAL   => new LessEqualOperator(left, right),
+                    Symbol.MORE_THAN    => new GreaterThanOperator(left, right),
+                    Symbol.MORE_EQUAL   => new GreaterEqualOperator(left, right),
+                    Keyword.IN          => new InOperator(left, right),
+                    Keyword.NOT_IN      => new NotInOperator(left, right),
+                    Keyword.IS          => new IsOperator(left, right),
+                    Keyword.IS_NOT      => new IsNotOperator(left, right),
+                    Keyword.AS          => new AsOperator(left, right),
                     _ => throw new Exception()
                 };
             }

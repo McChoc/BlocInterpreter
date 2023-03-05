@@ -1,10 +1,9 @@
 ﻿using Bloc.Memory;
 using Bloc.Values;
 
-namespace Bloc.Expressions
+namespace Bloc.Expressions;
+
+internal sealed record VoidLiteral : IExpression
 {
-    internal sealed record VoidLiteral : IExpression
-    {
-        public IValue Evaluate(Call _) => Void.Value;
-    }
+    public IValue Evaluate(Call _) => Void.Value;
 }

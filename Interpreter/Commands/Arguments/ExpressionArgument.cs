@@ -32,7 +32,7 @@ internal class ExpressionArgument : IArgument
         if (value.Value is not Array array)
             throw new Throw("Only an array can be unpacked using the array unpack syntax");
 
-        foreach (var item in array.Variables)
+        foreach (var item in array.Values)
         {
             var @string = String.ImplicitCast(item.Value);
 

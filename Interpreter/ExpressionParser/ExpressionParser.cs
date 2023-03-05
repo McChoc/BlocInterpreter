@@ -10,6 +10,7 @@ internal static partial class ExpressionParser
 
     private static readonly ParseCallback[] operations =
     {
+        ParseAtoms,
         ParsePrimaries,
         ParseUnaries,
         ParseRanges,
@@ -21,15 +22,15 @@ internal static partial class ExpressionParser
         ParseComparisons,
         ParseRelations,
         ParseEqualities,
-        ParseLogicalANDs,
-        ParseLogicalXORs,
-        ParseLogicalORs,
-        ParseConditionalANDs,
-        ParseConditionalXORs,
-        ParseConditionalORs,
-        ParseCatchExpressions,
+        ParseBitwiseANDs,
+        ParseBitwiseXORs,
+        ParseBitwiseORs,
+        ParseBooleanANDs,
+        ParseBooleanXORs,
+        ParseBooleanORs,
+        ParseCatches,
         ParseCoalescings,
-        ParseTernaries,
+        ParseConditionals,
         ParseAssignments,
         ParseFunctions,
         ParseTuples

@@ -6,7 +6,7 @@ namespace Bloc.Statements;
 
 internal sealed class EmptyStatement : Statement
 {
-    internal override IEnumerable<Result> Execute(Call _)
+    internal override IEnumerable<IResult> Execute(Call _)
     {
         yield break;
     }

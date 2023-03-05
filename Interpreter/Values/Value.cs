@@ -1,23 +1,20 @@
-﻿namespace Bloc.Values
+﻿namespace Bloc.Values;
+
+public abstract class Value : IValue
 {
-    public abstract class Value : IValue
-    {
-        Value IValue.Value => this;
+    Value IValue.Value => this;
 
-        internal abstract new ValueType GetType();
+    internal abstract new ValueType GetType();
+    internal string GetTypeName() => GetType().ToString().ToLower();
 
-        internal virtual Value Copy() => this;
+    internal virtual void Destroy() { }
+    internal virtual Value Copy(bool assign = false) => this;
+    internal virtual Value GetOrCopy(bool assign = false) => this;
 
-        internal virtual void Destroy() { }
+    public abstract override string ToString();
+    public abstract override int GetHashCode();
+    public abstract override bool Equals(object other);
 
-        public abstract override string ToString();
-
-        public abstract override int GetHashCode();
-
-        public abstract override bool Equals(object other);
-
-        public static bool operator ==(Value a, Value b) => a.Equals(b);
-
-        public static bool operator !=(Value a, Value b) => !a.Equals(b);
-    }
+    public static bool operator ==(Value a, Value b) => a.Equals(b);
+    public static bool operator !=(Value a, Value b) => !a.Equals(b);
 }

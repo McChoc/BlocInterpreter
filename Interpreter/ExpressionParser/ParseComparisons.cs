@@ -25,7 +25,7 @@ internal static partial class ExpressionParser
                 var left = ParseComparisons(tokens.GetRange(..i), precedence);
                 var right = Parse(tokens.GetRange((i + 1)..), precedence - 1);
 
-                return new Comparison(left, right);
+                return new ComparisonOperator(left, right);
             }
         }
 
