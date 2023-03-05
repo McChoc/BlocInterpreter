@@ -1,9 +1,11 @@
-﻿using Bloc.Expressions;
+﻿using System;
+using Bloc.Expressions;
 using Bloc.Interfaces;
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Utils.Helpers;
 using Bloc.Values;
+using String = Bloc.Values.String;
 
 namespace Bloc.Operators;
 
@@ -28,6 +30,9 @@ internal sealed record GreaterEqualOperator : IExpression
 
         if (left is IScalar leftScalar && right is IScalar rightScalar)
             return new Bool(leftScalar.GetDouble() >= rightScalar.GetDouble());
+
+        if (left is String leftString && right is String rightString)
+            return new Bool(string.CompareOrdinal(leftString.Value, rightString.Value) >= 0);
 
         throw new Throw($"Cannot apply operator '>=' on operands of types {left.GetTypeName()} and {right.GetTypeName()}");
     }

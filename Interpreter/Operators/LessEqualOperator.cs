@@ -29,6 +29,9 @@ internal sealed record LessEqualOperator : IExpression
         if (left is IScalar leftScalar && right is IScalar rightScalar)
             return new Bool(leftScalar.GetDouble() <= rightScalar.GetDouble());
 
+        if (left is String leftString && right is String rightString)
+            return new Bool(string.CompareOrdinal(leftString.Value, rightString.Value) <= 0);
+
         throw new Throw($"Cannot apply operator '<=' on operands of types {left.GetTypeName()} and {right.GetTypeName()}");
     }
 }
