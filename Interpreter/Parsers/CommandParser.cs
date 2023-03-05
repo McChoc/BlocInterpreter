@@ -23,6 +23,9 @@ internal class CommandParser
 
     private static CommandCall ParseCall(List<Token> tokens)
     {
+        if (tokens.Count == 0)
+            throw new SyntaxError(0, 0, "Empty command");
+
         var arguments = new List<IArgument>();
 
         for (int i = 0; i < tokens.Count; i++)
