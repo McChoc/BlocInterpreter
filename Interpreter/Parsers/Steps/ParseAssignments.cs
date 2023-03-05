@@ -7,11 +7,18 @@ using Bloc.Operators;
 using Bloc.Tokens;
 using Bloc.Utils.Extensions;
 
-namespace Bloc;
+namespace Bloc.Parsers.Steps;
 
-internal static partial class ExpressionParser
+internal sealed class ParseAssignments : IParsingStep
 {
-    private static IExpression ParseAssignments(List<Token> tokens, int precedence)
+    public IParsingStep? NextStep { get; init; }
+
+    public ParseAssignments(IParsingStep? nextStep)
+    {
+        NextStep = nextStep;
+    }
+
+    public IExpression Parse(List<Token> tokens)
     {
         for (var i = 0; i < tokens.Count; i++)
         {
@@ -23,34 +30,34 @@ internal static partial class ExpressionParser
                 if (i > tokens.Count - 1)
                     throw new SyntaxError(@operator!.Start, @operator.End, "Missing the right part of assignment");
 
-                var left = Parse(tokens.GetRange(..i), precedence - 1);
-                var right = ParseAssignments(tokens.GetRange((i + 1)..), precedence);
+                var left = NextStep!.Parse(tokens.GetRange(..i));
+                var right = Parse(tokens.GetRange((i + 1)..));
 
                 return @operator!.Text switch
                 {
-                    Symbol.ASSIGN           => new AssignmentOperator(left, right),
-                    Symbol.ASSIGN_SUM       => new AdditionAssignment(left, right),
-                    Symbol.ASSIGN_DIF       => new SubstractionAssignment(left, right),
-                    Symbol.ASSIGN_PRODUCT   => new MultiplicationAssignment(left, right),
-                    Symbol.ASSIGN_QUOTIENT  => new DivisionAssignment(left, right),
+                    Symbol.ASSIGN => new AssignmentOperator(left, right),
+                    Symbol.ASSIGN_SUM => new AdditionAssignment(left, right),
+                    Symbol.ASSIGN_DIF => new SubstractionAssignment(left, right),
+                    Symbol.ASSIGN_PRODUCT => new MultiplicationAssignment(left, right),
+                    Symbol.ASSIGN_QUOTIENT => new DivisionAssignment(left, right),
                     Symbol.ASSIGN_REMAINDER => new RemainderAssignment(left, right),
-                    Symbol.ASSIGN_MODULO    => new ModuloAssignment(left, right),
-                    Symbol.ASSIGN_POWER     => new PowerAssignment(left, right),
-                    Symbol.ASSIGN_BOOL_AND  => new BooleanAndAssignment(left, right),
-                    Symbol.ASSIGN_BOOL_OR   => new BooleanOrAssignment(left, right),
-                    Symbol.ASSIGN_BOOL_XOR  => new BooleanXorAssignment(left, right),
-                    Symbol.ASSIGN_BIT_AND   => new BitwiseAndAssignment(left, right),
-                    Symbol.ASSIGN_BIT_OR    => new BitwiseOrAssignment(left, right),
-                    Symbol.ASSIGN_BIT_XOR   => new BitwiseXorAssignment(left, right),
-                    Symbol.ASSIGN_SHIFT_L   => new LeftShiftAssignment(left, right),
-                    Symbol.ASSIGN_SHIFT_R   => new RightShiftAssignment(left, right),
-                    Symbol.ASSIGN_COALESCE  => new NullCoalescingAssignment(left, right),
+                    Symbol.ASSIGN_MODULO => new ModuloAssignment(left, right),
+                    Symbol.ASSIGN_POWER => new PowerAssignment(left, right),
+                    Symbol.ASSIGN_BOOL_AND => new BooleanAndAssignment(left, right),
+                    Symbol.ASSIGN_BOOL_OR => new BooleanOrAssignment(left, right),
+                    Symbol.ASSIGN_BOOL_XOR => new BooleanXorAssignment(left, right),
+                    Symbol.ASSIGN_BIT_AND => new BitwiseAndAssignment(left, right),
+                    Symbol.ASSIGN_BIT_OR => new BitwiseOrAssignment(left, right),
+                    Symbol.ASSIGN_BIT_XOR => new BitwiseXorAssignment(left, right),
+                    Symbol.ASSIGN_SHIFT_L => new LeftShiftAssignment(left, right),
+                    Symbol.ASSIGN_SHIFT_R => new RightShiftAssignment(left, right),
+                    Symbol.ASSIGN_COALESCE => new NullCoalescingAssignment(left, right),
                     _ => throw new Exception()
                 };
             }
         }
 
-        return Parse(tokens, precedence - 1);
+        return NextStep!.Parse(tokens);
     }
 
     private static bool IsAssignment(Token token, out TextToken? @operator)

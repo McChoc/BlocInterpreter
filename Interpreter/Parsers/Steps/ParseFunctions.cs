@@ -3,18 +3,24 @@ using System.Linq;
 using Bloc.Constants;
 using Bloc.Exceptions;
 using Bloc.Expressions;
-using Bloc.Parsers;
 using Bloc.Scanners;
 using Bloc.Statements;
 using Bloc.Tokens;
 using Bloc.Utils.Extensions;
 using Bloc.Values;
 
-namespace Bloc;
+namespace Bloc.Parsers.Steps;
 
-internal static partial class ExpressionParser
+internal sealed class ParseFunctions : IParsingStep
 {
-    private static IExpression ParseFunctions(List<Token> tokens, int precedence)
+    public IParsingStep? NextStep { get; init; }
+
+    public ParseFunctions(IParsingStep? nextStep)
+    {
+        NextStep = nextStep;
+    }
+
+    public IExpression Parse(List<Token> tokens)
     {
         for (var i = 0; i < tokens.Count; i++)
         {
@@ -43,7 +49,7 @@ internal static partial class ExpressionParser
             }
             else
             {
-                statements = new() { new ReturnStatement(Parse(tokens.GetRange((i + 1)..))) };
+                statements = new() { new ReturnStatement(ExpressionParser.Parse(tokens.GetRange((i + 1)..))) };
                 tokens.RemoveRange(i - 1, tokens.Count - i + 1);
             }
 
@@ -68,7 +74,7 @@ internal static partial class ExpressionParser
                         if (kwargsContainer is not null)
                             throw new SyntaxError(0, 0, "The array unpack syntax must be used before the struct unpack syntax");
 
-                        var name = Parse(part.GetRange(1..));
+                        var name = ExpressionParser.Parse(part.GetRange(1..));
 
                         if (name is not Identifier identifier)
                             throw new SyntaxError(0, 0, "Invalid identifier");
@@ -83,7 +89,7 @@ internal static partial class ExpressionParser
                         if (kwargsContainer is not null)
                             throw new SyntaxError(0, 0, "The struct unpack syntax may only be used once in a function literal");
 
-                        var name = Parse(part.GetRange(1..));
+                        var name = ExpressionParser.Parse(part.GetRange(1..));
 
                         if (name is not Identifier identifier)
                             throw new SyntaxError(0, 0, "Invalid identifier");
@@ -105,7 +111,7 @@ internal static partial class ExpressionParser
 
                         if (index == -1)
                         {
-                            name = Parse(part);
+                            name = ExpressionParser.Parse(part);
                             defaultValue = null;
                         }
                         else
@@ -119,8 +125,8 @@ internal static partial class ExpressionParser
                             if (valueTokens.Count == 0)
                                 throw new SyntaxError(0, 0, "Missing value");
 
-                            name = Parse(nameTokens);
-                            defaultValue = Parse(valueTokens);
+                            name = ExpressionParser.Parse(nameTokens);
+                            defaultValue = ExpressionParser.Parse(valueTokens);
                         }
 
                         if (name is not Identifier identifier)
@@ -194,9 +200,9 @@ internal static partial class ExpressionParser
 
             tokens.Insert(j + 1, new FuncToken(0, 0, func));
 
-            return ParseFunctions(tokens, precedence);
+            return Parse(tokens);
         }
 
-        return Parse(tokens, precedence - 1);
+        return NextStep!.Parse(tokens);
     }
 }

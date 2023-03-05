@@ -6,15 +6,22 @@ using Bloc.Operators;
 using Bloc.Tokens;
 using Bloc.Utils.Extensions;
 
-namespace Bloc;
+namespace Bloc.Parsers.Steps;
 
-internal static partial class ExpressionParser
+internal sealed class ParseBooleanORs : IParsingStep
 {
-    private static IExpression ParseBitwiseORs(List<Token> tokens, int precedence)
+    public IParsingStep? NextStep { get; init; }
+
+    public ParseBooleanORs(IParsingStep? nextStep)
+    {
+        NextStep = nextStep;
+    }
+
+    public IExpression Parse(List<Token> tokens)
     {
         for (var i = tokens.Count - 1; i >= 0; i--)
         {
-            if (tokens[i] is SymbolToken(Symbol.BIT_OR) @operator)
+            if (tokens[i] is SymbolToken(Symbol.BOOL_OR) @operator)
             {
                 if (i == 0)
                     throw new SyntaxError(@operator.Start, @operator.End, "Missing the left part of logical OR");
@@ -22,13 +29,13 @@ internal static partial class ExpressionParser
                 if (i == tokens.Count - 1)
                     throw new SyntaxError(@operator.Start, @operator.End, "Missing the right part of logical OR");
 
-                var left = ParseBitwiseORs(tokens.GetRange(..i), precedence);
-                var right = Parse(tokens.GetRange((i + 1)..), precedence - 1);
+                var left = Parse(tokens.GetRange(..i));
+                var right = NextStep!.Parse(tokens.GetRange((i + 1)..));
 
-                return new BitwiseOrOperator(left, right);
+                return new BooleanOrOperator(left, right);
             }
         }
 
-        return Parse(tokens, precedence - 1);
+        return NextStep!.Parse(tokens);
     }
 }

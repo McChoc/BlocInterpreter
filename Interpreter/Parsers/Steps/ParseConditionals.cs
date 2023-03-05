@@ -5,11 +5,18 @@ using Bloc.Operators;
 using Bloc.Tokens;
 using Bloc.Utils.Extensions;
 
-namespace Bloc;
+namespace Bloc.Parsers.Steps;
 
-internal static partial class ExpressionParser
+internal sealed class ParseConditionals : IParsingStep
 {
-    private static IExpression ParseConditionals(List<Token> tokens, int precedence)
+    public IParsingStep? NextStep { get; init; }
+
+    public ParseConditionals(IParsingStep? nextStep)
+    {
+        NextStep = nextStep;
+    }
+
+    public IExpression Parse(List<Token> tokens)
     {
         for (var i = 0; i < tokens.Count; i++)
         {
@@ -28,9 +35,9 @@ internal static partial class ExpressionParser
 
                         if (depth == 0)
                         {
-                            var condition = Parse(tokens.GetRange(..i), precedence - 1);
-                            var consequent = ParseConditionals(tokens.GetRange((i + 1)..j), precedence);
-                            var alternative = ParseConditionals(tokens.GetRange((j + 1)..), precedence);
+                            var condition = NextStep!.Parse(tokens.GetRange(..i));
+                            var consequent = Parse(tokens.GetRange((i + 1)..j));
+                            var alternative = Parse(tokens.GetRange((j + 1)..));
 
                             return new ConditionalOperator(condition, consequent, alternative);
                         }
@@ -39,6 +46,6 @@ internal static partial class ExpressionParser
             }
         }
 
-        return Parse(tokens, precedence - 1);
+        return NextStep!.Parse(tokens);
     }
 }

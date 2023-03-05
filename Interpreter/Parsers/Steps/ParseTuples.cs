@@ -4,21 +4,28 @@ using Bloc.Expressions;
 using Bloc.Tokens;
 using Bloc.Utils.Extensions;
 
-namespace Bloc;
+namespace Bloc.Parsers.Steps;
 
-internal static partial class ExpressionParser
+internal sealed class ParseTuples : IParsingStep
 {
-    private static IExpression ParseTuples(List<Token> tokens, int precedence)
+    public IParsingStep? NextStep { get; init; }
+
+    public ParseTuples(IParsingStep? nextStep)
+    {
+        NextStep = nextStep;
+    }
+
+    public IExpression Parse(List<Token> tokens)
     {
         var parts = tokens.Split(x => x is SymbolToken(Symbol.COMMA));
 
         if (parts.Count == 1)
-            return Parse(tokens, precedence - 1);
+            return NextStep!.Parse(tokens);
 
         var expressions = new List<IExpression>();
 
         foreach (var part in parts)
-            expressions.Add(Parse(part, precedence - 1));
+            expressions.Add(NextStep!.Parse(part));
 
         return new TupleLiteral(expressions);
     }

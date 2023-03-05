@@ -7,46 +7,53 @@ using Bloc.Tokens;
 using Bloc.Utils.Extensions;
 using Bloc.Values;
 
-namespace Bloc;
+namespace Bloc.Parsers.Steps;
 
-internal static partial class ExpressionParser
+internal sealed class ParseAtoms : IParsingStep
 {
-    private static IExpression ParseAtoms(List<Token> tokens, int precedence)
+    public IParsingStep? NextStep { get; init; }
+
+    public ParseAtoms(IParsingStep? nextStep)
+    {
+        NextStep = nextStep;
+    }
+
+    public IExpression Parse(List<Token> tokens)
     {
         return tokens[0] switch
         {
-            IIdentifierToken identifier     => new Identifier(identifier.Text),
+            IIdentifierToken identifier => new Identifier(identifier.Text),
 
-            GroupToken group                => Parse(group.Tokens),
+            GroupToken group => ExpressionParser.Parse(group.Tokens),
 
-            NumberToken number              => ParseNumber(number),
-            StringToken @string             => ParseString(@string),
-            ArrayToken array                => ParseArray(array),
-            StructToken @struct             => ParseStruct(@struct),
-            FuncToken func                  => func.Literal,
+            NumberToken number => ParseNumber(number),
+            StringToken @string => ParseString(@string),
+            ArrayToken array => ParseArray(array),
+            StructToken @struct => ParseStruct(@struct),
+            FuncToken func => func.Literal,
 
-            LiteralToken(Keyword.VOID)      => new VoidLiteral(),
-            LiteralToken(Keyword.NULL)      => new NullLiteral(),
-            LiteralToken(Keyword.FALSE)     => new BoolLiteral(false),
-            LiteralToken(Keyword.TRUE)      => new BoolLiteral(true),
-            LiteralToken(Keyword.NAN)       => new NumberLiteral(double.NaN),
-            LiteralToken(Keyword.INFINITY)  => new NumberLiteral(double.PositiveInfinity),
+            LiteralToken(Keyword.VOID) => new VoidLiteral(),
+            LiteralToken(Keyword.NULL) => new NullLiteral(),
+            LiteralToken(Keyword.FALSE) => new BoolLiteral(false),
+            LiteralToken(Keyword.TRUE) => new BoolLiteral(true),
+            LiteralToken(Keyword.NAN) => new NumberLiteral(double.NaN),
+            LiteralToken(Keyword.INFINITY) => new NumberLiteral(double.PositiveInfinity),
 
-            LiteralToken(Keyword.VOID_T)    => new TypeLiteral(ValueType.Void),
-            LiteralToken(Keyword.NULL_T)    => new TypeLiteral(ValueType.Null),
-            LiteralToken(Keyword.BOOL)      => new TypeLiteral(ValueType.Bool),
-            LiteralToken(Keyword.NUMBER)    => new TypeLiteral(ValueType.Number),
-            LiteralToken(Keyword.RANGE)     => new TypeLiteral(ValueType.Range),
-            LiteralToken(Keyword.STRING)    => new TypeLiteral(ValueType.String),
-            LiteralToken(Keyword.ARRAY)     => new TypeLiteral(ValueType.Array),
-            LiteralToken(Keyword.STRUCT)    => new TypeLiteral(ValueType.Struct),
-            LiteralToken(Keyword.TUPLE)     => new TypeLiteral(ValueType.Tuple),
-            LiteralToken(Keyword.FUNC)      => new TypeLiteral(ValueType.Func),
-            LiteralToken(Keyword.TASK)      => new TypeLiteral(ValueType.Task),
-            LiteralToken(Keyword.ITER)      => new TypeLiteral(ValueType.Iter),
+            LiteralToken(Keyword.VOID_T) => new TypeLiteral(ValueType.Void),
+            LiteralToken(Keyword.NULL_T) => new TypeLiteral(ValueType.Null),
+            LiteralToken(Keyword.BOOL) => new TypeLiteral(ValueType.Bool),
+            LiteralToken(Keyword.NUMBER) => new TypeLiteral(ValueType.Number),
+            LiteralToken(Keyword.RANGE) => new TypeLiteral(ValueType.Range),
+            LiteralToken(Keyword.STRING) => new TypeLiteral(ValueType.String),
+            LiteralToken(Keyword.ARRAY) => new TypeLiteral(ValueType.Array),
+            LiteralToken(Keyword.STRUCT) => new TypeLiteral(ValueType.Struct),
+            LiteralToken(Keyword.TUPLE) => new TypeLiteral(ValueType.Tuple),
+            LiteralToken(Keyword.FUNC) => new TypeLiteral(ValueType.Func),
+            LiteralToken(Keyword.TASK) => new TypeLiteral(ValueType.Task),
+            LiteralToken(Keyword.ITER) => new TypeLiteral(ValueType.Iter),
             LiteralToken(Keyword.REFERENCE) => new TypeLiteral(ValueType.Reference),
-            LiteralToken(Keyword.EXTERN)    => new TypeLiteral(ValueType.Extern),
-            LiteralToken(Keyword.TYPE)      => new TypeLiteral(ValueType.Type),
+            LiteralToken(Keyword.EXTERN) => new TypeLiteral(ValueType.Extern),
+            LiteralToken(Keyword.TYPE) => new TypeLiteral(ValueType.Type),
 
             _ => throw new SyntaxError(tokens[0].Start, tokens[0].End, "Unexpected token")
         };
@@ -60,7 +67,7 @@ internal static partial class ExpressionParser
     private static StringLiteral ParseString(StringToken token)
     {
         var interpolations = token.Interpolations
-            .Select(x => new StringLiteral.Interpolation(x.Index, Parse(x.Tokens)))
+            .Select(x => new StringLiteral.Interpolation(x.Index, ExpressionParser.Parse(x.Tokens)))
             .ToList();
 
         return new StringLiteral(token.BaseString, interpolations);
@@ -87,9 +94,9 @@ internal static partial class ExpressionParser
                 throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
 
             if (part[0] is SymbolToken(Symbol.UNPACK_ARRAY))
-                expressions.Add(new(true, Parse(part.GetRange(1..))));
+                expressions.Add(new(true, ExpressionParser.Parse(part.GetRange(1..))));
             else
-                expressions.Add(new(false, Parse(part)));
+                expressions.Add(new(false, ExpressionParser.Parse(part)));
         }
 
         return new ArrayLiteral(expressions);
@@ -114,7 +121,7 @@ internal static partial class ExpressionParser
 
             if (part[0] is SymbolToken(Symbol.UNPACK_STRUCT))
             {
-                expressions.Add(new(true, null, Parse(part.GetRange(1..))));
+                expressions.Add(new(true, null, ExpressionParser.Parse(part.GetRange(1..))));
             }
             else
             {
@@ -129,7 +136,7 @@ internal static partial class ExpressionParser
                 if (keyTokens.Count == 0)
                     throw new SyntaxError(0, 0, "Missing identifier");
 
-                var keyExpr = Parse(keyTokens);
+                var keyExpr = ExpressionParser.Parse(keyTokens);
 
                 if (keyExpr is not Identifier identifier)
                     throw new SyntaxError(0, 0, "Invalid identifier");
@@ -137,7 +144,7 @@ internal static partial class ExpressionParser
                 if (valueTokens.Count == 0)
                     throw new SyntaxError(0, 0, "Missing value");
 
-                var expression = Parse(valueTokens);
+                var expression = ExpressionParser.Parse(valueTokens);
 
                 expressions.Add(new(false, identifier.Name, expression));
             }

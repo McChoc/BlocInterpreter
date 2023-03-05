@@ -7,18 +7,25 @@ using Bloc.Operators;
 using Bloc.Tokens;
 using Bloc.Utils.Extensions;
 
-namespace Bloc;
+namespace Bloc.Parsers.Steps;
 
-internal static partial class ExpressionParser
+internal sealed class ParseUnaries : IParsingStep
 {
-    private static IExpression ParseUnaries(List<Token> tokens, int precedence)
+    public IParsingStep? NextStep { get; init; }
+
+    public ParseUnaries(IParsingStep? nextStep)
+    {
+        NextStep = nextStep;
+    }
+
+    public IExpression Parse(List<Token> tokens)
     {
         if (tokens.Count == 0)
             throw new SyntaxError(0, 0, "Missing value");
 
         if (IsPrefix(tokens[0], out var prefix))
         {
-            var operand = ParseUnaries(tokens.GetRange(1..), precedence);
+            var operand = Parse(tokens.GetRange(1..));
 
             return prefix!.Text switch
             {
@@ -55,7 +62,7 @@ internal static partial class ExpressionParser
 
         if (IsPostfix(tokens[^1], out var postfix))
         {
-            var operand = ParseUnaries(tokens.GetRange(..^1), precedence);
+            var operand = Parse(tokens.GetRange(..^1));
 
             return postfix!.Text switch
             {
@@ -68,7 +75,7 @@ internal static partial class ExpressionParser
             };
         }
 
-        return Parse(tokens, precedence - 1);
+        return NextStep!.Parse(tokens);
     }
 
     private static bool IsPrefix(Token token, out TextToken? @operator)

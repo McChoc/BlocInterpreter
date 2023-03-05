@@ -7,11 +7,18 @@ using Bloc.Operators;
 using Bloc.Tokens;
 using Bloc.Utils.Extensions;
 
-namespace Bloc;
+namespace Bloc.Parsers.Steps;
 
-internal static partial class ExpressionParser
+internal sealed class ParseQueries : IParsingStep
 {
-    private static IExpression ParseQueries(List<Token> tokens, int precedence)
+    public IParsingStep? NextStep { get; init; }
+
+    public ParseQueries(IParsingStep? nextStep)
+    {
+        NextStep = nextStep;
+    }
+
+    public IExpression Parse(List<Token> tokens)
     {
         for (var i = tokens.Count - 1; i >= 0; i--)
         {
@@ -23,8 +30,8 @@ internal static partial class ExpressionParser
                 if (i == tokens.Count - 1)
                     throw new SyntaxError(@operator!.Start, @operator.End, "Missing the right part of query");
 
-                var left = ParseQueries(tokens.GetRange(..i), precedence);
-                var right = Parse(tokens.GetRange((i + 1)..), precedence - 1);
+                var left = Parse(tokens.GetRange(..i));
+                var right = NextStep!.Parse(tokens.GetRange((i + 1)..));
 
                 return @operator!.Text switch
                 {
@@ -36,7 +43,7 @@ internal static partial class ExpressionParser
             }
         }
 
-        return Parse(tokens, precedence - 1);
+        return NextStep!.Parse(tokens);
     }
 
     private static bool IsQuery(Token token, out TextToken? @operator)

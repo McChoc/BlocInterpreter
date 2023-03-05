@@ -6,11 +6,18 @@ using Bloc.Operators;
 using Bloc.Tokens;
 using Bloc.Utils.Extensions;
 
-namespace Bloc;
+namespace Bloc.Parsers.Steps;
 
-internal static partial class ExpressionParser
+internal sealed class ParseBooleanXORs : IParsingStep
 {
-    private static IExpression ParseBooleanXORs(List<Token> tokens, int precedence)
+    public IParsingStep? NextStep { get; init; }
+
+    public ParseBooleanXORs(IParsingStep? nextStep)
+    {
+        NextStep = nextStep;
+    }
+
+    public IExpression Parse(List<Token> tokens)
     {
         for (var i = tokens.Count - 1; i >= 0; i--)
         {
@@ -22,13 +29,13 @@ internal static partial class ExpressionParser
                 if (i == tokens.Count - 1)
                     throw new SyntaxError(@operator.Start, @operator.End, "Missing the right part of logical XOR");
 
-                var left = ParseBooleanXORs(tokens.GetRange(..i), precedence);
-                var right = Parse(tokens.GetRange((i + 1)..), precedence - 1);
+                var left = Parse(tokens.GetRange(..i));
+                var right = NextStep!.Parse(tokens.GetRange((i + 1)..));
 
                 return new BooleanXorOperator(left, right);
             }
         }
 
-        return Parse(tokens, precedence - 1);
+        return NextStep!.Parse(tokens);
     }
 }

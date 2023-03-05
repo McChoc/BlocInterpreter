@@ -6,13 +6,20 @@ using Bloc.Operators;
 using Bloc.Tokens;
 using Bloc.Utils.Extensions;
 
-namespace Bloc;
+namespace Bloc.Parsers.Steps;
 
-internal static partial class ExpressionParser
+internal sealed class ParsePrimaries : IParsingStep
 {
-    private static IExpression ParsePrimaries(List<Token> tokens, int precedence)
+    public IParsingStep? NextStep { get; init; }
+
+    public ParsePrimaries(IParsingStep? nextStep)
     {
-        var expression = Parse(tokens.GetRange(0, 1), precedence - 1);
+        NextStep = nextStep;
+    }
+
+    public IExpression Parse(List<Token> tokens)
+    {
+        var expression = NextStep!.Parse(tokens.GetRange(0, 1));
 
         for (var i = 1; i < tokens.Count; i++)
         {
@@ -30,7 +37,7 @@ internal static partial class ExpressionParser
             }
             else if (tokens[i] is IndexerToken indexer)
             {
-                var index = Parse(indexer.Tokens);
+                var index = ExpressionParser.Parse(indexer.Tokens);
 
                 expression = new IndexerOperator(expression, index);
             }
@@ -56,11 +63,11 @@ internal static partial class ExpressionParser
                             if (arguments.Count > 0 && arguments[^1].Type is InvocationOperator.ArgumentType.Named or InvocationOperator.ArgumentType.UnpackedStruct)
                                 throw new SyntaxError(part[0].Start, part[^1].End, "All the positional arguments must apear before any named arguments");
 
-                            arguments.Add(new(null, InvocationOperator.ArgumentType.UnpackedArray, Parse(part.GetRange(1..))));
+                            arguments.Add(new(null, InvocationOperator.ArgumentType.UnpackedArray, ExpressionParser.Parse(part.GetRange(1..))));
                         }
                         else if (part[0] is SymbolToken(Symbol.UNPACK_STRUCT))
                         {
-                            arguments.Add(new(null, InvocationOperator.ArgumentType.UnpackedStruct, Parse(part.GetRange(1..))));
+                            arguments.Add(new(null, InvocationOperator.ArgumentType.UnpackedStruct, ExpressionParser.Parse(part.GetRange(1..))));
                         }
                         else
                         {
@@ -71,7 +78,7 @@ internal static partial class ExpressionParser
                                 if (arguments.Count > 0 && arguments[^1].Type is InvocationOperator.ArgumentType.Named or InvocationOperator.ArgumentType.UnpackedStruct)
                                     throw new SyntaxError(part[0].Start, part[^1].End, "All the positional arguments must apear before any named arguments");
 
-                                arguments.Add(new(null, InvocationOperator.ArgumentType.Positional, Parse(part)));
+                                arguments.Add(new(null, InvocationOperator.ArgumentType.Positional, ExpressionParser.Parse(part)));
                             }
                             else
                             {
@@ -81,7 +88,7 @@ internal static partial class ExpressionParser
                                 if (keyTokens.Count == 0)
                                     throw new SyntaxError(0, 0, "Missing identifier");
 
-                                var keyExpr = Parse(keyTokens);
+                                var keyExpr = ExpressionParser.Parse(keyTokens);
 
                                 if (keyExpr is not Identifier identifier)
                                     throw new SyntaxError(0, 0, "Invalid identifier");
@@ -89,7 +96,7 @@ internal static partial class ExpressionParser
                                 if (valueTokens.Count == 0)
                                     throw new SyntaxError(0, 0, "Missing value");
 
-                                arguments.Add(new(identifier.Name, InvocationOperator.ArgumentType.Named, Parse(valueTokens)));
+                                arguments.Add(new(identifier.Name, InvocationOperator.ArgumentType.Named, ExpressionParser.Parse(valueTokens)));
                             }
                         }
                     }
