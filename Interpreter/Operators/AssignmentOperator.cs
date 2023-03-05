@@ -28,14 +28,16 @@ internal sealed record AssignmentOperator : IExpression
         
     private static Value Assign(IValue left, IValue right)
     {
+        var value = right.Value.GetOrCopy();
+
         switch (left)
         {
             case Pointer pointer:
-                return pointer.Set(right.Value);
+                return pointer.Set(value);
 
             case Tuple tuple:
-                if (right.Value is not Tuple rightTuple)
-                    return new Tuple(tuple.Values.Select(x => Assign(x, right)).ToList());
+                if (value is not Tuple rightTuple)
+                    return new Tuple(tuple.Values.Select(x => Assign(x, value)).ToList());
 
                 if (tuple.Values.Count == rightTuple.Values.Count)
                     return new Tuple(tuple.Values.Zip(rightTuple.Values, Assign).ToList());
