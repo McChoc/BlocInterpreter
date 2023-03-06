@@ -27,7 +27,7 @@ internal sealed class RepeatStatement : Statement
             yield break;
         }
 
-        if (!Number.TryImplicitCast(value!.Value, out var number))
+        if (!Number.TryImplicitCast(value!, out var number))
         {
             yield return new Throw("Cannot implicitly convert to number");
             yield break;

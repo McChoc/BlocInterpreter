@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Bloc.Expressions;
 using Bloc.Memory;
-using Bloc.Pointers;
 using Bloc.Results;
+using Bloc.Utils.Helpers;
 using Bloc.Values;
-using Tuple = Bloc.Values.Tuple;
 
 namespace Bloc.Statements;
 
@@ -33,7 +32,7 @@ internal class DeclarationStatement : Statement
 
                 var identifier = definition.Name.Evaluate(call);
 
-                Define(identifier, value, call);
+                VariableHelper.Define(identifier, value, call, _mask, _mutable);
             }
             catch (Throw exception)
             {
@@ -42,34 +41,6 @@ internal class DeclarationStatement : Statement
         }
 
         return Enumerable.Empty<IResult>();
-    }
-
-    private void Define(IValue identifier, Value value, Call call)
-    {
-        if (identifier is UnresolvedPointer pointer)
-        {
-            pointer.Define(_mask, _mutable, value, call);
-        }
-        else if (identifier.Value is Tuple leftTuple)
-        {
-            if (value is not Tuple rightTuple)
-            {
-                foreach (var id in leftTuple.Values)
-                    Define(id, value, call);
-            }
-            else
-            {
-                if (leftTuple.Values.Count != rightTuple.Values.Count)
-                    throw new Throw("Miss match number of elements in tuples.");
-
-                foreach (var (id, val) in leftTuple.Values.Zip(rightTuple.Values, (i, v) => (i, v.Value)))
-                    Define(id, val, call);
-            }
-        }
-        else
-        {
-            throw new Throw("The left part of an assignement must be an identifier");
-        }
     }
 
     public override int GetHashCode()

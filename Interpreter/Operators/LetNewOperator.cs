@@ -1,8 +1,6 @@
-﻿using System.Linq;
-using Bloc.Expressions;
+﻿using Bloc.Expressions;
 using Bloc.Memory;
-using Bloc.Pointers;
-using Bloc.Results;
+using Bloc.Utils.Helpers;
 using Bloc.Values;
 
 namespace Bloc.Operators;
@@ -20,23 +18,6 @@ internal sealed record LetNewOperator : IExpression
     {
         var identifier = _operand.Evaluate(call);
 
-        return Define(identifier, call);
-    }
-
-    private IValue Define(IValue identifier, Call call)
-    {
-        if (identifier is UnresolvedPointer pointer)
-            return pointer.Define(true, true, Null.Value, call);
-
-        if (identifier.Value is Tuple tuple)
-        {
-            var variables = tuple.Values
-                .Select(x => Define(x, call))
-                .ToList();
-
-            return new Tuple(variables);
-        }
-
-        throw new Throw("The operand must be an identifier");
+        return VariableHelper.Define(identifier, Null.Value, call, true);
     }
 }

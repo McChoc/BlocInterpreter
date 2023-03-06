@@ -94,11 +94,11 @@ public sealed class Number : Value, IScalar
         }
     }
 
-    internal static Number ImplicitCast(Value value)
+    internal static Number ImplicitCast(IValue value)
     {
         try
         {
-            return Construct(new() { value });
+            return Construct(new() { value.Value });
         }
         catch
         {
@@ -106,11 +106,11 @@ public sealed class Number : Value, IScalar
         }
     }
 
-    internal static bool TryImplicitCast(Value value, out Number number)
+    internal static bool TryImplicitCast(IValue value, out Number number)
     {
         try
         {
-            number = Construct(new() { value });
+            number = Construct(new() { value.Value });
             return true;
         }
         catch

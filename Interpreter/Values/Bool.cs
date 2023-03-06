@@ -31,11 +31,11 @@ public sealed class Bool : Value, IScalar
         };
     }
 
-    internal static Bool ImplicitCast(Value value)
+    internal static Bool ImplicitCast(IValue value)
     {
         try
         {
-            return Construct(new() { value });
+            return Construct(new() { value.Value });
         }
         catch
         {
@@ -43,11 +43,11 @@ public sealed class Bool : Value, IScalar
         }
     }
 
-    internal static bool TryImplicitCast(Value value, out Bool @bool)
+    internal static bool TryImplicitCast(IValue value, out Bool @bool)
     {
         try
         {
-            @bool = Construct(new() { value });
+            @bool = Construct(new() { value.Value });
             return true;
         }
         catch

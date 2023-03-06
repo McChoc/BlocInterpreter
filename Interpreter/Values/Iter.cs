@@ -106,11 +106,11 @@ public sealed class Iter : Value
         }
     }
 
-    internal static bool TryImplicitCast(Value value, out Iter iter, Call call)
+    internal static bool TryImplicitCast(IValue value, out Iter iter, Call call)
     {
         try
         {
-            iter = Construct(new() { value }, call);
+            iter = Construct(new() { value.Value }, call);
             return true;
         }
         catch

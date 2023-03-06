@@ -4,6 +4,7 @@ using System.Linq;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
+using Bloc.Utils.Helpers;
 using Bloc.Values;
 
 namespace Bloc.Statements;
@@ -40,11 +41,17 @@ internal sealed class TryStatement : Statement
             {
                 using (call.MakeScope())
                 {
-                    call.Set(true, true, @catch.Name, @throw.Value.Copy(true));
+                    if (!EvaluateExpression(@catch.Name, call, out var identifier, out var exception))
+                    {
+                        yield return exception!;
+                        yield break;
+                    }
+
+                    VariableHelper.Define(identifier!, @throw.Value.Copy(), call);
 
                     if (@catch.Expression is not null)
                     {
-                        if (Bool.TryImplicitCast(@catch.Expression.Evaluate(call).Value, out var @bool))
+                        if (Bool.TryImplicitCast(@catch.Expression.Evaluate(call), out var @bool))
                         {
                             if (!@bool.Value)
                                 continue;
@@ -115,13 +122,13 @@ internal sealed class TryStatement : Statement
 
     internal sealed class Catch
     {
-        internal string Name { get; set; }
+        internal IExpression Name { get; set; }
 
         internal IExpression? Expression { get; set; }
 
         internal Statement Statement { get; set; }
 
-        internal Catch(string name, IExpression? expression, Statement statement)
+        internal Catch(IExpression name, IExpression? expression, Statement statement)
         {
             Name = name;
             Expression = expression;

@@ -28,7 +28,7 @@ internal sealed class IfStatement : Statement
             yield break;
         }
 
-        if (!Bool.TryImplicitCast(value!.Value, out var @bool))
+        if (!Bool.TryImplicitCast(value!, out var @bool))
         {
             yield return new Throw("Cannot implicitly convert to bool");
             yield break;

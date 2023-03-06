@@ -304,19 +304,24 @@ internal static class StatementParser
 
         var tokens = expression.Tokens;
 
-        if (tokens.Count < 1 || tokens[0] is not IIdentifierToken identifier)
-            throw new SyntaxError(tokens[0].Start, tokens[0].End, "Missing identifier");
+        if (tokens.Count == 0)
+            throw new SyntaxError(0, 0, "Missing identifier");
 
-        if (tokens.Count < 2 || tokens[1] is not KeywordToken(Keyword.IN))
-            throw new SyntaxError(tokens[0].Start, tokens[0].End, $"Missing '{Keyword.IN}' keyword");
+        var index = tokens.FindIndex(x => x is KeywordToken(Keyword.IN));
 
-        if (tokens.Count < 3)
-            throw new SyntaxError(tokens[0].Start, tokens[0].End, "Missing expression");
+        if (index == 0 || tokens.Count == 0)
+            throw new SyntaxError(tokens[0].Start, tokens[^1].End, "Missing identifier");
+
+        if (index == -1)
+            throw new SyntaxError(tokens[0].Start, tokens[^1].End, $"Missing '{Keyword.IN}' keyword");
+
+        if (index == tokens.Count -1)
+            throw new SyntaxError(tokens[0].Start, tokens[^1].End, "Missing expression");
 
         return new ForeachStatement(@checked)
         {
-            Name = identifier.Text,
-            Expression = ExpressionParser.Parse(tokens.GetRange(2..)),
+            Name = ExpressionParser.Parse(tokens.GetRange(..index)),
+            Expression = ExpressionParser.Parse(tokens.GetRange((index + 1)..)),
             Statement = GetStatement(provider)
         };
     }
@@ -369,19 +374,7 @@ internal static class StatementParser
             if (foundLastCatch)
                 throw new SyntaxError(keyword.Start, keyword.End, "There cannot be another catch clause after the general catch");
 
-            if (!provider.HasNext() || provider.Next() is not GroupToken expression)
-                throw new SyntaxError(keyword.Start, keyword.End, $"Missing '{Symbol.PAREN_L}'");
-
-            var tokens = expression.Tokens;
-
-            if (tokens.Count == 0)
-                throw new SyntaxError(keyword.Start, keyword.End, "Missing identifier");
-
-            if (tokens[0] is not IIdentifierToken identifier)
-                throw new SyntaxError(tokens[0].Start, tokens[0].End, "Unexpected symbol");
-
-            if (tokens.Count > 1)
-                throw new SyntaxError(tokens[1].Start, tokens[1].End, "Unexpected symbol");
+            var identifier = GetExpression(provider, keyword);
 
             IExpression? when;
 
@@ -395,7 +388,7 @@ internal static class StatementParser
                 foundLastCatch = true;
             }
 
-            catches.Add(new(identifier.Text, when, GetStatement(provider)));
+            catches.Add(new(identifier, when, GetStatement(provider)));
         }
 
         Statement? @finally = null;

@@ -36,11 +36,11 @@ public sealed class String : Value, IIndexable
         };
     }
 
-    internal static String ImplicitCast(Value value)
+    internal static String ImplicitCast(IValue value)
     {
         try
         {
-            return Construct(new() { value });
+            return Construct(new() { value.Value });
         }
         catch
         {
@@ -48,11 +48,11 @@ public sealed class String : Value, IIndexable
         }
     }
 
-    internal static bool TryImplicitCast(Value value, out String @string)
+    internal static bool TryImplicitCast(IValue value, out String @string)
     {
         try
         {
-            @string = Construct(new() { value });
+            @string = Construct(new() { value.Value });
             return true;
         }
         catch

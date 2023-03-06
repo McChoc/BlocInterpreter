@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
+using Bloc.Utils.Helpers;
 using Bloc.Values;
 
 namespace Bloc.Statements;
@@ -11,7 +12,7 @@ internal sealed class ForeachStatement : Statement
 {
     private readonly bool _checked;
 
-    internal required string Name { get; init; }
+    internal required IExpression Name { get; init; }
     internal required IExpression Expression { get; init; }
     internal required Statement Statement { get; init; }
 
@@ -22,13 +23,19 @@ internal sealed class ForeachStatement : Statement
 
     internal override IEnumerable<IResult> Execute(Call call)
     {
-        if (!EvaluateExpression(Expression, call, out var value, out var exception))
+        if (!EvaluateExpression(Name, call, out var identifier, out var exception))
         {
             yield return exception!;
             yield break;
         }
 
-        if (!Iter.TryImplicitCast(value!.Value, out var iter, call))
+        if (!EvaluateExpression(Expression, call, out var value, out exception))
+        {
+            yield return exception!;
+            yield break;
+        }
+
+        if (!Iter.TryImplicitCast(value!, out var iter, call))
         {
             yield return new Throw("Cannot implicitly convert to iter");
             yield break;
@@ -66,7 +73,7 @@ internal sealed class ForeachStatement : Statement
 
             using (call.MakeScope())
             {
-                call.Set(true, false, Name, enumerator.Current.GetOrCopy(true));
+                VariableHelper.Define(identifier!, enumerator.Current, call);
 
                 foreach (var result in ExecuteStatement(Statement, call))
                 {
