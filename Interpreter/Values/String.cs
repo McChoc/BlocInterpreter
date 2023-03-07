@@ -44,7 +44,7 @@ public sealed class String : Value, IIndexable
         }
         catch
         {
-            throw new Throw($"Cannot implicitly convert '{value.GetType().ToString().ToLower()}' to 'string'");
+            throw new Throw($"Cannot implicitly convert '{value.Value.GetTypeName()}' to 'string'");
         }
     }
 

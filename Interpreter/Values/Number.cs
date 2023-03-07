@@ -102,7 +102,7 @@ public sealed class Number : Value, IScalar
         }
         catch
         {
-            throw new Throw($"Cannot implicitly convert '{value.GetType().ToString().ToLower()}' to 'number'");
+            throw new Throw($"Cannot implicitly convert '{value.Value.GetTypeName()}' to 'number'");
         }
     }
 

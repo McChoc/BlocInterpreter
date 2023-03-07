@@ -39,7 +39,7 @@ public sealed class Bool : Value, IScalar
         }
         catch
         {
-            throw new Throw($"Cannot implicitly convert '{value.GetType().ToString().ToLower()}' to 'bool'");
+            throw new Throw($"Cannot implicitly convert '{value.Value.GetTypeName()}' to 'bool'");
         }
     }
 
