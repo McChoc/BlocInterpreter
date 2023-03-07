@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Bloc.Constants;
 using Bloc.Interfaces;
 using Bloc.Memory;
 using Bloc.Results;
@@ -32,6 +33,12 @@ public sealed class Type : Value, IInvokable
 
     public override string ToString()
     {
+        if (Value.Count == 1)
+            return GetTypeName(Value.First());
+
+        if (Value.Count == 2 && Value.Contains(ValueType.Null))
+            return GetTypeName(Value.First(x => x != ValueType.Null)) + "?";
+
         return "[type]";
     }
 
@@ -72,6 +79,29 @@ public sealed class Type : Value, IInvokable
             ValueType.Extern => Extern.Construct(args),
             ValueType.Type => Construct(args),
             _ => throw new Exception()
+        };
+    }
+
+    private static string GetTypeName(ValueType type)
+    {
+        return type switch
+        {
+            ValueType.Void => Keyword.VOID_T,
+            ValueType.Null => Keyword.NULL_T,
+            ValueType.Bool => Keyword.BOOL,
+            ValueType.Number => Keyword.NUMBER,
+            ValueType.Range => Keyword.RANGE,
+            ValueType.String => Keyword.STRING,
+            ValueType.Array => Keyword.ARRAY,
+            ValueType.Struct => Keyword.STRUCT,
+            ValueType.Tuple => Keyword.TUPLE,
+            ValueType.Func => Keyword.FUNC,
+            ValueType.Task => Keyword.TASK,
+            ValueType.Iter => Keyword.ITER,
+            ValueType.Reference => Keyword.REFERENCE,
+            ValueType.Extern => Keyword.EXTERN,
+            ValueType.Type => Keyword.TYPE,
+            _ => throw new Exception(),
         };
     }
 }
