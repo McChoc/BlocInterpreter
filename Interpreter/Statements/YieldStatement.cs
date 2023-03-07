@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
-using Bloc.Values;
+using Void = Bloc.Values.Void;
 
 namespace Bloc.Statements;
 
@@ -18,10 +18,12 @@ internal sealed class YieldStatement : Statement
 
     internal override IEnumerable<IResult> Execute(Call call)
     {
-        if (EvaluateExpression(_expression, call, out var value, out var exception))
-            yield return new Yield(value!.Value.GetOrCopy());
-        else
+        if (!EvaluateExpression(_expression, call, out var value, out var exception))
             yield return exception!;
+        else if (value!.Value is Void)
+            yield return new Throw("'void' cannot be yielded");
+        else
+            yield return new Yield(value.Value.GetOrCopy());
     }
 
     public override int GetHashCode()
