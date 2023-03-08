@@ -67,7 +67,11 @@ internal sealed class ForeachStatement : Statement
 
             using (call.MakeScope())
             {
-                Identifier.Define(value!.Value, call);
+                if (!DefineIdentifier(Identifier, enumerator.Current, call, out exception, mutable: false))
+                {
+                    yield return exception!;
+                    yield break;
+                }
 
                 foreach (var result in ExecuteStatement(Statement, call))
                 {

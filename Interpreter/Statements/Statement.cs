@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Bloc.Commands;
 using Bloc.Expressions;
+using Bloc.Identifiers;
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Utils.Helpers;
@@ -30,6 +31,21 @@ public abstract class Statement
     public static bool operator ==(Statement? a, Statement? b) => Equals(a, b);
 
     public static bool operator !=(Statement? a, Statement? b) => !Equals(a, b);
+
+    private protected static bool DefineIdentifier(IIdentifier identifier, Value value, Call call, out Throw? exception, bool mask = false, bool mutable = true)
+    {
+        try
+        {
+            identifier.Define(value, call, mask, mutable);
+            exception = null;
+            return true;
+        }
+        catch (Throw e)
+        {
+            exception = e;
+            return false;
+        }
+    }
 
     private protected static bool EvaluateExpression(IExpression expression, Call call, out IValue? value, out Throw? exception)
     {

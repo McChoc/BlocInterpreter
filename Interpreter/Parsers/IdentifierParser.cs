@@ -14,6 +14,18 @@ internal static class IdentifierParser
         if (tokens.Count == 0)
             throw new SyntaxError(0, 0, "Missing identifier");
 
+        var parts = tokens.Split(x => x is SymbolToken(Symbol.COMMA));
+
+        if (parts.Count != 1)
+        {
+            var identifiers = new List<IIdentifier>();
+
+            foreach (var part in parts)
+                identifiers.Add(Parse(part));
+
+            return new TupleIdentifier(identifiers);
+        }
+
         if (tokens.Count > 1)
             throw new SyntaxError(tokens[1].Start, tokens[1].End, "Unexpected token");
 
@@ -23,17 +35,12 @@ internal static class IdentifierParser
                 return new NameIdentifier(token.Text);
 
             case GroupToken token:
-                var parts = token.Tokens.Split(x => x is SymbolToken(Symbol.COMMA));
+                var identifier = Parse(token.Tokens);
 
-                if (parts.Count == 1)
-                    throw new SyntaxError(token.Start, token.End, "Tuples must contain at least 2 identifiers");
+                if (identifier is not TupleIdentifier)
+                    throw new SyntaxError(tokens[0].Start, tokens[0].End, "Tuples must contain at least 2 identifiers");
 
-                var identifiers = new List<IIdentifier>();
-
-                foreach (var part in parts)
-                    identifiers.Add(Parse(part));
-
-                return new TupleIdentifier(identifiers);
+                return identifier;
 
             default:
                 throw new SyntaxError(tokens[0].Start, tokens[0].End, "Unexpected token");

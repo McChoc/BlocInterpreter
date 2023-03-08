@@ -41,7 +41,11 @@ internal sealed class TryStatement : Statement
             {
                 using (call.MakeScope())
                 {
-                    @catch.Identifier.Define(@throw.Value.Copy(), call);
+                    if (!DefineIdentifier(@catch.Identifier, @throw.Value.Copy(), call, out var exception))
+                    {
+                        yield return exception!;
+                        yield break;
+                    }
 
                     if (@catch.Expression is not null)
                     {
