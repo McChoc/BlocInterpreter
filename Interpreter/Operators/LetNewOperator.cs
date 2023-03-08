@@ -1,23 +1,21 @@
 ﻿using Bloc.Expressions;
+using Bloc.Identifiers;
 using Bloc.Memory;
-using Bloc.Utils.Helpers;
 using Bloc.Values;
 
 namespace Bloc.Operators;
 
 internal sealed record LetNewOperator : IExpression
 {
-    private readonly IExpression _operand;
+    private readonly IIdentifier _identifier;
 
-    internal LetNewOperator(IExpression operand)
+    internal LetNewOperator(IIdentifier identifier)
     {
-        _operand = operand;
+        _identifier = identifier;
     }
 
     public IValue Evaluate(Call call)
     {
-        var identifier = _operand.Evaluate(call);
-
-        return VariableHelper.Define(identifier, Null.Value, call, true);
+        return _identifier.Define(Null.Value, call, true);
     }
 }

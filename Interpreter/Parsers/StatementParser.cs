@@ -171,20 +171,28 @@ internal static class StatementParser
 
         var definitions = GetLine(provider).Split(x => x is SymbolToken(Symbol.COMMA));
 
-        foreach (var definition in definitions)
+        foreach (var tokens in definitions)
         {
-            if (definition.Count == 0)
+            if (tokens.Count == 0)
                 throw new SyntaxError(keyword.Start, keyword.End, "Missing identifier");
 
-            var parts = definition.Split(x => x is SymbolToken(Symbol.ASSIGN));
+            var index = tokens.FindIndex(x => x is SymbolToken(Symbol.ASSIGN));
 
-            var identifier = ExpressionParser.Parse(parts[0]);
+            if (index == 0)
+                throw new SyntaxError(tokens[0].Start, tokens[^1].End, "Missing identifier");
 
-            var value = parts.Count > 1
-                ? ExpressionParser.Parse(definition.GetRange((parts[0].Count + 1)..))
+            if (index == tokens.Count - 1)
+                throw new SyntaxError(tokens[0].Start, tokens[^1].End, "Missing expression");
+
+            var identifier = index != -1
+                ? IdentifierParser.Parse(tokens.GetRange(..index))
+                : IdentifierParser.Parse(tokens);
+
+            var expression = index != -1
+                ? ExpressionParser.Parse(tokens.GetRange((index + 1)..))
                 : null;
 
-            statement.Definitions.Add((identifier, value));
+            statement.Declarations.Add(new(identifier, expression));
         }
 
         return statement;
@@ -198,21 +206,27 @@ internal static class StatementParser
 
         var definitions = GetLine(provider).Split(x => x is SymbolToken(Symbol.COMMA));
 
-        foreach (var definition in definitions)
+        foreach (var tokens in definitions)
         {
-            if (definition.Count == 0)
+            if (tokens.Count == 0)
                 throw new SyntaxError(keyword.Start, keyword.End, "Missing identifier");
 
-            var parts = definition.Split(x => x is SymbolToken(Symbol.ASSIGN));
+            var index = tokens.FindIndex(x => x is SymbolToken(Symbol.ASSIGN));
 
-            var identifier = ExpressionParser.Parse(parts[0]);
+            if (index == 0)
+                throw new SyntaxError(tokens[0].Start, tokens[^1].End, "Missing identifier");
 
-            if (parts.Count == 1)
-                throw new SyntaxError(parts[0][0].Start, parts[0][^1].End, "A const needs a value");
+            if (index == -1)
+                throw new SyntaxError(tokens[0].Start, tokens[^1].End, "Missing expression");
 
-            var value = ExpressionParser.Parse(definition.GetRange((parts[0].Count + 1)..));
+            if (index == tokens.Count - 1)
+                throw new SyntaxError(tokens[0].Start, tokens[^1].End, "Missing expression");
 
-            statement.Definitions.Add((identifier, value));
+            var identifier = IdentifierParser.Parse(tokens.GetRange(..index));
+
+            var expression = ExpressionParser.Parse(tokens.GetRange((index + 1)..));
+
+            statement.Declarations.Add(new(identifier, expression));
         }
 
         return statement;
@@ -309,7 +323,7 @@ internal static class StatementParser
 
         var index = tokens.FindIndex(x => x is KeywordToken(Keyword.IN));
 
-        if (index == 0 || tokens.Count == 0)
+        if (index == 0)
             throw new SyntaxError(tokens[0].Start, tokens[^1].End, "Missing identifier");
 
         if (index == -1)
@@ -320,7 +334,7 @@ internal static class StatementParser
 
         return new ForeachStatement(@checked)
         {
-            Name = ExpressionParser.Parse(tokens.GetRange(..index)),
+            Identifier = IdentifierParser.Parse(tokens.GetRange(..index)),
             Expression = ExpressionParser.Parse(tokens.GetRange((index + 1)..)),
             Statement = GetStatement(provider)
         };
@@ -374,21 +388,19 @@ internal static class StatementParser
             if (foundLastCatch)
                 throw new SyntaxError(keyword.Start, keyword.End, "There cannot be another catch clause after the general catch");
 
-            var identifier = GetExpression(provider, keyword);
+            if (!provider.HasNext() || provider.Next() is not GroupToken group)
+                throw new SyntaxError(keyword.Start, keyword.End, $"Missing '{Symbol.PAREN_L}'");
 
-            IExpression? when;
+            var identifier = IdentifierParser.Parse(group.Tokens);
 
-            if (provider.Peek() is KeywordToken(Keyword.WHEN))
-            {
-                when = GetExpression(provider, provider.Next());
-            }
-            else
-            {
-                when = null;
+            var expression = provider.Peek() is KeywordToken(Keyword.WHEN)
+                ? GetExpression(provider, provider.Next())
+                : null;
+
+            if (expression is null)
                 foundLastCatch = true;
-            }
 
-            catches.Add(new(identifier, when, GetStatement(provider)));
+            catches.Add(new(identifier, expression, GetStatement(provider)));
         }
 
         Statement? @finally = null;

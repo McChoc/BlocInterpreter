@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Bloc.Expressions;
+using Bloc.Identifiers;
 using Bloc.Memory;
 using Bloc.Operators;
 using Bloc.Results;
@@ -50,7 +51,7 @@ public sealed class Iter : Value
                 {
                     new ForStatement(false)
                     {
-                        Initialisation = new AssignmentOperator(new LetOperator(new Identifier("i")), new NumberLiteral(0)),
+                        Initialisation = new AssignmentOperator(new LetOperator(new NameIdentifier("i")), new NumberLiteral(0)),
                         Condition = new LessThanOperator(new Identifier("i"), new NumberLiteral(@string.Value.Length)),
                         Increment = new IncrementPrefix(new Identifier("i")),
                         Statement = new YieldStatement(new IndexerOperator(new Identifier("value"), new Identifier("i")))
@@ -67,7 +68,7 @@ public sealed class Iter : Value
                 {
                     new ForStatement(false)
                     {
-                        Initialisation = new AssignmentOperator(new LetOperator(new Identifier("i")), new NumberLiteral(0)),
+                        Initialisation = new AssignmentOperator(new LetOperator(new NameIdentifier("i")), new NumberLiteral(0)),
                         Condition = new LessThanOperator(new Identifier("i"), new NumberLiteral(array.Values.Count)),
                         Increment = new IncrementPrefix(new Identifier("i")),
                         Statement = new YieldStatement(new IndexerOperator(new Identifier("items"), new Identifier("i")))
@@ -88,7 +89,7 @@ public sealed class Iter : Value
                 {
                     new ForStatement(false)
                     {
-                        Initialisation = new AssignmentOperator(new LetOperator(new Identifier("i")), new Identifier("start")),
+                        Initialisation = new AssignmentOperator(new LetOperator(new NameIdentifier("i")), new Identifier("start")),
                         Condition = new LessThanOperator(
                             new MultiplicationOperator(new Identifier("i"), new Identifier("step")),
                             new MultiplicationOperator(new Identifier("end"), new Identifier("step"))),

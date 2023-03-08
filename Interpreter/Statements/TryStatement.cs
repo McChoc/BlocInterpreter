@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Bloc.Expressions;
+using Bloc.Identifiers;
 using Bloc.Memory;
 using Bloc.Results;
-using Bloc.Utils.Helpers;
 using Bloc.Values;
 
 namespace Bloc.Statements;
@@ -41,13 +41,7 @@ internal sealed class TryStatement : Statement
             {
                 using (call.MakeScope())
                 {
-                    if (!EvaluateExpression(@catch.Name, call, out var identifier, out var exception))
-                    {
-                        yield return exception!;
-                        yield break;
-                    }
-
-                    VariableHelper.Define(identifier!, @throw.Value.Copy(), call);
+                    @catch.Identifier.Define(@throw.Value.Copy(), call);
 
                     if (@catch.Expression is not null)
                     {
@@ -120,32 +114,5 @@ internal sealed class TryStatement : Statement
             Finally == statement.Finally;
     }
 
-    internal sealed class Catch
-    {
-        internal IExpression Name { get; set; }
-
-        internal IExpression? Expression { get; set; }
-
-        internal Statement Statement { get; set; }
-
-        internal Catch(IExpression name, IExpression? expression, Statement statement)
-        {
-            Name = name;
-            Expression = expression;
-            Statement = statement;
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Name, Expression, Statement);
-        }
-
-        public override bool Equals(object other)
-        {
-            return other is Catch @catch &&
-                Name == @catch.Name &&
-                Equals(Expression, @catch.Expression) &&
-                Statement == @catch.Statement;
-        }
-    }
+    internal sealed record Catch(IIdentifier Identifier, IExpression? Expression, Statement Statement);
 }

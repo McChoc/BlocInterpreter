@@ -41,8 +41,8 @@ internal static class ExpressionParser
         FirstStep = step;
     }
 
-    internal static IExpression Parse(List<Token> expression)
+    internal static IExpression Parse(List<Token> tokens)
     {
-        return FirstStep.Parse(expression);
+        return FirstStep.Parse(tokens);
     }
 }

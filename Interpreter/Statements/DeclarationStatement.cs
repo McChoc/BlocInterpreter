@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Bloc.Expressions;
+using Bloc.Identifiers;
 using Bloc.Memory;
 using Bloc.Results;
-using Bloc.Utils.Helpers;
 using Bloc.Values;
 
 namespace Bloc.Statements;
@@ -14,7 +14,7 @@ internal class DeclarationStatement : Statement
     private readonly bool _mask;
     private readonly bool _mutable;
 
-    internal List<(IExpression Name, IExpression? Value)> Definitions { get; } = new();
+    internal List<Declaration> Declarations { get; } = new();
 
     internal DeclarationStatement(bool mask, bool mutable)
     {
@@ -24,15 +24,13 @@ internal class DeclarationStatement : Statement
 
     internal override IEnumerable<IResult> Execute(Call call)
     {
-        foreach (var definition in Definitions)
+        foreach (var declaration in Declarations)
         {
             try
             {
-                var value = definition.Value?.Evaluate(call).Value ?? Null.Value;
+                var value = declaration.Expression?.Evaluate(call).Value ?? Null.Value;
 
-                var identifier = definition.Name.Evaluate(call);
-
-                VariableHelper.Define(identifier, value, call, _mask, _mutable);
+                declaration.Identifier.Define(value, call, _mask, _mutable);
             }
             catch (Throw exception)
             {
@@ -45,7 +43,7 @@ internal class DeclarationStatement : Statement
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(Label, _mask, _mutable, Definitions.Count);
+        return HashCode.Combine(Label, _mask, _mutable, Declarations.Count);
     }
 
     public override bool Equals(object other)
@@ -54,6 +52,8 @@ internal class DeclarationStatement : Statement
             Label == statement.Label &&
             _mask == statement._mask &&
             _mutable == statement._mutable &&
-            Definitions.SequenceEqual(statement.Definitions);
+            Declarations.SequenceEqual(statement.Declarations);
     }
+
+    internal sealed record Declaration(IIdentifier Identifier, IExpression? Expression);
 }

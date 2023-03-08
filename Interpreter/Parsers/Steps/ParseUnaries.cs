@@ -23,6 +23,18 @@ internal sealed class ParseUnaries : IParsingStep
         if (tokens.Count == 0)
             throw new SyntaxError(0, 0, "Missing value");
 
+        if (IsDeclaration(tokens[0], out var declaration))
+        {
+            var identifier = IdentifierParser.Parse(tokens.GetRange(1..));
+
+            return declaration!.Text switch
+            {
+                Keyword.LET     => new LetOperator(identifier),
+                Keyword.LET_NEW => new LetNewOperator(identifier),
+                _ => throw new Exception()
+            };
+        }
+
         if (IsPrefix(tokens[0], out var prefix))
         {
             var operand = Parse(tokens.GetRange(1..));
@@ -43,8 +55,6 @@ internal sealed class ParseUnaries : IParsingStep
                 Keyword.REF         => new RefOperator(operand),
                 Keyword.VAL         => new ValOperator(operand),
                 Keyword.VAL_VAL     => new ValValOperator(operand),
-                Keyword.LET         => new LetOperator(operand),
-                Keyword.LET_NEW     => new LetNewOperator(operand),
                 Keyword.NEW         => new NewOperator(operand),
                 Keyword.CONST_NEW   => new ConstNewOperator(operand),
                 Keyword.DELETE      => new DeleteOperator(operand),
@@ -78,42 +88,9 @@ internal sealed class ParseUnaries : IParsingStep
         return NextStep!.Parse(tokens);
     }
 
-    private static bool IsPrefix(Token token, out TextToken? @operator)
+    private static bool IsDeclaration(Token token, out TextToken? @operator)
     {
-        if (token is SymbolToken(
-            Symbol.PLUS or
-            Symbol.MINUS or
-            Symbol.BIT_NOT or
-            Symbol.BOOL_NOT or
-            Symbol.INCREMENT or
-            Symbol.DECREMENT or
-            Symbol.BIT_INV or
-            Symbol.BOOL_INV))
-        {
-            @operator = (TextToken)token;
-            return true;
-        }
-
-        if (token is KeywordToken(
-            Keyword.LEN or
-            Keyword.CHR or
-            Keyword.ORD or
-            Keyword.REF or
-            Keyword.VAL or
-            Keyword.VAL_VAL or
-            Keyword.LET or
-            Keyword.LET_NEW or
-            Keyword.NEW or
-            Keyword.CONST_NEW or
-            Keyword.DELETE or
-            Keyword.GLOBAL or
-            Keyword.NONLOCAL or
-            Keyword.PARAM or
-            Keyword.AWAIT or
-            Keyword.NEXT or
-            Keyword.NAMEOF or
-            Keyword.TYPEOF or
-            Keyword.EVAL))
+        if (token is KeywordToken(Keyword.LET or Keyword.LET_NEW))
         {
             @operator = (TextToken)token;
             return true;
@@ -140,5 +117,48 @@ internal sealed class ParseUnaries : IParsingStep
             @operator = null;
             return false;
         }
+    }
+
+    private static bool IsPrefix(Token token, out TextToken? @operator)
+    {
+        if (token is SymbolToken(
+            Symbol.PLUS or
+            Symbol.MINUS or
+            Symbol.BIT_NOT or
+            Symbol.BOOL_NOT or
+            Symbol.INCREMENT or
+            Symbol.DECREMENT or
+            Symbol.BIT_INV or
+            Symbol.BOOL_INV))
+        {
+            @operator = (TextToken)token;
+            return true;
+        }
+
+        if (token is KeywordToken(
+            Keyword.LEN or
+            Keyword.CHR or
+            Keyword.ORD or
+            Keyword.REF or
+            Keyword.VAL or
+            Keyword.VAL_VAL or
+            Keyword.NEW or
+            Keyword.CONST_NEW or
+            Keyword.DELETE or
+            Keyword.GLOBAL or
+            Keyword.NONLOCAL or
+            Keyword.PARAM or
+            Keyword.AWAIT or
+            Keyword.NEXT or
+            Keyword.NAMEOF or
+            Keyword.TYPEOF or
+            Keyword.EVAL))
+        {
+            @operator = (TextToken)token;
+            return true;
+        }
+
+        @operator = null;
+        return false;
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Values;
 using Bloc.Variables;
@@ -30,11 +29,6 @@ internal sealed class UnresolvedPointer : Pointer
         var variable = Local ?? Param ?? NonLocal ?? Global ?? throw new Throw($"Variable {Name} was not defined in scope");
 
         return new VariablePointer(variable);
-    }
-
-    internal VariablePointer Define(bool mask, bool mutable, Value value, Call call)
-    {
-        return call.Set(mask, mutable, Name, value.GetOrCopy(true));
     }
 
     internal override Value Get() => Resolve().Get();

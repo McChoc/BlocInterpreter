@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using Bloc.Expressions;
+using Bloc.Identifiers;
 using Bloc.Memory;
 using Bloc.Results;
-using Bloc.Utils.Helpers;
 using Bloc.Values;
 
 namespace Bloc.Statements;
@@ -12,7 +12,7 @@ internal sealed class ForeachStatement : Statement
 {
     private readonly bool _checked;
 
-    internal required IExpression Name { get; init; }
+    internal required IIdentifier Identifier { get; init; }
     internal required IExpression Expression { get; init; }
     internal required Statement Statement { get; init; }
 
@@ -23,13 +23,7 @@ internal sealed class ForeachStatement : Statement
 
     internal override IEnumerable<IResult> Execute(Call call)
     {
-        if (!EvaluateExpression(Name, call, out var identifier, out var exception))
-        {
-            yield return exception!;
-            yield break;
-        }
-
-        if (!EvaluateExpression(Expression, call, out var value, out exception))
+        if (!EvaluateExpression(Expression, call, out var value, out var exception))
         {
             yield return exception!;
             yield break;
@@ -73,7 +67,7 @@ internal sealed class ForeachStatement : Statement
 
             using (call.MakeScope())
             {
-                VariableHelper.Define(identifier!, enumerator.Current, call);
+                Identifier.Define(value!.Value, call);
 
                 foreach (var result in ExecuteStatement(Statement, call))
                 {
@@ -110,7 +104,7 @@ internal sealed class ForeachStatement : Statement
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(Label, _checked, Name, Expression, Statement);
+        return HashCode.Combine(Label, _checked, Identifier, Expression, Statement);
     }
 
     public override bool Equals(object other)
@@ -118,7 +112,7 @@ internal sealed class ForeachStatement : Statement
         return other is ForeachStatement statement &&
             Label == statement.Label &&
             _checked == statement._checked &&
-            Name == statement.Name &&
+            Identifier == statement.Identifier &&
             Expression.Equals(statement.Expression) &&
             Statement == statement.Statement;
     }
