@@ -391,7 +391,9 @@ internal static class StatementParser
             if (!provider.HasNext() || provider.Next() is not GroupToken group)
                 throw new SyntaxError(keyword.Start, keyword.End, $"Missing '{Symbol.PAREN_L}'");
 
-            var identifier = IdentifierParser.Parse(group.Tokens);
+            var identifier = group.Tokens.Count > 1
+                ? IdentifierParser.Parse(group.Tokens)
+                : null;
 
             var expression = provider.Peek() is KeywordToken(Keyword.WHEN)
                 ? GetExpression(provider, provider.Next())

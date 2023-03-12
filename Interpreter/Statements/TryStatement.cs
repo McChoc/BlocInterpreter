@@ -41,10 +41,13 @@ internal sealed class TryStatement : Statement
             {
                 using (call.MakeScope())
                 {
-                    if (!DefineIdentifier(@catch.Identifier, @throw.Value.Copy(), call, out var exception))
+                    if (@catch.Identifier is not null)
                     {
-                        yield return exception!;
-                        yield break;
+                        if (!DefineIdentifier(@catch.Identifier, @throw.Value.Copy(), call, out var exception))
+                        {
+                            yield return exception!;
+                            yield break;
+                        }
                     }
 
                     if (@catch.Expression is not null)
@@ -118,5 +121,5 @@ internal sealed class TryStatement : Statement
             Finally == statement.Finally;
     }
 
-    internal sealed record Catch(IIdentifier Identifier, IExpression? Expression, Statement Statement);
+    internal sealed record Catch(IIdentifier? Identifier, IExpression? Expression, Statement Statement);
 }
