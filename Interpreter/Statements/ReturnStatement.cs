@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
-using Bloc.Values;
 
 namespace Bloc.Statements;
 
@@ -23,7 +22,7 @@ internal sealed class ReturnStatement : Statement
         if (_expression is null)
             yield return new Return();
         else if (EvaluateExpression(_expression, call, out var value, out var exception))
-            yield return new Return(value!.Value.GetOrCopy());
+            yield return new Return(value!.GetOrCopy());
         else
             yield return exception!;
     }

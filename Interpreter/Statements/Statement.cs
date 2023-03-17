@@ -47,11 +47,11 @@ public abstract class Statement
         }
     }
 
-    private protected static bool EvaluateExpression(IExpression expression, Call call, out IValue? value, out Throw? exception)
+    private protected static bool EvaluateExpression(IExpression expression, Call call, out Value? value, out Throw? exception)
     {
         try
         {
-            value = expression.Evaluate(call);
+            value = expression.Evaluate(call).Value;
             exception = null;
             return true;
         }

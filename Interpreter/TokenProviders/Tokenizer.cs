@@ -399,10 +399,8 @@ internal sealed class Tokenizer : ITokenProvider
             {
                 var character = _code[_index + 1] switch
                 {
-                    '\"' => '\"',
-                    '\'' => '\'',
                     '`' => '`',
-                    '\\' => '\\',
+                    's' => ' ',
                     '0' => '\0',
                     'a' => '\a',
                     'b' => '\b',
@@ -411,6 +409,9 @@ internal sealed class Tokenizer : ITokenProvider
                     'r' => '\r',
                     't' => '\t',
                     'v' => '\v',
+                    '\"' => '\"',
+                    '\'' => '\'',
+                    '\\' => '\\',
                     _ => throw new SyntaxError(_index + _offset, _index + _offset + 2, "unknown escape sequence")
                 };
 

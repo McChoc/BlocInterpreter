@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
+using Bloc.Values;
 using Bloc.Variables;
 
 namespace Bloc.Statements;
@@ -15,7 +17,21 @@ internal sealed class LockStatement : Statement
 
     internal override IEnumerable<IResult> Execute(Call call)
     {
-        if (!EvaluateExpression(Expression, call, out var value, out var exception))
+        IValue? value;
+        Throw? exception;
+
+        try
+        {
+            value = Expression.Evaluate(call);
+            exception = null;
+        }
+        catch (Throw e)
+        {
+            value = null;
+            exception = e;
+        }
+
+        if (exception is not null)
         {
             yield return exception!;
             yield break;

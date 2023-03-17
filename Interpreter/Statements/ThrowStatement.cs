@@ -20,10 +20,10 @@ internal sealed class ThrowStatement : Statement
     {
         if (!EvaluateExpression(_expression, call, out var value, out var exception))
             yield return exception!;
-        else if (value!.Value is Void)
+        else if (value is Void)
             yield return new Throw("'void' cannot be thrown");
         else
-            yield return new Throw(value.Value.GetOrCopy());
+            yield return new Throw(value!.GetOrCopy());
     }
 
     public override int GetHashCode()

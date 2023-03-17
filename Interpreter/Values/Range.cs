@@ -27,7 +27,7 @@ public sealed class Range : Value
 
             [Range range] => range,
 
-            [Null or Range] => new(
+            [Null or Number] => new(
                 null,
                 values[0] is Number end ? end.GetInt() : null,
                 null),

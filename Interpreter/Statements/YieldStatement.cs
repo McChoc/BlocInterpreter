@@ -20,10 +20,10 @@ internal sealed class YieldStatement : Statement
     {
         if (!EvaluateExpression(_expression, call, out var value, out var exception))
             yield return exception!;
-        else if (value!.Value is Void)
+        else if (value is Void)
             yield return new Throw("'void' cannot be yielded");
         else
-            yield return new Yield(value.Value.GetOrCopy());
+            yield return new Yield(value!.GetOrCopy());
     }
 
     public override int GetHashCode()

@@ -26,10 +26,10 @@ internal sealed class ExecStatement : Statement
             yield return exception!;
             yield break;
         }
-            
-        if (value!.Value is not String @string)
+
+        if (!String.TryImplicitCast(value!, out var @string))
         {
-            yield return new Throw("The expression of an 'exec' statement must be a 'string'");
+            yield return new Throw("Cannot implicitly convert to string");
             yield break;
         }
 
