@@ -83,7 +83,7 @@ public sealed class Iter : Value
                 var @params = new VariableCollection();
                 @params.Add(new(false, "start", new Number(range.Start ?? (range.Step >= 0 ? 0 : -1)), @params));
                 @params.Add(new(false, "end", new Number(range.End ?? (range.Step >= 0 ? inf : -inf)), @params));
-                @params.Add(new(false, "step", new Number(range.Step), @params));
+                @params.Add(new(false, "step", new Number(range.Step ?? 1), @params));
 
                 return new(new(call, new(), @params), new()
                 {

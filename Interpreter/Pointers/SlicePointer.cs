@@ -1,64 +1,53 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Bloc.Results;
 using Bloc.Utils.Extensions;
+using Bloc.Utils.Helpers;
 using Bloc.Values;
 using Bloc.Variables;
 using Array = Bloc.Values.Array;
+using Range = Bloc.Values.Range;
 
 namespace Bloc.Pointers;
 
 internal sealed class SlicePointer : Pointer
 {
-    internal List<ArrayVariable>? Variables { get; private set; }
+    internal Array Array { get; }
+    internal Range Range { get; }
 
-    internal SlicePointer(List<ArrayVariable> variables)
+    internal SlicePointer(Array array, Range range)
     {
-        Variables = variables;
-
-        foreach (var variable in variables)
-            variable.Pointers.Add(this);
+        Array = array;
+        Range = range;
     }
 
     internal override Value Get()
     {
-        if (Variables is null)
-            throw new Throw("Invalid reference");
+        var values = GetVariables()
+            .Select(x => x.Value.GetOrCopy())
+            .ToList();
 
-        return new Array(Variables
-            .Select(v => v.Value.GetOrCopy())
-            .ToList());
+        return new Array(values);
     }
 
     internal override Value Set(Value value)
     {
-        if (Variables is null)
-            throw new Throw("Invalid reference");
-
         if (value is not Array array)
-            throw new Throw("You can only assign an array to a slice");
+            throw new Throw("Only an array can be assigned to a slice");
 
-        if (Variables.Count != array.Values.Count)
-            throw new Throw("Mismatch number of elements inside the slice and the array");
-
-        foreach (var (var, val) in Variables.Zip(array.Values))
-        {
-            var.Value.Destroy();
-            var.Value = val.Value.GetOrCopy(true);
-        }
+        if (Range.Step is null)
+            AssignContinuous(array);
+        else
+            AssignDiscrete(array);
 
         return array;
     }
 
     internal override Value Delete()
     {
-        if (Variables is null)
-            throw new Throw("Invalid reference");
+        var values = new List<Value>();
 
-        var values = new List<Value>(Variables.Count);
-
-        foreach (var variable in Variables)
+        foreach (var variable in GetVariables())
         {
             values.Add(variable.Value.GetOrCopy());
             variable.Delete();
@@ -67,31 +56,47 @@ internal sealed class SlicePointer : Pointer
         return new Array(values);
     }
 
-    internal override void Invalidate()
+    private void AssignContinuous(Array array)
     {
-        Variables = null;
+        foreach (var variable in GetVariables())
+            variable.Delete();
+
+        var values = array.Values
+            .Select(x => new ArrayVariable(x.Value, Array));
+
+        var (start, _, _) = RangeHelper.Deconstruct(Range, Array.Values.Count);
+
+        Array.Values.InsertRange(start, values);
     }
 
-    public override int GetHashCode()
+    private void AssignDiscrete(Array array)
     {
-        return HashCode.Combine(Variables?.Count);
+        var variables = GetVariables();
+
+        if (variables.Count != array.Values.Count)
+            throw new Throw("Mismatch number of elements inside the slice and the array");
+
+        foreach (var (variable, value) in variables.Zip(array.Values))
+        {
+            variable.Value.Destroy();
+            variable.Value = value.Value;
+        }
     }
 
-    public override bool Equals(object other)
+    private List<ArrayVariable> GetVariables()
     {
-        if (other is not SlicePointer pointer)
-            return false;
+        var (start, end, step) = RangeHelper.Deconstruct(Range, Array.Values.Count);
 
-        if (Variables is null || pointer.Variables is null)
-            return false;
+        var variables = new List<ArrayVariable>();
 
-        if (Variables.Count != pointer.Variables.Count)
-            return false;
+        for (int i = start; i != end && end - i > 0 == step > 0; i += step)
+        {
+            if (i < 0 || i >= Array.Values.Count)
+                throw new Throw("Index out of range");
 
-        for (var i = 0; i < Variables.Count; i++)
-            if (Variables[i] != pointer.Variables[i])
-                return false;
+            variables.Add((ArrayVariable)Array.Values[i]);
+        }
 
-        return true;
+        return variables;
     }
 }

@@ -144,26 +144,22 @@ public sealed class Array : Value, IIndexable
 
         if (value is Range range)
         {
-            var (start, end) = RangeHelper.GetStartAndEnd(range, Values.Count);
-
             if (_assigned)
+                return new SlicePointer(this, range);
+
+            var (start, end, step) = RangeHelper.Deconstruct(range, Values.Count);
+
+            var values = new List<Value>();
+
+            for (int i = start; i != end && end - i > 0 == step > 0; i += step)
             {
-                var variables = new List<ArrayVariable>();
+                if (i < 0 || i >= Values.Count)
+                    throw new Throw("Index out of range");
 
-                for (int i = start; i != end && end - i > 0 == range.Step > 0; i += range.Step)
-                    variables.Add((ArrayVariable)Values[i]);
-
-                return new SlicePointer(variables);
+                values.Add(Values[i].Value);
             }
-            else
-            {
-                var values = new List<Value>();
 
-                for (int i = start; i != end && end - i > 0 == range.Step > 0; i += range.Step)
-                    values.Add(Values[i].Value);
-
-                return new Array(values);
-            }
+            return new Array(values);
         }
 
         throw new Throw("It should be a number or a range.");

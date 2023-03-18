@@ -43,7 +43,7 @@ internal sealed class VariablePointer : Pointer
         return value;
     }
 
-    internal override void Invalidate()
+    internal void Invalidate()
     {
         Variable = null;
     }
@@ -60,4 +60,7 @@ internal sealed class VariablePointer : Pointer
             pointer.Variable is not null &&
             Variable == pointer.Variable;
     }
+
+    public static bool operator ==(VariablePointer left, VariablePointer right) => Equals(left, right);
+    public static bool operator !=(VariablePointer left, VariablePointer right) => !Equals(left, right);
 }

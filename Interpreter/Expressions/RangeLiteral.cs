@@ -21,8 +21,7 @@ internal sealed record RangeLiteral : IExpression
 
     public IValue Evaluate(Call call)
     {
-        int? start = null, end = null;
-        int step = 1;
+        int? start = null, end = null, step = null;
 
         if (_start is not null)
         {

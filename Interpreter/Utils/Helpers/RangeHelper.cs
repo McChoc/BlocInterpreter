@@ -4,13 +4,13 @@ namespace Bloc.Utils.Helpers;
 
 internal static class RangeHelper
 {
-    internal static (int, int) GetStartAndEnd(Range range, int count)
+    internal static (int, int, int) Deconstruct(Range range, int count)
     {
         int start = range switch
         {
             { Start: int n and >= 0 } => n,
             { Start: int n and < 0 } => count + n,
-            { Start: null, Step: >= 0 } => 0,
+            { Start: null, Step: null or >= 0 } => 0,
             { Start: null, Step: < 0 } => count - 1,
         };
 
@@ -18,10 +18,12 @@ internal static class RangeHelper
         {
             { End: int n and >= 0 } => n,
             { End: int n and < 0 } => count + n,
-            { End: null, Step: >= 0 } => count,
+            { End: null, Step: null or >= 0 } => count,
             { End: null, Step: < 0 } => -1,
         };
 
-        return (start, end);
+        int step = range.Step ?? 1;
+
+        return (start, end, step);
     }
 }

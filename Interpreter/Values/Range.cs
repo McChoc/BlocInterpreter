@@ -8,13 +8,13 @@ public sealed class Range : Value
 {
     public int? Start { get; }
     public int? End { get; }
-    public int Step { get; }
+    public int? Step { get; }
 
     public Range(int? start, int? end, int? step)
     {
         Start = start;
         End = end;
-        Step = step ?? 1;
+        Step = step;
     }
 
     internal override ValueType GetType() => ValueType.Range;
@@ -51,7 +51,7 @@ public sealed class Range : Value
 
     public override string ToString()
     {
-        return Step == 1
+        return Step is null
             ? $"{Start}:{End}"
             : $"{Start}:{End}:{Step}";
     }

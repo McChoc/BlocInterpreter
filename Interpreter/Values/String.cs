@@ -95,11 +95,11 @@ public sealed class String : Value, IIndexable
 
         if (value is Range range)
         {
-            var (start, end) = RangeHelper.GetStartAndEnd(range, Value.Length);
+            var (start, end, step) = RangeHelper.Deconstruct(range, Value.Length);
 
             var builder = new StringBuilder();
 
-            for (int i = start; i != end && end - i > 0 == range.Step > 0; i += range.Step)
+            for (int i = start; i != end && end - i > 0 == step > 0; i += step)
                 builder.Append(Value[i]);
 
             return new String(builder.ToString());

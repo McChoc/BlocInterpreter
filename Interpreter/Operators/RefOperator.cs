@@ -19,12 +19,11 @@ internal sealed record RefOperator : IExpression
     {
         var value = _operand.Evaluate(call);
 
-        if (value is not Pointer pointer)
-            throw new Throw("The right part of a reference must be assignable");
-
-        if (pointer is UnresolvedPointer unresolved)
-            pointer = unresolved.Resolve();
-
-        return new Reference(pointer);
+        return value switch
+        {
+            VariablePointer pointer => new Reference(pointer),
+            UnresolvedPointer pointer => new Reference(pointer.Resolve()),
+            _ => throw new Throw("The operand of a reference must be a variable, a struct member or an array element")
+        };
     }
 }

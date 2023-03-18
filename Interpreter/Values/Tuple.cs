@@ -44,9 +44,9 @@ public sealed class Tuple : Value
 
             [Range range] => new(new List<Value>()
             {
-                range.Start is int n ? new Number(n) : Null.Value,
+                range.Start is int l ? new Number(l) : Null.Value,
                 range.End is int m ? new Number(m) : Null.Value,
-                new Number(range.Step)
+                range.Step is int n ? new Number(n) : Null.Value
             }),
 
             [_] => throw new Throw($"'iter' does not have a constructor that takes a '{values[0].GetTypeName()}'"),

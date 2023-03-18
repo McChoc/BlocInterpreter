@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Pointers;
@@ -49,16 +48,12 @@ internal sealed class LockStatement : Statement
                 variable = pointer.Variable;
                 break;
 
-            case SlicePointer { Variables: not null }:
-                yield return new Throw("You cannot lock a slice");
-                yield break;
-
-            case VariablePointer or SlicePointer:
+            case VariablePointer:
                 yield return new Throw("Invalid reference");
                 yield break;
 
             default:
-                yield return new Throw("You can only lock a variable");
+                yield return new Throw("You can only lock a variable, a struct member or an array element");
                 yield break;
         }
 

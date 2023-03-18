@@ -1,5 +1,4 @@
-﻿using System;
-using Bloc.Results;
+﻿using Bloc.Results;
 using Bloc.Values;
 using Bloc.Variables;
 
@@ -24,19 +23,14 @@ internal sealed class UnresolvedPointer : Pointer
         Global = global;
     }
 
+    internal override Value Get() => Resolve().Get();
+    internal override Value Set(Value value) => Resolve().Set(value);
+    internal override Value Delete() => Resolve().Delete();
+
     internal VariablePointer Resolve()
     {
         var variable = Local ?? Param ?? NonLocal ?? Global ?? throw new Throw($"Variable {Name} was not defined in scope");
 
         return new VariablePointer(variable);
     }
-
-    internal override Value Get() => Resolve().Get();
-    internal override Value Set(Value value) => Resolve().Set(value);
-    internal override Value Delete() => Resolve().Delete();
-
-    internal override void Invalidate() => throw new Exception();
-
-    public override int GetHashCode() => throw new Exception();
-    public override bool Equals(object _) => throw new Exception();
 }

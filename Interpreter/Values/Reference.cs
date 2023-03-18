@@ -7,11 +7,11 @@ namespace Bloc.Values;
 
 public sealed class Reference : Value
 {
-    internal Pointer Pointer { get; }
+    internal VariablePointer Pointer { get; }
 
     internal Reference() => Pointer = new VariablePointer(null);
 
-    internal Reference(Pointer pointer) => Pointer = pointer;
+    internal Reference(VariablePointer pointer) => Pointer = pointer;
 
     internal override ValueType GetType() => ValueType.Reference;
 

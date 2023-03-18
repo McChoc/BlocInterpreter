@@ -11,7 +11,7 @@ public abstract class Variable : IValue
 
     private Value _value;
 
-    internal List<Pointer> Pointers { get; } = new();
+    internal List<VariablePointer> Pointers { get; } = new();
 
     public Value Value
     {
