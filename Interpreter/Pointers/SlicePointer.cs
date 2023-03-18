@@ -66,6 +66,9 @@ internal sealed class SlicePointer : Pointer
 
         var (start, _, _) = RangeHelper.Deconstruct(Range, Array.Values.Count);
 
+        if (start > Array.Values.Count)
+            throw new Throw("Index out of range");
+
         Array.Values.InsertRange(start, values);
     }
 
