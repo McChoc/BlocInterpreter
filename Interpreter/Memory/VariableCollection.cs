@@ -1,6 +1,6 @@
-﻿using Bloc.Variables;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Bloc.Variables;
 
 namespace Bloc.Memory;
 

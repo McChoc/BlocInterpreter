@@ -4,6 +4,19 @@ namespace Bloc.Utils.Helpers;
 
 internal static class RangeHelper
 {
+    private const double infinity = double.PositiveInfinity;
+
+    internal static (double, double, double) Deconstruct(Range range)
+    {
+        double start = range.Start ?? (range.Step is null or > 0 ? 0 : -1);
+
+        double end = range.End ?? (range.Step is null or > 0 ? infinity : -infinity);
+
+        double step = range.Step ?? 1;
+
+        return (start, end, step);
+    }
+
     internal static (int, int, int) Deconstruct(Range range, int count)
     {
         int start = range switch

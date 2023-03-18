@@ -78,12 +78,12 @@ public sealed class Iter : Value
 
             case [Range range]:
             {
-                const double inf = double.PositiveInfinity;
+                var (start, end, step) = RangeHelper.Deconstruct(range);
 
                 var @params = new VariableCollection();
-                @params.Add(new(false, "start", new Number(range.Start ?? (range.Step >= 0 ? 0 : -1)), @params));
-                @params.Add(new(false, "end", new Number(range.End ?? (range.Step >= 0 ? inf : -inf)), @params));
-                @params.Add(new(false, "step", new Number(range.Step ?? 1), @params));
+                @params.Add(new(false, "start", new Number(start), @params));
+                @params.Add(new(false, "end", new Number(end), @params));
+                @params.Add(new(false, "step", new Number(step), @params));
 
                 return new(new(call, new(), @params), new()
                 {
