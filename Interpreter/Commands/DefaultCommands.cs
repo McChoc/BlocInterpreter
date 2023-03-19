@@ -36,14 +36,14 @@ public static class DefaultCommands
                     var message =
                         "For more informations on a specific command, type '/help <command>'.\n" +
                         "\n" +
-                        string.Join("\n", call.Engine.Commands.Values.Select(c => c.Name));
+                        string.Join("\n", call.Engine.Commands.Values.Select(c => c.Name.ToLower()));
 
                     return new String(message);
                 }
 
                 if (input is String @string)
                 {
-                    if (!call.Engine.Commands.TryGetValue(@string.Value, out var command))
+                    if (!call.Engine.Commands.TryGetValue(@string.Value.ToLower(), out var command))
                         throw new Throw("Unknown command");
 
                     return new String(command.Description);
@@ -54,7 +54,7 @@ public static class DefaultCommands
 
             if (args.Length == 1)
             {
-                if (!call.Engine.Commands.TryGetValue(args[0], out var command))
+                if (!call.Engine.Commands.TryGetValue(args[0].ToLower(), out var command))
                     throw new Throw("Unknown command");
 
                 return new String(command.Description);

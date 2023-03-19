@@ -65,7 +65,7 @@ public sealed partial class Engine
 
         public Builder AddCommand(CommandInfo command)
         {
-            _commands.Add(command.Name, command);
+            _commands.Add(command.Name.ToLower(), command);
             return this;
         }
 

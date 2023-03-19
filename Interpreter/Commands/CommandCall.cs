@@ -22,7 +22,7 @@ internal sealed class CommandCall
             .SelectMany(x => x.GetArguments(call))
             .ToArray();
 
-        if (!call.Engine.Commands.TryGetValue(args[0], out var command))
+        if (!call.Engine.Commands.TryGetValue(args[0].ToLower(), out var command))
             throw new Throw("Unknown command.");
 
         return command.Call(args[1..], input, call);
