@@ -93,10 +93,17 @@ internal sealed class ParseAtoms : IParsingStep
             if (part[0] is SymbolToken(Symbol.UNPACK_STRUCT))
                 throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
 
-            if (part[0] is SymbolToken(Symbol.UNPACK_ARRAY))
-                expressions.Add(new(true, ExpressionParser.Parse(part.GetRange(1..))));
-            else
+            if (part[0] is not SymbolToken(Symbol.UNPACK_ARRAY))
+            {
                 expressions.Add(new(false, ExpressionParser.Parse(part)));
+            }
+            else
+            {
+                var tokens = part.GetRange(1..);
+
+                if (tokens.Count > 0)
+                    expressions.Add(new(true, ExpressionParser.Parse(tokens)));
+            }
         }
 
         return new ArrayLiteral(expressions);
@@ -121,7 +128,10 @@ internal sealed class ParseAtoms : IParsingStep
 
             if (part[0] is SymbolToken(Symbol.UNPACK_STRUCT))
             {
-                expressions.Add(new(true, null, ExpressionParser.Parse(part.GetRange(1..))));
+                var tokens = part.GetRange(1..);
+
+                if (tokens.Count > 0)
+                    expressions.Add(new(true, null, ExpressionParser.Parse(tokens)));
             }
             else
             {

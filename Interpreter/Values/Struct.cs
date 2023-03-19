@@ -85,10 +85,9 @@ public sealed class Struct : Value, IIndexable
 
     public override string ToString()
     {
-        if (Values.Count == 0)
-            return "{ }";
-
-        return "{ " + string.Join(", ", Values.OrderBy(x => x.Key).Select(x => $"{x.Key} = {x.Value.Value}")) + " }";
+        return Values.Count > 0
+            ? "{" + string.Join(", ", Values.OrderBy(x => x.Key).Select(x => $"{x.Key}={x.Value.Value}")) + "}"
+            : "{...}";
     }
 
     public override int GetHashCode()

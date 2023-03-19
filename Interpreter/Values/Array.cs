@@ -98,10 +98,9 @@ public sealed class Array : Value, IIndexable
 
     public override string ToString()
     {
-        if (Values.Count == 0)
-            return "{ }";
-
-        return "{ " + string.Join(", ", Values.Select(v => v.Value)) + " }";
+        return Values.Count > 0
+            ? "{" + string.Join(", ", Values.Select(v => v.Value)) + "}"
+            : "{..}";
     }
 
     public override int GetHashCode()
