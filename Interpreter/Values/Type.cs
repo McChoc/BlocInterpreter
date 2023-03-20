@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Bloc.Constants;
-using Bloc.Interfaces;
 using Bloc.Memory;
 using Bloc.Results;
+using Bloc.Utils.Constants;
 
 namespace Bloc.Values;
 

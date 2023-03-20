@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using Bloc;
 using Bloc.Commands;
-using Bloc.Exceptions;
 using Bloc.Results;
+using Bloc.Utils.Exceptions;
 using Bloc.Values;
 using Void = Bloc.Values.Void;
 using ConsoleColor = Example.ConsoleColor;

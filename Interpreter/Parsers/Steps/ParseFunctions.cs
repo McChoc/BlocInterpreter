@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Bloc.Constants;
-using Bloc.Exceptions;
 using Bloc.Expressions;
+using Bloc.Expressions.Literals;
+using Bloc.Expressions.SubExpressions;
 using Bloc.Scanners;
 using Bloc.Statements;
-using Bloc.SubExpressions;
 using Bloc.Tokens;
+using Bloc.Utils.Constants;
+using Bloc.Utils.Exceptions;
 using Bloc.Utils.Extensions;
 using Bloc.Values;
 
@@ -77,7 +78,7 @@ internal sealed class ParseFunctions : IParsingStep
 
                         var name = ExpressionParser.Parse(part.GetRange(1..));
 
-                        if (name is not Identifier identifier)
+                        if (name is not IdentifierExpression identifier)
                             throw new SyntaxError(0, 0, "Invalid identifier");
 
                         if (parameters.Any(x => x.Name == identifier.Name))
@@ -92,7 +93,7 @@ internal sealed class ParseFunctions : IParsingStep
 
                         var name = ExpressionParser.Parse(part.GetRange(1..));
 
-                        if (name is not Identifier identifier)
+                        if (name is not IdentifierExpression identifier)
                             throw new SyntaxError(0, 0, "Invalid identifier");
 
                         if (parameters.Any(x => x.Name == identifier.Name))
@@ -130,7 +131,7 @@ internal sealed class ParseFunctions : IParsingStep
                             defaultValue = ExpressionParser.Parse(valueTokens);
                         }
 
-                        if (name is not Identifier identifier)
+                        if (name is not IdentifierExpression identifier)
                             throw new SyntaxError(0, 0, "Invalid identifier");
 
                         if (parameters.Any(x => x.Name == identifier.Name))

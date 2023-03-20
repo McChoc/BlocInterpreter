@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Bloc.Constants;
-using Bloc.Exceptions;
 using Bloc.Expressions;
-using Bloc.SubExpressions;
+using Bloc.Expressions.Literals;
+using Bloc.Expressions.SubExpressions;
 using Bloc.Tokens;
+using Bloc.Utils.Constants;
+using Bloc.Utils.Exceptions;
 using Bloc.Utils.Extensions;
 using Bloc.Values;
 
@@ -23,7 +24,7 @@ internal sealed class ParseAtoms : IParsingStep
     {
         return tokens[0] switch
         {
-            IIdentifierToken identifier => new Identifier(identifier.Text),
+            IIdentifierToken identifier => new IdentifierExpression(identifier.Text),
 
             GroupToken group => ExpressionParser.Parse(group.Tokens),
 

@@ -1,5 +1,4 @@
 ﻿using Bloc.Memory;
-using Bloc.Pointers;
 using Bloc.Values;
 
 namespace Bloc.Identifiers;

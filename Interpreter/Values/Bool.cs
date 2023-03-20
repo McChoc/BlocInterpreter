@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using Bloc.Interfaces;
 using Bloc.Results;
 
 namespace Bloc.Values;
 
-public sealed class Bool : Value, IScalar
+public sealed class Bool : Value, INumeric
 {
     public static Bool True { get; } = new(true);
     public static Bool False { get; } = new(false);

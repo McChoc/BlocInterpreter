@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Bloc.Expressions;
+using Bloc.Expressions.Literals;
+using Bloc.Expressions.Operators;
 using Bloc.Identifiers;
 using Bloc.Memory;
-using Bloc.Operators;
 using Bloc.Results;
 using Bloc.Statements;
 using Bloc.Utils.Helpers;
@@ -52,9 +53,9 @@ public sealed class Iter : Value
                     new ForStatement(false)
                     {
                         Initialisation = new AssignmentOperator(new LetOperator(new NameIdentifier("i")), new NumberLiteral(0)),
-                        Condition = new LessThanOperator(new Identifier("i"), new NumberLiteral(@string.Value.Length)),
-                        Increment = new IncrementPrefix(new Identifier("i")),
-                        Statement = new YieldStatement(new IndexerOperator(new Identifier("value"), new Identifier("i")))
+                        Condition = new LessThanOperator(new IdentifierExpression("i"), new NumberLiteral(@string.Value.Length)),
+                        Increment = new IncrementPrefix(new IdentifierExpression("i")),
+                        Statement = new YieldStatement(new IndexerOperator(new IdentifierExpression("value"), new IdentifierExpression("i")))
                     }
                 });
             }
@@ -69,9 +70,9 @@ public sealed class Iter : Value
                     new ForStatement(false)
                     {
                         Initialisation = new AssignmentOperator(new LetOperator(new NameIdentifier("i")), new NumberLiteral(0)),
-                        Condition = new LessThanOperator(new Identifier("i"), new NumberLiteral(array.Values.Count)),
-                        Increment = new IncrementPrefix(new Identifier("i")),
-                        Statement = new YieldStatement(new IndexerOperator(new Identifier("items"), new Identifier("i")))
+                        Condition = new LessThanOperator(new IdentifierExpression("i"), new NumberLiteral(array.Values.Count)),
+                        Increment = new IncrementPrefix(new IdentifierExpression("i")),
+                        Statement = new YieldStatement(new IndexerOperator(new IdentifierExpression("items"), new IdentifierExpression("i")))
                     }
                 });
             }
@@ -89,12 +90,12 @@ public sealed class Iter : Value
                 {
                     new ForStatement(false)
                     {
-                        Initialisation = new AssignmentOperator(new LetOperator(new NameIdentifier("i")), new Identifier("start")),
+                        Initialisation = new AssignmentOperator(new LetOperator(new NameIdentifier("i")), new IdentifierExpression("start")),
                         Condition = new LessThanOperator(
-                            new MultiplicationOperator(new Identifier("i"), new Identifier("step")),
-                            new MultiplicationOperator(new Identifier("end"), new Identifier("step"))),
-                        Increment = new AdditionAssignment(new Identifier("i"), new Identifier("step")),
-                        Statement = new YieldStatement(new Identifier("i"))
+                            new MultiplicationOperator(new IdentifierExpression("i"), new IdentifierExpression("step")),
+                            new MultiplicationOperator(new IdentifierExpression("end"), new IdentifierExpression("step"))),
+                        Increment = new AdditionAssignment(new IdentifierExpression("i"), new IdentifierExpression("step")),
+                        Statement = new YieldStatement(new IdentifierExpression("i"))
                     }
                 });
             }

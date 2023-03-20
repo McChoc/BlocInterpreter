@@ -1,5 +1,5 @@
 ﻿using System;
-using Bloc.Expressions;
+using Bloc.Expressions.Literals;
 
 namespace Bloc.Tokens;
 

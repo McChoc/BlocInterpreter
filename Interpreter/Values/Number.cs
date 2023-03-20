@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Bloc.Interfaces;
 using Bloc.Results;
 
 namespace Bloc.Values;
 
-public sealed class Number : Value, IScalar
+public sealed class Number : Value, INumeric
 {
     public double Value { get; }
 

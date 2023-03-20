@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
-using Bloc.Constants;
-using Bloc.Exceptions;
 using Bloc.Expressions;
-using Bloc.Operators;
+using Bloc.Expressions.Literals;
+using Bloc.Expressions.Operators;
 using Bloc.Tokens;
+using Bloc.Utils.Constants;
+using Bloc.Utils.Exceptions;
 using Bloc.Utils.Extensions;
 
 namespace Bloc.Parsers.Steps;
@@ -90,7 +91,7 @@ internal sealed class ParsePrimaries : IParsingStep
 
                                 var keyExpr = ExpressionParser.Parse(keyTokens);
 
-                                if (keyExpr is not Identifier identifier)
+                                if (keyExpr is not IdentifierExpression identifier)
                                     throw new SyntaxError(0, 0, "Invalid identifier");
 
                                 if (valueTokens.Count == 0)

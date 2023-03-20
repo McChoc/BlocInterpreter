@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using Bloc.Constants;
-using Bloc.Exceptions;
 using Bloc.Tokens;
+using Bloc.Utils.Constants;
+using Bloc.Utils.Exceptions;
 
 namespace Bloc.Scanners;
 

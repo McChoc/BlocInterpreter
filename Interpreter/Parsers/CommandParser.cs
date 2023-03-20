@@ -2,9 +2,9 @@
 using System.Linq;
 using Bloc.Commands;
 using Bloc.Commands.Arguments;
-using Bloc.Constants;
-using Bloc.Exceptions;
 using Bloc.Tokens;
+using Bloc.Utils.Constants;
+using Bloc.Utils.Exceptions;
 using Bloc.Utils.Extensions;
 
 namespace Bloc.Parsers;

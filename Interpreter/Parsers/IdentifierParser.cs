@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using Bloc.Constants;
-using Bloc.Exceptions;
 using Bloc.Identifiers;
 using Bloc.Tokens;
+using Bloc.Utils.Constants;
+using Bloc.Utils.Exceptions;
 using Bloc.Utils.Extensions;
 
 namespace Bloc.Parsers;
