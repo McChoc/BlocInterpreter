@@ -1,5 +1,4 @@
-﻿using Bloc.Expressions;
-using Bloc.Memory;
+﻿using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Values;
 using Bloc.Variables;

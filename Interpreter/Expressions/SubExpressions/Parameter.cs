@@ -1,6 +1,4 @@
-﻿using Bloc.Expressions;
-
-namespace Bloc.Expressions.SubExpressions;
+﻿namespace Bloc.Expressions.SubExpressions;
 
 internal sealed record Parameter
 {

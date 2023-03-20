@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Parsers;
 using Bloc.Results;
