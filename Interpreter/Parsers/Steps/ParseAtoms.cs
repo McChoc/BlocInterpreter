@@ -3,6 +3,8 @@ using System.Linq;
 using Bloc.Constants;
 using Bloc.Exceptions;
 using Bloc.Expressions;
+using Bloc.Expressions.Elements;
+using Bloc.Expressions.Members;
 using Bloc.Tokens;
 using Bloc.Utils.Extensions;
 using Bloc.Values;
@@ -80,7 +82,7 @@ internal sealed class ParseAtoms : IParsingStep
         if (parts[^1].Count == 0)
             parts.RemoveAt(parts.Count - 1);
 
-        var expressions = new List<ArrayLiteral.SubExpression>();
+        var elements = new List<IElement>();
 
         foreach (var part in parts)
         {
@@ -90,23 +92,35 @@ internal sealed class ParseAtoms : IParsingStep
             if (part.Any(x => x is SymbolToken(Symbol.ASSIGN)))
                 throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
 
-            if (part[0] is SymbolToken(Symbol.UNPACK_STRUCT))
-                throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
-
-            if (part[0] is not SymbolToken(Symbol.UNPACK_ARRAY))
+            switch(part[0])
             {
-                expressions.Add(new(false, ExpressionParser.Parse(part)));
-            }
-            else
-            {
-                var tokens = part.GetRange(1..);
+                case SymbolToken(Symbol.UNPACK_STRUCT):
+                    throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
 
-                if (tokens.Count > 0)
-                    expressions.Add(new(true, ExpressionParser.Parse(tokens)));
+                case SymbolToken(Symbol.UNPACK_ARRAY):
+                {
+                    var tokens = part.GetRange(1..);
+
+                    if (tokens.Count == 0)
+                        continue;
+
+                    var expression = ExpressionParser.Parse(tokens);
+                    var element = new UnpackedElement(expression);
+                    elements.Add(element);
+                    break;
+                }
+
+                default:
+                {
+                    var expression = ExpressionParser.Parse(part);
+                    var element = new Element(expression);
+                    elements.Add(element);
+                    break;
+                }
             }
         }
 
-        return new ArrayLiteral(expressions);
+        return new ArrayLiteral(elements);
     }
 
     private static StructLiteral ParseStruct(StructToken token)
@@ -116,50 +130,80 @@ internal sealed class ParseAtoms : IParsingStep
         if (parts[^1].Count == 0)
             parts.RemoveAt(parts.Count - 1);
 
-        var expressions = new List<StructLiteral.SubExpression>();
+        var members = new List<IMember>();
 
         foreach (var part in parts)
         {
             if (part.Count == 0)
                 throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COMMA}'");
 
-            if (part[0] is SymbolToken(Symbol.UNPACK_ARRAY))
-                throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
-
-            if (part[0] is SymbolToken(Symbol.UNPACK_STRUCT))
+            switch (part[0])
             {
-                var tokens = part.GetRange(1..);
+                case IIdentifierToken identifier:
+                {
+                    if (!part.Any(x => x is SymbolToken(Symbol.ASSIGN)))
+                        throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
 
-                if (tokens.Count > 0)
-                    expressions.Add(new(true, null, ExpressionParser.Parse(tokens)));
-            }
-            else
-            {
-                var index = part.FindIndex(x => x is SymbolToken(Symbol.ASSIGN));
+                    if (part[1] is not SymbolToken(Symbol.ASSIGN))
+                        throw new SyntaxError(part[1].Start, part[1].End, "Unexpected token.");
 
-                if (index == -1)
-                    throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
+                    var tokens = part.GetRange(2..);
 
-                var keyTokens = part.GetRange(..index);
-                var valueTokens = part.GetRange((index + 1)..);
+                    if (tokens.Count == 0)
+                        throw new SyntaxError(0, 0, "Missing value.");
 
-                if (keyTokens.Count == 0)
-                    throw new SyntaxError(0, 0, "Missing identifier");
+                    var expression = ExpressionParser.Parse(tokens);
+                    var member = new StaticlyNamedMember(identifier.Text, expression);
+                    members.Add(member);
+                    break;
+                }
 
-                var keyExpr = ExpressionParser.Parse(keyTokens);
+                case IndexerToken indexer:
+                {
+                    if (!part.Any(x => x is SymbolToken(Symbol.ASSIGN)))
+                        throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
 
-                if (keyExpr is not Identifier identifier)
-                    throw new SyntaxError(0, 0, "Invalid identifier");
+                    if (indexer.Tokens.Count == 0)
+                        throw new SyntaxError(part[0].Start, part[0].End, "Missing value.");
 
-                if (valueTokens.Count == 0)
-                    throw new SyntaxError(0, 0, "Missing value");
+                    var nameExpression = ExpressionParser.Parse(indexer.Tokens);
 
-                var expression = ExpressionParser.Parse(valueTokens);
+                    if (part[1] is not SymbolToken(Symbol.ASSIGN))
+                        throw new SyntaxError(part[1].Start, part[1].End, "Unexpected token.");
 
-                expressions.Add(new(false, identifier.Name, expression));
+                    var tokens = part.GetRange(2..);
+
+                    if (tokens.Count == 0)
+                        throw new SyntaxError(0, 0, "Missing value.");
+
+                    var valueExpression = ExpressionParser.Parse(tokens);
+
+                    var member = new DynamiclyNamedMember(nameExpression, valueExpression);
+                    members.Add(member);
+                    break;
+                }
+
+                case SymbolToken(Symbol.UNPACK_STRUCT):
+                {
+                    var tokens = part.GetRange(1..);
+
+                    if (tokens.Count == 0)
+                        continue;
+
+                    var expression = ExpressionParser.Parse(tokens);
+                    var member = new UnpackedMember(expression);
+                    members.Add(member);
+                    break;
+                }
+
+                default:
+                    if (!part.Any(x => x is SymbolToken(Symbol.ASSIGN)))
+                        throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
+                    else
+                        throw new SyntaxError(part[0].Start, part[^1].End, "Unexpected token.");
             }
         }
 
-        return new StructLiteral(expressions);
+        return new StructLiteral(members);
     }
 }

@@ -10,4 +10,9 @@ public static class EnumerableExtensions
     {
         return a.Zip(b, (a, b) => (a, b));
     }
+
+    public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<(TKey Key, TValue Value)> enumerable)
+    {
+        return enumerable.ToDictionary(x => x.Key, x => x.Value);
+    }
 }

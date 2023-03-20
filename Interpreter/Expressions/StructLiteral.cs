@@ -1,67 +1,39 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Bloc.Expressions.Members;
 using Bloc.Memory;
-using Bloc.Results;
+using Bloc.Utils.Extensions;
 using Bloc.Values;
-using Void = Bloc.Values.Void;
 
 namespace Bloc.Expressions;
 
 internal sealed class StructLiteral : IExpression
 {
-    private readonly List<SubExpression> _expressions;
+    private readonly List<IMember> _members;
 
-    internal StructLiteral(List<SubExpression> expressions)
+    internal StructLiteral(List<IMember> members)
     {
-        _expressions = expressions;
+        _members = members;
     }
 
     public IValue Evaluate(Call call)
     {
-        var values = new Dictionary<string, Value>();
-
-        foreach (var expression in _expressions)
-        {
-            var value = expression.Expression.Evaluate(call).Value.GetOrCopy();
-
-            if (value is Void)
-                throw new Throw("'void' is not assignable");
-
-            if (!expression.Unpack)
-                values.Add(expression.Name!, value);
-            else if (value is Struct @struct)
-                foreach (var (key, variable) in @struct.Values)
-                    values.Add(key, variable.Value);
-            else
-                throw new Throw("Only a struct can be unpacked using the struct unpack syntax");
-        }
+        var values = _members
+            .SelectMany(x => x.GetMembers(call))
+            .ToDictionary();
 
         return new Struct(values);
     }
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(_expressions.Count);
+        return HashCode.Combine(_members.Count);
     }
 
     public override bool Equals(object other)
     {
         return other is StructLiteral literal &&
-            _expressions.SequenceEqual(literal._expressions);
-    }
-
-    internal record SubExpression
-    {
-        internal bool Unpack { get; }
-        internal string? Name { get; }
-        internal IExpression Expression { get; }
-
-        internal SubExpression(bool unpack, string? name, IExpression expression)
-        {
-            Unpack = unpack;
-            Name = name;
-            Expression = expression;
-        }
+            _members.SequenceEqual(literal._members);
     }
 }
