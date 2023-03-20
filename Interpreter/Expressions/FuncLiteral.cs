@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Statements;
+using Bloc.SubExpressions;
 using Bloc.Values;
 using Void = Bloc.Values.Void;
 
@@ -79,17 +79,5 @@ internal sealed class FuncLiteral : IExpression
             _mode == literal._mode &&
             _parameters.SequenceEqual(literal._parameters) &&
             _statements.SequenceEqual(literal._statements);
-    }
-
-    internal sealed record Parameter
-    {
-        internal string Name { get; }
-        internal IExpression? Expression { get; }
-
-        internal Parameter(string name, IExpression? expression)
-        {
-            Name = name;
-            Expression = expression;
-        }
     }
 }

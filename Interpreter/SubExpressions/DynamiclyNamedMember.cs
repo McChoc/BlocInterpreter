@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
+using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Values;
 
-namespace Bloc.Expressions.Members;
+namespace Bloc.SubExpressions;
 
 internal sealed record DynamiclyNamedMember(IExpression NameExpression, IExpression ValueExpression) : IMember
 {

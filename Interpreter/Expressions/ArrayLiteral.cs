@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Bloc.Expressions.Members;
 using Bloc.Memory;
+using Bloc.SubExpressions;
 using Bloc.Values;
 using Array = Bloc.Values.Array;
 

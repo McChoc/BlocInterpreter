@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Bloc.Memory;
+using Bloc.SubExpressions;
 using Bloc.Values;
 using String = Bloc.Values.String;
 
@@ -48,29 +49,5 @@ internal sealed class StringLiteral : IExpression
         return other is StringLiteral literal &&
             _baseString == literal._baseString &&
             _interpolations.SequenceEqual(literal._interpolations);
-    }
-
-    public sealed class Interpolation
-    {
-        public int Index { get; }
-        public IExpression Expression { get; }
-
-        public Interpolation(int index, IExpression expression)
-        {
-            Index = index;
-            Expression = expression;
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Index, Expression);
-        }
-
-        public override bool Equals(object other)
-        {
-            return other is Interpolation interpolation &&
-                Index == interpolation.Index &&
-                Expression.Equals(interpolation.Expression);
-        }
     }
 }

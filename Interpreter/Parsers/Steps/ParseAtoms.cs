@@ -3,8 +3,7 @@ using System.Linq;
 using Bloc.Constants;
 using Bloc.Exceptions;
 using Bloc.Expressions;
-using Bloc.Expressions.Elements;
-using Bloc.Expressions.Members;
+using Bloc.SubExpressions;
 using Bloc.Tokens;
 using Bloc.Utils.Extensions;
 using Bloc.Values;
@@ -69,7 +68,7 @@ internal sealed class ParseAtoms : IParsingStep
     private static StringLiteral ParseString(StringToken token)
     {
         var interpolations = token.Interpolations
-            .Select(x => new StringLiteral.Interpolation(x.Index, ExpressionParser.Parse(x.Tokens)))
+            .Select(x => new Interpolation(x.Index, ExpressionParser.Parse(x.Tokens)))
             .ToList();
 
         return new StringLiteral(token.BaseString, interpolations);

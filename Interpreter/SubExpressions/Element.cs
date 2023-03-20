@@ -1,19 +1,20 @@
 ﻿using System.Collections.Generic;
+using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Values;
 
-namespace Bloc.Expressions.Members;
+namespace Bloc.SubExpressions;
 
-internal sealed record StaticlyNamedMember(string Name, IExpression Expression) : IMember
+internal sealed record Element(IExpression Expression) : IElement
 {
-    public IEnumerable<(string, Value)> GetMembers(Call call)
+    public IEnumerable<Value> GetElements(Call call)
     {
         var value = Expression.Evaluate(call).Value.GetOrCopy();
 
         if (value is Void)
             throw new Throw("'void' is not assignable");
 
-        yield return (Name, value);
+        yield return value;
     }
 }

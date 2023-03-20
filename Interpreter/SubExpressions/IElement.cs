@@ -2,7 +2,7 @@
 using Bloc.Memory;
 using Bloc.Values;
 
-namespace Bloc.Expressions.Members;
+namespace Bloc.SubExpressions;
 
 internal interface IElement
 {

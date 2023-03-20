@@ -5,6 +5,7 @@ using Bloc.Exceptions;
 using Bloc.Expressions;
 using Bloc.Scanners;
 using Bloc.Statements;
+using Bloc.SubExpressions;
 using Bloc.Tokens;
 using Bloc.Utils.Extensions;
 using Bloc.Values;
@@ -53,10 +54,10 @@ internal sealed class ParseFunctions : IParsingStep
                 tokens.RemoveRange(i - 1, tokens.Count - i + 1);
             }
 
-            var parameters = new List<FuncLiteral.Parameter>();
+            var parameters = new List<Parameter>();
 
-            FuncLiteral.Parameter? argsContainer = null;
-            FuncLiteral.Parameter? kwargsContainer = null;
+            Parameter? argsContainer = null;
+            Parameter? kwargsContainer = null;
 
             if (paramTokens.Count > 0)
             {
