@@ -11,8 +11,6 @@ namespace Bloc.Scanners;
 
 internal sealed class Tokenizer : ITokenProvider
 {
-    private static readonly HashSet<char> reservedCharacters = "!\"#$%&'()*+,-./:;<=>?@[\\]^`{|}~".ToHashSet();
-
     private readonly string _code;
     private readonly int _offset;
 
@@ -143,7 +141,7 @@ internal sealed class Tokenizer : ITokenProvider
 
     private bool IsSymbol()
     {
-        return reservedCharacters.Contains(_code[_index]);
+        return Character.ReservedCharacters.Contains(_code[_index]);
     }
 
     private bool IsParentheses()
@@ -230,7 +228,7 @@ internal sealed class Tokenizer : ITokenProvider
     {
         var start = _index;
 
-        while (_index < _code.Length && !char.IsWhiteSpace(_code[_index]) && !reservedCharacters.Contains(_code[_index]))
+        while (_index < _code.Length && !char.IsWhiteSpace(_code[_index]) && !Character.ReservedCharacters.Contains(_code[_index]))
             _index++;
 
         var text = _code[start.._index];

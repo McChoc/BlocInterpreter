@@ -4,6 +4,7 @@ using System.Linq;
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
+using Bloc.Utils.Helpers;
 using Bloc.Variables;
 
 namespace Bloc.Values;
@@ -118,6 +119,9 @@ public sealed class Struct : Value, IIndexable
     {
         if (index is not String @string)
             throw new Throw("It should be a string.");
+
+        if (!IdentifierHelper.IsIdentifierValid(@string.Value))
+            throw new Throw("Invalid identifier name");
 
         if (!Values.ContainsKey(@string.Value))
             throw new Throw($"'{@string.Value}' was not defined inside this struct");
