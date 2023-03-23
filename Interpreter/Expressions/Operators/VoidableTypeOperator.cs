@@ -6,11 +6,11 @@ using Bloc.Values;
 
 namespace Bloc.Expressions.Operators;
 
-internal sealed record NullableOperator : IExpression
+internal sealed record VoidableTypeOperator : IExpression
 {
     private readonly IExpression _operand;
 
-    internal NullableOperator(IExpression operand)
+    internal VoidableTypeOperator(IExpression operand)
     {
         _operand = operand;
     }
@@ -25,7 +25,7 @@ internal sealed record NullableOperator : IExpression
         {
             var types = new HashSet<ValueType>
             {
-                ValueType.Null
+                ValueType.Void
             };
 
             foreach (var t in type.Value)
@@ -34,6 +34,6 @@ internal sealed record NullableOperator : IExpression
             return new Type(types);
         }
 
-        throw new Throw($"Cannot apply operator '?' on type {value.GetTypeName()}");
+        throw new Throw($"Cannot apply operator '~' on type {value.GetTypeName()}");
     }
 }

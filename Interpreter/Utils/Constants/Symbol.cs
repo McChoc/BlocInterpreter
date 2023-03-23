@@ -19,7 +19,7 @@ internal static class Symbol
     internal const string DECREMENT = "--";
     internal const string SHIFT_L = "<<";
     internal const string SHIFT_R = ">>";
-    internal const string BIT_NOT = "~";
+    internal const string TILDE = "~";
     internal const string BIT_AND = "&";
     internal const string BIT_OR = "|";
     internal const string BIT_XOR = "^";

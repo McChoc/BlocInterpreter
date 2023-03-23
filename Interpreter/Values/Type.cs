@@ -35,8 +35,14 @@ public sealed class Type : Value, IInvokable
         if (Value.Count == 1)
             return GetTypeName(Value.First());
 
+        if (Value.Count == 2 && Value.Contains(ValueType.Void))
+            return GetTypeName(Value.First(x => x != ValueType.Void)) + "~";
+
         if (Value.Count == 2 && Value.Contains(ValueType.Null))
             return GetTypeName(Value.First(x => x != ValueType.Null)) + "?";
+
+        if (Value.Count == 3 && Value.Contains(ValueType.Void) && Value.Contains(ValueType.Null))
+            return GetTypeName(Value.First(x => x is not (ValueType.Void or ValueType.Null))) + "?~";
 
         return "[type]";
     }

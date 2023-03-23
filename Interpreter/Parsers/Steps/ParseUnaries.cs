@@ -43,7 +43,7 @@ internal sealed class ParseUnaries : IParsingStep
             {
                 Symbol.PLUS         => new PositiveOperator(operand),
                 Symbol.MINUS        => new NegativeOperator(operand),
-                Symbol.BIT_NOT      => new ComplementOperator(operand),
+                Symbol.TILDE        => new ComplementOperator(operand),
                 Symbol.BOOL_NOT     => new NegationOperator(operand),
                 Symbol.INCREMENT    => new IncrementPrefix(operand),
                 Symbol.DECREMENT    => new DecrementPrefix(operand),
@@ -80,7 +80,8 @@ internal sealed class ParseUnaries : IParsingStep
                 Symbol.DECREMENT    => new DecrementPostfix(operand),
                 Symbol.BIT_INV      => new ComplementPostfix(operand),
                 Symbol.BOOL_INV     => new NegationPostfix(operand),
-                Symbol.QUESTION     => new NullableOperator(operand),
+                Symbol.QUESTION     => new NullableTypeOperator(operand),
+                Symbol.TILDE        => new VoidableTypeOperator(operand),
                 _ => throw new Exception()
             };
         }
@@ -107,7 +108,8 @@ internal sealed class ParseUnaries : IParsingStep
                 Symbol.DECREMENT or
                 Symbol.BIT_INV or
                 Symbol.BOOL_INV or
-                Symbol.QUESTION))
+                Symbol.QUESTION or
+                Symbol.TILDE))
         {
             @operator = (TextToken)token;
             return true;
@@ -124,7 +126,7 @@ internal sealed class ParseUnaries : IParsingStep
         if (token is SymbolToken(
             Symbol.PLUS or
             Symbol.MINUS or
-            Symbol.BIT_NOT or
+            Symbol.TILDE or
             Symbol.BOOL_NOT or
             Symbol.INCREMENT or
             Symbol.DECREMENT or
