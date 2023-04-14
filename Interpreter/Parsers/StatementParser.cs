@@ -504,9 +504,6 @@ internal static class StatementParser
         {
             var token = provider.Next();
 
-            if (token is SymbolToken(Symbol.COLON))
-                throw new SyntaxError(token.Start, token.End, $"Unexpected symbol '{Symbol.COLON}'");
-
             if (token is SymbolToken(Symbol.SEMICOLON))
                 return line;
 
