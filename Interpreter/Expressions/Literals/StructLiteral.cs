@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Bloc.Expressions.SubExpressions;
 using Bloc.Memory;
-using Bloc.Utils.Extensions;
+using Bloc.Results;
 using Bloc.Values;
 
 namespace Bloc.Expressions.Literals;
@@ -19,9 +19,15 @@ internal sealed class StructLiteral : IExpression
 
     public IValue Evaluate(Call call)
     {
-        var values = _members
-            .SelectMany(x => x.GetMembers(call))
-            .ToDictionary();
+        var values = new Dictionary<string, Value>();
+
+        foreach (var (key, value) in _members.SelectMany(x => x.GetMembers(call)))
+        {
+            if (values.ContainsKey(key))
+                throw new Throw("Duplicate key");
+
+            values[key] = value;
+        }
 
         return new Struct(values);
     }
