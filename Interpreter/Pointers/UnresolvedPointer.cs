@@ -4,7 +4,7 @@ using Bloc.Variables;
 
 namespace Bloc.Pointers;
 
-internal sealed class UnresolvedPointer : Pointer
+public sealed class UnresolvedPointer : Pointer
 {
     internal string Name { get; }
 
@@ -23,9 +23,9 @@ internal sealed class UnresolvedPointer : Pointer
         Global = global;
     }
 
-    internal override Value Get() => Resolve().Get();
-    internal override Value Set(Value value) => Resolve().Set(value);
-    internal override Value Delete() => Resolve().Delete();
+    public override Value Get() => Resolve().Get();
+    public override Value Set(Value value) => Resolve().Set(value);
+    public override Value Delete() => Resolve().Delete();
 
     internal VariablePointer Resolve()
     {

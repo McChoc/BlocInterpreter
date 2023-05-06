@@ -18,7 +18,7 @@ internal sealed record CharacterOperator : IExpression
     {
         var value = _operand.Evaluate(call).Value;
 
-        value = ReferenceHelper.Resolve(value, call.Engine.HopLimit).Value;
+        value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit).Value;
 
         if (value is not INumeric scalar)
             throw new Throw($"Cannot apply operator 'chr' on type {value.GetTypeName()}");

@@ -93,7 +93,7 @@ public abstract class Statement
                 switch (result)
                 {
                     case Goto @goto when @goto.Label == statement.Label:
-                        if (jumpCount++ < call.Engine.JumpLimit)
+                        if (jumpCount++ < call.Engine.Options.JumpLimit)
                         {
                             rerun = true;
                             break;
@@ -133,7 +133,7 @@ public abstract class Statement
                 switch (result)
                 {
                     case Goto @goto when labels.TryGetValue(@goto.Label, out var label):
-                        if (label.Count++ < call.Engine.JumpLimit)
+                        if (label.Count++ < call.Engine.Options.JumpLimit)
                         {
                             i = label.Index - 1;
                             done = true;

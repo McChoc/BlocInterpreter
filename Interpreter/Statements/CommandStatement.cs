@@ -22,7 +22,7 @@ internal sealed class CommandStatement : Statement
             yield return exception!;
 
         if (String.TryImplicitCast(value!, out var @string))
-            call.Engine.Log(@string.Value);
+            call.Engine.Output(@string.Value);
     }
 
     public override int GetHashCode()

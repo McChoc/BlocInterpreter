@@ -43,13 +43,13 @@ public sealed class Array : Value, IIndexable
         };
     }
 
-    internal override void Destroy()
+    public override void Destroy()
     {
         while (Values.Count > 0)
             ((ArrayVariable)Values.Last()).Delete();
     }
 
-    internal override Value Copy(bool assign)
+    public override Value Copy(bool assign)
     {
         var array = new Array();
 
@@ -71,7 +71,7 @@ public sealed class Array : Value, IIndexable
         return array;
     }
 
-    internal override Value GetOrCopy(bool assign)
+    public override Value GetOrCopy(bool assign)
     {
         var array = _assigned
             ? new Array()

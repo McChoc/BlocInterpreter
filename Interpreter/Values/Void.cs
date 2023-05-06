@@ -20,7 +20,7 @@ public sealed class Void : Value
         };
     }
 
-    internal override Value Copy(bool assign)
+    public override Value Copy(bool assign)
     {
         if (assign)
             throw new Throw("'void' is not assignable");
@@ -28,7 +28,7 @@ public sealed class Void : Value
         return this;
     }
 
-    internal override Value GetOrCopy(bool assign)
+    public override Value GetOrCopy(bool assign)
     {
         if (assign)
             throw new Throw("'void' is not assignable");

@@ -21,6 +21,6 @@ internal sealed record ValOperator : IExpression
         if (value is not Reference)
             throw new Throw("The 'val' operator can only be used on references");
 
-        return ReferenceHelper.Resolve(value, call.Engine.HopLimit);
+        return ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit);
     }
 }

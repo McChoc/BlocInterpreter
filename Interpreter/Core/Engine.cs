@@ -11,28 +11,27 @@ using Bloc.Statements;
 using Bloc.Utils.Helpers;
 using Bloc.Values;
 
-namespace Bloc;
+namespace Bloc.Core;
 
-public sealed partial class Engine
+public sealed class Engine
 {
+    public object? State { get; set; }
+
     public Call GlobalCall { get; }
     public Scope GlobalScope { get; }
 
-    internal int StackLimit { get; private set; }
-    internal int LoopLimit { get; private set; }
-    internal int JumpLimit { get; private set; }
-    internal int HopLimit { get; private set; }
+    public IEngineOptions Options { get; }
+    public Dictionary<string, ICommandInfo> Commands { get; }
+    public Action<string> Output { get; }
 
-    public required Action<string> Log { get; init; }
-    public required Action Clear { get; init; }
-    public required Action Exit { get; init; }
-
-    public required Dictionary<string, CommandInfo> Commands { get; init; }
-
-    private Engine()
+    internal Engine(IEngineOptions options, Dictionary<string, ICommandInfo> commands, Action<string> output)
     {
         GlobalCall = new Call(this);
         GlobalScope = GlobalCall.Scopes.First();
+
+        Options = options;
+        Commands = commands;
+        Output = output;
     }
 
     public static void Compile(string code, out IExpression? expression, out List<Statement> statements)
@@ -85,7 +84,7 @@ public sealed partial class Engine
                 case Goto @goto:
                     if (labels.TryGetValue(@goto.Label, out var label))
                     {
-                        if (++label.Count > JumpLimit)
+                        if (++label.Count > Options.JumpLimit)
                             return new Throw("The jump limit was reached.");
 
                         i = label.Index - 1;

@@ -26,7 +26,7 @@ internal sealed record RangeLiteral : IExpression
         {
             var value = _start.Evaluate(call).Value;
 
-            value = ReferenceHelper.Resolve(value, call.Engine.HopLimit).Value;
+            value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit).Value;
 
             if (value is not INumeric scalar)
                 throw new Throw($"Cannot apply operator ':' on type {value.GetType().ToString().ToLower()}");
@@ -38,7 +38,7 @@ internal sealed record RangeLiteral : IExpression
         {
             var value = _end.Evaluate(call).Value;
 
-            value = ReferenceHelper.Resolve(value, call.Engine.HopLimit).Value;
+            value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit).Value;
 
             if (value is not INumeric scalar)
                 throw new Throw($"Cannot apply operator ':' on type {value.GetType().ToString().ToLower()}");
@@ -50,7 +50,7 @@ internal sealed record RangeLiteral : IExpression
         {
             var value = _step.Evaluate(call).Value;
 
-            value = ReferenceHelper.Resolve(value, call.Engine.HopLimit).Value;
+            value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit).Value;
 
             if (value is not INumeric scalar)
                 throw new Throw($"Cannot apply operator ':' on type {value.GetType().ToString().ToLower()}");

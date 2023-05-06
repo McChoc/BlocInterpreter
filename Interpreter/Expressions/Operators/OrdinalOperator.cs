@@ -18,7 +18,7 @@ internal sealed record OrdinalOperator : IExpression
     {
         var value = _operand.Evaluate(call).Value;
 
-        value = ReferenceHelper.Resolve(value, call.Engine.HopLimit).Value;
+        value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit).Value;
 
         if (value is not String @string)
             throw new Throw($"Cannot apply operator 'ord' on type {value!.GetTypeName()}");

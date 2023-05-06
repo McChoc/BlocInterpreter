@@ -13,7 +13,7 @@ internal static class OperatorHelper
 {
     internal static Value RecursivelyCall(Value value, UnaryOperation operation, Call call)
     {
-        value = ReferenceHelper.Resolve(value, call.Engine.HopLimit).Value;
+        value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit).Value;
 
         if (value is Tuple tuple)
             return new Tuple(tuple.Values
@@ -25,8 +25,8 @@ internal static class OperatorHelper
 
     internal static Value RecursivelyCall(Value left, Value right, BinaryOperation operation, Call call)
     {
-        left = ReferenceHelper.Resolve(left, call.Engine.HopLimit).Value;
-        right = ReferenceHelper.Resolve(right, call.Engine.HopLimit).Value;
+        left = ReferenceHelper.Resolve(left, call.Engine.Options.HopLimit).Value;
+        right = ReferenceHelper.Resolve(right, call.Engine.Options.HopLimit).Value;
 
         switch (left, right)
         {

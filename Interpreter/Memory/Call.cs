@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Bloc.Core;
 using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Values;
@@ -32,7 +33,7 @@ public sealed class Call
     {
         _stack = parent._stack + 1;
 
-        if (_stack > Engine.StackLimit)
+        if (_stack > Engine.Options.StackLimit)
             throw new Throw("The stack limit was reached");
 
         Captures = captures;
@@ -50,7 +51,7 @@ public sealed class Call
             Scopes[^1].Dispose();
     }
 
-    internal UnresolvedPointer Get(string name)
+    public UnresolvedPointer Get(string name)
     {
         Stack<StackVariable> stack;
 
@@ -80,7 +81,7 @@ public sealed class Call
         return new UnresolvedPointer(name, local, param, nonLocal, global);
     }
 
-    internal VariablePointer Set(bool mask, bool mutable, string name, Value value)
+    public VariablePointer Set(bool mask, bool mutable, string name, Value value)
     {
         if (!mask && Scopes[^1].Variables.ContainsKey(name))
             throw new Throw($"Variable '{name}' was already defined in scope");

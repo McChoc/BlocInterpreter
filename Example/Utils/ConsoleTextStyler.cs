@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace Example;
+namespace ConsoleApp.Utils;
 
-public static class ConsoleColor
+public static class ConsoleTextStyler
 {
-    static ConsoleColor()
+    static ConsoleTextStyler()
     {
         var handle = GetStdHandle(-11);
         GetConsoleMode(handle, out var mode);
         SetConsoleMode(handle, mode | 0x4);
-        Console.ResetColor();
+        System.Console.ResetColor();
     }
 
     [DllImport("kernel32.dll", SetLastError = true)]
@@ -22,8 +22,8 @@ public static class ConsoleColor
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern bool SetConsoleMode(IntPtr hConsoleHandle, int mode);
 
-    public static void SetColor(byte color)
+    public static void SetTextColor(byte color)
     {
-        Console.Write($"\x1b[38;5;{color}m");
+        System.Console.Write($"\x1b[38;5;{color}m");
     }
 }

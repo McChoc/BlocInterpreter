@@ -10,18 +10,18 @@ using Range = Bloc.Values.Range;
 
 namespace Bloc.Pointers;
 
-internal sealed class SlicePointer : Pointer
+public sealed class SlicePointer : Pointer
 {
-    internal Array Array { get; }
-    internal Range Range { get; }
+    private readonly Array _array;
+    private readonly Range _range;
 
     internal SlicePointer(Array array, Range range)
     {
-        Array = array;
-        Range = range;
+        _array = array;
+        _range = range;
     }
 
-    internal override Value Get()
+    public override Value Get()
     {
         var values = GetVariables()
             .Select(x => x.Value.GetOrCopy())
@@ -30,12 +30,12 @@ internal sealed class SlicePointer : Pointer
         return new Array(values);
     }
 
-    internal override Value Set(Value value)
+    public override Value Set(Value value)
     {
         if (value is not Array array)
             throw new Throw("Only an array can be assigned to a slice");
 
-        if (Range.Step is null)
+        if (_range.Step is null)
             AssignContinuous(array);
         else
             AssignDiscrete(array);
@@ -43,7 +43,7 @@ internal sealed class SlicePointer : Pointer
         return array;
     }
 
-    internal override Value Delete()
+    public override Value Delete()
     {
         var values = new List<Value>();
 
@@ -62,14 +62,14 @@ internal sealed class SlicePointer : Pointer
             variable.Delete();
 
         var values = array.Values
-            .Select(x => new ArrayVariable(x.Value, Array));
+            .Select(x => new ArrayVariable(x.Value, _array));
 
-        var (start, _, _) = RangeHelper.Deconstruct(Range, Array.Values.Count);
+        var (start, _, _) = RangeHelper.Deconstruct(_range, _array.Values.Count);
 
-        if (start > Array.Values.Count)
+        if (start > _array.Values.Count)
             throw new Throw("Index out of range");
 
-        Array.Values.InsertRange(start, values);
+        _array.Values.InsertRange(start, values);
     }
 
     private void AssignDiscrete(Array array)
@@ -88,16 +88,16 @@ internal sealed class SlicePointer : Pointer
 
     private List<ArrayVariable> GetVariables()
     {
-        var (start, end, step) = RangeHelper.Deconstruct(Range, Array.Values.Count);
+        var (start, end, step) = RangeHelper.Deconstruct(_range, _array.Values.Count);
 
         var variables = new List<ArrayVariable>();
 
         for (int i = start; i != end && end - i > 0 == step > 0; i += step)
         {
-            if (i < 0 || i >= Array.Values.Count)
+            if (i < 0 || i >= _array.Values.Count)
                 throw new Throw("Index out of range");
 
-            variables.Add((ArrayVariable)Array.Values[i]);
+            variables.Add((ArrayVariable)_array.Values[i]);
         }
 
         return variables;

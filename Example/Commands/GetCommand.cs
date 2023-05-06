@@ -1,0 +1,34 @@
+﻿using Bloc.Commands;
+using Bloc.Memory;
+using Bloc.Results;
+using Bloc.Values;
+
+namespace ConsoleApp.Commands;
+
+public class GetCommand : ICommandInfo
+{
+    public string Name => "get";
+
+    public string Description =>
+        """
+        get <name>
+        <name: string> |> get
+        Gets the value of the variable with the specified name.
+        """;
+
+    public Value Call(string[] args, Value input, Call call)
+{
+        if (args.Length == 0)
+        {
+            if (input is not String @string)
+                throw new Throw("The input was not a 'string'");
+
+            return call.Get(@string.Value).Get();
+        }
+
+        if (args.Length == 1)
+            return call.Get(args[0]).Get();
+
+        throw new Throw($"'get' does not take {args.Length} arguments.\nType '/help get' to see its usage");
+    }
+}

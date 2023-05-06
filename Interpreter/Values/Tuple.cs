@@ -54,7 +54,7 @@ public sealed class Tuple : Value
         };
     }
 
-    internal override Value Copy(bool assign)
+    public override Value Copy(bool assign)
     {
         return new Tuple
         {
@@ -66,7 +66,7 @@ public sealed class Tuple : Value
         };
     }
 
-    internal override Value GetOrCopy(bool assign)
+    public override Value GetOrCopy(bool assign)
     {
         var tuple = _assigned
             ? new Tuple()

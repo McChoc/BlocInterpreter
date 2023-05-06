@@ -37,7 +37,7 @@ internal sealed class RepeatStatement : Statement
 
         for (int i = 0; i < loopCount; i++)
         {
-            if (_checked && i >= call.Engine.LoopLimit)
+            if (_checked && i >= call.Engine.Options.LoopLimit)
             {
                 yield return new Throw("The loop limit was reached.");
                 yield break;

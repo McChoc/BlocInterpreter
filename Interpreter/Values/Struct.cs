@@ -35,13 +35,13 @@ public sealed class Struct : Value, IIndexable
         };
     }
 
-    internal override void Destroy()
+    public override void Destroy()
     {
         while (Values.Any())
             ((StructVariable)Values.First().Value).Delete();
     }
 
-    internal override Value Copy(bool assign)
+    public override Value Copy(bool assign)
     {
         var @struct = new Struct();
 
@@ -61,7 +61,7 @@ public sealed class Struct : Value, IIndexable
         return @struct;
     }
 
-    internal override Value GetOrCopy(bool assign)
+    public override Value GetOrCopy(bool assign)
     {
         var @struct = _assigned
             ? new Struct()

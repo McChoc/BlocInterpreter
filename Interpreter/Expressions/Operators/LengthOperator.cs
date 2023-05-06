@@ -18,7 +18,7 @@ internal sealed record LengthOperator : IExpression
     {
         var value = _operand.Evaluate(call).Value;
 
-        value = ReferenceHelper.Resolve(value, call.Engine.HopLimit).Value;
+        value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit).Value;
 
         if (value is Array array)
             return new Number(array.Values.Count);

@@ -20,7 +20,7 @@ internal sealed record NullCoalescingOperator : IExpression
     {
         var value = _left.Evaluate(call).Value;
 
-        value = ReferenceHelper.Resolve(value, call.Engine.HopLimit).Value;
+        value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit).Value;
 
         if (value is Void)
             throw new Throw("Cannot apply operator ?? to type 'void'");

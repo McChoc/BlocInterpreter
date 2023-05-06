@@ -19,7 +19,7 @@ internal sealed record BooleanAndOperator : IExpression
     {
         var value = _left.Evaluate(call).Value;
 
-        value = ReferenceHelper.Resolve(value, call.Engine.HopLimit).Value;
+        value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit).Value;
 
         var @bool = Bool.ImplicitCast(value);
 

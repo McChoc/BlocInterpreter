@@ -2,11 +2,11 @@
 
 namespace Bloc.Pointers;
 
-internal abstract class Pointer : IValue
+public abstract class Pointer : IValue
 {
     Value IValue.Value => Get();
 
-    internal abstract Value Get();
-    internal abstract Value Set(Value value);
-    internal abstract Value Delete();
+    public abstract Value Get();
+    public abstract Value Set(Value value);
+    public abstract Value Delete();
 }

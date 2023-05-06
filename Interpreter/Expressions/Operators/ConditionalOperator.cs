@@ -21,7 +21,7 @@ internal sealed record ConditionalOperator : IExpression
     {
         var value = _condition.Evaluate(call).Value;
 
-        value = ReferenceHelper.Resolve(value, call.Engine.HopLimit).Value;
+        value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit).Value;
 
         var @bool = Bool.ImplicitCast(value);
 

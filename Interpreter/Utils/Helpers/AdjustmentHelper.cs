@@ -12,7 +12,7 @@ internal static class AdjustmentHelper
 {
     internal static Value Adjust(IValue value, Adjustment adjustment, Call call)
     {
-        value = ReferenceHelper.Resolve(value, call.Engine.HopLimit);
+        value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit);
 
         if (value is Pointer pointer)
         {

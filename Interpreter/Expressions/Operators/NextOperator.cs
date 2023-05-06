@@ -18,7 +18,7 @@ internal sealed record NextOperator : IExpression
     {
         var value = _operand.Evaluate(call).Value;
 
-        value = ReferenceHelper.Resolve(value, call.Engine.HopLimit).Value;
+        value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit).Value;
 
         if (value is Iter iter)
             return iter.Next();

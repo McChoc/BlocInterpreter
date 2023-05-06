@@ -31,7 +31,7 @@ internal sealed record AsOperator : IExpression
         var left = _left.Evaluate(call).Value;
         var right = _right.Evaluate(call).Value;
 
-        right = ReferenceHelper.Resolve(right, call.Engine.HopLimit).Value;
+        right = ReferenceHelper.Resolve(right, call.Engine.Options.HopLimit).Value;
 
         if (left is Void)
             throw new Throw($"Cannot apply operator 'as' on operands of types {left.GetTypeName()} and {right.GetTypeName()}");

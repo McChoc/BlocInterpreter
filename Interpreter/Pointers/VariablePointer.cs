@@ -5,7 +5,7 @@ using Bloc.Variables;
 
 namespace Bloc.Pointers;
 
-internal sealed class VariablePointer : Pointer
+public sealed class VariablePointer : Pointer
 {
     internal Variable? Variable { get; private set; }
 
@@ -15,7 +15,7 @@ internal sealed class VariablePointer : Pointer
         variable?.Pointers.Add(this);
     }
 
-    internal override Value Get()
+    public override Value Get()
     {
         if (Variable is null)
             throw new Throw("Invalid reference");
@@ -23,7 +23,7 @@ internal sealed class VariablePointer : Pointer
         return Variable.Value;
     }
 
-    internal override Value Set(Value value)
+    public override Value Set(Value value)
     {
         if (Variable is null)
             throw new Throw("Invalid reference");
@@ -33,7 +33,7 @@ internal sealed class VariablePointer : Pointer
         return Variable.Value = value;
     }
 
-    internal override Value Delete()
+    public override Value Delete()
     {
         if (Variable is null)
             throw new Throw("Invalid reference");

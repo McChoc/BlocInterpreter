@@ -12,8 +12,8 @@ internal static class AssignmentHelper
 {
     internal static Value CompoundAssign(IValue left, IValue right, BinaryOperation operation, Call call)
     {
-        left = ReferenceHelper.Resolve(left, call.Engine.HopLimit);
-        right = ReferenceHelper.Resolve(right, call.Engine.HopLimit);
+        left = ReferenceHelper.Resolve(left, call.Engine.Options.HopLimit);
+        right = ReferenceHelper.Resolve(right, call.Engine.Options.HopLimit);
 
         if (left is Pointer pointer)
         {

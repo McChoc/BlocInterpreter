@@ -47,7 +47,7 @@ internal sealed class WhileStatement : Statement
                     break;
             }
 
-            if (++loopCount > call.Engine.LoopLimit && _checked)
+            if (++loopCount > call.Engine.Options.LoopLimit && _checked)
             {
                 yield return new Throw("The loop limit was reached.");
                 yield break;

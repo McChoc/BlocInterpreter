@@ -218,7 +218,7 @@ public sealed class Func : Value, IInvokable
                     case Goto @goto:
                         if (_labels.TryGetValue(@goto.Label, out var label))
                         {
-                            if (++label.Count > call.Engine.JumpLimit)
+                            if (++label.Count > call.Engine.Options.JumpLimit)
                                 throw new Throw("The jump limit was reached.");
 
                             i = label.Index - 1;

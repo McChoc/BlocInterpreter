@@ -17,6 +17,6 @@ internal sealed record ValValOperator : IExpression
     {
         var value = _operand.Evaluate(call);
 
-        return ReferenceHelper.ResolveRecursive(value.Value, call.Engine.HopLimit);
+        return ReferenceHelper.ResolveRecursive(value.Value, call.Engine.Options.HopLimit);
     }
 }

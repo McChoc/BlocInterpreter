@@ -21,7 +21,7 @@ internal sealed record IsNotOperator : IExpression
         var left = _left.Evaluate(call).Value;
         var right = _right.Evaluate(call).Value;
 
-        right = ReferenceHelper.Resolve(right, call.Engine.HopLimit).Value;
+        right = ReferenceHelper.Resolve(right, call.Engine.Options.HopLimit).Value;
 
         if (right is Type type)
             return new Bool(!type.Value.Contains(left.GetType()));

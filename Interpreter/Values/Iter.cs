@@ -200,7 +200,7 @@ public sealed class Iter : Value
                 case Goto @goto:
                     if (_labels.TryGetValue(@goto.Label, out var label))
                     {
-                        if (++label.Count > _call.Engine.JumpLimit)
+                        if (++label.Count > _call.Engine.Options.JumpLimit)
                         {
                             End();
                             throw new Throw("The jump limit was reached.");
