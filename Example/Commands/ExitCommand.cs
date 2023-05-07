@@ -5,7 +5,7 @@ using Bloc.Values;
 
 namespace ConsoleApp.Commands;
 
-public class ExitCommand : ICommandInfo
+public sealed class ExitCommand : ICommandInfo
 {
     public string Name => "exit";
 

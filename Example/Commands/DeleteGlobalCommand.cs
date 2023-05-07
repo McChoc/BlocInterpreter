@@ -6,7 +6,7 @@ using Void = Bloc.Values.Void;
 
 namespace ConsoleApp.Commands;
 
-public class DeleteGlobalCommand : ICommandInfo
+public sealed class DeleteGlobalCommand : ICommandInfo
 {
     public string Name => "delete_global";
 

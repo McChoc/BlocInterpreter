@@ -3,7 +3,7 @@ using ConsoleApp.Utils;
 
 namespace ConsoleApp;
 
-public class Program
+public static class Program
 {
     public static void Main()
     {

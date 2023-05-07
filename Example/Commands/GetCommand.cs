@@ -5,7 +5,7 @@ using Bloc.Values;
 
 namespace ConsoleApp.Commands;
 
-public class GetCommand : ICommandInfo
+public sealed class GetCommand : ICommandInfo
 {
     public string Name => "get";
 

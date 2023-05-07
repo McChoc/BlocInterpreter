@@ -5,7 +5,7 @@ using Bloc.Values;
 
 namespace ConsoleApp.Commands;
 
-public class EchoCommand : ICommandInfo
+public sealed class EchoCommand : ICommandInfo
 {
     public string Name => "echo";
 

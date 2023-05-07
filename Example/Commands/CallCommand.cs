@@ -6,7 +6,7 @@ using Bloc.Values;
 
 namespace ConsoleApp.Commands;
 
-public class CallCommand : ICommandInfo
+public sealed class CallCommand : ICommandInfo
 {
     public string Name => "call";
 

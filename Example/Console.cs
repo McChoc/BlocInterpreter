@@ -8,7 +8,7 @@ using static System.Console;
 
 namespace ConsoleApp;
 
-public class Console
+public sealed class Console
 {
     private const byte RED = 9;
     private const byte ORANGE = 208;

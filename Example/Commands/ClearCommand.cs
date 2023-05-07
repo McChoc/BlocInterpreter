@@ -6,7 +6,7 @@ using Void = Bloc.Values.Void;
 
 namespace ConsoleApp.Commands;
 
-public class ClearCommand : ICommandInfo
+public sealed class ClearCommand : ICommandInfo
 {
     public string Name => "clear";
 

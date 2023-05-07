@@ -10,7 +10,7 @@ using Bloc.Values;
 
 namespace ConsoleApp.Commands;
 
-public class LoadCommand : ICommandInfo
+public sealed class LoadCommand : ICommandInfo
 {
     public string Name => "load";
 

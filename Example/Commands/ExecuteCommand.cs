@@ -9,7 +9,7 @@ using Bloc.Values;
 
 namespace ConsoleApp.Commands;
 
-public class ExecuteCommand : ICommandInfo
+public sealed class ExecuteCommand : ICommandInfo
 {
     public string Name => "execute";
 

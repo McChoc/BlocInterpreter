@@ -6,7 +6,7 @@ using Bloc.Values;
 
 namespace ConsoleApp.Commands;
 
-public class RandomCommand : ICommandInfo
+public sealed class RandomCommand : ICommandInfo
 {
     private static readonly Random random = new();
 

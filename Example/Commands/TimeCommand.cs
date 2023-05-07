@@ -7,7 +7,7 @@ using String = Bloc.Values.String;
 
 namespace ConsoleApp.Commands;
 
-public class TimeCommand : ICommandInfo
+public sealed class TimeCommand : ICommandInfo
 {
     public string Name => "time";
 
