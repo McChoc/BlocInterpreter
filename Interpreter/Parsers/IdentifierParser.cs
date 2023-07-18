@@ -9,6 +9,20 @@ namespace Bloc.Parsers;
 
 internal static class IdentifierParser
 {
+    internal static NameIdentifier ParseName(List<Token> tokens)
+    {
+        if (tokens.Count == 0)
+            throw new SyntaxError(0, 0, "Missing identifier");
+
+        if (tokens.Count > 1)
+            throw new SyntaxError(tokens[1].Start, tokens[1].End, "Unexpected token");
+
+        if (tokens[0] is not IIdentifierToken token)
+            throw new SyntaxError(tokens[0].Start, tokens[0].End, "Unexpected token");
+
+        return new NameIdentifier(token.Text);
+    }
+
     internal static IIdentifier Parse(List<Token> tokens)
     {
         if (tokens.Count == 0)

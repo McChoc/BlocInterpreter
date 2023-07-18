@@ -27,6 +27,11 @@ public sealed class UnresolvedPointer : Pointer
     public override Value Set(Value value) => Resolve().Set(value);
     public override Value Delete() => Resolve().Delete();
 
+    internal bool IsDefined()
+    {
+        return Local is not null || Param is not null || NonLocal is not null || Global is not null;
+    }
+
     internal VariablePointer Resolve()
     {
         var variable = Local ?? Param ?? NonLocal ?? Global ?? throw new Throw($"Variable {Name} was not defined in scope");

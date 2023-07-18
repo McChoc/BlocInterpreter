@@ -5,15 +5,15 @@ namespace Bloc.Identifiers;
 
 internal sealed class NameIdentifier : IIdentifier
 {
-    private readonly string _name;
+    internal string Name { get; }
 
     public NameIdentifier(string name)
     {
-        _name = name;
+        Name = name;
     }
 
     public IValue Define(Value value, Call call, bool mask = false, bool mutable = true)
     {
-        return call.Set(mask, mutable, _name, value.GetOrCopy(true));
+        return call.Set(mask, mutable, Name, value.GetOrCopy(true));
     }
 }

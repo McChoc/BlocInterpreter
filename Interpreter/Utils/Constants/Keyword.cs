@@ -51,6 +51,7 @@ internal static class Keyword
     [HardKeyword] internal const string CHR = "chr";
     [HardKeyword] internal const string CONST = "const";
     [HardKeyword] internal const string CONTINUE = "continue";
+    [HardKeyword] internal const string DEF = "def";
     [HardKeyword] internal const string DELETE = "delete";
     [HardKeyword] internal const string DO = "do";
     [HardKeyword] internal const string ELSE = "else";
@@ -99,6 +100,7 @@ internal static class Keyword
     [CompositeKeyword] internal const string VAL_VAL = $"{VAL} {VAL}";
     [CompositeKeyword] internal const string IS_NOT = $"{IS} {NOT}";
     [CompositeKeyword] internal const string NOT_IN = $"{NOT} {IN}";
+    [CompositeKeyword] internal const string NOT_DEF = $"{NOT} {DEF}";
     [CompositeKeyword] internal const string LET_NEW = $"{LET} {NEW}";
     [CompositeKeyword] internal const string CONST_NEW = $"{CONST} {NEW}";
 
