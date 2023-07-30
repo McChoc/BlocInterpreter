@@ -105,14 +105,11 @@ internal sealed class Tokenizer : ITokenProvider
 
         var word = GetWord(false);
 
-        if (word is KeywordToken(Keyword.NOT) && PeekRange(1) is [KeywordToken(Keyword.IN)])
-            return new KeywordToken(word.Start, Next().End, Keyword.NOT_IN);
-
         if (word is KeywordToken(Keyword.IS) && PeekRange(1) is [KeywordToken(Keyword.NOT)])
             return new KeywordToken(word.Start, Next().End, Keyword.IS_NOT);
 
-        if (word is KeywordToken(Keyword.VAL) && PeekRange(1) is [KeywordToken(Keyword.VAL)])
-            return new KeywordToken(word.Start, Next().End, Keyword.VAL_VAL);
+        if (word is KeywordToken(Keyword.NOT) && PeekRange(1) is [KeywordToken(Keyword.IN)])
+            return new KeywordToken(word.Start, Next().End, Keyword.NOT_IN);
 
         if (word is KeywordToken(Keyword.LET) && PeekRange(1) is [KeywordToken(Keyword.NEW)])
             return new KeywordToken(word.Start, Next().End, Keyword.LET_NEW);

@@ -54,7 +54,8 @@ internal sealed class ParseUnaries : IParsingStep
                 Keyword.ORD         => new OrdinalOperator(operand),
                 Keyword.REF         => new RefOperator(operand),
                 Keyword.VAL         => new ValOperator(operand),
-                Keyword.VAL_VAL     => new ValValOperator(operand),
+                Keyword.LVAL        => new LvalOperator(operand),
+                Keyword.RVAL        => new RvalOperator(operand),
                 Keyword.NEW         => new NewOperator(operand),
                 Keyword.CONST_NEW   => new ConstNewOperator(operand),
                 Keyword.DELETE      => new DeleteOperator(operand),
@@ -143,7 +144,8 @@ internal sealed class ParseUnaries : IParsingStep
             Keyword.ORD or
             Keyword.REF or
             Keyword.VAL or
-            Keyword.VAL_VAL or
+            Keyword.LVAL or
+            Keyword.RVAL or
             Keyword.NEW or
             Keyword.CONST_NEW or
             Keyword.DELETE or

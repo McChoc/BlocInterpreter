@@ -4,11 +4,11 @@ using Bloc.Values;
 
 namespace Bloc.Expressions.Operators;
 
-internal sealed record ValValOperator : IExpression
+internal sealed record RvalOperator : IExpression
 {
     private readonly IExpression _operand;
 
-    internal ValValOperator(IExpression operand)
+    internal RvalOperator(IExpression operand)
     {
         _operand = operand;
     }

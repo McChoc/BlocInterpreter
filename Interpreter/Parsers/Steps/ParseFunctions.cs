@@ -169,7 +169,7 @@ internal sealed class ParseFunctions : IParsingStep
 
                     type = FunctionType.Generator;
                 }
-                else if (tokens[j] is SymbolToken(Keyword.VAL))
+                else if (tokens[j] is KeywordToken(Keyword.VAL))
                 {
                     if (mode == CaptureMode.Value)
                         throw new SyntaxError(tokens[j].Start, tokens[j].End, $"'{Keyword.VAL}' modifier doubled");
@@ -179,7 +179,7 @@ internal sealed class ParseFunctions : IParsingStep
 
                     mode = CaptureMode.Value;
                 }
-                else if (tokens[j] is SymbolToken(Keyword.REF))
+                else if (tokens[j] is KeywordToken(Keyword.REF))
                 {
                     if (mode == CaptureMode.Value)
                         throw new SyntaxError(tokens[j].Start, tokens[j].End, "multiple capture modifier");

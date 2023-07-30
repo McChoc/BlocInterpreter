@@ -68,6 +68,7 @@ internal static class Keyword
     [HardKeyword] internal const string LET = "let";
     [HardKeyword] internal const string LOCK = "lock";
     [HardKeyword] internal const string LOOP = "loop";
+    [HardKeyword] internal const string LVAL = "lval";
     [HardKeyword] internal const string NAMEOF = "nameof";
     [HardKeyword] internal const string NEW = "new";
     [HardKeyword] internal const string NEXT = "next";
@@ -79,6 +80,7 @@ internal static class Keyword
     [HardKeyword] internal const string REF = "ref";
     [HardKeyword] internal const string REPEAT = "repeat";
     [HardKeyword] internal const string RETURN = "return";
+    [HardKeyword] internal const string RVAL = "rval";
     [HardKeyword] internal const string SELECT = "select";
     [HardKeyword] internal const string THROW = "throw";
     [HardKeyword] internal const string TRY = "try";
@@ -96,7 +98,6 @@ internal static class Keyword
 
     #region Composite Keywords
 
-    [CompositeKeyword] internal const string VAL_VAL = $"{VAL} {VAL}";
     [CompositeKeyword] internal const string IS_NOT = $"{IS} {NOT}";
     [CompositeKeyword] internal const string NOT_IN = $"{NOT} {IN}";
     [CompositeKeyword] internal const string LET_NEW = $"{LET} {NEW}";

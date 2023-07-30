@@ -1,6 +1,5 @@
 ﻿using Bloc.Memory;
 using Bloc.Results;
-using Bloc.Utils.Helpers;
 using Bloc.Values;
 
 namespace Bloc.Expressions.Operators;
@@ -18,9 +17,9 @@ internal sealed record ValOperator : IExpression
     {
         var value = _operand.Evaluate(call).Value;
 
-        if (value is not Reference)
+        if (value is not Reference reference)
             throw new Throw("The 'val' operator can only be used on references");
 
-        return ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit);
+        return reference.Pointer;
     }
 }
