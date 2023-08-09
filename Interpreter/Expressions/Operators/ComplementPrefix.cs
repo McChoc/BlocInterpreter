@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
-using Bloc.Memory;
+﻿using Bloc.Memory;
+using Bloc.Patterns;
 using Bloc.Results;
 using Bloc.Utils.Helpers;
-using Bloc.Values;
+using Bloc.Values.Behaviors;
+using Bloc.Values.Core;
+using Bloc.Values.Types;
 
 namespace Bloc.Expressions.Operators;
 
@@ -26,30 +28,24 @@ internal sealed record ComplementPrefix : IExpression
     {
         return value switch
         {
-            INumeric scalar => ComplementScalar(scalar),
-            Type type => ComplementType(type),
+            INumeric numeric => ComplementNumeric(numeric),
+            IPattern pattern => ComplementPattern(pattern),
 
             _ => throw new Throw($"Cannot apply operator '~~' on type {value.GetTypeName()}")
         };
     }
 
-    private static (Number, Number) ComplementScalar(INumeric scalar)
+    private static (Number, Number) ComplementNumeric(INumeric numeric)
     {
-        var number = new Number(~scalar.GetInt());
+        var number = new Number(~numeric.GetInt());
 
         return (number, number);
     }
 
-    private static (Type, Type) ComplementType(Type value)
+    private static (Pattern, Pattern) ComplementPattern(IPattern pattern)
     {
-        var types = new HashSet<ValueType>();
+        var result = new Pattern(new NotPattern(pattern.GetRoot()));
 
-        foreach (ValueType type in System.Enum.GetValues(typeof(ValueType)))
-            if (!value.Value.Contains(type))
-                types.Add(type);
-
-        value = new Type(types);
-
-        return (value, value);
+        return (result, result);
     }
 }

@@ -4,7 +4,9 @@ using System.Text;
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Utils.Helpers;
-using Bloc.Values;
+using Bloc.Values.Behaviors;
+using Bloc.Values.Core;
+using Bloc.Values.Types;
 
 namespace Bloc.Expressions.Operators;
 
@@ -31,24 +33,24 @@ internal sealed record MultiplicationOperator : IExpression
     {
         return (a, b) switch
         {
-            (INumeric left, INumeric right) => MultiplyScalars(left, right),
-            (String @string, INumeric scalar) => MultiplyString(@string, scalar),
-            (INumeric scalar, String @string) => MultiplyString(@string, scalar),
-            (Array array, INumeric scalar) => Multiply(array, scalar),
-            (INumeric scalar, Array array) => Multiply(array, scalar),
+            (INumeric left, INumeric right) => MultiplyNumerics(left, right),
+            (String @string, INumeric numeric) => MultiplyString(@string, numeric),
+            (INumeric numeric, String @string) => MultiplyString(@string, numeric),
+            (Array array, INumeric numeric) => MultiplyArray(array, numeric),
+            (INumeric numeric, Array array) => MultiplyArray(array, numeric),
 
             _ => throw new Throw($"Cannot apply operator '*' on operands of types {a.GetTypeName()} and {b.GetTypeName()}"),
         };
     }
 
-    private static Number MultiplyScalars(INumeric left, INumeric right)
+    private static Number MultiplyNumerics(INumeric left, INumeric right)
     {
         return new Number(left.GetDouble() * right.GetDouble());
     }
 
-    private static String MultiplyString(String @string, INumeric scalar)
+    private static String MultiplyString(String @string, INumeric numeric)
     {
-        int count = scalar.GetInt();
+        int count = numeric.GetInt();
 
         if (count < 0)
             throw new Throw("You cannot multiply a string by a negative number");
@@ -61,9 +63,9 @@ internal sealed record MultiplicationOperator : IExpression
         return new String(builder.ToString());
     }
 
-    private static Array Multiply(Array array, INumeric scalar)
+    private static Array MultiplyArray(Array array, INumeric numeric)
     {
-        int count = scalar.GetInt();
+        int count = numeric.GetInt();
 
         if (count < 0)
             throw new Throw("You cannot multiply an array by a negative number");

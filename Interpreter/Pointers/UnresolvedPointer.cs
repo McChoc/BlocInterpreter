@@ -1,5 +1,5 @@
 ﻿using Bloc.Results;
-using Bloc.Values;
+using Bloc.Values.Core;
 using Bloc.Variables;
 
 namespace Bloc.Pointers;

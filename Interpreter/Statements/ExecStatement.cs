@@ -6,7 +6,7 @@ using Bloc.Parsers;
 using Bloc.Results;
 using Bloc.Scanners;
 using Bloc.Utils.Exceptions;
-using String = Bloc.Values.String;
+using String = Bloc.Values.Types.String;
 
 namespace Bloc.Statements;
 

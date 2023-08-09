@@ -1,7 +1,9 @@
 ﻿using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Utils.Helpers;
-using Bloc.Values;
+using Bloc.Values.Behaviors;
+using Bloc.Values.Core;
+using Bloc.Values.Types;
 
 namespace Bloc.Expressions.Operators;
 
@@ -23,8 +25,8 @@ internal sealed record PositiveOperator : IExpression
 
     private static Value Operation(Value value)
     {
-        if (value is INumeric scalar)
-            return new Number(scalar.GetDouble());
+        if (value is INumeric numeric)
+            return new Number(numeric.GetDouble());
 
         throw new Throw($"Cannot apply operator '+' on type {value.GetTypeName()}");
     }

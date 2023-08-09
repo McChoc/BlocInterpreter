@@ -1,4 +1,4 @@
-﻿using Bloc.Values;
+﻿using Bloc.Values.Types;
 
 namespace Bloc.Utils.Helpers;
 

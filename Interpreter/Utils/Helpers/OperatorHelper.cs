@@ -1,7 +1,11 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Bloc.Memory;
 using Bloc.Results;
-using Bloc.Values;
+using Bloc.Tokens;
+using Bloc.Utils.Constants;
+using Bloc.Values.Core;
+using Bloc.Values.Types;
 
 namespace Bloc.Utils.Helpers;
 
@@ -11,6 +15,19 @@ internal delegate Value BinaryOperation(Value left, Value right);
 
 internal static class OperatorHelper
 {
+    internal static bool IsBinary(List<Token> tokens, int index)
+    {
+        for (int i = index - 1; i >= 0; i--)
+        {
+            if (tokens[i] is SymbolToken(Symbol.INCREMENT or Symbol.DECREMENT or Symbol.BIT_INV or Symbol.BOOL_INV))
+                continue;
+
+            return tokens[i] is not SymbolToken and not KeywordToken;
+        }
+
+        return false;
+    }
+
     internal static Value RecursivelyCall(Value value, UnaryOperation operation, Call call)
     {
         value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit).Value;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Bloc.Commands;
 using Bloc.Memory;
 using Bloc.Results;
-using String = Bloc.Values.String;
+using String = Bloc.Values.Types.String;
 
 namespace Bloc.Statements;
 

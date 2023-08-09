@@ -1,5 +1,5 @@
 ﻿using Bloc.Memory;
-using Bloc.Values;
+using Bloc.Values.Core;
 
 namespace Bloc.Commands;
 

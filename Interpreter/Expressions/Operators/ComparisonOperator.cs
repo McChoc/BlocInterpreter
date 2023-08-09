@@ -2,8 +2,10 @@
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Utils.Helpers;
-using Bloc.Values;
-using String = Bloc.Values.String;
+using Bloc.Values.Behaviors;
+using Bloc.Values.Core;
+using Bloc.Values.Types;
+using String = Bloc.Values.Types.String;
 
 namespace Bloc.Expressions.Operators;
 

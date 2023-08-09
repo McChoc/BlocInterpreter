@@ -3,10 +3,10 @@ using System.Linq;
 using Bloc.Results;
 using Bloc.Utils.Extensions;
 using Bloc.Utils.Helpers;
-using Bloc.Values;
+using Bloc.Values.Core;
 using Bloc.Variables;
-using Array = Bloc.Values.Array;
-using Range = Bloc.Values.Range;
+using Array = Bloc.Values.Types.Array;
+using Range = Bloc.Values.Types.Range;
 
 namespace Bloc.Pointers;
 

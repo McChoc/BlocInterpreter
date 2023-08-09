@@ -31,11 +31,16 @@ internal static class Keyword
     [LiteralKeyword] internal const string REFERENCE = "reference";
     [LiteralKeyword] internal const string EXTERN = "extern";
     [LiteralKeyword] internal const string TYPE = "type";
+    [LiteralKeyword] internal const string PATTERN = "pattern";
+
+    [LiteralKeyword] internal const string ANY = "any";
+    [LiteralKeyword] internal const string NONE = "none";
 
     #endregion
 
     #region Soft Keywords
 
+    [SoftKeyword] internal const string DISCARD = "_";
     [SoftKeyword] internal const string ASYNC = "async";
     [SoftKeyword] internal const string GENERATOR = "generator";
     [SoftKeyword] internal const string UNCHECKED = "unchecked";
@@ -47,10 +52,12 @@ internal static class Keyword
     [HardKeyword] internal const string AS = "as";
     [HardKeyword] internal const string AWAIT = "await";
     [HardKeyword] internal const string BREAK = "break";
+    [HardKeyword] internal const string CASE = "case";
     [HardKeyword] internal const string CATCH = "catch";
     [HardKeyword] internal const string CHR = "chr";
     [HardKeyword] internal const string CONST = "const";
     [HardKeyword] internal const string CONTINUE = "continue";
+    [HardKeyword] internal const string DEFAULT = "default";
     [HardKeyword] internal const string DELETE = "delete";
     [HardKeyword] internal const string DO = "do";
     [HardKeyword] internal const string ELSE = "else";
@@ -69,6 +76,7 @@ internal static class Keyword
     [HardKeyword] internal const string LOCK = "lock";
     [HardKeyword] internal const string LOOP = "loop";
     [HardKeyword] internal const string LVAL = "lval";
+    [HardKeyword] internal const string MATCH = "match";
     [HardKeyword] internal const string NAMEOF = "nameof";
     [HardKeyword] internal const string NEW = "new";
     [HardKeyword] internal const string NEXT = "next";
@@ -82,6 +90,7 @@ internal static class Keyword
     [HardKeyword] internal const string RETURN = "return";
     [HardKeyword] internal const string RVAL = "rval";
     [HardKeyword] internal const string SELECT = "select";
+    [HardKeyword] internal const string SWITCH = "switch";
     [HardKeyword] internal const string THROW = "throw";
     [HardKeyword] internal const string TRY = "try";
     [HardKeyword] internal const string TYPEOF = "typeof";

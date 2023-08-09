@@ -1,5 +1,6 @@
 ﻿using Bloc.Memory;
-using Bloc.Values;
+using Bloc.Values.Core;
+using Bloc.Values.Types;
 
 namespace Bloc.Expressions.Literals;
 

@@ -3,7 +3,7 @@ using System.Linq;
 using Bloc.Commands.Arguments;
 using Bloc.Memory;
 using Bloc.Results;
-using Bloc.Values;
+using Bloc.Values.Core;
 
 namespace Bloc.Commands;
 

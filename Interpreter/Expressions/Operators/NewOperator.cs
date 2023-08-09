@@ -1,6 +1,7 @@
 ﻿using Bloc.Memory;
 using Bloc.Pointers;
-using Bloc.Values;
+using Bloc.Values.Core;
+using Bloc.Values.Types;
 using Bloc.Variables;
 
 namespace Bloc.Expressions.Operators;

@@ -45,7 +45,7 @@ internal class CommandParser
         {
             IKeywordToken word
                 => new LiteralArgument(word.Text),
-            LiteralToken or NumberToken or StringToken or ArrayToken or StructToken or GroupToken or IdentifierToken
+            LiteralToken or NumberToken or StringToken or BracesToken or BracketsToken or ParenthesesToken or IdentifierToken
                 => new ExpressionArgument(ExpressionParser.Parse(new() { token }), unpack),
             _   => throw new SyntaxError(token.Start, token.End, "Unexpected token")
         };

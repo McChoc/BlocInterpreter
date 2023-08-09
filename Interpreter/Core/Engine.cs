@@ -9,7 +9,7 @@ using Bloc.Results;
 using Bloc.Scanners;
 using Bloc.Statements;
 using Bloc.Utils.Helpers;
-using Bloc.Values;
+using Bloc.Values.Core;
 
 namespace Bloc.Core;
 
@@ -67,16 +67,16 @@ public sealed class Engine
             switch (statements[i].Execute(GlobalCall).FirstOrDefault())
             {
                 case Continue:
-                    throw new Throw("A continue statement can only be used inside a loop");
+                    return new Throw("A continue statement can only be used inside a loop");
 
                 case Break:
-                    throw new Throw("A break statement can only be used inside a loop");
+                    return new Throw("A break statement can only be used inside a loop");
 
                 case Yield:
-                    throw new Throw("A yield statement can only be used inside a generator");
+                    return new Throw("A yield statement can only be used inside a generator");
 
                 case Return:
-                    throw new Throw("A return statement can only be used inside a function");
+                    return new Throw("A return statement can only be used inside a function");
 
                 case Throw @throw:
                     return @throw;

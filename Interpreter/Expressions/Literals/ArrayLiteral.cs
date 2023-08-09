@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Bloc.Expressions.SubExpressions;
+using Bloc.Expressions.Literals.ArrayElements;
 using Bloc.Memory;
-using Bloc.Values;
-using Array = Bloc.Values.Array;
+using Bloc.Values.Core;
+using Array = Bloc.Values.Types.Array;
 
 namespace Bloc.Expressions.Literals;
 

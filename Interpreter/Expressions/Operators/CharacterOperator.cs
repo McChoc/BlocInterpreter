@@ -1,7 +1,9 @@
 ﻿using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Utils.Helpers;
-using Bloc.Values;
+using Bloc.Values.Behaviors;
+using Bloc.Values.Core;
+using Bloc.Values.Types;
 
 namespace Bloc.Expressions.Operators;
 
@@ -20,9 +22,9 @@ internal sealed record CharacterOperator : IExpression
 
         value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit).Value;
 
-        if (value is not INumeric scalar)
+        if (value is not INumeric numeric)
             throw new Throw($"Cannot apply operator 'chr' on type {value.GetTypeName()}");
 
-        return new String(((char)scalar.GetInt()).ToString());
+        return new String(((char)numeric.GetInt()).ToString());
     }
 }

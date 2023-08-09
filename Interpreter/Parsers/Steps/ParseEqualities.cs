@@ -5,27 +5,21 @@ using Bloc.Tokens;
 using Bloc.Utils.Constants;
 using Bloc.Utils.Exceptions;
 using Bloc.Utils.Extensions;
+using Bloc.Utils.Helpers;
 
 namespace Bloc.Parsers.Steps;
 
-internal sealed class ParseEqualities : IParsingStep
+internal sealed class ParseEqualities : ParsingStep
 {
-    public IParsingStep? NextStep { get; init; }
+    public ParseEqualities(ParsingStep? nextStep)
+        : base(nextStep) { }
 
-    public ParseEqualities(IParsingStep? nextStep)
-    {
-        NextStep = nextStep;
-    }
-
-    public IExpression Parse(List<Token> tokens)
+    internal override IExpression Parse(List<Token> tokens)
     {
         for (var i = tokens.Count - 1; i >= 0; i--)
         {
-            if (IsEquality(tokens[i], out var @operator))
+            if (IsEquality(tokens[i], out var @operator) && OperatorHelper.IsBinary(tokens, i))
             {
-                if (i == 0)
-                    throw new SyntaxError(@operator!.Start, @operator.End, "Missing the left part of equality");
-
                 if (i > tokens.Count - 1)
                     throw new SyntaxError(@operator!.Start, @operator.End, "Missing the right part of equality");
 

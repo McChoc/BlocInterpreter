@@ -4,9 +4,9 @@ using System.Linq;
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
-using Bloc.Values;
-using Tuple = Bloc.Values.Tuple;
-using Void = Bloc.Values.Void;
+using Bloc.Values.Core;
+using Tuple = Bloc.Values.Types.Tuple;
+using Void = Bloc.Values.Types.Void;
 
 namespace Bloc.Expressions.Literals;
 

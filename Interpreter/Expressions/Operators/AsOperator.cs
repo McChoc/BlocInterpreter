@@ -1,17 +1,9 @@
-﻿using System;
-using System.Linq;
+﻿using System.Collections.Generic;
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Utils.Helpers;
-using Bloc.Values;
-using Void = Bloc.Values.Void;
-using Range = Bloc.Values.Range;
-using String = Bloc.Values.String;
-using Array = Bloc.Values.Array;
-using Tuple = Bloc.Values.Tuple;
-using Type = Bloc.Values.Type;
-using ValueType = Bloc.Values.ValueType;
-using System.Collections.Generic;
+using Bloc.Values.Core;
+using Bloc.Values.Types;
 
 namespace Bloc.Expressions.Operators;
 
@@ -41,12 +33,9 @@ internal sealed record AsOperator : IExpression
         if (right is not Type type)
             throw new Throw($"Cannot apply operator 'as' on operands of types {left.GetTypeName()} and {right.GetTypeName()}");
 
-        if (type.Value.Count != 1)
-            throw new Throw("Cannot apply operator 'as' on a composite type");
-
         try
         {
-            return type.Value.First() switch
+            return type.Value switch
             {
                 ValueType.Void => Void.Construct(values),
                 ValueType.Null => Null.Construct(values),
@@ -63,8 +52,9 @@ internal sealed record AsOperator : IExpression
                 ValueType.Reference => Reference.Construct(values, call),
                 ValueType.Extern => Extern.Construct(values),
                 ValueType.Type => Type.Construct(values),
+                ValueType.Pattern => Pattern.Construct(values),
 
-                _ => throw new Exception()
+                _ => throw new System.Exception()
             };
         }
         catch (Throw)

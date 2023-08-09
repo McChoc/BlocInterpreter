@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Bloc.Expressions.SubExpressions;
+using Bloc.Expressions.Literals.StructMembers;
 using Bloc.Memory;
 using Bloc.Results;
-using Bloc.Values;
+using Bloc.Values.Core;
+using Bloc.Values.Types;
 
 namespace Bloc.Expressions.Literals;
 

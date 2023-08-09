@@ -3,20 +3,17 @@ using Bloc.Expressions;
 using Bloc.Expressions.Operators;
 using Bloc.Tokens;
 using Bloc.Utils.Constants;
+using Bloc.Utils.Exceptions;
 using Bloc.Utils.Extensions;
 
 namespace Bloc.Parsers.Steps;
 
-internal sealed class ParseConditionals : IParsingStep
+internal sealed class ParseConditionals : ParsingStep
 {
-    public IParsingStep? NextStep { get; init; }
+    public ParseConditionals(ParsingStep? nextStep)
+        : base(nextStep) { }
 
-    public ParseConditionals(IParsingStep? nextStep)
-    {
-        NextStep = nextStep;
-    }
-
-    public IExpression Parse(List<Token> tokens)
+    internal override IExpression Parse(List<Token> tokens)
     {
         for (var i = 0; i < tokens.Count; i++)
         {
@@ -43,6 +40,8 @@ internal sealed class ParseConditionals : IParsingStep
                         }
                     }
                 }
+
+                throw new SyntaxError(tokens[^1].Start, tokens[^1].End, "Missing ':'");
             }
         }
 

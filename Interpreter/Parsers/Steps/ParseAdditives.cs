@@ -6,36 +6,21 @@ using Bloc.Tokens;
 using Bloc.Utils.Constants;
 using Bloc.Utils.Exceptions;
 using Bloc.Utils.Extensions;
+using Bloc.Utils.Helpers;
 
 namespace Bloc.Parsers.Steps;
 
-internal sealed class ParseAdditives : IParsingStep
+internal sealed class ParseAdditives : ParsingStep
 {
-    public IParsingStep? NextStep { get; init; }
+    public ParseAdditives(ParsingStep? nextStep)
+        : base(nextStep) { }
 
-    public ParseAdditives(IParsingStep? nextStep)
-    {
-        NextStep = nextStep;
-    }
-
-    public IExpression Parse(List<Token> tokens)
+    internal override IExpression Parse(List<Token> tokens)
     {
         for (var i = tokens.Count - 1; i >= 0; i--)
         {
-            if (IsAdditive(tokens[i], out var @operator))
+            if (IsAdditive(tokens[i], out var @operator) && OperatorHelper.IsBinary(tokens, i))
             {
-                if (i == 0)
-                    continue;
-
-                if (i == 1 &&
-                    tokens[0] is SymbolToken or KeywordToken)
-                    continue;
-
-                if (i >= 2 &&
-                    tokens[i - 1] is SymbolToken or KeywordToken &&
-                    tokens[i - 2] is not IIdentifierToken)
-                    continue;
-
                 if (i == tokens.Count - 1)
                     throw new SyntaxError(@operator!.Start, @operator.End, "Missing right part of additive");
 

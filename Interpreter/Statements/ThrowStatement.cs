@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
-using Void = Bloc.Values.Void;
+using Void = Bloc.Values.Types.Void;
 
 namespace Bloc.Statements;
 

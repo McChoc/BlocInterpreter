@@ -2,8 +2,8 @@
 using System.Linq;
 using Bloc.Memory;
 using Bloc.Results;
-using Bloc.Values;
-using Tuple = Bloc.Values.Tuple;
+using Bloc.Values.Core;
+using Tuple = Bloc.Values.Types.Tuple;
 
 namespace Bloc.Identifiers;
 

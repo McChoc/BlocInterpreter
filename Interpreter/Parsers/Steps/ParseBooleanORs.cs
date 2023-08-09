@@ -8,16 +8,12 @@ using Bloc.Utils.Extensions;
 
 namespace Bloc.Parsers.Steps;
 
-internal sealed class ParseBooleanORs : IParsingStep
+internal sealed class ParseBooleanORs : ParsingStep
 {
-    public IParsingStep? NextStep { get; init; }
+    public ParseBooleanORs(ParsingStep? nextStep)
+        : base(nextStep) { }
 
-    public ParseBooleanORs(IParsingStep? nextStep)
-    {
-        NextStep = nextStep;
-    }
-
-    public IExpression Parse(List<Token> tokens)
+    internal override IExpression Parse(List<Token> tokens)
     {
         for (var i = tokens.Count - 1; i >= 0; i--)
         {

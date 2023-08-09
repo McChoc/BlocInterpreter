@@ -1,7 +1,9 @@
 ﻿using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Utils.Helpers;
-using Bloc.Values;
+using Bloc.Values.Behaviors;
+using Bloc.Values.Core;
+using Bloc.Values.Types;
 
 namespace Bloc.Expressions.Literals;
 
@@ -28,10 +30,10 @@ internal sealed record RangeLiteral : IExpression
 
             value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit).Value;
 
-            if (value is not INumeric scalar)
-                throw new Throw($"Cannot apply operator ':' on type {value.GetType().ToString().ToLower()}");
+            if (value is not INumeric numeric)
+                throw new Throw($"Cannot apply operator ':' on type {value.GetTypeName()}");
 
-            start = scalar.GetInt();
+            start = numeric.GetInt();
         }
 
         if (_end is not null)
@@ -40,10 +42,10 @@ internal sealed record RangeLiteral : IExpression
 
             value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit).Value;
 
-            if (value is not INumeric scalar)
-                throw new Throw($"Cannot apply operator ':' on type {value.GetType().ToString().ToLower()}");
+            if (value is not INumeric numeric)
+                throw new Throw($"Cannot apply operator ':' on type {value.GetTypeName()}");
 
-            end = scalar.GetInt();
+            end = numeric.GetInt();
         }
 
         if (_step is not null)
@@ -52,10 +54,10 @@ internal sealed record RangeLiteral : IExpression
 
             value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit).Value;
 
-            if (value is not INumeric scalar)
-                throw new Throw($"Cannot apply operator ':' on type {value.GetType().ToString().ToLower()}");
+            if (value is not INumeric numeric)
+                throw new Throw($"Cannot apply operator ':' on type {value.GetTypeName()}");
 
-            step = scalar.GetInt();
+            step = numeric.GetInt();
 
             if (step == 0)
                 throw new Throw("A range cannot have a step of 0");

@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Bloc.Tokens;
 
-internal sealed class GroupToken : Token
+internal abstract class GroupToken : Token
 {
     public List<Token> Tokens { get; }
 
@@ -22,6 +22,7 @@ internal sealed class GroupToken : Token
     public sealed override bool Equals(object other)
     {
         return other is GroupToken token &&
+            GetType() == token.GetType() &&
             Tokens.SequenceEqual(token.Tokens);
     }
 }

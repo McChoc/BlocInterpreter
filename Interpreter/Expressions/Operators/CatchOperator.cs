@@ -1,6 +1,6 @@
 ﻿using Bloc.Memory;
 using Bloc.Results;
-using Bloc.Values;
+using Bloc.Values.Core;
 
 namespace Bloc.Expressions.Operators;
 

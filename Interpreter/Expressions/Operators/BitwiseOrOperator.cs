@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using Bloc.Memory;
+﻿using Bloc.Memory;
+using Bloc.Patterns;
 using Bloc.Results;
 using Bloc.Utils.Helpers;
-using Bloc.Values;
-using Type = Bloc.Values.Type;
-using ValueType = Bloc.Values.ValueType;
+using Bloc.Values.Behaviors;
+using Bloc.Values.Core;
+using Bloc.Values.Types;
 
 namespace Bloc.Expressions.Operators;
 
@@ -33,7 +32,7 @@ internal sealed record BitwiseOrOperator : IExpression
         return (a, b) switch
         {
             (INumeric left, INumeric right) => OrScalars(left, right),
-            (Type left, Type right) => OrTypes(left, right),
+            (IPattern left, IPattern right) => OrPatterns(left, right),
 
             _ => throw new Throw($"Cannot apply operator '|' on operands of types {a.GetTypeName()} and {b.GetTypeName()}"),
         };
@@ -44,14 +43,8 @@ internal sealed record BitwiseOrOperator : IExpression
         return new Number(left.GetInt() | right.GetInt());
     }
 
-    private static Type OrTypes(Type left, Type right)
+    private static Pattern OrPatterns(IPattern left, IPattern right)
     {
-        var types = new HashSet<ValueType>();
-
-        foreach (ValueType type in Enum.GetValues(typeof(ValueType)))
-            if (left.Value.Contains(type) || right.Value.Contains(type))
-                types.Add(type);
-
-        return new Type(types);
+        return new Pattern(new OrPattern(left.GetRoot(), right.GetRoot()));
     }
 }

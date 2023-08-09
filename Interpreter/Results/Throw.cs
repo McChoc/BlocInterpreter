@@ -1,6 +1,6 @@
 ﻿using System;
-using Bloc.Values;
-using String = Bloc.Values.String;
+using Bloc.Values.Core;
+using String = Bloc.Values.Types.String;
 
 namespace Bloc.Results;
 

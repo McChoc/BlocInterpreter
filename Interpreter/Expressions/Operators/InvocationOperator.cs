@@ -4,8 +4,10 @@ using System.Linq;
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Utils.Helpers;
-using Bloc.Values;
-using Array = Bloc.Values.Array;
+using Bloc.Values.Behaviors;
+using Bloc.Values.Core;
+using Bloc.Values.Types;
+using Array = Bloc.Values.Types.Array;
 
 namespace Bloc.Expressions.Operators;
 

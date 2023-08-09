@@ -34,7 +34,7 @@ internal static class IdentifierParser
             case IIdentifierToken token:
                 return new NameIdentifier(token.Text);
 
-            case GroupToken token:
+            case ParenthesesToken token:
                 var identifier = Parse(token.Tokens);
 
                 if (identifier is not TupleIdentifier)

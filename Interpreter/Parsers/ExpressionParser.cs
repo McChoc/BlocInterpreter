@@ -7,27 +7,29 @@ namespace Bloc.Parsers;
 
 internal static class ExpressionParser
 {
-    private static IParsingStep FirstStep { get; }
+    private static ParsingStep FirstStep { get; }
 
     static ExpressionParser()
     {
-        IParsingStep? step = null;
-        
+        ParsingStep? step = null;
+
         step = new ParseAtoms(step);
         step = new ParsePrimaries(step);
         step = new ParseUnaries(step);
-        step = new ParseRanges(step);
+        step = new ParseSwitchExpressions(step);
         step = new ParseQueries(step);
+        step = new ParseRanges(step);
         step = new ParseExponentiations(step);
         step = new ParseMultiplicatives(step);
         step = new ParseAdditives(step);
         step = new ParseShifts(step);
-        step = new ParseComparisons(step);
-        step = new ParseRelations(step);
-        step = new ParseEqualities(step);
         step = new ParseBitwiseANDs(step);
         step = new ParseBitwiseXORs(step);
         step = new ParseBitwiseORs(step);
+        step = new ParseMatchAssignments(step);
+        step = new ParseComparisons(step);
+        step = new ParseRelations(step);
+        step = new ParseEqualities(step);
         step = new ParseBooleanANDs(step);
         step = new ParseBooleanXORs(step);
         step = new ParseBooleanORs(step);
@@ -35,7 +37,7 @@ internal static class ExpressionParser
         step = new ParseCoalescings(step);
         step = new ParseConditionals(step);
         step = new ParseAssignments(step);
-        step = new ParseFunctions(step);
+        step = new ParseFuncs(step);
         step = new ParseTuples(step);
 
         FirstStep = step;

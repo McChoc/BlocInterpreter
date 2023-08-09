@@ -8,16 +8,12 @@ using Bloc.Utils.Extensions;
 
 namespace Bloc.Parsers.Steps;
 
-internal sealed class ParseBitwiseORs : IParsingStep
+internal sealed class ParseBitwiseORs : ParsingStep
 {
-    public IParsingStep? NextStep { get; init; }
+    public ParseBitwiseORs(ParsingStep? nextStep)
+        : base(nextStep) { }
 
-    public ParseBitwiseORs(IParsingStep? nextStep)
-    {
-        NextStep = nextStep;
-    }
-
-    public IExpression Parse(List<Token> tokens)
+    internal override IExpression Parse(List<Token> tokens)
     {
         for (var i = tokens.Count - 1; i >= 0; i--)
         {

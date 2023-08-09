@@ -9,16 +9,12 @@ using Bloc.Utils.Extensions;
 
 namespace Bloc.Parsers.Steps;
 
-internal sealed class ParsePrimaries : IParsingStep
+internal sealed class ParsePrimaries : ParsingStep
 {
-    public IParsingStep? NextStep { get; init; }
+    public ParsePrimaries(ParsingStep? nextStep)
+        : base(nextStep) { }
 
-    public ParsePrimaries(IParsingStep? nextStep)
-    {
-        NextStep = nextStep;
-    }
-
-    public IExpression Parse(List<Token> tokens)
+    internal override IExpression Parse(List<Token> tokens)
     {
         var expression = NextStep!.Parse(tokens.GetRange(0, 1));
 
@@ -36,15 +32,15 @@ internal sealed class ParsePrimaries : IParsingStep
 
                 i++;
             }
-            else if (tokens[i] is IndexerToken indexer)
+            else if (tokens[i] is BracketsToken brackets)
             {
-                var index = ExpressionParser.Parse(indexer.Tokens);
+                var index = ExpressionParser.Parse(brackets.Tokens);
 
                 expression = new IndexerOperator(expression, index);
             }
-            else if (tokens[i] is GroupToken group)
+            else if (tokens[i] is ParenthesesToken parentheses)
             {
-                var content = group.Tokens;
+                var content = parentheses.Tokens;
 
                 var arguments = new List<InvocationOperator.Argument>();
 

@@ -19,7 +19,7 @@ internal static class Symbol
     internal const string DECREMENT = "--";
     internal const string SHIFT_L = "<<";
     internal const string SHIFT_R = ">>";
-    internal const string TILDE = "~";
+    internal const string BIT_NOT = "~";
     internal const string BIT_AND = "&";
     internal const string BIT_OR = "|";
     internal const string BIT_XOR = "^";
@@ -31,6 +31,7 @@ internal static class Symbol
     internal const string BOOL_INV = "!!";
     internal const string COALESCE_NULL = "??";
     internal const string COALESCE_VOID = "???";
+    internal const string MATCH_ASSIGN = "->";
     internal const string ASSIGN = "=";
     internal const string ASSIGN_SUM = "+=";
     internal const string ASSIGN_DIF = "-=";

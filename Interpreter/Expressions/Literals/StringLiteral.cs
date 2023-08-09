@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Bloc.Expressions.SubExpressions;
 using Bloc.Memory;
-using Bloc.Values;
-using String = Bloc.Values.String;
+using Bloc.Values.Core;
+using String = Bloc.Values.Types.String;
 
 namespace Bloc.Expressions.Literals;
 
@@ -50,4 +49,6 @@ internal sealed class StringLiteral : IExpression
             _baseString == literal._baseString &&
             _interpolations.SequenceEqual(literal._interpolations);
     }
+
+    internal sealed record Interpolation(int Index, IExpression Expression);
 }

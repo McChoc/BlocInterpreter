@@ -472,35 +472,29 @@ internal sealed class Tokenizer : ITokenProvider
 
     private Token GetParentheses()
     {
-        var start = _index;
+        int start = _index;
         var text = GetBlock();
         var tokens = Tokenize(text, start + _offset).ToList();
 
-        return new GroupToken(start, _index, tokens);
+        return new ParenthesesToken(start, _index, tokens);
     }
 
     private Token GetBrackets()
     {
-        var start = _index;
+        int start = _index;
         var text = GetBlock();
         var tokens = Tokenize(text, start + _offset).ToList();
 
-        return new IndexerToken(start, _index, tokens);
+        return new BracketsToken(start, _index, tokens);
     }
 
     private Token GetBraces()
     {
-        var start = _index;
+        int start = _index;
         var text = GetBlock();
         var tokens = Tokenize(text, start + _offset).ToList();
 
-        if (IsCodeBlock(tokens))
-            return new CodeBlockToken(start, _index, tokens);
-
-        if (IsStruct(tokens))
-            return new StructToken(start, _index, tokens);
-
-        return new ArrayToken(start, _index, tokens);
+        return new BracesToken(start, _index, tokens);
     }
 
     private string GetBlock()
@@ -513,8 +507,8 @@ internal sealed class Tokenizer : ITokenProvider
             _ => throw new Exception()
         };
 
-        var depth = 0;
-        var start = _index;
+        int depth = 0;
+        int start = _index;
 
         while (true)
         {
@@ -533,49 +527,5 @@ internal sealed class Tokenizer : ITokenProvider
         }
 
         return _code[(start + 1)..(_index - 1)];
-    }
-
-    private static bool IsStruct(List<Token> tokens)
-    {
-        var token = tokens.FirstOrDefault(x => x is SymbolToken(Symbol.COMMA or Symbol.ASSIGN or Symbol.UNPACK_ARRAY or Symbol.UNPACK_STRUCT));
-
-        return token is SymbolToken(Symbol.ASSIGN or Symbol.UNPACK_STRUCT);
-    }
-
-    private static bool IsCodeBlock(List<Token> tokens)
-    {
-        return tokens switch
-        {
-            [] => true,
-            [CodeBlockToken, ..] => true,
-            [KeywordToken token, ..] when IsControlFlowKeyword(token) || IsLoopKeyword (token) => true,
-            [WordToken(Keyword.UNCHECKED), KeywordToken token, ..] when IsLoopKeyword(token) => true,
-            [IIdentifierToken, SymbolToken(Symbol.COLON), CodeBlockToken, ..] => true,
-            [IIdentifierToken, SymbolToken(Symbol.COLON), KeywordToken token, ..] when IsControlFlowKeyword(token) || IsLoopKeyword(token) => true,
-            [IIdentifierToken, SymbolToken(Symbol.COLON), WordToken(Keyword.UNCHECKED), KeywordToken token, ..] when IsLoopKeyword(token) => true,
-            _ when tokens.Any(x => x is SymbolToken(Symbol.SEMICOLON)) => true,
-            _ => false,
-        };
-
-        static bool IsControlFlowKeyword(KeywordToken token)
-        {
-            return token.Text is
-                Keyword.IF or
-                Keyword.UNLESS or
-                Keyword.LOCK or
-                Keyword.TRY;
-        }
-
-        static bool IsLoopKeyword(KeywordToken token)
-        {
-            return token.Text is
-                Keyword.DO or
-                Keyword.WHILE or
-                Keyword.UNTIL or
-                Keyword.LOOP or
-                Keyword.REPEAT or
-                Keyword.FOR or
-                Keyword.FOREACH;
-        }
     }
 }

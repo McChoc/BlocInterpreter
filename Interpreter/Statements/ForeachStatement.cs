@@ -4,7 +4,7 @@ using Bloc.Expressions;
 using Bloc.Identifiers;
 using Bloc.Memory;
 using Bloc.Results;
-using Bloc.Values;
+using Bloc.Values.Types;
 
 namespace Bloc.Statements;
 

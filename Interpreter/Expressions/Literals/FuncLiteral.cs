@@ -1,18 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Bloc.Expressions.SubExpressions;
+using Bloc.Funcs;
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Statements;
-using Bloc.Values;
-using Void = Bloc.Values.Void;
+using Bloc.Values.Core;
+using Bloc.Values.Types;
+using Void = Bloc.Values.Types.Void;
 
 namespace Bloc.Expressions.Literals;
 
 internal sealed class FuncLiteral : IExpression
 {
-    private readonly FunctionType _type;
+    private readonly FuncType _type;
     private readonly CaptureMode _mode;
     private readonly Parameter? _argsContainer;
     private readonly Parameter? _kwargsContainer;
@@ -20,7 +21,7 @@ internal sealed class FuncLiteral : IExpression
     private readonly List<Statement> _statements;
 
     internal FuncLiteral(
-        FunctionType type,
+        FuncType type,
         CaptureMode mode,
         Parameter? argsContainer,
         Parameter? kwargsContainer,
@@ -80,4 +81,6 @@ internal sealed class FuncLiteral : IExpression
             _parameters.SequenceEqual(literal._parameters) &&
             _statements.SequenceEqual(literal._statements);
     }
+
+    internal sealed record Parameter(string Name, IExpression? Expression);
 }

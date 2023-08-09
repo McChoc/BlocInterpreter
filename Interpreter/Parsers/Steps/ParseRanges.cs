@@ -8,16 +8,12 @@ using Bloc.Utils.Extensions;
 
 namespace Bloc.Parsers.Steps;
 
-internal sealed class ParseRanges : IParsingStep
+internal sealed class ParseRanges : ParsingStep
 {
-    public IParsingStep? NextStep { get; init; }
+    public ParseRanges(ParsingStep? nextStep)
+        : base(nextStep) { }
 
-    public ParseRanges(IParsingStep? nextStep)
-    {
-        NextStep = nextStep;
-    }
-
-    public IExpression Parse(List<Token> tokens)
+    internal override IExpression Parse(List<Token> tokens)
     {
         var parts = tokens.Split(x => x is SymbolToken(Symbol.COLON));
 

@@ -4,7 +4,8 @@ using System.Linq;
 using Bloc.Core;
 using Bloc.Pointers;
 using Bloc.Results;
-using Bloc.Values;
+using Bloc.Values.Core;
+using Bloc.Values.Types;
 using Bloc.Variables;
 
 namespace Bloc.Memory;
@@ -95,43 +96,39 @@ public sealed class Call
 
     internal VariableCollection ValueCapture()
     {
-        var captures = new VariableCollection();
-
-        foreach (var scope in Scopes)
-        {
-            foreach (var (name, originalStack) in scope.Variables)
-            {
-                if (!captures.Variables.ContainsKey(name))
-                    captures.Variables.Add(name, new());
-
-                var stack = captures.Variables[name];
-
-                foreach (var variable in originalStack.Reverse())
-                    stack.Push(new(false, name, variable.Value.GetOrCopy(true), captures));
-            }
-        }
-
-        return captures;
+        return Capture(x => x.Value.GetOrCopy(true));
     }
 
     internal VariableCollection ReferenceCapture()
     {
+        return Capture(x => new Reference(new VariablePointer(x)));
+    }
+
+    private VariableCollection Capture(Func<StackVariable, Value> callback)
+    {
         var captures = new VariableCollection();
 
         foreach (var scope in Scopes)
-        {
-            foreach (var (name, originalStack) in scope.Variables)
-            {
-                if (!captures.Variables.ContainsKey(name))
-                    captures.Variables.Add(name, new());
+            Capture(scope, captures, callback);
 
-                var stack = captures.Variables[name];
+        Capture(Params, captures, callback);
 
-                foreach (var variable in originalStack.Reverse())
-                    stack.Push(new(false, name, new Reference(new VariablePointer(variable)), captures));
-            }
-        }
+        Capture(Captures, captures, callback);
 
         return captures;
+    }
+
+    private static void Capture(VariableCollection from, VariableCollection to, Func<StackVariable, Value> callback)
+    {
+        foreach (var (name, originalStack) in from.Variables)
+        {
+            if (!to.Variables.ContainsKey(name))
+                to.Variables.Add(name, new());
+
+            var stack = to.Variables[name];
+
+            foreach (var variable in originalStack.Reverse())
+                stack.Push(new(false, name, callback(variable), to));
+        }
     }
 }

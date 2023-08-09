@@ -1,4 +1,5 @@
-﻿using Bloc.Values;
+﻿using Bloc.Values.Core;
+using Bloc.Values.Types;
 
 namespace Bloc.Results;
 

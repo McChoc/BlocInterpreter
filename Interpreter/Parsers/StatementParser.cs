@@ -3,10 +3,12 @@ using System.Linq;
 using Bloc.Expressions;
 using Bloc.Scanners;
 using Bloc.Statements;
+using Bloc.Statements.Arms;
 using Bloc.Tokens;
 using Bloc.Utils.Constants;
 using Bloc.Utils.Exceptions;
 using Bloc.Utils.Extensions;
+using Bloc.Utils.Helpers;
 
 namespace Bloc.Parsers;
 
@@ -39,12 +41,19 @@ internal static class StatementParser
         var statement = provider.Peek() switch
         {
             SymbolToken(Symbol.SEMICOLON) => GetEmptyStatement(provider),
+
             SymbolToken(Symbol.SLASH) => GetCommandStatement(provider),
             KeywordToken(Keyword.EXEC) => GetExecStatement(provider),
+
             KeywordToken(Keyword.VAR) => GetVarStatement(provider, mask),
             KeywordToken(Keyword.CONST) => GetConstStatement(provider, mask),
+
             KeywordToken(Keyword.IF) => GetIfStatement(provider, false),
             KeywordToken(Keyword.UNLESS) => GetIfStatement(provider, true),
+            KeywordToken(Keyword.SWITCH) => GetSwitchStatement(provider),
+            KeywordToken(Keyword.TRY) => GetTryStatement(provider),
+            KeywordToken(Keyword.LOCK) => GetLockStatement(provider),
+
             KeywordToken(Keyword.DO) => GetDoWhileStatement(provider, check),
             KeywordToken(Keyword.WHILE) => GetWhileStatement(provider, check, false),
             KeywordToken(Keyword.UNTIL) => GetWhileStatement(provider, check, true),
@@ -52,15 +61,16 @@ internal static class StatementParser
             KeywordToken(Keyword.REPEAT) => GetRepeatStatement(provider, check),
             KeywordToken(Keyword.FOR) => GetForStatement(provider, check),
             KeywordToken(Keyword.FOREACH) => GetForeachStatement(provider, check),
-            KeywordToken(Keyword.LOCK) => GetLockStatement(provider),
-            KeywordToken(Keyword.TRY) => GetTryStatement(provider),
+
             KeywordToken(Keyword.THROW) => GetThrowStatement(provider),
             KeywordToken(Keyword.RETURN) => GetReturnStatement(provider),
             KeywordToken(Keyword.YIELD) => GetYieldStatement(provider),
             KeywordToken(Keyword.CONTINUE) => GetContinueStatement(provider),
             KeywordToken(Keyword.BREAK) => GetBreakStatement(provider),
             KeywordToken(Keyword.GOTO) => GetGotoStatement(provider),
-            CodeBlockToken => GetStatementBlock(provider),
+
+            BracesToken token when CodeBlockHelper.IsCodeBlock(token.Tokens) => GetStatementBlock(provider),
+
             _ => GetExpressionStatement(provider)
         };
 
@@ -117,7 +127,7 @@ internal static class StatementParser
 
     private static Statement GetStatementBlock(ITokenProvider provider)
     {
-        var block = (CodeBlockToken)provider.Next();
+        var block = (BracesToken)provider.Next();
         var collection = new TokenCollection(block.Tokens);
         var statements = Parse(collection);
 
@@ -255,6 +265,59 @@ internal static class StatementParser
         };
     }
 
+    private static Statement GetSwitchStatement(ITokenProvider provider)
+    {
+        var keyword = provider.Next();
+        var expression = GetExpression(provider, keyword);
+
+        if (!provider.HasNext() || provider.Next() is not BracesToken braces)
+            throw new SyntaxError(keyword.Start, keyword.End, $"Missing '{Symbol.BRACE_L}'");
+
+        var arms = new List<IArm>();
+        Statement? @default = null;
+
+        var subProvider = new TokenCollection(braces.Tokens);
+
+        while (subProvider.HasNext())
+        {
+            var armKeyword = subProvider.Next();
+
+            switch (armKeyword)
+            {
+                case KeywordToken(Keyword.CASE):
+                    var caseExpression = GetExpression(subProvider, armKeyword);
+                    var caseStatement = GetStatement(subProvider);
+
+                    arms.Add(new Case(caseExpression, caseStatement));
+                    break;
+
+                case KeywordToken(Keyword.MATCH):
+                    var matchExpression = GetExpression(subProvider, armKeyword);
+                    var matchStatement = GetStatement(subProvider);
+
+                    arms.Add(new Match(matchExpression, matchStatement));
+                    break;
+
+                case KeywordToken(Keyword.DEFAULT):
+                    if (@default is not null)
+                        throw new SyntaxError(armKeyword.Start, armKeyword.End, "A switch statement can only have a single default statement");
+
+                    @default = GetStatement(subProvider);
+                    break;
+
+                default:
+                    throw new SyntaxError(armKeyword.Start, armKeyword.End, "Unexpected token");
+            }
+        }
+
+        return new SwitchStatement()
+        {
+            Expression = expression,
+            Arms = arms,
+            Default = @default
+        };
+    }
+
     private static Statement GetWhileStatement(ITokenProvider provider, bool @checked, bool reversed)
     {
         var keyword = provider.Next();
@@ -291,7 +354,7 @@ internal static class StatementParser
     {
         var keyword = provider.Next();
 
-        if (!provider.HasNext() || provider.Next() is not GroupToken expression)
+        if (!provider.HasNext() || provider.Next() is not ParenthesesToken expression)
             throw new SyntaxError(keyword.Start, keyword.End, $"Missing '{Symbol.PAREN_L}'");
 
         var tokens = expression.Tokens;
@@ -313,7 +376,7 @@ internal static class StatementParser
     {
         var keyword = provider.Next();
 
-        if (!provider.HasNext() || provider.Next() is not GroupToken expression)
+        if (!provider.HasNext() || provider.Next() is not ParenthesesToken expression)
             throw new SyntaxError(keyword.Start, keyword.End, $"Missing '{Symbol.PAREN_L}'");
 
         var tokens = expression.Tokens;
@@ -388,11 +451,11 @@ internal static class StatementParser
             if (foundLastCatch)
                 throw new SyntaxError(keyword.Start, keyword.End, "There cannot be another catch clause after the general catch");
 
-            if (!provider.HasNext() || provider.Next() is not GroupToken group)
+            if (!provider.HasNext() || provider.Next() is not ParenthesesToken parentheses)
                 throw new SyntaxError(keyword.Start, keyword.End, $"Missing '{Symbol.PAREN_L}'");
 
-            var identifier = group.Tokens.Count > 1
-                ? IdentifierParser.Parse(group.Tokens)
+            var identifier = parentheses.Tokens.Count > 1
+                ? IdentifierParser.Parse(parentheses.Tokens)
                 : null;
 
             var expression = provider.Peek() is KeywordToken(Keyword.WHEN)
@@ -490,7 +553,7 @@ internal static class StatementParser
 
     private static IExpression GetExpression(ITokenProvider provider, Token keyword)
     {
-        if (!provider.HasNext() || provider.Next() is not GroupToken expression)
+        if (!provider.HasNext() || provider.Next() is not ParenthesesToken expression)
             throw new SyntaxError(keyword.Start, keyword.End, $"Missing '{Symbol.PAREN_L}'");
 
         return ExpressionParser.Parse(expression.Tokens);

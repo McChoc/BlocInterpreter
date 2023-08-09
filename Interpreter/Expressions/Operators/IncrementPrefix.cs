@@ -1,7 +1,9 @@
 ﻿using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Utils.Helpers;
-using Bloc.Values;
+using Bloc.Values.Behaviors;
+using Bloc.Values.Core;
+using Bloc.Values.Types;
 
 namespace Bloc.Expressions.Operators;
 
@@ -23,10 +25,10 @@ internal sealed record IncrementPrefix : IExpression
 
     private static (Value, Value) Adjustment(Value value)
     {
-        if (value is not INumeric scalar)
+        if (value is not INumeric numeric)
             throw new Throw($"Cannot apply operator '++' on type {value.GetTypeName()}");
 
-        var number = new Number(scalar.GetDouble() + 1);
+        var number = new Number(numeric.GetDouble() + 1);
 
         return (number, number);
     }

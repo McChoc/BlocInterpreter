@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Bloc.Pointers;
 using Bloc.Results;
-using Bloc.Values;
+using Bloc.Values.Core;
 
 namespace Bloc.Variables;
 

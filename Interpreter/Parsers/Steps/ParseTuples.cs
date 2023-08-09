@@ -7,16 +7,12 @@ using Bloc.Utils.Extensions;
 
 namespace Bloc.Parsers.Steps;
 
-internal sealed class ParseTuples : IParsingStep
+internal sealed class ParseTuples : ParsingStep
 {
-    public IParsingStep? NextStep { get; init; }
+    public ParseTuples(ParsingStep? nextStep)
+        : base(nextStep) { }
 
-    public ParseTuples(IParsingStep? nextStep)
-    {
-        NextStep = nextStep;
-    }
-
-    public IExpression Parse(List<Token> tokens)
+    internal override IExpression Parse(List<Token> tokens)
     {
         var parts = tokens.Split(x => x is SymbolToken(Symbol.COMMA));
 

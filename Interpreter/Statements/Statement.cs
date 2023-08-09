@@ -6,7 +6,7 @@ using Bloc.Identifiers;
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Utils.Helpers;
-using Bloc.Values;
+using Bloc.Values.Core;
 
 namespace Bloc.Statements;
 

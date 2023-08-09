@@ -9,16 +9,12 @@ using Bloc.Utils.Extensions;
 
 namespace Bloc.Parsers.Steps;
 
-internal sealed class ParseCoalescings : IParsingStep
+internal sealed class ParseCoalescings : ParsingStep
 {
-    public IParsingStep? NextStep { get; init; }
+    public ParseCoalescings(ParsingStep? nextStep)
+        : base(nextStep) { }
 
-    public ParseCoalescings(IParsingStep? nextStep)
-    {
-        NextStep = nextStep;
-    }
-
-    public IExpression Parse(List<Token> tokens)
+    internal override IExpression Parse(List<Token> tokens)
     {
         for (var i = tokens.Count - 1; i >= 0; i--)
         {

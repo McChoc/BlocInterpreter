@@ -9,16 +9,12 @@ using Bloc.Utils.Extensions;
 
 namespace Bloc.Parsers.Steps;
 
-internal sealed class ParseMultiplicatives : IParsingStep
+internal sealed class ParseMultiplicatives : ParsingStep
 {
-    public IParsingStep? NextStep { get; init; }
+    public ParseMultiplicatives(ParsingStep? nextStep)
+        : base(nextStep) { }
 
-    public ParseMultiplicatives(IParsingStep? nextStep)
-    {
-        NextStep = nextStep;
-    }
-
-    public IExpression Parse(List<Token> tokens)
+    internal override IExpression Parse(List<Token> tokens)
     {
         for (var i = tokens.Count - 1; i >= 0; i--)
         {
@@ -27,7 +23,7 @@ internal sealed class ParseMultiplicatives : IParsingStep
                 if (i == 0)
                     throw new SyntaxError(@operator!.Start, @operator.End, "Missing the left part of multiplicative");
 
-                if (i > tokens.Count - 1)
+                if (i == tokens.Count - 1)
                     throw new SyntaxError(@operator!.Start, @operator.End, "Missing the right part of multiplicative");
 
                 var left = Parse(tokens.GetRange(..i));
