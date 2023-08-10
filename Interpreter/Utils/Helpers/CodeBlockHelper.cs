@@ -18,30 +18,29 @@ internal static class CodeBlockHelper
             [IIdentifierToken, SymbolToken(Symbol.COLON), BracesToken token, ..] when IsCodeBlock(token.Tokens) => true,
             [IIdentifierToken, SymbolToken(Symbol.COLON), KeywordToken token, ..] when IsControlFlowKeyword(token) || IsLoopKeyword(token) => true,
             [IIdentifierToken, SymbolToken(Symbol.COLON), WordToken(Keyword.UNCHECKED), KeywordToken token, ..] when IsLoopKeyword(token) => true,
-            _ when tokens.Any(x => x is SymbolToken(Symbol.SEMICOLON)) => true,
-            _ => false,
+            _ => tokens.Any(x => x is SymbolToken(Symbol.SEMICOLON))
         };
+    }
 
-        static bool IsControlFlowKeyword(KeywordToken token)
-        {
-            return token.Text is
-                Keyword.IF or
-                Keyword.UNLESS or
-                Keyword.SWITCH or
-                Keyword.LOCK or
-                Keyword.TRY;
-        }
+    private static bool IsControlFlowKeyword(KeywordToken token)
+    {
+        return token.Text is
+            Keyword.IF or
+            Keyword.UNLESS or
+            Keyword.SWITCH or
+            Keyword.LOCK or
+            Keyword.TRY;
+    }
 
-        static bool IsLoopKeyword(KeywordToken token)
-        {
-            return token.Text is
-                Keyword.DO or
-                Keyword.WHILE or
-                Keyword.UNTIL or
-                Keyword.LOOP or
-                Keyword.REPEAT or
-                Keyword.FOR or
-                Keyword.FOREACH;
-        }
+    private static bool IsLoopKeyword(KeywordToken token)
+    {
+        return token.Text is
+            Keyword.DO or
+            Keyword.WHILE or
+            Keyword.UNTIL or
+            Keyword.LOOP or
+            Keyword.REPEAT or
+            Keyword.FOR or
+            Keyword.FOREACH;
     }
 }

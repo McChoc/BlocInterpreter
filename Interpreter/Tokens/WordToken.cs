@@ -1,6 +1,9 @@
-﻿namespace Bloc.Tokens;
+﻿using Bloc.Utils.Attributes;
 
-internal sealed class WordToken : TextToken, IKeywordToken, IIdentifierToken
+namespace Bloc.Tokens;
+
+[Record]
+internal sealed partial class WordToken : TextToken, IKeywordToken, IIdentifierToken
 {
     internal WordToken(int start, int end, string text)
         : base(start, end, text) { }

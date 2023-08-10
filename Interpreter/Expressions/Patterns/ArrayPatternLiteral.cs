@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Bloc.Memory;
 using Bloc.Patterns;
 using Bloc.Results;
+using Bloc.Utils.Attributes;
 using Bloc.Utils.Helpers;
 using Bloc.Values.Behaviors;
 using Bloc.Values.Core;
@@ -11,7 +11,8 @@ using Bloc.Values.Types;
 
 namespace Bloc.Expressions.Patterns;
 
-internal sealed class ArrayPatternLiteral : IExpression
+[Record]
+internal sealed partial class ArrayPatternLiteral : IExpression
 {
     private readonly int _packIndex;
     private readonly IExpression? _packExpression;
@@ -35,19 +36,6 @@ internal sealed class ArrayPatternLiteral : IExpression
             : null;
 
         return new Pattern(new ArrayPattern(patterns, packPattern, _packIndex));
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(_packIndex, _packExpression, _expressions.Count);
-    }
-
-    public override bool Equals(object other)
-    {
-        return other is ArrayPatternLiteral literal &&
-            _packIndex == literal._packIndex &&
-            Equals(_packExpression, literal._packExpression) &&
-            _expressions.SequenceEqual(literal._expressions);
     }
 
     private static IPatternNode GetPattern(IExpression expression, Call call)

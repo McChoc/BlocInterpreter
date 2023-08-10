@@ -3,11 +3,13 @@ using System.Linq;
 using Bloc.Commands.Arguments;
 using Bloc.Memory;
 using Bloc.Results;
+using Bloc.Utils.Attributes;
 using Bloc.Values.Core;
 
 namespace Bloc.Commands;
 
-internal sealed class CommandCall
+[Record]
+internal sealed partial class CommandCall
 {
     private readonly List<IArgument> _arguments;
 
@@ -18,7 +20,7 @@ internal sealed class CommandCall
 
     internal Value Execute(Value input, Call call)
     {
-        var args = _arguments
+        string[] args = _arguments
             .SelectMany(x => x.GetArguments(call))
             .ToArray();
 

@@ -1,14 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bloc.Expressions;
 using Bloc.Identifiers;
 using Bloc.Memory;
 using Bloc.Results;
+using Bloc.Utils.Attributes;
 using Bloc.Values.Types;
 
 namespace Bloc.Statements;
 
-internal sealed class ForeachStatement : Statement
+[Record]
+internal sealed partial class ForeachStatement : Statement
 {
     private readonly bool _checked;
 
@@ -104,20 +105,5 @@ internal sealed class ForeachStatement : Statement
             if (@break)
                 break;
         }
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Label, _checked, Identifier, Expression, Statement);
-    }
-
-    public override bool Equals(object other)
-    {
-        return other is ForeachStatement statement &&
-            Label == statement.Label &&
-            _checked == statement._checked &&
-            Identifier == statement.Identifier &&
-            Expression.Equals(statement.Expression) &&
-            Statement == statement.Statement;
     }
 }

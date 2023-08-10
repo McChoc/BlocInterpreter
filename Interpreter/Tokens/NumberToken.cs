@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Bloc.Utils.Attributes;
 
 namespace Bloc.Tokens;
 
-internal sealed class NumberToken : Token
+[Record]
+internal sealed partial class NumberToken : Token
 {
     public double Number { get; }
 
@@ -10,16 +11,5 @@ internal sealed class NumberToken : Token
         : base (start, end)
     {
         Number = number;
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Number);
-    }
-
-    public override bool Equals(object other)
-    {
-        return other is NumberToken token &&
-            Number == token.Number;
     }
 }

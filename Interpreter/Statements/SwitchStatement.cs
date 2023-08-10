@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Statements.Arms;
+using Bloc.Utils.Attributes;
 
 namespace Bloc.Statements;
 
-internal sealed class SwitchStatement : Statement
+[Record]
+internal sealed partial class SwitchStatement : Statement
 {
     internal required IExpression Expression { get; init; }
     internal required List<IArm> Arms { get; init; }
@@ -22,7 +22,7 @@ internal sealed class SwitchStatement : Statement
             yield break;
         }
 
-        Statement? statement = Default;
+        var statement = Default;
 
         foreach (var arm in Arms)
         {
@@ -46,18 +46,5 @@ internal sealed class SwitchStatement : Statement
                     yield break;
             }
         }
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Expression, Default, Arms.Count);
-    }
-
-    public override bool Equals(object other)
-    {
-        return other is SwitchStatement statement &&
-            Expression.Equals(statement.Expression) &&
-            Equals(Default, statement.Default) &&
-            Arms.SequenceEqual(statement.Arms);
     }
 }

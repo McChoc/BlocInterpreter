@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
+using Bloc.Utils.Attributes;
 using Bloc.Values.Types;
 
 namespace Bloc.Statements;
 
-internal sealed class ForStatement : Statement
+[Record]
+internal sealed partial class ForStatement : Statement
 {
     private readonly bool _checked;
 
@@ -107,21 +108,5 @@ internal sealed class ForStatement : Statement
                 }
             }
         }
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Label, _checked, Initialisation, Condition, Increment, Statement);
-    }
-
-    public override bool Equals(object other)
-    {
-        return other is ForStatement statement &&
-            Label == statement.Label &&
-            _checked == statement._checked &&
-            Equals(Initialisation, statement.Initialisation) &&
-            Equals(Condition, statement.Condition) &&
-            Equals(Increment, statement.Increment) &&
-            Statement == statement.Statement;
     }
 }

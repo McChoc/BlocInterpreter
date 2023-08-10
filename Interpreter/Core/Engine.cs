@@ -62,7 +62,7 @@ public sealed class Engine
     {
         var labels = StatementHelper.GetLabels(statements);
 
-        for (var i = 0; i < statements.Count; i++)
+        for (int i = 0; i < statements.Count; i++)
         {
             switch (statements[i].Execute(GlobalCall).FirstOrDefault())
             {

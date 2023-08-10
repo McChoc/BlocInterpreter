@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using Bloc.Memory;
 using Bloc.Results;
+using Bloc.Utils.Comparers;
 using Bloc.Utils.Helpers;
 using Bloc.Values.Core;
 using Bloc.Values.Types;
-using Array = Bloc.Values.Types.Array;
 
 namespace Bloc.Expressions.Operators;
 
@@ -35,34 +33,15 @@ internal sealed record OrderbyOperator : IExpression
             {
                 return new Array(array.Values
                     .Select(x => x.Value.GetOrCopy())
-                    .OrderBy(x => x, new ValueComparer(func, call))
+                    .OrderBy(x => x, new FuncBasedValueComparer(func, call))
                     .ToList());
             }
-            catch (InvalidOperationException e) when (e.InnerException is Throw t)
+            catch (System.InvalidOperationException e) when (e.InnerException is Throw t)
             {
                 throw t;
             }
         }
 
         throw new Throw($"Cannot apply operator 'where' on operands of types {left.GetTypeName()} and {right.GetTypeName()}");
-    }
-
-    private class ValueComparer : IComparer<Value>
-    {
-        private readonly Func _func;
-        private readonly Call _call;
-
-        public ValueComparer(Func func, Call call)
-        {
-            _func = func;
-            _call = call;
-        }
-
-        public int Compare(Value a, Value b)
-        {
-            var value = _func.Invoke(new() { a.Copy(), b.Copy() }, new(), _call);
-
-            return Number.ImplicitCast(value).GetInt();
-        }
     }
 }

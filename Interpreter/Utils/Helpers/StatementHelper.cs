@@ -5,11 +5,11 @@ namespace Bloc.Utils.Helpers;
 
 internal static class StatementHelper
 {
-    internal static Dictionary<string, Label> GetLabels(List<Statement> statements)
+    internal static Dictionary<string, LabelInfo> GetLabels(List<Statement> statements)
     {
-        var labels = new Dictionary<string, Label>();
+        var labels = new Dictionary<string, LabelInfo>();
 
-        for (var i = 0; i < statements.Count; i++)
+        for (int i = 0; i < statements.Count; i++)
             if (statements[i].Label is not null)
                 labels.Add(statements[i].Label!, new(i));
 

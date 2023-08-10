@@ -1,19 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Bloc.Results;
+using Bloc.Utils.Attributes;
+using Bloc.Utils.Comparers;
 using Bloc.Values.Core;
-using ValueType = Bloc.Values.Core.ValueType;
 
 namespace Bloc.Values.Types;
 
-public sealed class Tuple : Value
+[Record]
+public sealed partial class Tuple : Value
 {
+    [DoNotCompare]
     private bool _assigned = false;
 
+    [CompareUsing<ValueEqualityComparer>]
     public List<IValue> Values { get; private set; }
 
-    public Tuple() => Values = new();
+    public Tuple()
+    {
+        Values = new();
+    }
 
     public Tuple(List<IValue> values)
     {
@@ -25,35 +31,11 @@ public sealed class Tuple : Value
         Values = values.ToList<IValue>();
     }
 
-    internal override ValueType GetType() => ValueType.Tuple;
+    public override ValueType GetType() => ValueType.Tuple;
 
-    internal static Tuple Construct(List<Value> values)
+    public override string ToString()
     {
-        return values switch
-        {
-            [] or [Null] => new(),
-
-            [Tuple tuple] => tuple,
-
-            [Array array] => new(array.Values
-                .Select(x => x.Value)
-                .ToList()),
-
-            [Struct @struct] => new(@struct.Values
-                .OrderBy(x => x.Key)
-                .Select(x => x.Value.Value)
-                .ToList()),
-
-            [Range range] => new(new List<Value>()
-            {
-                range.Start is int l ? new Number(l) : Null.Value,
-                range.End is int m ? new Number(m) : Null.Value,
-                range.Step is int n ? new Number(n) : Null.Value
-            }),
-
-            [_] => throw new Throw($"'tuple' does not have a constructor that takes a '{values[0].GetTypeName()}'"),
-            [..] => throw new Throw($"'tuple' does not have a constructor that takes {values.Count} arguments")
-        };
+        return "(" + string.Join(", ", Values.Select(v => v.Value)) + ")";
     }
 
     public override Value Copy(bool assign)
@@ -83,28 +65,32 @@ public sealed class Tuple : Value
         return tuple;
     }
 
-    public override string ToString()
+    internal static Tuple Construct(List<Value> values)
     {
-        return "(" + string.Join(", ", Values.Select(v => v.Value)) + ")";
-    }
+        return values switch
+        {
+            [] or [Null] => new(),
 
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Values.Count);
-    }
+            [Tuple tuple] => tuple,
 
-    public override bool Equals(object other)
-    {
-        if (other is not Tuple tuple)
-            return false;
+            [Array array] => new(array.Values
+                .Select(x => x.Value)
+                .ToList()),
 
-        if (Values.Count != tuple.Values.Count)
-            return false;
+            [Struct @struct] => new(@struct.Values
+                .OrderBy(x => x.Key)
+                .Select(x => x.Value.Value)
+                .ToList()),
 
-        for (var i = 0; i < Values.Count; i++)
-            if (Values[i].Value != tuple.Values[i].Value)
-                return false;
+            [Range range] => new(new List<Value>()
+            {
+                range.Start is int l ? new Number(l) : Null.Value,
+                range.End is int m ? new Number(m) : Null.Value,
+                range.Step is int n ? new Number(n) : Null.Value
+            }),
 
-        return true;
+            [_] => throw new Throw($"'tuple' does not have a constructor that takes a '{values[0].GetTypeName()}'"),
+            [..] => throw new Throw($"'tuple' does not have a constructor that takes {values.Count} arguments")
+        };
     }
 }

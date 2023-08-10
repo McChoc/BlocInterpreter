@@ -17,7 +17,7 @@ internal sealed class ParseAdditives : ParsingStep
 
     internal override IExpression Parse(List<Token> tokens)
     {
-        for (var i = tokens.Count - 1; i >= 0; i--)
+        for (int i = tokens.Count - 1; i >= 0; i--)
         {
             if (IsAdditive(tokens[i], out var @operator) && OperatorHelper.IsBinary(tokens, i))
             {

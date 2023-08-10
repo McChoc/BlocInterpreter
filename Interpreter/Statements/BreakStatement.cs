@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using Bloc.Memory;
 using Bloc.Results;
+using Bloc.Utils.Attributes;
 
 namespace Bloc.Statements;
 
-internal sealed class BreakStatement : Statement
+[Record]
+internal sealed partial class BreakStatement : Statement
 {
     internal override IEnumerable<IResult> Execute(Call call)
     {

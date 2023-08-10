@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bloc.Commands;
 using Bloc.Expressions;
 using Bloc.Identifiers;
@@ -15,22 +14,6 @@ public abstract class Statement
     internal string? Label { get; set; }
 
     internal abstract IEnumerable<IResult> Execute(Call call);
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Label);
-    }
-
-    public override bool Equals(object other)
-    {
-        return other is Statement statement &&
-            GetType() == statement.GetType() &&
-            Label == statement.Label;
-    }
-
-    public static bool operator ==(Statement? a, Statement? b) => Equals(a, b);
-
-    public static bool operator !=(Statement? a, Statement? b) => !Equals(a, b);
 
     private protected static bool DefineIdentifier(IIdentifier identifier, Value value, Call call, out Throw? exception, bool mask = false, bool mutable = true)
     {

@@ -1,15 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
+using Bloc.Utils.Attributes;
 using Bloc.Values.Core;
 using Bloc.Variables;
 
 namespace Bloc.Statements;
 
-internal sealed class LockStatement : Statement
+[Record]
+internal sealed partial class LockStatement : Statement
 {
     internal required IExpression Expression { get; init; }
     internal required Statement Statement { get; init; }
@@ -70,18 +71,5 @@ internal sealed class LockStatement : Statement
                 }
             }
         }
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Label, Expression, Statement);
-    }
-
-    public override bool Equals(object other)
-    {
-        return other is LockStatement statement &&
-            Label == statement.Label &&
-            Expression.Equals(statement.Expression) &&
-            Statement == statement.Statement;
     }
 }

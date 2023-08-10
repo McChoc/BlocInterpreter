@@ -10,12 +10,4 @@ internal abstract class Token
         Start = start;
         End = end;
     }
-
-    public abstract override int GetHashCode();
-
-    public abstract override bool Equals(object other);
-
-    public static bool operator ==(Token a, Token b) => a.Equals(b);
-
-    public static bool operator !=(Token a, Token b) => !a.Equals(b);
 }

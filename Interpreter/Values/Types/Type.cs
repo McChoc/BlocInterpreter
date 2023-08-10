@@ -1,43 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bloc.Memory;
 using Bloc.Patterns;
 using Bloc.Results;
+using Bloc.Utils.Attributes;
 using Bloc.Utils.Constants;
 using Bloc.Values.Behaviors;
 using Bloc.Values.Core;
-using ValueType = Bloc.Values.Core.ValueType;
 
 namespace Bloc.Values.Types;
 
-public sealed class Type : Value, IPattern, IInvokable
+[Record]
+public sealed partial class Type : Value, IPattern, IInvokable
 {
     public ValueType Value { get; }
 
-    public Type(ValueType type) => Value = type;
-
-    internal override ValueType GetType() => ValueType.Type;
-
-    internal static Type Construct(List<Value> values)
+    public Type(ValueType type)
     {
-        return values switch
-        {
-            [Type type] => type,
-            [_] => throw new Throw($"'type' does not have a constructor that takes a '{values[0].GetTypeName()}'"),
-            [..] => throw new Throw($"'type' does not have a constructor that takes {values.Count} arguments")
-        };
+        Value = type;
     }
 
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Value);
-    }
-
-    public override bool Equals(object other)
-    {
-        return other is Type type &&
-            Value == type.Value;
-    }
+    public IPatternNode GetRoot() => new TypePattern(Value);
+    public override ValueType GetType() => ValueType.Type;
 
     public override string ToString()
     {
@@ -59,13 +42,8 @@ public sealed class Type : Value, IPattern, IInvokable
             ValueType.Extern => Keyword.EXTERN,
             ValueType.Type => Keyword.TYPE,
             ValueType.Pattern => Keyword.PATTERN,
-            _ => throw new Exception(),
+            _ => throw new System.Exception(),
         };
-    }
-
-    public IPatternNode GetRoot()
-    {
-        return new TypePattern(Value);
     }
 
     public Value Invoke(List<Value> args, Dictionary<string, Value> kwargs, Call call)
@@ -91,7 +69,17 @@ public sealed class Type : Value, IPattern, IInvokable
             ValueType.Extern => Extern.Construct(args),
             ValueType.Type => Construct(args),
             ValueType.Pattern => Pattern.Construct(args),
-            _ => throw new Exception()
+            _ => throw new System.Exception()
+        };
+    }
+
+    internal static Type Construct(List<Value> values)
+    {
+        return values switch
+        {
+            [Type type] => type,
+            [_] => throw new Throw($"'type' does not have a constructor that takes a '{values[0].GetTypeName()}'"),
+            [..] => throw new Throw($"'type' does not have a constructor that takes {values.Count} arguments")
         };
     }
 }

@@ -20,7 +20,7 @@ internal sealed class ParseFuncs : ParsingStep
 
     internal override IExpression Parse(List<Token> tokens)
     {
-        for (var i = 0; i < tokens.Count; i++)
+        for (int i = 0; i < tokens.Count; i++)
         {
             if (tokens[i] is not SymbolToken(Symbol.LAMBDA) @operator)
                 continue;
@@ -105,7 +105,7 @@ internal sealed class ParseFuncs : ParsingStep
                         IExpression name;
                         IExpression? defaultValue;
 
-                        var index = part.FindIndex(x => x is SymbolToken(Symbol.ASSIGN));
+                        int index = part.FindIndex(x => x is SymbolToken(Symbol.ASSIGN));
 
                         if (index == -1)
                         {
@@ -141,7 +141,7 @@ internal sealed class ParseFuncs : ParsingStep
             var type = FuncType.Synchronous;
             var mode = CaptureMode.None;
 
-            var j = i - 2;
+            int j = i - 2;
 
             while (j >= 0)
             {

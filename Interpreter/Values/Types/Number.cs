@@ -1,18 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
 using Bloc.Results;
+using Bloc.Utils.Attributes;
 using Bloc.Values.Behaviors;
 using Bloc.Values.Core;
-using ValueType = Bloc.Values.Core.ValueType;
 
 namespace Bloc.Values.Types;
 
-public sealed class Number : Value, INumeric
+[Record]
+public sealed partial class Number : Value, INumeric
 {
     public double Value { get; }
 
-    public Number(double value) => Value = value;
+    public Number(double value = 0)
+    {
+        Value = value;
+    }
+
+    public override ValueType GetType() => ValueType.Number;
+
+    public double GetDouble() => Value;
 
     public int GetInt()
     {
@@ -28,18 +35,51 @@ public sealed class Number : Value, INumeric
         return (int)Value;
     }
 
-    public double GetDouble()
+    public override string ToString()
     {
-        return Value;
+        if (double.IsNaN(Value))
+            return "nan";
+
+        if (double.IsPositiveInfinity(Value))
+            return "infinity";
+
+        if (double.IsNegativeInfinity(Value))
+            return "-infinity";
+
+        return Value.ToString(CultureInfo.InvariantCulture);
     }
 
-    internal override ValueType GetType() => ValueType.Number;
+    internal static Number ImplicitCast(IValue value)
+    {
+        try
+        {
+            return Construct(new() { value.Value });
+        }
+        catch
+        {
+            throw new Throw($"Cannot implicitly convert '{value.Value.GetTypeName()}' to 'number'");
+        }
+    }
+
+    internal static bool TryImplicitCast(IValue value, out Number number)
+    {
+        try
+        {
+            number = Construct(new() { value.Value });
+            return true;
+        }
+        catch
+        {
+            number = null!;
+            return false;
+        }
+    }
 
     internal static Number Construct(List<Value> values)
     {
         return values switch
         {
-            [] or [Null] => new(0),
+            [] or [Null] => new(),
             [Number @number] => number,
             [String @string] => new(Parse(@string.Value)),
             [INumeric numeric] => new(numeric.GetDouble()),
@@ -87,63 +127,12 @@ public sealed class Number : Value, INumeric
             {
                 return @base == 10
                     ? double.Parse(text, CultureInfo.InvariantCulture)
-                    : Convert.ToInt32(text, @base);
+                    : System.Convert.ToInt32(text, @base);
             }
             catch
             {
                 throw new Throw("Input string was not in a correct format");
             }
         }
-    }
-
-    internal static Number ImplicitCast(IValue value)
-    {
-        try
-        {
-            return Construct(new() { value.Value });
-        }
-        catch
-        {
-            throw new Throw($"Cannot implicitly convert '{value.Value.GetTypeName()}' to 'number'");
-        }
-    }
-
-    internal static bool TryImplicitCast(IValue value, out Number number)
-    {
-        try
-        {
-            number = Construct(new() { value.Value });
-            return true;
-        }
-        catch
-        {
-            number = null!;
-            return false;
-        }
-    }
-
-    public override string ToString()
-    {
-        if (double.IsNaN(Value))
-            return "nan";
-
-        if (double.IsPositiveInfinity(Value))
-            return "infinity";
-
-        if (double.IsNegativeInfinity(Value))
-            return "-infinity";
-
-        return Value.ToString(CultureInfo.InvariantCulture);
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Value);
-    }
-
-    public override bool Equals(object other)
-    {
-        return other is Number number &&
-            Value == number.Value;
     }
 }

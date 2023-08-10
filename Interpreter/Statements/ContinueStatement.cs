@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using Bloc.Memory;
 using Bloc.Results;
+using Bloc.Utils.Attributes;
 
 namespace Bloc.Statements;
 
-internal sealed class ContinueStatement : Statement
+[Record]
+internal sealed partial class ContinueStatement : Statement
 {
     internal override IEnumerable<IResult> Execute(Call call)
     {

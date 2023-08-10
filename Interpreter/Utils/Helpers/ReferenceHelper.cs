@@ -9,7 +9,7 @@ internal static class ReferenceHelper
 {
     internal static IValue Resolve(IValue value, int hopLimit)
     {
-        var hopCount = 0;
+        int hopCount = 0;
 
         return Resolve(value, ref hopCount, hopLimit);
     }

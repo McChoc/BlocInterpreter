@@ -18,7 +18,7 @@ internal sealed class ParsePrimaries : ParsingStep
     {
         var expression = NextStep!.Parse(tokens.GetRange(0, 1));
 
-        for (var i = 1; i < tokens.Count; i++)
+        for (int i = 1; i < tokens.Count; i++)
         {
             if (tokens[i] is SymbolToken(Symbol.ACCESS_MEMBER))
             {
@@ -68,7 +68,7 @@ internal sealed class ParsePrimaries : ParsingStep
                         }
                         else
                         {
-                            var index = part.FindIndex(x => x is SymbolToken(Symbol.ASSIGN));
+                            int index = part.FindIndex(x => x is SymbolToken(Symbol.ASSIGN));
 
                             if (index == -1)
                             {

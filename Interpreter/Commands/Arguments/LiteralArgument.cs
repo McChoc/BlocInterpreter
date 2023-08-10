@@ -3,7 +3,7 @@ using Bloc.Memory;
 
 namespace Bloc.Commands.Arguments;
 
-internal sealed class LiteralArgument : IArgument
+internal sealed record LiteralArgument : IArgument
 {
     private readonly string _text;
 

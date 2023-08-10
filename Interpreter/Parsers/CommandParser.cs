@@ -9,7 +9,7 @@ using Bloc.Utils.Extensions;
 
 namespace Bloc.Parsers;
 
-internal class CommandParser
+internal static class CommandParser
 {
     internal static Command Parse(List<Token> tokens)
     {

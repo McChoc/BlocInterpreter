@@ -1,11 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bloc.Memory;
 using Bloc.Results;
+using Bloc.Utils.Attributes;
 
 namespace Bloc.Statements;
 
-internal sealed class LoopStatement : Statement
+[Record]
+internal sealed partial class LoopStatement : Statement
 {
     private readonly bool _checked;
 
@@ -63,18 +64,5 @@ internal sealed class LoopStatement : Statement
             if (@break)
                 break;
         }
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Label, _checked, Statement);
-    }
-
-    public override bool Equals(object other)
-    {
-        return other is LoopStatement statement &&
-            Label == statement.Label &&
-            _checked == statement._checked &&
-            Statement == statement.Statement;
     }
 }

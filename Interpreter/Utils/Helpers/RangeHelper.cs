@@ -4,13 +4,13 @@ namespace Bloc.Utils.Helpers;
 
 internal static class RangeHelper
 {
-    private const double infinity = double.PositiveInfinity;
+    private const double INFINITY = double.PositiveInfinity;
 
     internal static (double, double, double) Deconstruct(Range range)
     {
         double start = range.Start ?? (range.Step is null or > 0 ? 0 : -1);
 
-        double end = range.End ?? (range.Step is null or > 0 ? infinity : -infinity);
+        double end = range.End ?? (range.Step is null or > 0 ? INFINITY : -INFINITY);
 
         double step = range.Step ?? 1;
 

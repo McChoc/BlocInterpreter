@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using Bloc.Memory;
 using Bloc.Results;
+using Bloc.Utils.Attributes;
 
 namespace Bloc.Statements;
 
-internal sealed class StatementBlock : Statement
+[Record]
+internal sealed partial class StatementBlock : Statement
 {
     internal required List<Statement> Statements { get; set; }
 
@@ -22,17 +22,5 @@ internal sealed class StatementBlock : Statement
                     yield break;
             }
         }
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Label, Statements.Count);
-    }
-
-    public override bool Equals(object other)
-    {
-        return other is StatementBlock block &&
-            Label == block.Label &&
-            Statements.SequenceEqual(block.Statements);
     }
 }

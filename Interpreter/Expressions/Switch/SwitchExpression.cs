@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using Bloc.Memory;
+using Bloc.Utils.Attributes;
 using Bloc.Values.Core;
-using Void = Bloc.Values.Types.Void;
+using Bloc.Values.Types;
 
 namespace Bloc.Expressions.Switch;
 
-internal sealed class SwitchExpression : IExpression
+[Record]
+internal sealed partial class SwitchExpression : IExpression
 {
     internal required IExpression Expression { get; init; }
     internal required List<IArm> Arms { get; init; }
@@ -22,18 +22,5 @@ internal sealed class SwitchExpression : IExpression
                 return arm.Expression.Evaluate(call);
 
         return Default?.Evaluate(call) ?? Void.Value;
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Expression, Default, Arms.Count);
-    }
-
-    public override bool Equals(object other)
-    {
-        return other is SwitchExpression @switch &&
-            Expression.Equals(@switch.Expression) &&
-            Equals(Default, @switch.Default) &&
-            Arms.SequenceEqual(@switch.Arms);
     }
 }

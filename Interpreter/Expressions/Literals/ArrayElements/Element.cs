@@ -6,11 +6,18 @@ using Bloc.Values.Types;
 
 namespace Bloc.Expressions.Literals.ArrayElements;
 
-internal sealed record Element(IExpression Expression) : IElement
+internal sealed record Element : IElement
 {
+    private readonly IExpression _expression;
+
+    public Element(IExpression expression)
+    {
+        _expression = expression;
+    }
+
     public IEnumerable<Value> GetElements(Call call)
     {
-        var value = Expression.Evaluate(call).Value.GetOrCopy();
+        var value = _expression.Evaluate(call).Value.GetOrCopy();
 
         if (value is Void)
             throw new Throw("'void' is not assignable");

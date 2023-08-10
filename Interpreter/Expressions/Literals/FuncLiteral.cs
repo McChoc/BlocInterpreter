@@ -1,17 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using Bloc.Funcs;
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Statements;
+using Bloc.Utils.Attributes;
 using Bloc.Values.Core;
 using Bloc.Values.Types;
-using Void = Bloc.Values.Types.Void;
 
 namespace Bloc.Expressions.Literals;
 
-internal sealed class FuncLiteral : IExpression
+[Record]
+internal sealed partial class FuncLiteral : IExpression
 {
     private readonly FuncType _type;
     private readonly CaptureMode _mode;
@@ -66,20 +65,6 @@ internal sealed class FuncLiteral : IExpression
         }
 
         return new Func(_type, _mode, captures, argsContainer, kwargsContainer, parameters, _statements);
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(_type, _mode, _parameters.Count, _statements.Count);
-    }
-
-    public override bool Equals(object other)
-    {
-        return other is FuncLiteral literal &&
-            _type == literal._type &&
-            _mode == literal._mode &&
-            _parameters.SequenceEqual(literal._parameters) &&
-            _statements.SequenceEqual(literal._statements);
     }
 
     internal sealed record Parameter(string Name, IExpression? Expression);

@@ -38,8 +38,8 @@ internal sealed record ModuloOperator : IExpression
 
     private static Number ModScalars(INumeric left, INumeric right)
     {
-        var dividend = left.GetDouble();
-        var divisor = right.GetDouble();
+        double dividend = left.GetDouble();
+        double divisor = right.GetDouble();
 
         return new Number((dividend % divisor + divisor) % divisor);
     }

@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bloc.Results;
+using Bloc.Utils.Attributes;
 using Bloc.Values.Core;
-using ValueType = Bloc.Values.Core.ValueType;
 
 namespace Bloc.Values.Types;
 
-public sealed class Range : Value
+[Record]
+public sealed partial class Range : Value
 {
     public int? Start { get; }
     public int? End { get; }
@@ -19,7 +19,14 @@ public sealed class Range : Value
         Step = step;
     }
 
-    internal override ValueType GetType() => ValueType.Range;
+    public override ValueType GetType() => ValueType.Range;
+
+    public override string ToString()
+    {
+        return Step is null
+            ? $"{Start}:{End}"
+            : $"{Start}:{End}:{Step}";
+    }
 
     internal static Range Construct(List<Value> values)
     {
@@ -49,25 +56,5 @@ public sealed class Range : Value
             [_, _, _] => throw new Throw($"'range' does not have a constructor that takes a '{values[0].GetTypeName()}', a '{values[1].GetTypeName()}' and a '{values[2].GetTypeName()}'"),
             [..] => throw new Throw($"'range' does not have a constructor that takes {values.Count} arguments")
         };
-    }
-
-    public override string ToString()
-    {
-        return Step is null
-            ? $"{Start}:{End}"
-            : $"{Start}:{End}:{Step}";
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Start, End, Step);
-    }
-
-    public override bool Equals(object other)
-    {
-        return other is Range range &&
-            Start == range.Start &&
-            End == range.End &&
-            Step == range.Step;
     }
 }

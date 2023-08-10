@@ -1,16 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Parsers;
 using Bloc.Results;
 using Bloc.Scanners;
+using Bloc.Utils.Attributes;
 using Bloc.Utils.Exceptions;
-using String = Bloc.Values.Types.String;
+using Bloc.Values.Types;
 
 namespace Bloc.Statements;
 
-internal sealed class ExecStatement : Statement
+[Record]
+internal sealed partial class ExecStatement : Statement
 {
     private readonly IExpression _expression;
 
@@ -62,17 +63,5 @@ internal sealed class ExecStatement : Statement
             if (result is not Yield)
                 yield break;
         }
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Label, _expression);
-    }
-
-    public override bool Equals(object other)
-    {
-        return other is ExecStatement statement &&
-            Label == statement.Label &&
-            _expression.Equals(statement._expression);
     }
 }

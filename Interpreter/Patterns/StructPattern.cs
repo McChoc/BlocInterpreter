@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Bloc.Memory;
+using Bloc.Utils.Attributes;
 using Bloc.Values.Core;
 using Bloc.Values.Types;
 
 namespace Bloc.Patterns;
 
-internal sealed class StructPattern : IPatternNode
+[Record]
+internal sealed partial class StructPattern : IPatternNode
 {
     private readonly bool _hasPack;
     private readonly IPatternNode? _packPattern;
@@ -63,36 +64,5 @@ internal sealed class StructPattern : IPatternNode
     {
         return _patterns.Values.Any(x => x.HasAssignment()) ||
             (_packPattern?.HasAssignment() ?? false);
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(_packPattern, _patterns.Count);
-    }
-
-    public override bool Equals(object other)
-    {
-        if (other is not StructPattern pattern)
-            return false;
-
-        if (_hasPack != pattern._hasPack)
-            return false;
-
-        if (!Equals(_packPattern, pattern._packPattern))
-            return false;
-
-        if (_patterns.Count != pattern._patterns.Count)
-            return false;
-
-        foreach (var key in _patterns.Keys)
-        {
-            if (!pattern._patterns.TryGetValue(key, out var value))
-                return false;
-
-            if (_patterns[key] != value)
-                return false;
-        }
-
-        return true;
     }
 }

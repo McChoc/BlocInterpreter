@@ -16,7 +16,7 @@ internal sealed class ParseEqualities : ParsingStep
 
     internal override IExpression Parse(List<Token> tokens)
     {
-        for (var i = tokens.Count - 1; i >= 0; i--)
+        for (int i = tokens.Count - 1; i >= 0; i--)
         {
             if (IsEquality(tokens[i], out var @operator) && OperatorHelper.IsBinary(tokens, i))
             {

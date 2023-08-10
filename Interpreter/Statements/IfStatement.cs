@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
+using Bloc.Utils.Attributes;
 using Bloc.Values.Types;
 
 namespace Bloc.Statements;
 
-internal sealed class IfStatement : Statement
+[Record]
+internal sealed partial class IfStatement : Statement
 {
     private readonly bool _reversed;
 
@@ -51,19 +52,5 @@ internal sealed class IfStatement : Statement
                     yield break;
             }
         }
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Label, Expression, Then, Else);
-    }
-
-    public override bool Equals(object other)
-    {
-        return other is IfStatement statement &&
-            Label == statement.Label &&
-            Expression.Equals(statement.Expression) &&
-            Then == statement.Then &&
-            Else == statement.Else;
     }
 }

@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
+using Bloc.Utils.Attributes;
 using Bloc.Values.Types;
 
 namespace Bloc.Statements;
 
-internal sealed class RepeatStatement : Statement
+[Record]
+internal sealed partial class RepeatStatement : Statement
 {
     private readonly bool _checked;
 
@@ -78,19 +79,5 @@ internal sealed class RepeatStatement : Statement
             if (@break)
                 break;
         }
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Label, _checked, Expression, Statement);
-    }
-
-    public override bool Equals(object other)
-    {
-        return other is RepeatStatement statement &&
-            Label == statement.Label &&
-            _checked == statement._checked &&
-            Expression.Equals(statement.Expression) &&
-            Statement == statement.Statement;
     }
 }

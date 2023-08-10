@@ -16,7 +16,7 @@ internal sealed class ParseAssignments : ParsingStep
 
     internal override IExpression Parse(List<Token> tokens)
     {
-        for (var i = 0; i < tokens.Count; i++)
+        for (int i = 0; i < tokens.Count; i++)
         {
             if (IsAssignment(tokens[i], out var @operator))
             {

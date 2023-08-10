@@ -60,7 +60,4 @@ public sealed class VariablePointer : Pointer
             pointer.Variable is not null &&
             Variable == pointer.Variable;
     }
-
-    public static bool operator ==(VariablePointer left, VariablePointer right) => Equals(left, right);
-    public static bool operator !=(VariablePointer left, VariablePointer right) => !Equals(left, right);
 }

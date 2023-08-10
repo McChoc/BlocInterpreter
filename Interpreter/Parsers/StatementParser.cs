@@ -82,7 +82,7 @@ internal static class StatementParser
     private static string? GetLabel(ITokenProvider provider)
     {
         if (provider.PeekRange(2) is [
-            IIdentifierToken { Text: var label },
+            IIdentifierToken { Text: string label },
             SymbolToken(Symbol.COLON)])
         {
             provider.Skip(2);
@@ -186,7 +186,7 @@ internal static class StatementParser
             if (tokens.Count == 0)
                 throw new SyntaxError(keyword.Start, keyword.End, "Missing identifier");
 
-            var index = tokens.FindIndex(x => x is SymbolToken(Symbol.ASSIGN));
+            int index = tokens.FindIndex(x => x is SymbolToken(Symbol.ASSIGN));
 
             if (index == 0)
                 throw new SyntaxError(tokens[0].Start, tokens[^1].End, "Missing identifier");
@@ -221,7 +221,7 @@ internal static class StatementParser
             if (tokens.Count == 0)
                 throw new SyntaxError(keyword.Start, keyword.End, "Missing identifier");
 
-            var index = tokens.FindIndex(x => x is SymbolToken(Symbol.ASSIGN));
+            int index = tokens.FindIndex(x => x is SymbolToken(Symbol.ASSIGN));
 
             if (index == 0)
                 throw new SyntaxError(tokens[0].Start, tokens[^1].End, "Missing identifier");
@@ -384,7 +384,7 @@ internal static class StatementParser
         if (tokens.Count == 0)
             throw new SyntaxError(0, 0, "Missing identifier");
 
-        var index = tokens.FindIndex(x => x is KeywordToken(Keyword.IN));
+        int index = tokens.FindIndex(x => x is KeywordToken(Keyword.IN));
 
         if (index == 0)
             throw new SyntaxError(tokens[0].Start, tokens[^1].End, "Missing identifier");

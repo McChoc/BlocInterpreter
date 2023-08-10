@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using Bloc.Expressions;
 using Bloc.Identifiers;
 using Bloc.Memory;
 using Bloc.Results;
+using Bloc.Utils.Attributes;
 using Bloc.Values.Types;
 
 namespace Bloc.Statements;
 
-internal sealed class TryStatement : Statement
+[Record]
+internal sealed partial class TryStatement : Statement
 {
     internal required Statement Try { get; init; }
     internal required List<Catch> Catches { get; init; }
@@ -105,20 +105,6 @@ internal sealed class TryStatement : Statement
 
         if (mainResult is not null)
             yield return mainResult;
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Label, Try, Catches.Count, Finally);
-    }
-
-    public override bool Equals(object other)
-    {
-        return other is TryStatement statement &&
-            Label == statement.Label &&
-            Try == statement.Try &&
-            Catches.SequenceEqual(statement.Catches) &&
-            Finally == statement.Finally;
     }
 
     internal sealed record Catch(IIdentifier? Identifier, IExpression? Expression, Statement Statement);

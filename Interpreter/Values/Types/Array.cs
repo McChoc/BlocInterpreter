@@ -1,48 +1,40 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
+using Bloc.Utils.Attributes;
+using Bloc.Utils.Comparers;
 using Bloc.Utils.Helpers;
 using Bloc.Values.Behaviors;
 using Bloc.Values.Core;
 using Bloc.Variables;
-using ValueType = Bloc.Values.Core.ValueType;
 
 namespace Bloc.Values.Types;
 
-public sealed class Array : Value, IIndexable
+[Record]
+public sealed partial class Array : Value, IIndexable
 {
+    [DoNotCompare]
     private bool _assigned = false;
 
+    [CompareUsing<ValueEqualityComparer>]
     internal List<IValue> Values { get; private set; }
 
-    public Array() => Values = new();
+    public Array() : this(new()) { }
 
     public Array(List<Value> values)
     {
         Values = values.ToList<IValue>();
     }
 
-    internal override ValueType GetType() => ValueType.Array;
+    public override ValueType GetType() => ValueType.Array;
 
-    internal static Array Construct(List<Value> values)
+    public override string ToString()
     {
-        return values switch
-        {
-            [] or [Null] => new(),
-            [Array array] => array,
-            [Number number] => new(Enumerable.Repeat((Value)Null.Value, number.GetInt()).ToList()),
-            [String @string] => new(@string.Value.ToCharArray().Select(x => (Value)new String(x.ToString())).ToList()),
-            [Struct @struct] => new(@struct.Values.OrderBy(x => x.Key).Select(x => (Value)new Tuple(new List<Value>() { new String(x.Key), x.Value.Value })).ToList()),
-            [Tuple tuple] => new(tuple.Values.Select(x => x.Value).ToList()),
-            [Iter iter] => new(iter.Iterate().ToList()),
-            [var value, Number number] => new(Enumerable.Repeat(value, number.GetInt()).ToList()),
-            [_] => throw new Throw($"'array' does not have a constructor that takes a '{values[0].GetTypeName()}'"),
-            [_, _] => throw new Throw($"'array' does not have a constructor that takes a '{values[0].GetTypeName()}' and a '{values[1].GetTypeName()}'"),
-            [..] => throw new Throw($"'array' does not have a constructor that takes {values.Count} arguments")
-        };
+        return Values.Count > 0
+            ? "{" + string.Join(", ", Values.Select(v => v.Value)) + "}"
+            : "{|}";
     }
 
     public override void Destroy()
@@ -97,38 +89,11 @@ public sealed class Array : Value, IIndexable
         return array;
     }
 
-    public override string ToString()
-    {
-        return Values.Count > 0
-            ? "{" + string.Join(", ", Values.Select(v => v.Value)) + "}"
-            : "{|}";
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Values.Count);
-    }
-
-    public override bool Equals(object other)
-    {
-        if (other is not Array array)
-            return false;
-
-        if (Values.Count != array.Values.Count)
-            return false;
-
-        for (var i = 0; i < Values.Count; i++)
-            if (Values[i].Value != array.Values[i].Value)
-                return false;
-
-        return true;
-    }
-
     public IValue Index(Value value, Call call)
     {
         if (value is Number number)
         {
-            var index = number.GetInt();
+            int index = number.GetInt();
 
             if (index < 0)
                 index += Values.Count;
@@ -163,5 +128,23 @@ public sealed class Array : Value, IIndexable
         }
 
         throw new Throw("It should be a number or a range.");
+    }
+
+    internal static Array Construct(List<Value> values)
+    {
+        return values switch
+        {
+            [] or [Null] => new(),
+            [Array array] => array,
+            [Number number] => new(Enumerable.Repeat((Value)Null.Value, number.GetInt()).ToList()),
+            [String @string] => new(@string.Value.ToCharArray().Select(x => (Value)new String(x.ToString())).ToList()),
+            [Struct @struct] => new(@struct.Values.OrderBy(x => x.Key).Select(x => (Value)new Tuple(new List<Value>() { new String(x.Key), x.Value.Value })).ToList()),
+            [Tuple tuple] => new(tuple.Values.Select(x => x.Value).ToList()),
+            [Iter iter] => new(iter.Iterate().ToList()),
+            [var value, Number number] => new(Enumerable.Repeat(value, number.GetInt()).ToList()),
+            [_] => throw new Throw($"'array' does not have a constructor that takes a '{values[0].GetTypeName()}'"),
+            [_, _] => throw new Throw($"'array' does not have a constructor that takes a '{values[0].GetTypeName()}' and a '{values[1].GetTypeName()}'"),
+            [..] => throw new Throw($"'array' does not have a constructor that takes {values.Count} arguments")
+        };
     }
 }

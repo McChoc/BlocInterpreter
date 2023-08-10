@@ -1,9 +1,10 @@
-﻿using System;
-using Bloc.Expressions;
+﻿using Bloc.Expressions;
+using Bloc.Utils.Attributes;
 
 namespace Bloc.Tokens;
 
-internal sealed class ParsedToken : Token
+[Record]
+internal sealed partial class ParsedToken : Token
 {
     public IExpression Expression { get; set; }
 
@@ -11,16 +12,5 @@ internal sealed class ParsedToken : Token
         : base(start, end)
     {
         Expression = expression;
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Expression);
-    }
-
-    public override bool Equals(object other)
-    {
-        return other is ParsedToken token &&
-            Expression.Equals(token.Expression);
     }
 }

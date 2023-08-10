@@ -2,9 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-	<LangVersion>11.0</LangVersion>
-	<Nullable>enable</Nullable>
-	<RootNamespace>Bloc</RootNamespace>
+    <LangVersion>11.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Bloc</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,6 +12,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SourceGenerators\SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
 </Project>

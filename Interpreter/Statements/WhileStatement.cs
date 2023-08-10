@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
+using Bloc.Utils.Attributes;
 using Bloc.Values.Types;
 
 namespace Bloc.Statements;
 
-internal sealed class WhileStatement : Statement
+[Record]
+internal sealed partial class WhileStatement : Statement
 {
     private readonly bool _checked;
     private readonly bool _reversed;
@@ -88,21 +89,5 @@ internal sealed class WhileStatement : Statement
             if (@break)
                 break;
         }
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Label, _checked, _reversed, _executeAtLeastOnce, Expression, Statement);
-    }
-
-    public override bool Equals(object other)
-    {
-        return other is WhileStatement statement &&
-            Label == statement.Label &&
-            _checked == statement._checked &&
-            _reversed == statement._reversed &&
-            _executeAtLeastOnce == statement._executeAtLeastOnce &&
-            Expression.Equals(statement.Expression) &&
-            Statement == statement.Statement;
     }
 }

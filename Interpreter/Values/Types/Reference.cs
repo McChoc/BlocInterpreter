@@ -2,19 +2,25 @@
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
+using Bloc.Utils.Attributes;
 using Bloc.Values.Core;
 
 namespace Bloc.Values.Types;
 
-public sealed class Reference : Value
+[Record]
+public sealed partial class Reference : Value
 {
     internal VariablePointer Pointer { get; }
 
-    internal Reference() => Pointer = new VariablePointer(null);
+    internal Reference() : this(new(null)) { }
 
-    internal Reference(VariablePointer pointer) => Pointer = pointer;
+    internal Reference(VariablePointer pointer)
+    {
+        Pointer = pointer;
+    }
 
-    internal override ValueType GetType() => ValueType.Reference;
+    public override ValueType GetType() => ValueType.Reference;
+    public override string ToString() => "[reference]";
 
     internal static Reference Construct(List<Value> values, Call call)
     {
@@ -26,21 +32,5 @@ public sealed class Reference : Value
             [_] => throw new Throw($"'reference' does not have a constructor that takes a '{values[0].GetTypeName()}'"),
             [..] => throw new Throw($"'reference' does not have a constructor that takes {values.Count} arguments")
         };
-    }
-
-    public override string ToString()
-    {
-        return "[reference]";
-    }
-
-    public override int GetHashCode()
-    {
-        return 0;
-    }
-
-    public override bool Equals(object other)
-    {
-        return other is Reference reference &&
-            Pointer == reference.Pointer;
     }
 }

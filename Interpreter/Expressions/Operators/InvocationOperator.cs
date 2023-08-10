@@ -1,17 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Bloc.Memory;
 using Bloc.Results;
+using Bloc.Utils.Attributes;
 using Bloc.Utils.Helpers;
 using Bloc.Values.Behaviors;
 using Bloc.Values.Core;
 using Bloc.Values.Types;
-using Array = Bloc.Values.Types.Array;
 
 namespace Bloc.Expressions.Operators;
 
-internal sealed class InvocationOperator : IExpression
+[Record]
+internal sealed partial class InvocationOperator : IExpression
 {
     private readonly IExpression _expression;
     private readonly List<Argument> _arguments;
@@ -76,37 +76,7 @@ internal sealed class InvocationOperator : IExpression
         return invokable.Invoke(args, kwargs, call);
     }
 
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(_expression, _arguments.Count);
-    }
+    internal enum ArgumentType { Positional, Named, UnpackedArray, UnpackedStruct }
 
-    public override bool Equals(object other)
-    {
-        return other is InvocationOperator invocation &&
-            _expression.Equals(invocation._expression) &&
-            _arguments.SequenceEqual(invocation._arguments);
-    }
-
-    internal enum ArgumentType
-    {
-        Positional,
-        Named,
-        UnpackedArray,
-        UnpackedStruct
-    }
-
-    internal record Argument
-    {
-        internal string? Name { get; }
-        internal ArgumentType Type { get; }
-        internal IExpression Expression { get; }
-
-        internal Argument(string? name, ArgumentType type, IExpression expression)
-        {
-            Name = name;
-            Type = type;
-            Expression = expression;
-        }
-    }
+    internal sealed record Argument(string? Name, ArgumentType Type, IExpression Expression);
 }

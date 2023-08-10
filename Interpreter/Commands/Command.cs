@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
 using Bloc.Memory;
+using Bloc.Utils.Attributes;
 using Bloc.Values.Core;
 using Bloc.Values.Types;
 
 namespace Bloc.Commands;
 
-internal sealed class Command
+[Record]
+internal sealed partial class Command
 {
     private readonly List<CommandCall> _commandCalls;
 

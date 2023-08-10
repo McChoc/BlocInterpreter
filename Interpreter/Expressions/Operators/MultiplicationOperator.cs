@@ -57,7 +57,7 @@ internal sealed record MultiplicationOperator : IExpression
 
         var builder = new StringBuilder(@string.Value.Length * count);
 
-        for (var i = 0; i < count; i++)
+        for (int i = 0; i < count; i++)
             builder.Append(@string.Value);
 
         return new String(builder.ToString());
@@ -72,7 +72,7 @@ internal sealed record MultiplicationOperator : IExpression
 
         var list = new List<Value>(array.Values.Count * count);
 
-        for (var i = 0; i < count; i++)
+        for (int i = 0; i < count; i++)
             list.AddRange(array.Values.Select(x => x.Value.GetOrCopy()));
 
         return new Array(list);

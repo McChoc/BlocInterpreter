@@ -6,7 +6,7 @@ using Bloc.Values.Types;
 
 namespace Bloc.Commands.Arguments;
 
-internal class ExpressionArgument : IArgument
+internal sealed record ExpressionArgument : IArgument
 {
     private readonly bool _unpack;
     private readonly IExpression _expression;

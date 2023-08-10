@@ -1,11 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bloc.Memory;
 using Bloc.Results;
+using Bloc.Utils.Attributes;
 
 namespace Bloc.Statements;
 
-internal sealed class GotoStatement : Statement
+[Record]
+internal sealed partial class GotoStatement : Statement
 {
     private readonly string _label;
 
@@ -17,17 +18,5 @@ internal sealed class GotoStatement : Statement
     internal override IEnumerable<IResult> Execute(Call call)
     {
         yield return new Goto(_label);
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Label, _label);
-    }
-
-    public override bool Equals(object other)
-    {
-        return other is GotoStatement statement &&
-            Label == statement.Label &&
-            _label == statement._label;
     }
 }

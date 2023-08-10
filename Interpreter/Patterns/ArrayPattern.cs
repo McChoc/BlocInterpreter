@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Bloc.Memory;
+using Bloc.Utils.Attributes;
 using Bloc.Values.Core;
-using Array = Bloc.Values.Types.Array;
+using Bloc.Values.Types;
 
 namespace Bloc.Patterns;
 
-internal sealed class ArrayPattern : IPatternNode
+[Record]
+internal sealed partial class ArrayPattern : IPatternNode
 {
     private readonly int _packIndex;
     private readonly IPatternNode? _packPattern;
@@ -81,19 +82,7 @@ internal sealed class ArrayPattern : IPatternNode
 
     public bool HasAssignment()
     {
-        return _patterns.Any(x => x.HasAssignment());
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(_packIndex, _packPattern, _patterns.Count);
-    }
-
-    public override bool Equals(object other)
-    {
-        return other is ArrayPattern pattern &&
-            _packIndex == pattern._packIndex &&
-            Equals(_packPattern, pattern._packPattern) &&
-            _patterns.SequenceEqual(pattern._patterns);
+        return _patterns.Any(x => x.HasAssignment()) ||
+            (_packPattern?.HasAssignment() ?? false);
     }
 }

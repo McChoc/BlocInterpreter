@@ -2,12 +2,14 @@
 using System.Linq;
 using Bloc.Memory;
 using Bloc.Results;
+using Bloc.Utils.Attributes;
 using Bloc.Values.Core;
-using Tuple = Bloc.Values.Types.Tuple;
+using Bloc.Values.Types;
 
 namespace Bloc.Identifiers;
 
-internal sealed class TupleIdentifier : IIdentifier
+[Record]
+internal sealed partial class TupleIdentifier : IIdentifier
 {
     private readonly List<IIdentifier> _identifiers;
 

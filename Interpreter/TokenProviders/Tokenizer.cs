@@ -39,13 +39,13 @@ internal sealed class Tokenizer : ITokenProvider
 
     public void Skip(int count = 1)
     {
-        for (var i = 0; i < count && HasNext(); i++)
+        for (int i = 0; i < count && HasNext(); i++)
             Next();
     }
 
     public Token Peek()
     {
-        var previousIndex = _index;
+        int previousIndex = _index;
 
         var token = Next();
 
@@ -56,11 +56,11 @@ internal sealed class Tokenizer : ITokenProvider
 
     public List<Token> PeekRange(int count)
     {
-        var previousIndex = _index;
+        int previousIndex = _index;
 
         var tokens = new List<Token>();
 
-        for (var i = 0; i < count && HasNext(); i++)
+        for (int i = 0; i < count && HasNext(); i++)
             tokens.Add(Next());
 
         _index = previousIndex;
@@ -163,7 +163,7 @@ internal sealed class Tokenizer : ITokenProvider
 
     private void SkipWhiteSpaceAndComments()
     {
-        var start = _index;
+        int start = _index;
         bool skip;
 
         do
@@ -223,12 +223,12 @@ internal sealed class Tokenizer : ITokenProvider
 
     private TextToken GetWord(bool forceIdentifier)
     {
-        var start = _index;
+        int start = _index;
 
         while (_index < _code.Length && !char.IsWhiteSpace(_code[_index]) && !Character.ReservedCharacters.Contains(_code[_index]))
             _index++;
 
-        var text = _code[start.._index];
+        string text = _code[start.._index];
 
         if (forceIdentifier)
             return new IdentifierToken(start + _offset, _index + _offset, text);
@@ -242,7 +242,7 @@ internal sealed class Tokenizer : ITokenProvider
 
     private SymbolToken GetSymbol()
     {
-        var start = _index;
+        int start = _index;
 
         while (true)
         {
@@ -263,8 +263,8 @@ internal sealed class Tokenizer : ITokenProvider
 
     private NumberToken GetNumber()
     {
-        var hasPeriod = false;
-        var hasExp = false;
+        bool hasPeriod = false;
+        bool hasExp = false;
 
         byte @base = 10;
 
@@ -282,7 +282,7 @@ internal sealed class Tokenizer : ITokenProvider
                 _index += 2;
         }
 
-        var start = _index;
+        int start = _index;
 
         while (true)
         {
@@ -319,7 +319,7 @@ internal sealed class Tokenizer : ITokenProvider
             break;
         }
 
-        var num = _code[start.._index];
+        string num = _code[start.._index];
 
         if (num[^1] == '_')
             throw new SyntaxError(start + _offset, _index + _offset, "Invalid number");
@@ -328,7 +328,7 @@ internal sealed class Tokenizer : ITokenProvider
 
         try
         {
-            var number = @base == 10
+            double number = @base == 10
                 ? double.Parse(num, CultureInfo.InvariantCulture)
                 : Convert.ToInt32(num, @base);
 
@@ -342,10 +342,10 @@ internal sealed class Tokenizer : ITokenProvider
 
     private StringToken GetString()
     {
-        var start = _index;
+        int start = _index;
 
-        var symbol = _code[_index];
-        var IsRaw = _index <= _code.Length - 3 && _code[_index + 1] == symbol && _code[_index + 2] == symbol;
+        char symbol = _code[_index];
+        bool IsRaw = _index <= _code.Length - 3 && _code[_index + 1] == symbol && _code[_index + 2] == symbol;
 
         var interpolations = new List<StringToken.Interpolation>();
 
@@ -369,7 +369,7 @@ internal sealed class Tokenizer : ITokenProvider
                     break;
                 }
 
-                var count = 0;
+                int count = 0;
 
                 while (_index < _code.Length && _code[_index] == symbol)
                 {
@@ -392,7 +392,7 @@ internal sealed class Tokenizer : ITokenProvider
             }
             else if (!IsRaw && _code[_index] == '\\')
             {
-                var character = _code[_index + 1] switch
+                char character = _code[_index + 1] switch
                 {
                     '`' => '`',
                     's' => ' ',
@@ -445,8 +445,8 @@ internal sealed class Tokenizer : ITokenProvider
 
         List<Token> GetExpression()
         {
-            var depth = 0;
-            var start = _index;
+            int depth = 0;
+            int start = _index;
 
             while (true)
             {
@@ -464,7 +464,7 @@ internal sealed class Tokenizer : ITokenProvider
                     break;
             }
 
-            var text = _code[(start + 1)..(_index - 1)];
+            string text = _code[(start + 1)..(_index - 1)];
 
             return Tokenize(text, _offset).ToList();
         }
@@ -473,7 +473,7 @@ internal sealed class Tokenizer : ITokenProvider
     private Token GetParentheses()
     {
         int start = _index;
-        var text = GetBlock();
+        string text = GetBlock();
         var tokens = Tokenize(text, start + _offset).ToList();
 
         return new ParenthesesToken(start, _index, tokens);
@@ -482,7 +482,7 @@ internal sealed class Tokenizer : ITokenProvider
     private Token GetBrackets()
     {
         int start = _index;
-        var text = GetBlock();
+        string text = GetBlock();
         var tokens = Tokenize(text, start + _offset).ToList();
 
         return new BracketsToken(start, _index, tokens);
@@ -491,7 +491,7 @@ internal sealed class Tokenizer : ITokenProvider
     private Token GetBraces()
     {
         int start = _index;
-        var text = GetBlock();
+        string text = GetBlock();
         var tokens = Tokenize(text, start + _offset).ToList();
 
         return new BracesToken(start, _index, tokens);

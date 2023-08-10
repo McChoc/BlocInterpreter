@@ -1,14 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Bloc.Expressions.Literals.ArrayElements;
 using Bloc.Memory;
+using Bloc.Utils.Attributes;
 using Bloc.Values.Core;
-using Array = Bloc.Values.Types.Array;
+using Bloc.Values.Types;
 
 namespace Bloc.Expressions.Literals;
 
-internal sealed class ArrayLiteral : IExpression
+[Record]
+internal sealed partial class ArrayLiteral : IExpression
 {
     private readonly List<IElement> _elements;
 
@@ -24,16 +25,5 @@ internal sealed class ArrayLiteral : IExpression
             .ToList();
 
         return new Array(values);
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(_elements.Count);
-    }
-
-    public override bool Equals(object other)
-    {
-        return other is ArrayLiteral literal &&
-            _elements.SequenceEqual(literal._elements);
     }
 }

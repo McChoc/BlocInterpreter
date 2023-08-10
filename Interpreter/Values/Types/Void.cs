@@ -1,25 +1,19 @@
 ﻿using System.Collections.Generic;
 using Bloc.Results;
+using Bloc.Utils.Attributes;
 using Bloc.Values.Core;
 
 namespace Bloc.Values.Types;
 
-public sealed class Void : Value
+[Record]
+public sealed partial class Void : Value
 {
     public static Void Value { get; } = new();
 
     private Void() { }
 
-    internal override ValueType GetType() => ValueType.Void;
-
-    internal static Void Construct(List<Value> values)
-    {
-        return values switch
-        {
-            [] => Value,
-            [..] => throw new Throw($"'void' does not have a constructor that takes {values.Count} arguments"),
-        };
-    }
+    public override ValueType GetType() => ValueType.Void;
+    public override string ToString() => "void";
 
     public override Value Copy(bool assign)
     {
@@ -37,18 +31,12 @@ public sealed class Void : Value
         return this;
     }
 
-    public override string ToString()
+    internal static Void Construct(List<Value> values)
     {
-        return "void";
-    }
-
-    public override int GetHashCode()
-    {
-        return 0;
-    }
-
-    public override bool Equals(object other)
-    {
-        return other is Void;
+        return values switch
+        {
+            [] => Value,
+            [..] => throw new Throw($"'void' does not have a constructor that takes {values.Count} arguments"),
+        };
     }
 }

@@ -4,9 +4,8 @@ using Bloc.Results;
 using Bloc.Utils.Extensions;
 using Bloc.Utils.Helpers;
 using Bloc.Values.Core;
+using Bloc.Values.Types;
 using Bloc.Variables;
-using Array = Bloc.Values.Types.Array;
-using Range = Bloc.Values.Types.Range;
 
 namespace Bloc.Pointers;
 

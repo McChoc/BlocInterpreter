@@ -4,13 +4,15 @@ using Bloc.Utils.Extensions;
 
 namespace Bloc.Scanners;
 
-internal class TokenCollection : ITokenProvider
+internal sealed class TokenCollection : ITokenProvider
 {
+    private int _index;
     private readonly List<Token> _tokens;
 
-    private int _index;
-
-    public TokenCollection(List<Token> tokens) => _tokens = tokens;
+    public TokenCollection(List<Token> tokens)
+    {
+        _tokens = tokens;
+    }
 
     public void Skip(int count = 1) => _index += count;
 

@@ -4,8 +4,8 @@ public abstract class Value : IValue
 {
     Value IValue.Value => this;
 
-    internal abstract new ValueType GetType();
-    internal string GetTypeName() => GetType().ToString().ToLower();
+    public abstract new ValueType GetType();
+    public string GetTypeName() => GetType().ToString().ToLower();
 
     public virtual void Destroy() { }
     public virtual Value Copy(bool assign = false) => this;

@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleApp", "ConsoleApp\Co
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Interpreter", "Interpreter\Interpreter.csproj", "{BE1454AE-9275-4877-AEF8-907D3DFB902D}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SourceGenerators", "SourceGenerators\SourceGenerators.csproj", "{EF5A68AB-C119-4043-BD6E-BCB5B8FBAE80}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{BE1454AE-9275-4877-AEF8-907D3DFB902D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BE1454AE-9275-4877-AEF8-907D3DFB902D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BE1454AE-9275-4877-AEF8-907D3DFB902D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF5A68AB-C119-4043-BD6E-BCB5B8FBAE80}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF5A68AB-C119-4043-BD6E-BCB5B8FBAE80}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF5A68AB-C119-4043-BD6E-BCB5B8FBAE80}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF5A68AB-C119-4043-BD6E-BCB5B8FBAE80}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,41 +1,40 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
+using Bloc.Utils.Attributes;
+using Bloc.Utils.Comparers;
 using Bloc.Utils.Helpers;
 using Bloc.Values.Behaviors;
 using Bloc.Values.Core;
 using Bloc.Variables;
-using ValueType = Bloc.Values.Core.ValueType;
 
 namespace Bloc.Values.Types;
 
-public sealed class Struct : Value, IIndexable
+[Record]
+public sealed partial class Struct : Value, IIndexable
 {
+    [DoNotCompare]
     private bool _assigned = false;
 
+    [CompareUsing<ValueEqualityComparer>]
     internal Dictionary<string, IValue> Values { get; private set; }
 
-    public Struct() => Values = new();
+    public Struct() : this(new()) { }
 
     public Struct(Dictionary<string, Value> values)
     {
         Values = values.ToDictionary(x => x.Key, x => (IValue)x.Value);
     }
 
-    internal override ValueType GetType() => ValueType.Struct;
+    public override ValueType GetType() => ValueType.Struct;
 
-    internal static Struct Construct(List<Value> values)
+    public override string ToString()
     {
-        return values switch
-        {
-            [] or [Null] => new(),
-            [Struct @struct] => @struct,
-            [_] => throw new Throw($"'struct' does not have a constructor that takes a '{values[0].GetTypeName()}'"),
-            [..] => throw new Throw($"'struct' does not have a constructor that takes {values.Count} arguments"),
-        };
+        return Values.Count > 0
+            ? "{" + string.Join(", ", Values.OrderBy(x => x.Key).Select(x => $"{x.Key}={x.Value.Value}")) + "}"
+            : "{&}";
     }
 
     public override void Destroy()
@@ -86,36 +85,15 @@ public sealed class Struct : Value, IIndexable
         return @struct;
     }
 
-    public override string ToString()
+    public IValue Get(string key)
     {
-        return Values.Count > 0
-            ? "{" + string.Join(", ", Values.OrderBy(x => x.Key).Select(x => $"{x.Key}={x.Value.Value}")) + "}"
-            : "{&}";
-    }
+        if (!Values.ContainsKey(key))
+            throw new Throw($"'{key}' was not defined inside this struct");
 
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Values.Count);
-    }
-
-    public override bool Equals(object other)
-    {
-        if (other is not Struct @struct)
-            return false;
-
-        if (Values.Count != @struct.Values.Count)
-            return false;
-
-        foreach (var key in Values.Keys)
-        {
-            if (!@struct.Values.TryGetValue(key, out var value))
-                return false;
-
-            if (Values[key].Value != value.Value)
-                return false;
-        }
-
-        return true;
+        if (_assigned)
+            return new VariablePointer((StructVariable)Values[key]);
+        else
+            return Values[key];
     }
 
     public IValue Index(Value index, Call _)
@@ -135,14 +113,14 @@ public sealed class Struct : Value, IIndexable
             return Values[@string.Value];
     }
 
-    public IValue Get(string key)
+    internal static Struct Construct(List<Value> values)
     {
-        if (!Values.ContainsKey(key))
-            throw new Throw($"'{key}' was not defined inside this struct");
-
-        if (_assigned)
-            return new VariablePointer((StructVariable)Values[key]);
-        else
-            return Values[key];
+        return values switch
+        {
+            [] or [Null] => new(),
+            [Struct @struct] => @struct,
+            [_] => throw new Throw($"'struct' does not have a constructor that takes a '{values[0].GetTypeName()}'"),
+            [..] => throw new Throw($"'struct' does not have a constructor that takes {values.Count} arguments"),
+        };
     }
 }

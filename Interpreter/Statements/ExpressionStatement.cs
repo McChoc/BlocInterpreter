@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
+using Bloc.Utils.Attributes;
 
 namespace Bloc.Statements;
 
-internal sealed class ExpressionStatement : Statement
+[Record]
+internal sealed partial class ExpressionStatement : Statement
 {
     internal IExpression Expression { get; }
 
@@ -19,17 +20,5 @@ internal sealed class ExpressionStatement : Statement
     {
         if (!EvaluateExpression(Expression, call, out var _, out var exception))
             yield return exception!;
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Label, Expression);
-    }
-
-    public override bool Equals(object other)
-    {
-        return other is ExpressionStatement statement &&
-            Label == statement.Label &&
-            Expression.Equals(statement.Expression);
     }
 }

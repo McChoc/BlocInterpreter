@@ -1,6 +1,8 @@
-﻿namespace Bloc.Memory;
+﻿using System;
 
-public sealed class Scope : VariableCollection
+namespace Bloc.Memory;
+
+public sealed class Scope : VariableCollection, IDisposable
 {
     private readonly Call _call;
 
@@ -10,9 +12,12 @@ public sealed class Scope : VariableCollection
         _call.Scopes.Add(this);
     }
 
-    public override void Dispose()
+    public void Dispose()
     {
-        base.Dispose();
+        foreach (var stack in Variables.Values)
+            while (stack.Count > 0)
+                stack.Peek().Delete();
+
         _call.Scopes.Remove(this);
     }
 }

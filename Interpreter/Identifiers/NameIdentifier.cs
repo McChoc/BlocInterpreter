@@ -3,7 +3,7 @@ using Bloc.Values.Core;
 
 namespace Bloc.Identifiers;
 
-internal sealed class NameIdentifier : IIdentifier
+internal sealed record NameIdentifier : IIdentifier
 {
     private readonly string _name;
 

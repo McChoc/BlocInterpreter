@@ -6,8 +6,8 @@ namespace Bloc.Utils.Extensions;
 
 public static class EnumerableExtensions
 {
-    public static IEnumerable<(T, U)> Zip<T, U>(this IEnumerable<T> a, IEnumerable<U> b)
+    public static IEnumerable<(T, U)> Zip<T, U>(this IEnumerable<T> first, IEnumerable<U> second)
     {
-        return a.Zip(b, (a, b) => (a, b));
+        return first.Zip(second, (a, b) => (a, b));
     }
 }

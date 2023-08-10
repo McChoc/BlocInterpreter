@@ -1,10 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Bloc.Utils.Attributes;
 using Bloc.Variables;
 
 namespace Bloc.Memory;
 
-public class VariableCollection : IDisposable
+[Record]
+public partial class VariableCollection
 {
     public Dictionary<string, Stack<StackVariable>> Variables { get; } = new();
 
@@ -22,12 +23,5 @@ public class VariableCollection : IDisposable
 
         if (Variables[name].Count == 0)
             Variables.Remove(name);
-    }
-
-    public virtual void Dispose()
-    {
-        foreach (var stack in Variables.Values)
-            while (stack.Count > 0)
-                stack.Peek().Delete();
     }
 }

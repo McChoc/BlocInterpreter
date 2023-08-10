@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
-using Void = Bloc.Values.Types.Void;
+using Bloc.Utils.Attributes;
+using Bloc.Values.Types;
 
 namespace Bloc.Statements;
 
-internal sealed class YieldStatement : Statement
+[Record]
+internal sealed partial class YieldStatement : Statement
 {
     private readonly IExpression _expression;
 
@@ -24,17 +25,5 @@ internal sealed class YieldStatement : Statement
             yield return new Throw("'void' cannot be yielded");
         else
             yield return new Yield(value!.GetOrCopy());
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Label, _expression);
-    }
-
-    public override bool Equals(object other)
-    {
-        return other is YieldStatement statement &&
-            Label == statement.Label &&
-            _expression.Equals(statement._expression);
     }
 }

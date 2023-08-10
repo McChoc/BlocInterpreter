@@ -7,18 +7,27 @@ using Bloc.Values.Types;
 
 namespace Bloc.Expressions.Literals.StructMembers;
 
-internal sealed record DynamicMember(IExpression NameExpression, IExpression ValueExpression) : IMember
+internal sealed record DynamicMember : IMember
 {
+    private readonly IExpression _nameExpression;
+    private readonly IExpression _valueExpression;
+
+    public DynamicMember(IExpression nameExpression, IExpression valueExpression)
+    {
+        _nameExpression = nameExpression;
+        _valueExpression = valueExpression;
+    }
+
     public IEnumerable<(string, Value)> GetMembers(Call call)
     {
-        var nameValue = NameExpression.Evaluate(call);
+        var nameValue = _nameExpression.Evaluate(call);
         var nameString = String.ImplicitCast(nameValue);
-        var name = nameString.Value;
+        string name = nameString.Value;
 
         if (!IdentifierHelper.IsIdentifierValid(name))
             throw new Throw("Invalid identifier name");
 
-        var value = ValueExpression.Evaluate(call).Value.GetOrCopy();
+        var value = _valueExpression.Evaluate(call).Value.GetOrCopy();
 
         if (value is Void)
             throw new Throw("'void' is not assignable");

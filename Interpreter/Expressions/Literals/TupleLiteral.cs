@@ -1,16 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
+using Bloc.Utils.Attributes;
 using Bloc.Values.Core;
-using Tuple = Bloc.Values.Types.Tuple;
-using Void = Bloc.Values.Types.Void;
+using Bloc.Values.Types;
 
 namespace Bloc.Expressions.Literals;
 
-internal sealed class TupleLiteral : IExpression
+[Record]
+internal sealed partial class TupleLiteral : IExpression
 {
     private readonly List<IExpression> _expressions;
 
@@ -37,16 +36,5 @@ internal sealed class TupleLiteral : IExpression
         }
 
         return new Tuple(values);
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(_expressions.Count);
-    }
-
-    public override bool Equals(object other)
-    {
-        return other is TupleLiteral literal &&
-            _expressions.SequenceEqual(literal._expressions);
     }
 }

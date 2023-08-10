@@ -1,11 +1,10 @@
-﻿using System;
-using Bloc.Memory;
+﻿using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Utils.Helpers;
 using Bloc.Values.Behaviors;
 using Bloc.Values.Core;
 using Bloc.Values.Types;
-using String = Bloc.Values.Types.String;
+using static System.Math;
 
 namespace Bloc.Expressions.Operators;
 
@@ -29,14 +28,14 @@ internal sealed record ComparisonOperator : IExpression
         right = ReferenceHelper.Resolve(right, call.Engine.Options.HopLimit).Value;
 
         if (left is String leftString && right is String rightString)
-            return new Number(Math.Sign(string.CompareOrdinal(leftString.Value, rightString.Value)));
+            return new Number(Sign(string.CompareOrdinal(leftString.Value, rightString.Value)));
 
         if (left is INumeric leftScalar && right is INumeric rightScalar)
         {
             if (double.IsNaN(leftScalar.GetDouble()) || double.IsNaN(rightScalar.GetDouble()))
                 return new Number(double.NaN);
 
-            return new Number(Math.Sign(leftScalar.GetDouble() - rightScalar.GetDouble()));
+            return new Number(Sign(leftScalar.GetDouble() - rightScalar.GetDouble()));
         }
 
         throw new Throw($"Cannot apply operator '<=>' on operands of types {left.GetTypeName()} and {right.GetTypeName()}");

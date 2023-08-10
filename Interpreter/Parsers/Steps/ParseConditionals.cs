@@ -15,13 +15,13 @@ internal sealed class ParseConditionals : ParsingStep
 
     internal override IExpression Parse(List<Token> tokens)
     {
-        for (var i = 0; i < tokens.Count; i++)
+        for (int i = 0; i < tokens.Count; i++)
         {
             if (tokens[i] is SymbolToken(Symbol.QUESTION))
             {
-                var depth = 0;
+                int depth = 0;
 
-                for (var j = i; j < tokens.Count; j++)
+                for (int j = i; j < tokens.Count; j++)
                 {
                     if (tokens[j] is SymbolToken(Symbol.QUESTION))
                         depth++;

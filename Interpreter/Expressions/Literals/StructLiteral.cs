@@ -1,15 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Bloc.Expressions.Literals.StructMembers;
 using Bloc.Memory;
 using Bloc.Results;
+using Bloc.Utils.Attributes;
 using Bloc.Values.Core;
 using Bloc.Values.Types;
 
 namespace Bloc.Expressions.Literals;
 
-internal sealed class StructLiteral : IExpression
+[Record]
+internal sealed partial class StructLiteral : IExpression
 {
     private readonly List<IMember> _members;
 
@@ -31,16 +32,5 @@ internal sealed class StructLiteral : IExpression
         }
 
         return new Struct(values);
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(_members.Count);
-    }
-
-    public override bool Equals(object other)
-    {
-        return other is StructLiteral literal &&
-            _members.SequenceEqual(literal._members);
     }
 }

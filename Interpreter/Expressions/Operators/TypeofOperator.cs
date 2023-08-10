@@ -16,7 +16,8 @@ internal sealed record TypeofOperator : IExpression
     public IValue Evaluate(Call call)
     {
         var value = _operand.Evaluate(call).Value;
+        var type = value.GetType();
 
-        return new Type(value.GetType());
+        return new Type(type);
     }
 }

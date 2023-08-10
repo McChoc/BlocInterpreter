@@ -1,31 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Bloc.Funcs;
 using Bloc.Memory;
 using Bloc.Patterns;
 using Bloc.Results;
 using Bloc.Statements;
+using Bloc.Utils.Attributes;
 using Bloc.Utils.Helpers;
 using Bloc.Values.Behaviors;
 using Bloc.Values.Core;
-using ValueType = Bloc.Values.Core.ValueType;
 
 namespace Bloc.Values.Types;
 
-public sealed class Func : Value, IPattern, IInvokable
+[Record]
+public sealed partial class Func : Value, IPattern, IInvokable
 {
     private readonly FuncType _type;
     private readonly CaptureMode _mode;
 
     private readonly VariableCollection _captures;
-
     private readonly Parameter? _argsContainer;
     private readonly Parameter? _kwargsContainer;
     private readonly List<Parameter> _parameters;
-
     private readonly List<Statement> _statements;
-    private readonly Dictionary<string, Label> _labels;
+
+    [DoNotCompare]
+    private readonly Dictionary<string, LabelInfo> _labels;
 
     internal Func()
     {
@@ -60,65 +60,9 @@ public sealed class Func : Value, IPattern, IInvokable
         _labels = StatementHelper.GetLabels(statements);
     }
 
-    internal override ValueType GetType() => ValueType.Func;
-
-    internal static Func Construct(List<Value> values)
-    {
-        return values switch
-        {
-            [] or [Null] => new(),
-            [Func func] => func,
-            [_] => throw new Throw($"'func' does not have a constructor that takes a '{values[0].GetTypeName()}'"),
-            [..] => throw new Throw($"'func' does not have a constructor that takes {values.Count} arguments")
-        };
-    }
-
-    public override string ToString()
-    {
-        return "[func]";
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(_type, _mode, _parameters.Count, _statements.Count);
-    }
-
-    public override bool Equals(object other)
-    {
-        if (other is not Func func)
-            return false;
-
-        if (_type != func._type)
-            return false;
-
-        if (_mode != func._mode)
-            return false;
-
-        if (!_parameters.SequenceEqual(func._parameters))
-            return false;
-
-        if (!_statements.SequenceEqual(func._statements))
-            return false;
-
-        if (_captures.Variables.Count != func._captures.Variables.Count)
-            return false;
-
-        foreach (var key in _captures.Variables.Keys)
-        {
-            if (!func._captures.Variables.ContainsKey(key))
-                return false;
-
-            if (!_captures.Variables[key].SequenceEqual(func._captures.Variables[key]))
-                return false;
-        }
-
-        return true;
-    }
-
-    public IPatternNode GetRoot()
-    {
-        return new PredicatePattern(this);
-    }
+    public IPatternNode GetRoot() => new PredicatePattern(this);
+    public override ValueType GetType() => ValueType.Func;
+    public override string ToString() => "[func]";
 
     public Value Invoke(List<Value> args, Dictionary<string, Value> kwargs, Call parent)
     {
@@ -160,7 +104,7 @@ public sealed class Func : Value, IPattern, IInvokable
                 var parameter = remainingParameters[0];
                 remainingParameters.RemoveAt(0);
 
-                var name = parameter.Name;
+                string name = parameter.Name;
 
                 var val = value != Void.Value ? value : parameter.Value?.Copy()
                     ?? throw new Throw($"A non-void value must be provided for the required parameter '{name}'");
@@ -206,7 +150,7 @@ public sealed class Func : Value, IPattern, IInvokable
     {
         try
         {
-            for (var i = 0; i < _statements.Count; i++)
+            for (int i = 0; i < _statements.Count; i++)
             {
                 switch (_statements[i].Execute(call).FirstOrDefault())
                 {
@@ -248,21 +192,16 @@ public sealed class Func : Value, IPattern, IInvokable
         }
     }
 
-    internal sealed record Parameter
+    internal static Func Construct(List<Value> values)
     {
-        internal string Name { get; }
-        internal Value? Value { get; }
-
-        internal Parameter(string name, Value? value)
+        return values switch
         {
-            Name = name;
-            Value = value;
-        }
-
-        internal void Deconstruct(out string name, out Value? value)
-        {
-            name = Name;
-            value = Value;
-        }
+            [] or [Null] => new(),
+            [Func func] => func,
+            [_] => throw new Throw($"'func' does not have a constructor that takes a '{values[0].GetTypeName()}'"),
+            [..] => throw new Throw($"'func' does not have a constructor that takes {values.Count} arguments")
+        };
     }
+
+    internal sealed record Parameter(string Name, Value? Value);
 }

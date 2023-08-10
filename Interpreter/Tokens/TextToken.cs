@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Bloc.Tokens;
+﻿namespace Bloc.Tokens;
 
 internal abstract class TextToken : Token
 {
@@ -15,17 +13,5 @@ internal abstract class TextToken : Token
     public void Deconstruct(out string text)
     {
         text = Text;
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Text);
-    }
-
-    public override bool Equals(object other)
-    {
-        return other is TextToken token &&
-            GetType() == token.GetType() &&
-            Text == token.Text;
     }
 }

@@ -6,7 +6,7 @@ using Bloc.Values.Types;
 
 namespace Bloc.Commands;
 
-internal class HelpCommand : ICommandInfo
+internal sealed class HelpCommand : ICommandInfo
 {
     public string Name => "help";
 
