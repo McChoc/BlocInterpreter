@@ -13,21 +13,27 @@ public sealed partial class Tuple : Value
     [DoNotCompare]
     private bool _assigned = false;
 
+    [DoNotCompare]
+    public bool Assignable { get; private set; }
+
     [CompareUsing<ValueEqualityComparer>]
     public List<IValue> Values { get; private set; }
 
     public Tuple()
     {
+        Assignable = false;
         Values = new();
     }
 
     public Tuple(List<IValue> values)
     {
+        Assignable = true;
         Values = values;
     }
 
     public Tuple(List<Value> values)
     {
+        Assignable = false;
         Values = values.ToList<IValue>();
     }
 
@@ -35,7 +41,12 @@ public sealed partial class Tuple : Value
 
     public override string ToString()
     {
-        return "(" + string.Join(", ", Values.Select(v => v.Value)) + ")";
+        return Values.Count switch
+        {
+            0 => "()",
+            1 => $"({Values[0].Value},)",
+            _ => $"({string.Join(", ", Values.Select(v => v.Value))})"
+        };
     }
 
     public override Value Copy(bool assign)
@@ -43,7 +54,7 @@ public sealed partial class Tuple : Value
         return new Tuple
         {
             _assigned = assign,
-
+            Assignable = false,
             Values = Values
                 .Select(x => x.Value.GetOrCopy(assign))
                 .ToList<IValue>()
@@ -57,12 +68,18 @@ public sealed partial class Tuple : Value
             : this;
 
         tuple._assigned = assign;
-
+        tuple.Assignable = false;
         tuple.Values = Values
             .Select(x => x.Value.GetOrCopy(assign))
             .ToList<IValue>();
 
         return tuple;
+    }
+
+    private Tuple AsNonAssignable()
+    {
+        Assignable = false;
+        return this;
     }
 
     internal static Tuple Construct(List<Value> values)
@@ -71,7 +88,7 @@ public sealed partial class Tuple : Value
         {
             [] or [Null] => new(),
 
-            [Tuple tuple] => tuple,
+            [Tuple tuple] => tuple.AsNonAssignable(),
 
             [Array array] => new(array.Values
                 .Select(x => x.Value)
@@ -84,9 +101,9 @@ public sealed partial class Tuple : Value
 
             [Range range] => new(new List<Value>()
             {
-                range.Start is int l ? new Number(l) : Null.Value,
-                range.End is int m ? new Number(m) : Null.Value,
-                range.Step is int n ? new Number(n) : Null.Value
+                range.Start is int start ? new Number(start) : Null.Value,
+                range.End is int end ? new Number(end) : Null.Value,
+                range.Step is int step ? new Number(step) : Null.Value
             }),
 
             [_] => throw new Throw($"'tuple' does not have a constructor that takes a '{values[0].GetTypeName()}'"),

@@ -35,7 +35,7 @@ internal sealed record AssignmentOperator : IExpression
             case Pointer pointer:
                 return pointer.Set(value);
 
-            case Tuple tuple:
+            case Tuple { Assignable: true } tuple:
                 if (value is not Tuple rightTuple)
                     return new Tuple(tuple.Values.Select(x => Assign(x, value)).ToList());
 

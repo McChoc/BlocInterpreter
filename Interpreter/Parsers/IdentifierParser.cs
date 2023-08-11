@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Bloc.Identifiers;
 using Bloc.Tokens;
 using Bloc.Utils.Constants;
@@ -16,34 +17,29 @@ internal static class IdentifierParser
 
         var parts = tokens.Split(x => x is SymbolToken(Symbol.COMMA));
 
-        if (parts.Count != 1)
+        if (parts.Count == 1)
         {
-            var identifiers = new List<IIdentifier>();
+            if (tokens.Count > 1)
+                throw new SyntaxError(tokens[1].Start, tokens[1].End, "Unexpected token");
 
-            foreach (var part in parts)
-                identifiers.Add(Parse(part));
+            return tokens[0] switch
+            {
+                IIdentifierToken token => new NameIdentifier(token.Text),
+                ParenthesesToken { Tokens.Count: 0 } => new TupleIdentifier(new()),
+                ParenthesesToken token => Parse(token.Tokens),
+                _ => throw new SyntaxError(tokens[0].Start, tokens[0].End, "Unexpected token"),
+            };
+        }
+        else
+        {
+            if (parts[^1].Count == 0)
+                parts.RemoveAt(parts.Count - 1);
+
+            var identifiers = parts
+                .Select(Parse)
+                .ToList();
 
             return new TupleIdentifier(identifiers);
-        }
-
-        if (tokens.Count > 1)
-            throw new SyntaxError(tokens[1].Start, tokens[1].End, "Unexpected token");
-
-        switch (tokens[0])
-        {
-            case IIdentifierToken token:
-                return new NameIdentifier(token.Text);
-
-            case ParenthesesToken token:
-                var identifier = Parse(token.Tokens);
-
-                if (identifier is not TupleIdentifier)
-                    throw new SyntaxError(tokens[0].Start, tokens[0].End, "Tuples must contain at least 2 identifiers");
-
-                return identifier;
-
-            default:
-                throw new SyntaxError(tokens[0].Start, tokens[0].End, "Unexpected token");
         }
     }
 }

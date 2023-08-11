@@ -19,6 +19,9 @@ internal sealed class ParseTuples : ParsingStep
         if (parts.Count == 1)
             return NextStep!.Parse(tokens);
 
+        if (parts[^1].Count == 0)
+            parts.RemoveAt(parts.Count - 1);
+
         var expressions = new List<IExpression>();
 
         foreach (var part in parts)

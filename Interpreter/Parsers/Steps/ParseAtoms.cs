@@ -31,6 +31,8 @@ internal sealed class ParseAtoms : ParsingStep
             StringToken token => ParseString(token),
             BracesToken token => ParseBraces(token),
             BracketsToken token => ParseBrackets(token),
+
+            ParenthesesToken { Tokens.Count: 0 } => new TupleLiteral(new()),
             ParenthesesToken parentheses => ExpressionParser.Parse(parentheses.Tokens),
 
             _ => throw new SyntaxError(tokens[0].Start, tokens[0].End, "Unexpected token")
