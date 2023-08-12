@@ -48,7 +48,7 @@ public sealed class Engine
     {
         try
         {
-            value = expression.Evaluate(GlobalCall).Value;
+            value = expression.Evaluate(GlobalCall).Value.GetOrCopy();
             return null;
         }
         catch (Throw @throw)

@@ -34,7 +34,7 @@ public abstract class Statement
     {
         try
         {
-            value = expression.Evaluate(call).Value;
+            value = expression.Evaluate(call).Value.GetOrCopy();
             exception = null;
             return true;
         }
