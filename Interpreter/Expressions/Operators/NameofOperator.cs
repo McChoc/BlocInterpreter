@@ -20,15 +20,20 @@ internal sealed record NameofOperator : IExpression
     {
         var value = _operand.Evaluate(call);
 
-        if (value is VariablePointer pointer)
+        var pointer = value switch
         {
-            if (pointer.Variable is StackVariable variable)
-                return new String(variable.Name);
+            UnresolvedPointer unresolvedPointer => unresolvedPointer.Resolve(),
+            VariablePointer variablePointer => variablePointer,
+            _ => throw new Throw("The expression does not have a name")
+        };
 
-            if (pointer.Variable is StructVariable member)
-                return new String(member.Name);
-        }
+        var name = pointer.Variable switch
+        {
+            StackVariable variable => variable.Name,
+            StructVariable variable => variable.Name,
+            _ => throw new Throw("The expression does not have a name")
+        };
 
-        throw new Throw("The expression does not have a name");
+        return new String(name);
     }
 }
