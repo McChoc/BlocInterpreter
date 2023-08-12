@@ -2,9 +2,9 @@
 
 namespace Bloc.Tokens;
 
-internal sealed class WordToken : TextToken, IKeywordToken, IStaticIdentifierToken
+internal sealed class StaticIdentifierToken : TextToken, IStaticIdentifierToken
 {
-    internal WordToken(int start, int end, string text)
+    internal StaticIdentifierToken(int start, int end, string text)
         : base(start, end, text) { }
 
     public INamedIdentifier GetIdentifier()

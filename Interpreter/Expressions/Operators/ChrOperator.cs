@@ -7,11 +7,11 @@ using Bloc.Values.Types;
 
 namespace Bloc.Expressions.Operators;
 
-internal sealed record CharacterOperator : IExpression
+internal sealed record ChrOperator : IExpression
 {
     private readonly IExpression _operand;
 
-    internal CharacterOperator(IExpression operand)
+    internal ChrOperator(IExpression operand)
     {
         _operand = operand;
     }

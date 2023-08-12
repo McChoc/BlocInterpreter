@@ -2,7 +2,7 @@
 using Bloc.Memory;
 using Bloc.Values.Core;
 
-namespace Bloc.Statements.Arms;
+namespace Bloc.Statements.SwitchArms;
 
 internal sealed record Case : IArm
 {

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Bloc.Identifiers;
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Values.Core;
@@ -6,24 +7,25 @@ using Bloc.Values.Types;
 
 namespace Bloc.Expressions.Literals.StructMembers;
 
-internal sealed record StaticMember : IMember
+internal sealed record Member : IMember
 {
-    private readonly string _name;
+    private readonly INamedIdentifier _identifier;
     private readonly IExpression _expression;
 
-    public StaticMember(string name, IExpression expression)
+    public Member(INamedIdentifier identifier, IExpression expression)
     {
-        _name = name;
+        _identifier = identifier;
         _expression = expression;
     }
 
     public IEnumerable<(string, Value)> GetMembers(Call call)
     {
+        var name = _identifier.GetName(call);
         var value = _expression.Evaluate(call).Value.GetOrCopy();
 
         if (value is Void)
             throw new Throw("'void' is not assignable");
 
-        yield return (_name, value);
+        yield return (name, value);
     }
 }

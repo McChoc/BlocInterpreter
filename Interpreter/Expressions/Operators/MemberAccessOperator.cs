@@ -1,4 +1,5 @@
-﻿using Bloc.Memory;
+﻿using Bloc.Identifiers;
+using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Utils.Helpers;
 using Bloc.Values.Core;
@@ -9,12 +10,12 @@ namespace Bloc.Expressions.Operators;
 internal sealed record MemberAccessOperator : IExpression
 {
     private readonly IExpression _expression;
-    private readonly string _member;
+    private readonly INamedIdentifier _identifier;
 
-    internal MemberAccessOperator(IExpression expression, string member)
+    internal MemberAccessOperator(IExpression expression, INamedIdentifier identifier)
     {
         _expression = expression;
-        _member = member;
+        _identifier = identifier;
     }
 
     public IValue Evaluate(Call call)
@@ -24,8 +25,10 @@ internal sealed record MemberAccessOperator : IExpression
         value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit).Value;
 
         if (value is not Struct @struct)
-            throw new Throw("The '.' operator can only be apllied to a struct");
+            throw new Throw("The '.' operator can only be apllied to structs");
 
-        return @struct.Get(_member);
+        var name = _identifier.GetName(call);
+
+        return @struct.GetMember(name);
     }
 }

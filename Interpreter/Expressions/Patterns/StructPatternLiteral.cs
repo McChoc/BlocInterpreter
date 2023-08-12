@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Bloc.Identifiers;
 using Bloc.Memory;
 using Bloc.Patterns;
 using Bloc.Results;
@@ -16,9 +17,9 @@ internal sealed partial class StructPatternLiteral : IExpression
 {
     private readonly bool _hasPack;
     private readonly IExpression? _packExpression;
-    private readonly Dictionary<string, IExpression> _expressions;
+    private readonly List<(INamedIdentifier identifier, IExpression expression)> _expressions;
 
-    internal StructPatternLiteral(Dictionary<string, IExpression> expressions, IExpression? packExpression, bool hasPack)
+    internal StructPatternLiteral(List<(INamedIdentifier, IExpression)> expressions, IExpression? packExpression, bool hasPack)
     {
         _expressions = expressions;
         _packExpression = packExpression;
@@ -27,8 +28,17 @@ internal sealed partial class StructPatternLiteral : IExpression
 
     public IValue Evaluate(Call call)
     {
-        var patterns = _expressions
-            .ToDictionary(x => x.Key, x => GetPattern(x.Value, call));
+        var patterns = new Dictionary<string, IPatternNode>();
+
+        foreach (var (identifier, expression) in _expressions)
+        {
+            var name = identifier.GetName(call);
+
+            if (patterns.ContainsKey(name))
+                throw new Throw("Duplicate keys");
+
+            patterns[name] = GetPattern(expression, call);
+        }
 
         var packPattern = _packExpression is not null
             ? GetPattern(_packExpression, call)

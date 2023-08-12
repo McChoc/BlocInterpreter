@@ -142,10 +142,10 @@ public sealed partial class Iter : Value
                 {
                     new ForStatement(false)
                     {
-                        Initialisation = new AssignmentOperator(new LetOperator(new NameIdentifier("i")), new NumberLiteral(0)),
-                        Condition = new LessThanOperator(new IdentifierExpression("i"), new NumberLiteral(@string.Value.Length)),
-                        Increment = new IncrementPrefix(new IdentifierExpression("i")),
-                        Statement = new YieldStatement(new IndexerOperator(new IdentifierExpression("value"), new IdentifierExpression("i")))
+                        Initialisation = new AssignmentOperator(new LetOperator(new StaticIdentifier("i")), new NumberLiteral(0)),
+                        Condition = new LessThanOperator(new NamedIdentifierExpression(new StaticIdentifier("i")), new NumberLiteral(@string.Value.Length)),
+                        Increment = new IncrementPrefix(new NamedIdentifierExpression(new StaticIdentifier("i"))),
+                        Statement = new YieldStatement(new IndexerOperator(new NamedIdentifierExpression(new StaticIdentifier("value")), new NamedIdentifierExpression(new StaticIdentifier("i"))))
                     }
                 });
             }
@@ -159,10 +159,10 @@ public sealed partial class Iter : Value
                 {
                     new ForStatement(false)
                     {
-                        Initialisation = new AssignmentOperator(new LetOperator(new NameIdentifier("i")), new NumberLiteral(0)),
-                        Condition = new LessThanOperator(new IdentifierExpression("i"), new NumberLiteral(array.Values.Count)),
-                        Increment = new IncrementPrefix(new IdentifierExpression("i")),
-                        Statement = new YieldStatement(new IndexerOperator(new IdentifierExpression("items"), new IdentifierExpression("i")))
+                        Initialisation = new AssignmentOperator(new LetOperator(new StaticIdentifier("i")), new NumberLiteral(0)),
+                        Condition = new LessThanOperator(new NamedIdentifierExpression(new StaticIdentifier("i")), new NumberLiteral(array.Values.Count)),
+                        Increment = new IncrementPrefix(new NamedIdentifierExpression(new StaticIdentifier("i"))),
+                        Statement = new YieldStatement(new IndexerOperator(new NamedIdentifierExpression(new StaticIdentifier("items")), new NamedIdentifierExpression(new StaticIdentifier("i"))))
                     }
                 });
             }
@@ -180,12 +180,12 @@ public sealed partial class Iter : Value
                 {
                     new ForStatement(false)
                     {
-                        Initialisation = new AssignmentOperator(new LetOperator(new NameIdentifier("i")), new IdentifierExpression("start")),
+                        Initialisation = new AssignmentOperator(new LetOperator(new StaticIdentifier("i")), new NamedIdentifierExpression(new StaticIdentifier("start"))),
                         Condition = new LessThanOperator(
-                            new MultiplicationOperator(new IdentifierExpression("i"), new IdentifierExpression("step")),
-                            new MultiplicationOperator(new IdentifierExpression("end"), new IdentifierExpression("step"))),
-                        Increment = new AdditionAssignment(new IdentifierExpression("i"), new IdentifierExpression("step")),
-                        Statement = new YieldStatement(new IdentifierExpression("i"))
+                            new MultiplicationOperator(new NamedIdentifierExpression(new StaticIdentifier("i")), new NamedIdentifierExpression(new StaticIdentifier("step"))),
+                            new MultiplicationOperator(new NamedIdentifierExpression(new StaticIdentifier("end")), new NamedIdentifierExpression(new StaticIdentifier("step")))),
+                        Increment = new AdditionAssignment(new NamedIdentifierExpression(new StaticIdentifier("i")), new NamedIdentifierExpression(new StaticIdentifier("step"))),
+                        Statement = new YieldStatement(new NamedIdentifierExpression(new StaticIdentifier("i")))
                     }
                 });
             }

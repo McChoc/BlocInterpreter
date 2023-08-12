@@ -15,9 +15,9 @@ internal static class CodeBlockHelper
             [BracesToken token, ..] when IsCodeBlock(token.Tokens) => true,
             [KeywordToken token, ..] when IsControlFlowKeyword(token) || IsLoopKeyword(token) => true,
             [WordToken(Keyword.UNCHECKED), KeywordToken token, ..] when IsLoopKeyword(token) => true,
-            [IIdentifierToken, SymbolToken(Symbol.COLON), BracesToken token, ..] when IsCodeBlock(token.Tokens) => true,
-            [IIdentifierToken, SymbolToken(Symbol.COLON), KeywordToken token, ..] when IsControlFlowKeyword(token) || IsLoopKeyword(token) => true,
-            [IIdentifierToken, SymbolToken(Symbol.COLON), WordToken(Keyword.UNCHECKED), KeywordToken token, ..] when IsLoopKeyword(token) => true,
+            [IStaticIdentifierToken, SymbolToken(Symbol.COLON), BracesToken token, ..] when IsCodeBlock(token.Tokens) => true,
+            [IStaticIdentifierToken, SymbolToken(Symbol.COLON), KeywordToken token, ..] when IsControlFlowKeyword(token) || IsLoopKeyword(token) => true,
+            [IStaticIdentifierToken, SymbolToken(Symbol.COLON), WordToken(Keyword.UNCHECKED), KeywordToken token, ..] when IsLoopKeyword(token) => true,
             _ => tokens.Any(x => x is SymbolToken(Symbol.SEMICOLON))
         };
     }

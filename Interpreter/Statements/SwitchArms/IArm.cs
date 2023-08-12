@@ -1,7 +1,7 @@
 ﻿using Bloc.Memory;
 using Bloc.Values.Core;
 
-namespace Bloc.Statements.Arms;
+namespace Bloc.Statements.SwitchArms;
 
 internal interface IArm
 {

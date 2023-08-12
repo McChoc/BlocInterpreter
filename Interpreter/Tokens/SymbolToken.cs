@@ -1,9 +1,6 @@
-﻿using Bloc.Utils.Attributes;
+﻿namespace Bloc.Tokens;
 
-namespace Bloc.Tokens;
-
-[Record]
-internal sealed partial class SymbolToken : TextToken
+internal sealed class SymbolToken : TextToken
 {
     internal SymbolToken(int start, int end, string text)
         : base(start, end, text) { }

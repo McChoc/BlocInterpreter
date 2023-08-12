@@ -1,10 +1,8 @@
 ﻿using System.Collections.Generic;
-using Bloc.Utils.Attributes;
 
 namespace Bloc.Tokens;
 
-[Record]
-internal sealed partial class StringToken : Token
+internal sealed class StringToken : Token
 {
     public string BaseString { get; }
     public List<Interpolation> Interpolations { get; }
@@ -16,16 +14,5 @@ internal sealed partial class StringToken : Token
         Interpolations = interpolations;
     }
 
-    [Record]
-    public sealed partial class Interpolation
-    {
-        public int Index { get; }
-        public List<Token> Tokens { get; }
-
-        public Interpolation(int index, List<Token> tokens)
-        {
-            Index = index;
-            Tokens = tokens;
-        }
-    }
+    public sealed record Interpolation(int Index, List<Token> Tokens);
 }

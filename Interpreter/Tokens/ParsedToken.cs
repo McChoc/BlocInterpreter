@@ -1,10 +1,8 @@
 ﻿using Bloc.Expressions;
-using Bloc.Utils.Attributes;
 
 namespace Bloc.Tokens;
 
-[Record]
-internal sealed partial class ParsedToken : Token
+internal sealed class ParsedToken : Token
 {
     public IExpression Expression { get; set; }
 

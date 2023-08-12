@@ -5,6 +5,7 @@ using Bloc.Expressions.Literals;
 using Bloc.Expressions.Literals.ArrayElements;
 using Bloc.Expressions.Literals.StructMembers;
 using Bloc.Expressions.Patterns;
+using Bloc.Identifiers;
 using Bloc.Patterns;
 using Bloc.Tokens;
 using Bloc.Utils.Constants;
@@ -23,10 +24,10 @@ internal sealed class ParseAtoms : ParsingStep
     {
         return tokens[0] switch
         {
-            IIdentifierToken identifier => new IdentifierExpression(identifier.Text),
-
             ParsedToken token => token.Expression,
-            LiteralToken token => ParseLiteralKeyword(token),
+
+            INamedIdentifierToken token => ParseIdentifier(token),
+            LiteralKeywordToken token => ParseLiteralKeyword(token),
             NumberToken token => ParseNumber(token),
             StringToken token => ParseString(token),
             BracesToken token => ParseBraces(token),
@@ -37,6 +38,11 @@ internal sealed class ParseAtoms : ParsingStep
 
             _ => throw new SyntaxError(tokens[0].Start, tokens[0].End, "Unexpected token")
         };
+    }
+
+    private static NamedIdentifierExpression ParseIdentifier(INamedIdentifierToken token)
+    {
+        return new NamedIdentifierExpression(token.GetIdentifier());
     }
 
     private static NumberLiteral ParseNumber(NumberToken token)
@@ -53,7 +59,7 @@ internal sealed class ParseAtoms : ParsingStep
         return new StringLiteral(token.BaseString, interpolations);
     }
 
-    private static IExpression ParseLiteralKeyword(LiteralToken token)
+    private static IExpression ParseLiteralKeyword(LiteralKeywordToken token)
     {
         return token.Text switch
         {
@@ -182,7 +188,7 @@ internal sealed class ParseAtoms : ParsingStep
 
             switch (part[0])
             {
-                case IIdentifierToken identifier:
+                case INamedIdentifierToken token:
                 {
                     if (!part.Any(x => x is SymbolToken(Symbol.ASSIGN)))
                         throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
@@ -193,31 +199,10 @@ internal sealed class ParseAtoms : ParsingStep
                     if (part.Count <= 2)
                         throw new SyntaxError(0, 0, "Missing value.");
 
+                    var identifier = token.GetIdentifier();
                     var expression = ExpressionParser.Parse(part.GetRange(2..));
-                    var member = new StaticMember(identifier.Text, expression);
-                    members.Add(member);
-                    break;
-                }
+                    var member = new Member(identifier, expression);
 
-                case BracketsToken brackets:
-                {
-                    if (!part.Any(x => x is SymbolToken(Symbol.ASSIGN)))
-                        throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
-
-                    if (brackets.Tokens.Count == 0)
-                        throw new SyntaxError(part[0].Start, part[0].End, "Missing value.");
-
-                    var nameExpression = ExpressionParser.Parse(brackets.Tokens);
-
-                    if (part[1] is not SymbolToken(Symbol.ASSIGN))
-                        throw new SyntaxError(part[1].Start, part[1].End, "Unexpected token.");
-
-                    if (part.Count <= 2)
-                        throw new SyntaxError(0, 0, "Missing value.");
-
-                    var valueExpression = ExpressionParser.Parse(part.GetRange(2..));
-
-                    var member = new DynamicMember(nameExpression, valueExpression);
                     members.Add(member);
                     break;
                 }
@@ -331,7 +316,7 @@ internal sealed class ParseAtoms : ParsingStep
 
         bool hasPack = false;
         IExpression? packExpression = null;
-        var expressions = new Dictionary<string, IExpression>();
+        var expressions = new List<(INamedIdentifier, IExpression)>();
 
         foreach (var part in parts)
         {
@@ -352,7 +337,7 @@ internal sealed class ParseAtoms : ParsingStep
                     packExpression = ExpressionParser.Parse(part.GetRange(1..));
                     break;
 
-                case IIdentifierToken identifier:
+                case INamedIdentifierToken token:
                     if (!part.Any(x => x is SymbolToken(Symbol.COLON)))
                         throw new SyntaxError(0, 0, "Literal is ambiguous between an array pattern and a struct pattern.");
 
@@ -362,8 +347,11 @@ internal sealed class ParseAtoms : ParsingStep
                     if (part.Count <= 2)
                         throw new SyntaxError(0, 0, "Missing value.");
 
+
+                    var identifier = token.GetIdentifier();
                     var expression = ExpressionParser.Parse(part.GetRange(2..));
-                    expressions.Add(identifier.Text, expression);
+
+                    expressions.Add((identifier, expression));
                     break;
 
                 default:

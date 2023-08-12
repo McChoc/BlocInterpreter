@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Bloc.Identifiers;
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Utils.Attributes;
@@ -29,7 +30,7 @@ internal sealed partial class InvocationOperator : IExpression
         value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit).Value;
 
         if (value is not IInvokable invokable)
-            throw new Throw("The '()' operator can only be applied to a func or a type");
+            throw new Throw("The '()' operator can only be applied to funcs and types");
 
         var args = new List<Value>();
         var kwargs = new Dictionary<string, Value>();
@@ -45,10 +46,12 @@ internal sealed partial class InvocationOperator : IExpression
                     break;
 
                 case ArgumentType.Named:
-                    if (kwargs.ContainsKey(argument.Name!))
-                        throw new Throw($"Parameter named '{argument.Name!}' cannot be specified multiple times");
+                    var name = argument.Identifier!.GetName(call);
 
-                    kwargs.Add(argument.Name!, val);
+                    if (kwargs.ContainsKey(name))
+                        throw new Throw($"Parameter named '{name}' cannot be specified multiple times");
+
+                    kwargs.Add(name, val);
                     break;
 
                 case ArgumentType.UnpackedArray:
@@ -78,5 +81,5 @@ internal sealed partial class InvocationOperator : IExpression
 
     internal enum ArgumentType { Positional, Named, UnpackedArray, UnpackedStruct }
 
-    internal sealed record Argument(string? Name, ArgumentType Type, IExpression Expression);
+    internal sealed record Argument(INamedIdentifier? Identifier, IExpression Expression, ArgumentType Type);
 }

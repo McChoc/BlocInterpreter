@@ -6,7 +6,7 @@ using Bloc.Utils.Helpers;
 using Bloc.Values.Behaviors;
 using Bloc.Values.Core;
 
-namespace Bloc.Statements.Arms;
+namespace Bloc.Statements.SwitchArms;
 
 internal sealed record Match : IArm
 {

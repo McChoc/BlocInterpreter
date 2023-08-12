@@ -97,10 +97,13 @@ internal sealed class Tokenizer : ITokenProvider
             if (symbol is not SymbolToken(Symbol.VARIABLE))
                 return symbol;
 
+            if (IsParentheses())
+                return GetDynamicIdentifier();
+
             if (IsWord())
                 return GetWord(true);
 
-            throw new SyntaxError(symbol.Start, symbol.End, "Missing identifier name");
+            throw new SyntaxError(symbol.Start, symbol.End, "Unexpected token");
         }
 
         var word = GetWord(false);
@@ -231,9 +234,9 @@ internal sealed class Tokenizer : ITokenProvider
         string text = _code[start.._index];
 
         if (forceIdentifier)
-            return new IdentifierToken(start + _offset, _index + _offset, text);
+            return new StaticIdentifierToken(start + _offset, _index + _offset, text);
         else if (Keyword.LiteralKeywords.Contains(text))
-            return new LiteralToken(start + _offset, _index + _offset, text);
+            return new LiteralKeywordToken(start + _offset, _index + _offset, text);
         else if (Keyword.HardKeywords.Contains(text))
             return new KeywordToken(start + _offset, _index + _offset, text);
         else
@@ -468,6 +471,15 @@ internal sealed class Tokenizer : ITokenProvider
 
             return Tokenize(text, _offset).ToList();
         }
+    }
+
+    private Token GetDynamicIdentifier()
+    {
+        int start = _index;
+        string text = GetBlock();
+        var tokens = Tokenize(text, start + _offset).ToList();
+
+        return new DynamicIdentifierToken(start, _index, tokens);
     }
 
     private Token GetParentheses()

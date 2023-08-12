@@ -24,7 +24,7 @@ internal sealed record IndexerOperator : IExpression
         value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit).Value;
 
         if (value is not IIndexable indexable)
-            throw new Throw("The '[]' operator can only be apllied to a string, an array or a struct");
+            throw new Throw("The '[]' operator can only be apllied to strings and arrays");
 
         var index = _index.Evaluate(call).Value;
 

@@ -49,7 +49,7 @@ internal sealed record AsOperator : IExpression
                 ValueType.Func => Func.Construct(values),
                 ValueType.Task => Task.Construct(values, call),
                 ValueType.Iter => Iter.Construct(values, call),
-                ValueType.Reference => Reference.Construct(values, call),
+                ValueType.Reference => Reference.Construct(values),
                 ValueType.Extern => Extern.Construct(values),
                 ValueType.Type => Type.Construct(values),
                 ValueType.Pattern => Pattern.Construct(values),

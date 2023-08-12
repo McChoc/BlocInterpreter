@@ -24,7 +24,7 @@ internal static class IdentifierParser
 
             return tokens[0] switch
             {
-                IIdentifierToken token => new NameIdentifier(token.Text),
+                INamedIdentifierToken token => token.GetIdentifier(),
                 ParenthesesToken { Tokens.Count: 0 } => new TupleIdentifier(new()),
                 ParenthesesToken token => Parse(token.Tokens),
                 _ => throw new SyntaxError(tokens[0].Start, tokens[0].End, "Unexpected token"),

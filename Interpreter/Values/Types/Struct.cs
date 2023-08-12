@@ -1,19 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Utils.Attributes;
 using Bloc.Utils.Comparers;
-using Bloc.Utils.Helpers;
-using Bloc.Values.Behaviors;
 using Bloc.Values.Core;
 using Bloc.Variables;
 
 namespace Bloc.Values.Types;
 
 [Record]
-public sealed partial class Struct : Value, IIndexable
+public sealed partial class Struct : Value
 {
     [DoNotCompare]
     private bool _assigned = false;
@@ -85,7 +82,7 @@ public sealed partial class Struct : Value, IIndexable
         return @struct;
     }
 
-    public IValue Get(string key)
+    public IValue GetMember(string key)
     {
         if (!Values.ContainsKey(key))
             throw new Throw($"'{key}' was not defined inside this struct");
@@ -94,23 +91,6 @@ public sealed partial class Struct : Value, IIndexable
             return new VariablePointer((StructVariable)Values[key]);
         else
             return Values[key];
-    }
-
-    public IValue Index(Value index, Call _)
-    {
-        if (index is not String @string)
-            throw new Throw("It should be a string.");
-
-        if (!IdentifierHelper.IsIdentifierValid(@string.Value))
-            throw new Throw("Invalid identifier name");
-
-        if (!Values.ContainsKey(@string.Value))
-            throw new Throw($"'{@string.Value}' was not defined inside this struct");
-
-        if (_assigned)
-            return new VariablePointer((StructVariable)Values[@string.Value]);
-        else
-            return Values[@string.Value];
     }
 
     internal static Struct Construct(List<Value> values)

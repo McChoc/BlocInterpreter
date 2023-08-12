@@ -3,7 +3,7 @@ using System.Linq;
 using Bloc.Expressions;
 using Bloc.Scanners;
 using Bloc.Statements;
-using Bloc.Statements.Arms;
+using Bloc.Statements.SwitchArms;
 using Bloc.Tokens;
 using Bloc.Utils.Constants;
 using Bloc.Utils.Exceptions;
@@ -82,7 +82,7 @@ internal static class StatementParser
     private static string? GetLabel(ITokenProvider provider)
     {
         if (provider.PeekRange(2) is [
-            IIdentifierToken { Text: string label },
+            IStaticIdentifierToken { Text: string label },
             SymbolToken(Symbol.COLON)])
         {
             provider.Skip(2);
@@ -542,13 +542,15 @@ internal static class StatementParser
         if (line.Count == 0)
             throw new SyntaxError(keyword.Start, keyword.End, "Missing label.");
 
-        if (line[0] is not IIdentifierToken identifier)
+        if (line[0] is not INamedIdentifierToken token)
             throw new SyntaxError(line[0].Start, line[0].End, "Unexpected symbol.");
 
         if (line.Count > 1)
             throw new SyntaxError(line[1].Start, line[^1].End, "Unexpected symbol.");
 
-        return new GotoStatement(identifier.Text);
+        var identifier = token.GetIdentifier();
+
+        return new GotoStatement(identifier);
     }
 
     private static IExpression GetExpression(ITokenProvider provider, Token keyword)

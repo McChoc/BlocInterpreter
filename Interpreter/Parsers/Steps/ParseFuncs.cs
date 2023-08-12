@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Bloc.Expressions;
 using Bloc.Expressions.Literals;
 using Bloc.Funcs;
@@ -30,7 +29,7 @@ internal sealed class ParseFuncs : ParsingStep
 
             var paramTokens = tokens[i - 1] switch
             {
-                IIdentifierToken => new() { tokens[i - 1] },
+                INamedIdentifierToken => new() { tokens[i - 1] },
                 ParenthesesToken parentheses => parentheses.Tokens,
                 _ => throw new SyntaxError(tokens[i - 1].Start, tokens[i - 1].End, "Unexpected symbol")
             };
@@ -74,13 +73,10 @@ internal sealed class ParseFuncs : ParsingStep
 
                         var name = ExpressionParser.Parse(part.GetRange(1..));
 
-                        if (name is not IdentifierExpression identifier)
+                        if (name is not NamedIdentifierExpression identifier)
                             throw new SyntaxError(0, 0, "Invalid identifier");
 
-                        if (parameters.Any(x => x.Name == identifier.Name))
-                            throw new SyntaxError(part[0].Start, part[^1].End, "Some parameters are duplicates.");
-
-                        argsContainer = new(identifier.Name, null);
+                        argsContainer = new(identifier.Identifier, null);
                     }
                     else if (part[0] is SymbolToken(Symbol.UNPACK_STRUCT))
                     {
@@ -89,13 +85,10 @@ internal sealed class ParseFuncs : ParsingStep
 
                         var name = ExpressionParser.Parse(part.GetRange(1..));
 
-                        if (name is not IdentifierExpression identifier)
+                        if (name is not NamedIdentifierExpression identifier)
                             throw new SyntaxError(0, 0, "Invalid identifier");
 
-                        if (parameters.Any(x => x.Name == identifier.Name))
-                            throw new SyntaxError(part[0].Start, part[^1].End, "Some parameters are duplicates.");
-
-                        kwargsContainer = new(identifier.Name, null);
+                        kwargsContainer = new(identifier.Identifier, null);
                     }
                     else
                     {
@@ -127,13 +120,10 @@ internal sealed class ParseFuncs : ParsingStep
                             defaultValue = ExpressionParser.Parse(valueTokens);
                         }
 
-                        if (name is not IdentifierExpression identifier)
+                        if (name is not NamedIdentifierExpression identifier)
                             throw new SyntaxError(0, 0, "Invalid identifier");
 
-                        if (parameters.Any(x => x.Name == identifier.Name))
-                            throw new SyntaxError(part[0].Start, part[^1].End, "Some parameters are duplicates.");
-
-                        parameters.Add(new(identifier.Name, defaultValue));
+                        parameters.Add(new(identifier.Identifier, defaultValue));
                     }
                 }
             }

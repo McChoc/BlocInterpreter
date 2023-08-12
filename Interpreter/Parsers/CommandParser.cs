@@ -41,13 +41,14 @@ internal static class CommandParser
 
     private static IArgument ParseArgument(Token token, bool unpack = false)
     {
-        return token switch
-        {
-            IKeywordToken word
-                => new LiteralArgument(word.Text),
-            LiteralToken or NumberToken or StringToken or BracesToken or BracketsToken or ParenthesesToken or IdentifierToken
-                => new ExpressionArgument(ExpressionParser.Parse(new() { token }), unpack),
-            _   => throw new SyntaxError(token.Start, token.End, "Unexpected token")
-        };
+        if (token is SymbolToken)
+            throw new SyntaxError(token.Start, token.End, "Unexpected token");
+
+        if (token is IKeywordToken keyword)
+            return new LiteralArgument(keyword.Text);
+
+        var expression = ExpressionParser.Parse(new() { token });
+
+        return new ExpressionArgument(expression, unpack);
     }
 }

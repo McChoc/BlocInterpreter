@@ -25,10 +25,12 @@ internal sealed class ParsePrimaries : ParsingStep
                 if (tokens.Count <= i)
                     throw new SyntaxError(tokens[i].Start, tokens[i].End, "Missing identifier");
 
-                if (tokens[i + 1] is not IIdentifierToken identifier)
+                if (tokens[i + 1] is not INamedIdentifierToken token)
                     throw new SyntaxError(tokens[i].Start, tokens[i].End, "Missing identifier");
 
-                expression = new MemberAccessOperator(expression, identifier.Text);
+                var identifier = token.GetIdentifier();
+
+                expression = new MemberAccessOperator(expression, identifier);
 
                 i++;
             }
@@ -53,18 +55,18 @@ internal sealed class ParsePrimaries : ParsingStep
                             if (arguments.Count > 0 && arguments[^1].Type is InvocationOperator.ArgumentType.Named or InvocationOperator.ArgumentType.UnpackedStruct)
                                 throw new SyntaxError(0, 0, "All the positional arguments must apear before any named arguments");
 
-                            arguments.Add(new(null, InvocationOperator.ArgumentType.Positional, new VoidLiteral()));
+                            arguments.Add(new(null, new VoidLiteral(), InvocationOperator.ArgumentType.Positional));
                         }
                         else if (part[0] is SymbolToken(Symbol.UNPACK_ARRAY))
                         {
                             if (arguments.Count > 0 && arguments[^1].Type is InvocationOperator.ArgumentType.Named or InvocationOperator.ArgumentType.UnpackedStruct)
                                 throw new SyntaxError(part[0].Start, part[^1].End, "All the positional arguments must apear before any named arguments");
 
-                            arguments.Add(new(null, InvocationOperator.ArgumentType.UnpackedArray, ExpressionParser.Parse(part.GetRange(1..))));
+                            arguments.Add(new(null, ExpressionParser.Parse(part.GetRange(1..)), InvocationOperator.ArgumentType.UnpackedArray));
                         }
                         else if (part[0] is SymbolToken(Symbol.UNPACK_STRUCT))
                         {
-                            arguments.Add(new(null, InvocationOperator.ArgumentType.UnpackedStruct, ExpressionParser.Parse(part.GetRange(1..))));
+                            arguments.Add(new(null, ExpressionParser.Parse(part.GetRange(1..)), InvocationOperator.ArgumentType.UnpackedStruct));
                         }
                         else
                         {
@@ -75,7 +77,7 @@ internal sealed class ParsePrimaries : ParsingStep
                                 if (arguments.Count > 0 && arguments[^1].Type is InvocationOperator.ArgumentType.Named or InvocationOperator.ArgumentType.UnpackedStruct)
                                     throw new SyntaxError(part[0].Start, part[^1].End, "All the positional arguments must apear before any named arguments");
 
-                                arguments.Add(new(null, InvocationOperator.ArgumentType.Positional, ExpressionParser.Parse(part)));
+                                arguments.Add(new(null, ExpressionParser.Parse(part), InvocationOperator.ArgumentType.Positional));
                             }
                             else
                             {
@@ -87,13 +89,13 @@ internal sealed class ParsePrimaries : ParsingStep
 
                                 var keyExpr = ExpressionParser.Parse(keyTokens);
 
-                                if (keyExpr is not IdentifierExpression identifier)
+                                if (keyExpr is not NamedIdentifierExpression identifier)
                                     throw new SyntaxError(0, 0, "Invalid identifier");
 
                                 if (valueTokens.Count == 0)
                                     throw new SyntaxError(0, 0, "Missing value");
 
-                                arguments.Add(new(identifier.Name, InvocationOperator.ArgumentType.Named, ExpressionParser.Parse(valueTokens)));
+                                arguments.Add(new(identifier.Identifier, ExpressionParser.Parse(valueTokens), InvocationOperator.ArgumentType.Named));
                             }
                         }
                     }

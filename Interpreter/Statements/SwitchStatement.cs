@@ -2,7 +2,7 @@
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
-using Bloc.Statements.Arms;
+using Bloc.Statements.SwitchArms;
 using Bloc.Utils.Attributes;
 
 namespace Bloc.Statements;

@@ -6,11 +6,11 @@ using Bloc.Values.Types;
 
 namespace Bloc.Expressions.Operators;
 
-internal sealed record OrdinalOperator : IExpression
+internal sealed record OrdOperator : IExpression
 {
     private readonly IExpression _operand;
 
-    internal OrdinalOperator(IExpression operand)
+    internal OrdOperator(IExpression operand)
     {
         _operand = operand;
     }

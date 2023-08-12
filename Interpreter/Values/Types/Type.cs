@@ -65,7 +65,7 @@ public sealed partial class Type : Value, IPattern, IInvokable
             ValueType.Func => Func.Construct(args),
             ValueType.Task => Task.Construct(args, call),
             ValueType.Iter => Iter.Construct(args, call),
-            ValueType.Reference => Reference.Construct(args, call),
+            ValueType.Reference => Reference.Construct(args),
             ValueType.Extern => Extern.Construct(args),
             ValueType.Type => Construct(args),
             ValueType.Pattern => Pattern.Construct(args),

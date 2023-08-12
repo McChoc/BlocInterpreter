@@ -1,9 +1,6 @@
-﻿using Bloc.Utils.Attributes;
+﻿namespace Bloc.Tokens;
 
-namespace Bloc.Tokens;
-
-[Record]
-internal sealed partial class NumberToken : Token
+internal sealed class NumberToken : Token
 {
     public double Number { get; }
 

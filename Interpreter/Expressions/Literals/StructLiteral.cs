@@ -26,7 +26,7 @@ internal sealed partial class StructLiteral : IExpression
         foreach (var (key, value) in _members.SelectMany(x => x.GetMembers(call)))
         {
             if (values.ContainsKey(key))
-                throw new Throw("Duplicate key");
+                throw new Throw("Duplicate keys");
 
             values[key] = value;
         }
