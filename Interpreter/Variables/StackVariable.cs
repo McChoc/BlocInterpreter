@@ -16,7 +16,7 @@ public sealed class StackVariable : Variable
         Name = name;
     }
 
-    public override void Delete()
+    public override void Delete(bool deleting = false)
     {
         _collection.Remove(Name);
 

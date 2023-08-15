@@ -17,10 +17,10 @@ internal sealed partial class InvocationOperator : IExpression
     private readonly IExpression _expression;
     private readonly List<Argument> _arguments;
 
-    internal InvocationOperator(IExpression expression, List<Argument> arguemnts)
+    internal InvocationOperator(IExpression expression, List<Argument> arguments)
     {
         _expression = expression;
-        _arguments = arguemnts;
+        _arguments = arguments;
     }
 
     public IValue Evaluate(Call call)

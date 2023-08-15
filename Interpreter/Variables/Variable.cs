@@ -31,7 +31,7 @@ public abstract class Variable : IValue
         _value = value;
     }
 
-    public virtual void Delete()
+    public virtual void Delete(bool deleting = false)
     {
         foreach (var pointer in Pointers)
             pointer.Invalidate();

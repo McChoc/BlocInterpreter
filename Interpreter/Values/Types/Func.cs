@@ -64,6 +64,13 @@ public sealed partial class Func : Value, IPattern, IInvokable
     public override ValueType GetType() => ValueType.Func;
     public override string ToString() => "[func]";
 
+    internal Task InvokeAsync(Call parent)
+    {
+        var call = new Call(parent, _captures, new());
+
+        return new Task(() => Execute(call));
+    }
+
     public Value Invoke(List<Value> args, Dictionary<string, Value> kwargs, Call parent)
     {
         var @params = new VariableCollection();
@@ -146,7 +153,7 @@ public sealed partial class Func : Value, IPattern, IInvokable
         };
     }
 
-    internal Value Execute(Call call)
+    private Value Execute(Call call)
     {
         try
         {

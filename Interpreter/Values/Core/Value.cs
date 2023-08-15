@@ -13,7 +13,7 @@ public abstract class Value : IValue
 
     public abstract override string ToString();
     public abstract override int GetHashCode();
-    public abstract override bool Equals(object other);
+    public abstract override bool Equals(object obj);
 
     public static bool operator ==(Value a, Value b) => a.Equals(b);
     public static bool operator !=(Value a, Value b) => !a.Equals(b);

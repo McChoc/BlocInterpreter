@@ -16,9 +16,10 @@ internal sealed class StructVariable : Variable
         Name = name;
     }
 
-    public override void Delete()
+    public override void Delete(bool deleting)
     {
-        _parent.Values.Remove(Name);
+        if (!deleting)
+            _parent.Values.Remove(Name);
 
         base.Delete();
     }

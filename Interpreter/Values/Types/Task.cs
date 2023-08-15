@@ -38,10 +38,9 @@ public sealed partial class Task : Value
     {
         return values switch
         {
-            [] => new(),
-            [Null] => new(),
+            [] or [Null] => new(),
             [Task task] => task,
-            [Func func] => new(() => func.Execute(call)),
+            [Func func] => func.InvokeAsync(call),
             [_] => throw new Throw($"'task' does not have a constructor that takes a '{values[0].GetTypeName()}'"),
             [..] => throw new Throw($"'task' does not have a constructor that takes {values.Count} arguments")
         };

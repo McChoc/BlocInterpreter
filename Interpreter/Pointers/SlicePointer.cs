@@ -49,7 +49,7 @@ public sealed class SlicePointer : Pointer
         foreach (var variable in GetVariables())
         {
             values.Add(variable.Value.GetOrCopy());
-            variable.Delete();
+            variable.Delete(false);
         }
 
         return new Array(values);
@@ -58,7 +58,7 @@ public sealed class SlicePointer : Pointer
     private void AssignContinuous(Array array)
     {
         foreach (var variable in GetVariables())
-            variable.Delete();
+            variable.Delete(false);
 
         var values = array.Values
             .Select(x => new ArrayVariable(x.Value, _array));

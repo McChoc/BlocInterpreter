@@ -39,28 +39,20 @@ public sealed partial class Array : Value, IIndexable
 
     public override void Destroy()
     {
-        while (Values.Count > 0)
-            ((ArrayVariable)Values.Last()).Delete();
+        foreach (var variable in Values.Cast<ArrayVariable>())
+            variable.Delete(true);
     }
 
     public override Value Copy(bool assign)
     {
-        var array = new Array();
+        var array = new Array
+        {
+            _assigned = assign
+        };
 
-        if (assign)
-        {
-            array._assigned = true;
-            array.Values = Values
-                .Select(x => new ArrayVariable(x.Value.GetOrCopy(assign), array))
-                .ToList<IValue>();
-        }
-        else
-        {
-            array._assigned = false;
-            array.Values = Values
-                .Select(x => x.Value.GetOrCopy(assign))
-                .ToList<IValue>();
-        }
+        array.Values = assign
+            ? Values.Select(x => new ArrayVariable(x.Value.GetOrCopy(assign), array)).ToList<IValue>()
+            : Values.Select(x => x.Value.GetOrCopy(assign)).ToList<IValue>();
 
         return array;
     }
@@ -71,20 +63,10 @@ public sealed partial class Array : Value, IIndexable
             ? new Array()
             : this;
 
-        if (assign)
-        {
-            array._assigned = true;
-            array.Values = Values
-                .Select(x => new ArrayVariable(x.Value.GetOrCopy(assign), array))
-                .ToList<IValue>();
-        }
-        else
-        {
-            array._assigned = false;
-            array.Values = Values
-                .Select(x => x.Value.GetOrCopy(assign))
-                .ToList<IValue>();
-        }
+        array._assigned = assign;
+        array.Values = assign
+            ? Values.Select(x => new ArrayVariable(x.Value.GetOrCopy(assign), array)).ToList<IValue>()
+            : Values.Select(x => x.Value.GetOrCopy(assign)).ToList<IValue>();
 
         return array;
     }

@@ -13,9 +13,10 @@ internal sealed class ArrayVariable : Variable
         _parent = parent;
     }
 
-    public override void Delete()
+    public override void Delete(bool deleting)
     {
-        _parent.Values.Remove(this);
+        if (!deleting)
+            _parent.Values.Remove(this);
 
         base.Delete();
     }

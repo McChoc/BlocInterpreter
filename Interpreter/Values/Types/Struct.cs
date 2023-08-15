@@ -36,26 +36,20 @@ public sealed partial class Struct : Value
 
     public override void Destroy()
     {
-        while (Values.Any())
-            ((StructVariable)Values.First().Value).Delete();
+        foreach (var variable in Values.Values.Cast<StructVariable>())
+            variable.Delete(true);
     }
 
     public override Value Copy(bool assign)
     {
-        var @struct = new Struct();
+        var @struct = new Struct
+        {
+            _assigned = assign
+        };
 
-        if (assign)
-        {
-            @struct._assigned = true;
-            @struct.Values = Values
-                .ToDictionary(x => x.Key, x => (IValue)new StructVariable(x.Key, x.Value.Value.GetOrCopy(assign), @struct));
-        }
-        else
-        {
-            @struct._assigned = false;
-            @struct.Values = Values
-                .ToDictionary(x => x.Key, x => (IValue)x.Value.Value.GetOrCopy(assign));
-        }
+        @struct.Values = assign
+            ? Values.ToDictionary(x => x.Key, x => (IValue)new StructVariable(x.Key, x.Value.Value.GetOrCopy(assign), @struct))
+            : Values.ToDictionary(x => x.Key, x => (IValue)x.Value.Value.GetOrCopy(assign));
 
         return @struct;
     }
@@ -66,18 +60,10 @@ public sealed partial class Struct : Value
             ? new Struct()
             : this;
 
-        if (assign)
-        {
-            @struct._assigned = true;
-            @struct.Values = Values
-                .ToDictionary(x => x.Key, x => (IValue)new StructVariable(x.Key, x.Value.Value.GetOrCopy(assign), @struct));
-        }
-        else
-        {
-            @struct._assigned = false;
-            @struct.Values = Values
-                .ToDictionary(x => x.Key, x => (IValue)x.Value.Value.GetOrCopy(assign));
-        }
+        @struct._assigned = assign;
+        @struct.Values = assign
+            ? Values.ToDictionary(x => x.Key, x => (IValue)new StructVariable(x.Key, x.Value.Value.GetOrCopy(assign), @struct))
+            : Values.ToDictionary(x => x.Key, x => (IValue)x.Value.Value.GetOrCopy(assign));
 
         return @struct;
     }
@@ -87,10 +73,9 @@ public sealed partial class Struct : Value
         if (!Values.ContainsKey(key))
             throw new Throw($"'{key}' was not defined inside this struct");
 
-        if (_assigned)
-            return new VariablePointer((StructVariable)Values[key]);
-        else
-            return Values[key];
+        return _assigned
+            ? new VariablePointer((StructVariable)Values[key])
+            : Values[key];
     }
 
     internal static Struct Construct(List<Value> values)
