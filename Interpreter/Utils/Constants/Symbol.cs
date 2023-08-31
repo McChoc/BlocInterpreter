@@ -31,7 +31,8 @@ internal static class Symbol
     internal const string BOOL_INV = "!!";
     internal const string COALESCE_NULL = "??";
     internal const string COALESCE_VOID = "???";
-    internal const string MATCH_ASSIGN = "->";
+    internal const string MATCH_DECLARE = "->";
+    internal const string MATCH_ASSIGN = "->>";
     internal const string ASSIGN = "=";
     internal const string ASSIGN_SUM = "+=";
     internal const string ASSIGN_DIF = "-=";

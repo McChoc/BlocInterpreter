@@ -17,15 +17,25 @@ internal sealed class ParseMatchAssignments : ParsingStep
     {
         for (int i = tokens.Count - 1; i >= 0; i--)
         {
-            if (tokens[i] is SymbolToken(Symbol.MATCH_ASSIGN) @operator)
+            switch (tokens[i])
             {
-                if (i > tokens.Count - 1)
-                    throw new SyntaxError(@operator.Start, @operator.End, "Missing the right part of match assignment");
+                case SymbolToken(Symbol.MATCH_DECLARE) @operator:
+                    if (i > tokens.Count - 1)
+                        throw new SyntaxError(@operator.Start, @operator.End, "Missing the right part of declaration pattern");
 
-                var left = i > 0 ? Parse(tokens.GetRange(..i)) : null;
-                var right = NextStep!.Parse(tokens.GetRange((i + 1)..));
+                    var expression = i > 0 ? Parse(tokens.GetRange(..i)) : null;
+                    var identifier = IdentifierParser.Parse(tokens.GetRange((i + 1)..));
 
-                return new MatchAssignmentOperator(left, right);
+                    return new MatchDeclarationOperator(expression, identifier);
+
+                case SymbolToken(Symbol.MATCH_ASSIGN) @operator:
+                    if (i > tokens.Count - 1)
+                        throw new SyntaxError(@operator.Start, @operator.End, "Missing the right part of assignment pattern");
+
+                    var left = i > 0 ? Parse(tokens.GetRange(..i)) : null;
+                    var right = NextStep!.Parse(tokens.GetRange((i + 1)..));
+
+                    return new MatchAssignmentOperator(left, right);
             }
         }
 
