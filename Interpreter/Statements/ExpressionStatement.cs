@@ -19,6 +19,6 @@ internal sealed partial class ExpressionStatement : Statement
     internal override IEnumerable<IResult> Execute(Call call)
     {
         if (!EvaluateExpression(Expression, call, out var _, out var exception))
-            yield return exception!;
+            yield return exception;
     }
 }

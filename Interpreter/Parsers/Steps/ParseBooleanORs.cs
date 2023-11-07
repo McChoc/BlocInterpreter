@@ -10,7 +10,7 @@ namespace Bloc.Parsers.Steps;
 
 internal sealed class ParseBooleanORs : ParsingStep
 {
-    public ParseBooleanORs(ParsingStep? nextStep)
+    public ParseBooleanORs(ParsingStep nextStep)
         : base(nextStep) { }
 
     internal override IExpression Parse(List<Token> tokens)

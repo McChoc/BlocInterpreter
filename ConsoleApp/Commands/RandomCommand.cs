@@ -32,7 +32,7 @@ public sealed class RandomCommand : ICommandInfo
 
         if (args.Length == 1)
         {
-            if (!int.TryParse(args[0], out var max))
+            if (!int.TryParse(args[0], out int max))
                 throw new Throw($"Cannot parse '{args[0]}' has number");
 
             return new Number(random.Next(max));
@@ -40,10 +40,10 @@ public sealed class RandomCommand : ICommandInfo
 
         if (args.Length == 2)
         {
-            if (!int.TryParse(args[0], out var min))
+            if (!int.TryParse(args[0], out int min))
                 throw new Throw($"Cannot parse '{args[0]}' has number");
 
-            if (!int.TryParse(args[1], out var max))
+            if (!int.TryParse(args[1], out int max))
                 throw new Throw($"Cannot parse '{args[1]}' has number");
 
             return new Number(random.Next(min, max));

@@ -10,6 +10,8 @@ public static class Program
     {
         var engine = new EngineBuilder()
             .UseOutput(Console.WriteLine)
+            .AddAlias("", "/Users/Alexandre/Desktop/")
+            .AddAlias("std", "/Users/Alexandre/Desktop/std/")
             .AddHelpCommand()
             .AddAllCommands()
             .Build();

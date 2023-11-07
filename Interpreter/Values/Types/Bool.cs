@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Bloc.Results;
 using Bloc.Utils.Attributes;
 using Bloc.Values.Behaviors;
@@ -36,7 +37,7 @@ public sealed partial class Bool : Value, INumeric
         }
     }
 
-    internal static bool TryImplicitCast(IValue value, out Bool @bool)
+    internal static bool TryImplicitCast(IValue value, [NotNullWhen(true)] out Bool? @bool)
     {
         try
         {
@@ -45,7 +46,7 @@ public sealed partial class Bool : Value, INumeric
         }
         catch
         {
-            @bool = null!;
+            @bool = null;
             return false;
         }
     }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Bloc.Commands;
 using Bloc.Expressions;
 using Bloc.Identifiers;
@@ -15,7 +16,7 @@ public abstract class Statement
 
     internal abstract IEnumerable<IResult> Execute(Call call);
 
-    private protected static bool DefineIdentifier(IIdentifier identifier, Value value, Call call, out Throw? exception, bool mask = false, bool mutable = true)
+    private protected static bool DefineIdentifier(IIdentifier identifier, Value value, Call call, [NotNullWhen(false)] out Throw? exception, bool mask = false, bool mutable = true)
     {
         try
         {
@@ -30,7 +31,7 @@ public abstract class Statement
         }
     }
 
-    private protected static bool EvaluateExpression(IExpression expression, Call call, out Value? value, out Throw? exception)
+    private protected static bool EvaluateExpression(IExpression expression, Call call, [NotNullWhen(true)] out Value? value, [NotNullWhen(false)] out Throw? exception)
     {
         try
         {
@@ -46,7 +47,7 @@ public abstract class Statement
         }
     }
 
-    private protected static bool ExecuteCommand(Command command, Call call, out Value? value, out Throw? exception)
+    private protected static bool ExecuteCommand(Command command, Call call, [NotNullWhen(true)] out Value? value, [NotNullWhen(false)] out Throw? exception)
     {
         try
         {

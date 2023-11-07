@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Bloc.Expressions;
 using Bloc.Expressions.Operators;
 using Bloc.Tokens;
@@ -11,7 +12,7 @@ namespace Bloc.Parsers.Steps;
 
 internal sealed class ParseAssignments : ParsingStep
 {
-    public ParseAssignments(ParsingStep? nextStep)
+    public ParseAssignments(ParsingStep nextStep)
         : base(nextStep) { }
 
     internal override IExpression Parse(List<Token> tokens)
@@ -21,15 +22,15 @@ internal sealed class ParseAssignments : ParsingStep
             if (IsAssignment(tokens[i], out var @operator))
             {
                 if (i == 0)
-                    throw new SyntaxError(@operator!.Start, @operator.End, "Missing the left part of assignment");
+                    throw new SyntaxError(@operator.Start, @operator.End, "Missing the left part of assignment");
 
                 if (i > tokens.Count - 1)
-                    throw new SyntaxError(@operator!.Start, @operator.End, "Missing the right part of assignment");
+                    throw new SyntaxError(@operator.Start, @operator.End, "Missing the right part of assignment");
 
                 var left = NextStep!.Parse(tokens.GetRange(..i));
                 var right = Parse(tokens.GetRange((i + 1)..));
 
-                return @operator!.Text switch
+                return @operator.Text switch
                 {
                     Symbol.ASSIGN => new AssignmentOperator(left, right),
                     Symbol.ASSIGN_SUM => new AdditionAssignment(left, right),
@@ -56,7 +57,7 @@ internal sealed class ParseAssignments : ParsingStep
         return NextStep!.Parse(tokens);
     }
 
-    private static bool IsAssignment(Token token, out TextToken? @operator)
+    private static bool IsAssignment(Token token, [NotNullWhen(true)] out TextToken? @operator)
     {
         if (token is SymbolToken(
             Symbol.ASSIGN or

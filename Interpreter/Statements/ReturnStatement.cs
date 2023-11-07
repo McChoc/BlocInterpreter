@@ -23,8 +23,8 @@ internal sealed partial class ReturnStatement : Statement
         if (_expression is null)
             yield return new Return();
         else if (EvaluateExpression(_expression, call, out var value, out var exception))
-            yield return new Return(value!.GetOrCopy());
+            yield return new Return(value.GetOrCopy());
         else
-            yield return exception!;
+            yield return exception;
     }
 }

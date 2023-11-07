@@ -8,7 +8,7 @@ public static class ConsoleTextStyler
     static ConsoleTextStyler()
     {
         var handle = GetStdHandle(-11);
-        GetConsoleMode(handle, out var mode);
+        GetConsoleMode(handle, out int mode);
         SetConsoleMode(handle, mode | 0x4);
         Console.ResetColor();
     }

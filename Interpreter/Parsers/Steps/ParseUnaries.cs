@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Bloc.Expressions;
 using Bloc.Expressions.Operators;
 using Bloc.Expressions.Patterns;
@@ -24,7 +25,7 @@ internal sealed class ParseUnaries : ParsingStep
         {
             var identifier = IdentifierParser.Parse(tokens.GetRange(1..));
 
-            return @operator!.Text switch
+            return @operator.Text switch
             {
                 Keyword.LET     => new LetOperator(identifier),
                 Keyword.LET_NEW => new LetNewOperator(identifier),
@@ -36,7 +37,7 @@ internal sealed class ParseUnaries : ParsingStep
         {
             var operand = Parse(tokens.GetRange(1..));
 
-            return @operator!.Text switch
+            return @operator.Text switch
             {
                 Symbol.IS_EQUAL => new EqualPatternLiteral(operand),
                 Symbol.MORE_THAN => new GreaterThanPatternLiteral(operand),
@@ -53,7 +54,7 @@ internal sealed class ParseUnaries : ParsingStep
         {
             var operand = Parse(tokens.GetRange(1..));
 
-            return @operator!.Text switch
+            return @operator.Text switch
             {
                 Symbol.PLUS         => new PositiveOperator(operand),
                 Symbol.MINUS        => new NegativeOperator(operand),
@@ -91,7 +92,7 @@ internal sealed class ParseUnaries : ParsingStep
         {
             var operand = Parse(tokens.GetRange(..^1));
 
-            return @operator!.Text switch
+            return @operator.Text switch
             {
                 Symbol.INCREMENT    => new IncrementPostfix(operand),
                 Symbol.DECREMENT    => new DecrementPostfix(operand),
@@ -104,7 +105,7 @@ internal sealed class ParseUnaries : ParsingStep
         return NextStep!.Parse(tokens);
     }
 
-    private static bool IsDeclaration(Token token, out TextToken? @operator)
+    private static bool IsDeclaration(Token token, [NotNullWhen(true)] out TextToken? @operator)
     {
         if (token is KeywordToken(Keyword.LET or Keyword.LET_NEW))
         {
@@ -116,7 +117,7 @@ internal sealed class ParseUnaries : ParsingStep
         return false;
     }
 
-    private static bool IsPattern(Token token, out TextToken? @operator)
+    private static bool IsPattern(Token token, [NotNullWhen(true)] out TextToken? @operator)
     {
         if (token is KeywordToken(Keyword.IN or Keyword.NOT_IN))
         {
@@ -142,7 +143,7 @@ internal sealed class ParseUnaries : ParsingStep
         return false;
     }
 
-    private static bool IsPostfix(Token token, out TextToken? @operator)
+    private static bool IsPostfix(Token token, [NotNullWhen(true)] out TextToken? @operator)
     {
         if (token is SymbolToken(
                 Symbol.INCREMENT or
@@ -160,7 +161,7 @@ internal sealed class ParseUnaries : ParsingStep
         }
     }
 
-    private static bool IsPrefix(Token token, out TextToken? @operator)
+    private static bool IsPrefix(Token token, [NotNullWhen(true)] out TextToken? @operator)
     {
         if (token is SymbolToken(
             Symbol.PLUS or

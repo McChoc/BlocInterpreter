@@ -33,7 +33,7 @@ internal sealed partial class LockStatement : Statement
 
         if (exception is not null)
         {
-            yield return exception!;
+            yield return exception;
             yield break;
         }
 

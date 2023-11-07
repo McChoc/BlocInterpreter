@@ -27,7 +27,7 @@ internal static class AssignmentHelper
 
         if (left is Tuple tuple)
         {
-            var values = new List<Value>(tuple!.Values.Count);
+            var values = new List<Value>(tuple.Values.Count);
 
             if (right.Value is Tuple rightTuple)
             {

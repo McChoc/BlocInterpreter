@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Bloc.Expressions;
 using Bloc.Expressions.Operators;
 using Bloc.Tokens;
@@ -12,7 +13,7 @@ namespace Bloc.Parsers.Steps;
 
 internal sealed class ParseAdditives : ParsingStep
 {
-    public ParseAdditives(ParsingStep? nextStep)
+    public ParseAdditives(ParsingStep nextStep)
         : base(nextStep) { }
 
     internal override IExpression Parse(List<Token> tokens)
@@ -22,12 +23,12 @@ internal sealed class ParseAdditives : ParsingStep
             if (IsAdditive(tokens[i], out var @operator) && OperatorHelper.IsBinary(tokens, i))
             {
                 if (i == tokens.Count - 1)
-                    throw new SyntaxError(@operator!.Start, @operator.End, "Missing right part of additive");
+                    throw new SyntaxError(@operator.Start, @operator.End, "Missing right part of additive");
 
                 var left = Parse(tokens.GetRange(..i));
                 var right = NextStep!.Parse(tokens.GetRange((i + 1)..));
 
-                return @operator!.Text switch
+                return @operator.Text switch
                 {
                     Symbol.PLUS => new AdditionOperator(left, right),
                     Symbol.MINUS => new SubstractionOperator(left, right),
@@ -39,7 +40,7 @@ internal sealed class ParseAdditives : ParsingStep
         return NextStep!.Parse(tokens);
     }
 
-    private static bool IsAdditive(Token token, out TextToken? @operator)
+    private static bool IsAdditive(Token token, [NotNullWhen(true)] out TextToken? @operator)
     {
         if (token is SymbolToken(Symbol.PLUS or Symbol.MINUS))
         {

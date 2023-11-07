@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Bloc.Expressions;
 using Bloc.Expressions.Operators;
 using Bloc.Tokens;
@@ -11,7 +12,7 @@ namespace Bloc.Parsers.Steps;
 
 internal sealed class ParseQueries : ParsingStep
 {
-    public ParseQueries(ParsingStep? nextStep)
+    public ParseQueries(ParsingStep nextStep)
         : base(nextStep) { }
 
     internal override IExpression Parse(List<Token> tokens)
@@ -21,15 +22,15 @@ internal sealed class ParseQueries : ParsingStep
             if (IsQuery(tokens[i], out var @operator))
             {
                 if (i == 0)
-                    throw new SyntaxError(@operator!.Start, @operator.End, "Missing the left part of query");
+                    throw new SyntaxError(@operator.Start, @operator.End, "Missing the left part of query");
 
                 if (i == tokens.Count - 1)
-                    throw new SyntaxError(@operator!.Start, @operator.End, "Missing the right part of query");
+                    throw new SyntaxError(@operator.Start, @operator.End, "Missing the right part of query");
 
                 var left = Parse(tokens.GetRange(..i));
                 var right = NextStep!.Parse(tokens.GetRange((i + 1)..));
 
-                return @operator!.Text switch
+                return @operator.Text switch
                 {
                     Keyword.SELECT  => new SelectOperator(left, right),
                     Keyword.WHERE   => new WhereOperator(left, right),
@@ -42,7 +43,7 @@ internal sealed class ParseQueries : ParsingStep
         return NextStep!.Parse(tokens);
     }
 
-    private static bool IsQuery(Token token, out TextToken? @operator)
+    private static bool IsQuery(Token token, [NotNullWhen(true)] out TextToken? @operator)
     {
         if (token is KeywordToken(Keyword.SELECT or Keyword.WHERE or Keyword.ORDERBY))
         {

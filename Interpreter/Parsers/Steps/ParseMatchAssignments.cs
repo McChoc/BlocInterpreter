@@ -10,7 +10,7 @@ namespace Bloc.Parsers.Steps;
 
 internal sealed class ParseMatchAssignments : ParsingStep
 {
-    public ParseMatchAssignments(ParsingStep? nextStep)
+    public ParseMatchAssignments(ParsingStep nextStep)
         : base(nextStep) { }
 
     internal override IExpression Parse(List<Token> tokens)

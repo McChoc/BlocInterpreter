@@ -10,7 +10,7 @@ namespace Bloc.Parsers.Steps;
 
 internal sealed class ParseConditionals : ParsingStep
 {
-    public ParseConditionals(ParsingStep? nextStep)
+    public ParseConditionals(ParsingStep nextStep)
         : base(nextStep) { }
 
     internal override IExpression Parse(List<Token> tokens)

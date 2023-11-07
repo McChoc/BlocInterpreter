@@ -10,7 +10,7 @@ namespace Bloc.Parsers.Steps;
 
 internal sealed class ParseExponentiations : ParsingStep
 {
-    public ParseExponentiations(ParsingStep? nextStep)
+    public ParseExponentiations(ParsingStep nextStep)
         : base(nextStep) { }
 
     internal override IExpression Parse(List<Token> tokens)
@@ -20,10 +20,10 @@ internal sealed class ParseExponentiations : ParsingStep
             if (tokens[i] is SymbolToken(Symbol.POWER) @operator)
             {
                 if (i == 0)
-                    throw new SyntaxError(@operator!.Start, @operator.End, "Missing the left part of exponentiation");
+                    throw new SyntaxError(@operator.Start, @operator.End, "Missing the left part of exponentiation");
 
                 if (i > tokens.Count - 1)
-                    throw new SyntaxError(@operator!.Start, @operator.End, "Missing the right part of exponentiation");
+                    throw new SyntaxError(@operator.Start, @operator.End, "Missing the right part of exponentiation");
 
                 var left = Parse(tokens.GetRange(..i));
                 var right = NextStep!.Parse(tokens.GetRange((i + 1)..));

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Bloc.Expressions;
 using Bloc.Expressions.Operators;
 using Bloc.Tokens;
@@ -12,7 +13,7 @@ namespace Bloc.Parsers.Steps;
 
 internal sealed class ParseRelations : ParsingStep
 {
-    public ParseRelations(ParsingStep? nextStep)
+    public ParseRelations(ParsingStep nextStep)
         : base(nextStep) { }
 
     internal override IExpression Parse(List<Token> tokens)
@@ -22,15 +23,15 @@ internal sealed class ParseRelations : ParsingStep
             if (IsTypeTest(tokens[i], out var @operator))
             {
                 if (i == 0)
-                    throw new SyntaxError(@operator!.Start, @operator.End, "Missing the left part of relation");
+                    throw new SyntaxError(@operator.Start, @operator.End, "Missing the left part of relation");
 
                 if (i > tokens.Count - 1)
-                    throw new SyntaxError(@operator!.Start, @operator.End, "Missing the right part of relation");
+                    throw new SyntaxError(@operator.Start, @operator.End, "Missing the right part of relation");
 
                 var left = Parse(tokens.GetRange(..i));
                 var right = NextStep!.Parse(tokens.GetRange((i + 1)..));
 
-                return @operator!.Text switch
+                return @operator.Text switch
                 {
                     Keyword.NOT_IN => new NotInOperator(left, right),
                     Keyword.IS => new IsOperator(left, right),
@@ -43,12 +44,12 @@ internal sealed class ParseRelations : ParsingStep
             if (IsRelation(tokens[i], out @operator) && OperatorHelper.IsBinary(tokens, i))
             {
                 if (i > tokens.Count - 1)
-                    throw new SyntaxError(@operator!.Start, @operator.End, "Missing the right part of relation");
+                    throw new SyntaxError(@operator.Start, @operator.End, "Missing the right part of relation");
 
                 var left = Parse(tokens.GetRange(..i));
                 var right = NextStep!.Parse(tokens.GetRange((i + 1)..));
 
-                return @operator!.Text switch
+                return @operator.Text switch
                 {
                     Symbol.LESS_THAN => new LessThanOperator(left, right),
                     Symbol.LESS_EQUAL => new LessEqualOperator(left, right),
@@ -64,7 +65,7 @@ internal sealed class ParseRelations : ParsingStep
         return NextStep!.Parse(tokens);
     }
 
-    private static bool IsTypeTest(Token token, out TextToken? @operator)
+    private static bool IsTypeTest(Token token, [NotNullWhen(true)] out TextToken? @operator)
     {
         if (token is KeywordToken(Keyword.IS or Keyword.IS_NOT or Keyword.AS))
         {
@@ -78,7 +79,7 @@ internal sealed class ParseRelations : ParsingStep
         }
     }
 
-    private static bool IsRelation(Token token, out TextToken? @operator)
+    private static bool IsRelation(Token token, [NotNullWhen(true)] out TextToken? @operator)
     {
         if (token is
             SymbolToken(Symbol.LESS_THAN or Symbol.LESS_EQUAL or Symbol.MORE_THAN or Symbol.MORE_EQUAL) or

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Bloc.Expressions;
 using Bloc.Expressions.Literals;
@@ -39,7 +40,7 @@ public sealed partial class Iter : Value
     public override ValueType GetType() => ValueType.Iter;
     public override string ToString() => "[iter]";
 
-    internal static bool TryImplicitCast(IValue value, out Iter iter, Call call)
+    internal static bool TryImplicitCast(IValue value, [NotNullWhen(true)] out Iter? iter, Call call)
     {
         try
         {
@@ -48,7 +49,7 @@ public sealed partial class Iter : Value
         }
         catch
         {
-            iter = null!;
+            iter = null;
             return false;
         }
     }

@@ -11,7 +11,7 @@ namespace Bloc.Parsers.Steps;
 
 internal sealed class ParsePrimaries : ParsingStep
 {
-    public ParsePrimaries(ParsingStep? nextStep)
+    public ParsePrimaries(ParsingStep nextStep)
         : base(nextStep) { }
 
     internal override IExpression Parse(List<Token> tokens)

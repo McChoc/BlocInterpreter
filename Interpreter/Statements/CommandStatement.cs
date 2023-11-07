@@ -19,10 +19,15 @@ internal sealed partial class CommandStatement : Statement
 
     internal override IEnumerable<IResult> Execute(Call call)
     {
-        if (!ExecuteCommand(Command, call, out var value, out var exception))
-            yield return exception!;
-
-        if (String.TryImplicitCast(value!, out var @string))
-            call.Engine.Output(@string.Value);
+        if (ExecuteCommand(Command, call, out var value, out var exception))
+        {
+            if (String.TryImplicitCast(value, out var @string))
+                call.Engine.Output(@string.Value);
+        }
+        else
+        {
+            yield return exception;
+            yield break;
+        }
     }
 }

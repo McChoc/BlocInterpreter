@@ -10,7 +10,7 @@ namespace Bloc.Parsers.Steps;
 
 internal sealed class ParseBitwiseORs : ParsingStep
 {
-    public ParseBitwiseORs(ParsingStep? nextStep)
+    public ParseBitwiseORs(ParsingStep nextStep)
         : base(nextStep) { }
 
     internal override IExpression Parse(List<Token> tokens)

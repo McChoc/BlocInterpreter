@@ -9,7 +9,7 @@ namespace Bloc.Parsers.Steps;
 
 internal sealed class ParseTuples : ParsingStep
 {
-    public ParseTuples(ParsingStep? nextStep)
+    public ParseTuples(ParsingStep nextStep)
         : base(nextStep) { }
 
     internal override IExpression Parse(List<Token> tokens)

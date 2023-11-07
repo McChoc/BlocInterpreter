@@ -26,11 +26,11 @@ internal sealed partial class ForeachStatement : Statement
     {
         if (!EvaluateExpression(Expression, call, out var value, out var exception))
         {
-            yield return exception!;
+            yield return exception;
             yield break;
         }
 
-        if (!Iter.TryImplicitCast(value!, out var iter, call))
+        if (!Iter.TryImplicitCast(value, out var iter, call))
         {
             yield return new Throw("Cannot implicitly convert to iter");
             yield break;
@@ -70,7 +70,7 @@ internal sealed partial class ForeachStatement : Statement
             {
                 if (!DefineIdentifier(Identifier, enumerator.Current, call, out exception, mutable: false))
                 {
-                    yield return exception!;
+                    yield return exception;
                     yield break;
                 }
 

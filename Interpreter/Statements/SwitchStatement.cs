@@ -18,7 +18,7 @@ internal sealed partial class SwitchStatement : Statement
     {
         if (!EvaluateExpression(Expression, call, out var value, out var exception))
         {
-            yield return exception!;
+            yield return exception;
             yield break;
         }
 
@@ -26,7 +26,7 @@ internal sealed partial class SwitchStatement : Statement
 
         foreach (var arm in Arms)
         {
-            if (arm.Matches(value!, call))
+            if (arm.Matches(value, call))
             {
                 statement = arm.Statement;
                 break;

@@ -24,11 +24,11 @@ internal sealed partial class ExecStatement : Statement
     {
         if (!EvaluateExpression(_expression, call, out var value, out var exception))
         {
-            yield return exception!;
+            yield return exception;
             yield break;
         }
 
-        if (!String.TryImplicitCast(value!, out var @string))
+        if (!String.TryImplicitCast(value, out var @string))
         {
             yield return new Throw("Cannot implicitly convert to string");
             yield break;

@@ -10,7 +10,7 @@ namespace Bloc.Parsers.Steps;
 
 internal sealed class ParseRanges : ParsingStep
 {
-    public ParseRanges(ParsingStep? nextStep)
+    public ParseRanges(ParsingStep nextStep)
         : base(nextStep) { }
 
     internal override IExpression Parse(List<Token> tokens)

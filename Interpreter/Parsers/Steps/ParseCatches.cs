@@ -10,7 +10,7 @@ namespace Bloc.Parsers.Steps;
 
 internal sealed class ParseCatches : ParsingStep
 {
-    public ParseCatches(ParsingStep? nextStep)
+    public ParseCatches(ParsingStep nextStep)
         : base(nextStep) { }
 
     internal override IExpression Parse(List<Token> tokens)

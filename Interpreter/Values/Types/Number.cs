@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Bloc.Results;
 using Bloc.Utils.Attributes;
@@ -61,7 +62,7 @@ public sealed partial class Number : Value, INumeric
         }
     }
 
-    internal static bool TryImplicitCast(IValue value, out Number number)
+    internal static bool TryImplicitCast(IValue value, [NotNullWhen(true)] out Number? number)
     {
         try
         {
@@ -70,7 +71,7 @@ public sealed partial class Number : Value, INumeric
         }
         catch
         {
-            number = null!;
+            number = null;
             return false;
         }
     }

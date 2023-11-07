@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Bloc.Expressions;
 using Bloc.Expressions.Operators;
 using Bloc.Tokens;
@@ -11,7 +12,7 @@ namespace Bloc.Parsers.Steps;
 
 internal sealed class ParseMultiplicatives : ParsingStep
 {
-    public ParseMultiplicatives(ParsingStep? nextStep)
+    public ParseMultiplicatives(ParsingStep nextStep)
         : base(nextStep) { }
 
     internal override IExpression Parse(List<Token> tokens)
@@ -21,15 +22,15 @@ internal sealed class ParseMultiplicatives : ParsingStep
             if (IsMultiplicative(tokens[i], out var @operator))
             {
                 if (i == 0)
-                    throw new SyntaxError(@operator!.Start, @operator.End, "Missing the left part of multiplicative");
+                    throw new SyntaxError(@operator.Start, @operator.End, "Missing the left part of multiplicative");
 
                 if (i == tokens.Count - 1)
-                    throw new SyntaxError(@operator!.Start, @operator.End, "Missing the right part of multiplicative");
+                    throw new SyntaxError(@operator.Start, @operator.End, "Missing the right part of multiplicative");
 
                 var left = Parse(tokens.GetRange(..i));
                 var right = NextStep!.Parse(tokens.GetRange((i + 1)..));
 
-                return @operator!.Text switch
+                return @operator.Text switch
                 {
                     Symbol.TIMES =>     new MultiplicationOperator(left, right),
                     Symbol.SLASH =>     new DivisionOperator(left, right),
@@ -43,7 +44,7 @@ internal sealed class ParseMultiplicatives : ParsingStep
         return NextStep!.Parse(tokens);
     }
 
-    private static bool IsMultiplicative(Token token, out TextToken? @operator)
+    private static bool IsMultiplicative(Token token, [NotNullWhen(true)] out TextToken? @operator)
     {
         if (token is SymbolToken(
             Symbol.TIMES or

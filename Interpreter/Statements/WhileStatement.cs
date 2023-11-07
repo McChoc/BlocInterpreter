@@ -34,11 +34,11 @@ internal sealed partial class WhileStatement : Statement
             {
                 if (!EvaluateExpression(Expression, call, out var value, out var exception))
                 {
-                    yield return exception!;
+                    yield return exception;
                     yield break;
                 }
 
-                if (!Bool.TryImplicitCast(value!, out var @bool))
+                if (!Bool.TryImplicitCast(value, out var @bool))
                 {
                     yield return new Throw("Cannot implicitly convert to bool");
                     yield break;

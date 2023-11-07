@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -68,7 +69,7 @@ public sealed partial class String : Value, IPattern, IIndexable
         }
     }
 
-    internal static bool TryImplicitCast(IValue value, out String @string)
+    internal static bool TryImplicitCast(IValue value, [NotNullWhen(true)] out String? @string)
     {
         try
         {
@@ -77,7 +78,7 @@ public sealed partial class String : Value, IPattern, IIndexable
         }
         catch
         {
-            @string = null!;
+            @string = null;
             return false;
         }
     }

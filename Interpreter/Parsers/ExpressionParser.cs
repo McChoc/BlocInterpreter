@@ -11,9 +11,9 @@ internal static class ExpressionParser
 
     static ExpressionParser()
     {
-        ParsingStep? step = null;
+        ParsingStep step;
 
-        step = new ParseAtoms(step);
+        step = new ParseAtoms();
         step = new ParsePrimaries(step);
         step = new ParseUnaries(step);
         step = new ParseSwitchExpressions(step);

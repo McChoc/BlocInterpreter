@@ -45,7 +45,7 @@ internal sealed partial class TryStatement : Statement
                     {
                         if (!DefineIdentifier(@catch.Identifier, @throw.Value.Copy(), call, out var exception))
                         {
-                            yield return exception!;
+                            yield return exception;
                             yield break;
                         }
                     }

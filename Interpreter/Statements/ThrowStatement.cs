@@ -20,10 +20,10 @@ internal sealed partial class ThrowStatement : Statement
     internal override IEnumerable<IResult> Execute(Call call)
     {
         if (!EvaluateExpression(_expression, call, out var value, out var exception))
-            yield return exception!;
+            yield return exception;
         else if (value is Void)
             yield return new Throw("'void' cannot be thrown");
         else
-            yield return new Throw(value!.GetOrCopy());
+            yield return new Throw(value.GetOrCopy());
     }
 }

@@ -24,11 +24,11 @@ internal sealed partial class RepeatStatement : Statement
     {
         if (!EvaluateExpression(Expression, call, out var value, out var exception))
         {
-            yield return exception!;
+            yield return exception;
             yield break;
         }
 
-        if (!Number.TryImplicitCast(value!, out var number))
+        if (!Number.TryImplicitCast(value, out var number))
         {
             yield return new Throw("Cannot implicitly convert to number");
             yield break;
