@@ -11,7 +11,7 @@ namespace Bloc.Parsers;
 
 internal static class CommandParser
 {
-    internal static Command Parse(List<Token> tokens)
+    internal static Command Parse(List<IToken> tokens)
     {
         var calls = tokens
             .Split(x => x is SymbolToken(Symbol.PIPE))
@@ -21,7 +21,7 @@ internal static class CommandParser
         return new Command(calls);
     }
 
-    private static CommandCall ParseCall(List<Token> tokens)
+    private static CommandCall ParseCall(List<IToken> tokens)
     {
         if (tokens.Count == 0)
             throw new SyntaxError(0, 0, "Empty command");
@@ -39,7 +39,7 @@ internal static class CommandParser
         return new CommandCall(arguments);
     }
 
-    private static IArgument ParseArgument(Token token, bool unpack = false)
+    private static IArgument ParseArgument(IToken token, bool unpack = false)
     {
         if (token is SymbolToken)
             throw new SyntaxError(token.Start, token.End, "Unexpected token");

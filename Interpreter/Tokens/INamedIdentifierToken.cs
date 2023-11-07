@@ -2,7 +2,7 @@
 
 namespace Bloc.Tokens;
 
-internal interface INamedIdentifierToken
+internal interface INamedIdentifierToken : IToken
 {
     INamedIdentifier GetIdentifier();
 }

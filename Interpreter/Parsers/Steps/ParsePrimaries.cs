@@ -18,101 +18,87 @@ internal sealed class ParsePrimaries : IParsingStep
         _nextStep = nextStep;
     }
 
-    public IExpression Parse(List<Token> tokens)
+    public IExpression Parse(List<IToken> tokens)
     {
-        var expression = _nextStep.Parse(tokens.GetRange(0, 1));
-
-        for (int i = 1; i < tokens.Count; i++)
+        return tokens switch
         {
-            if (tokens[i] is SymbolToken(Symbol.ACCESS_MEMBER))
+            [Token token] => _nextStep.Parse(new() { token }),
+            [KeywordToken(Keyword.GLOBAL), SymbolToken(Symbol.ACCESS_MEMBER), INamedIdentifierToken token] => new GlobalOperator(_nextStep.Parse(new() { token })),
+            [KeywordToken(Keyword.MODULE), SymbolToken(Symbol.ACCESS_MEMBER), INamedIdentifierToken token] => new ModuleOperator(_nextStep.Parse(new() { token })),
+            [KeywordToken(Keyword.CLOSURE), SymbolToken(Symbol.ACCESS_MEMBER), INamedIdentifierToken token] => new ClosureOperator(_nextStep.Parse(new() { token })),
+            [KeywordToken(Keyword.PARAMS), SymbolToken(Symbol.ACCESS_MEMBER), INamedIdentifierToken token] => new ParamsOperator(_nextStep.Parse(new() { token })),
+            [KeywordToken(Keyword.LOCAL), SymbolToken(Symbol.ACCESS_MEMBER), INamedIdentifierToken token] => new LocalOperator(_nextStep.Parse(new() { token })),
+            [.., _, SymbolToken(Symbol.ACCESS_MEMBER), INamedIdentifierToken token] => new MemberAccessOperator(Parse(tokens.GetRange(..^2)), token.GetIdentifier()),
+            [.., _, BracketsToken brackets] => new IndexerOperator(Parse(tokens.GetRange(..^1)), ParseIndexingArguments(brackets.Tokens)),
+            [.., _, ParenthesesToken parentheses] => new InvocationOperator(Parse(tokens.GetRange(..^1)), ParseInvocationArguments(parentheses.Tokens)),
+            _ => throw new SyntaxError(tokens[0].Start, tokens[^1].End, "Unexpected token")
+        };
+    }
+
+    private static IExpression ParseIndexingArguments(List<IToken> tokens)
+    {
+        return ExpressionParser.Parse(tokens);
+    }
+
+    private static List<InvocationOperator.Argument> ParseInvocationArguments(List<IToken> tokens)
+    {
+        var arguments = new List<InvocationOperator.Argument>();
+
+        if (tokens.Count > 0)
+        {
+            foreach (var part in tokens.Split(x => x is SymbolToken(Symbol.COMMA)))
             {
-                if (tokens.Count <= i)
-                    throw new SyntaxError(tokens[i].Start, tokens[i].End, "Missing identifier");
-
-                if (tokens[i + 1] is not INamedIdentifierToken token)
-                    throw new SyntaxError(tokens[i].Start, tokens[i].End, "Missing identifier");
-
-                var identifier = token.GetIdentifier();
-
-                expression = new MemberAccessOperator(expression, identifier);
-
-                i++;
-            }
-            else if (tokens[i] is BracketsToken brackets)
-            {
-                var index = ExpressionParser.Parse(brackets.Tokens);
-
-                expression = new IndexerOperator(expression, index);
-            }
-            else if (tokens[i] is ParenthesesToken parentheses)
-            {
-                var content = parentheses.Tokens;
-
-                var arguments = new List<InvocationOperator.Argument>();
-
-                if (content.Count > 0)
+                if (part.Count == 0)
                 {
-                    foreach (var part in content.Split(x => x is SymbolToken(Symbol.COMMA)))
+                    if (arguments.Count > 0 && arguments[^1].Type is InvocationOperator.ArgumentType.Named or InvocationOperator.ArgumentType.UnpackedStruct)
+                        throw new SyntaxError(0, 0, "All the positional arguments must apear before any named arguments");
+
+                    arguments.Add(new(null, new VoidLiteral(), InvocationOperator.ArgumentType.Positional));
+                }
+                else if (part[0] is SymbolToken(Symbol.UNPACK_ARRAY))
+                {
+                    if (arguments.Count > 0 && arguments[^1].Type is InvocationOperator.ArgumentType.Named or InvocationOperator.ArgumentType.UnpackedStruct)
+                        throw new SyntaxError(part[0].Start, part[^1].End, "All the positional arguments must apear before any named arguments");
+
+                    arguments.Add(new(null, ExpressionParser.Parse(part.GetRange(1..)), InvocationOperator.ArgumentType.UnpackedArray));
+                }
+                else if (part[0] is SymbolToken(Symbol.UNPACK_STRUCT))
+                {
+                    arguments.Add(new(null, ExpressionParser.Parse(part.GetRange(1..)), InvocationOperator.ArgumentType.UnpackedStruct));
+                }
+                else
+                {
+                    int index = part.FindIndex(x => x is SymbolToken(Symbol.ASSIGN));
+
+                    if (index == -1)
                     {
-                        if (part.Count == 0)
-                        {
-                            if (arguments.Count > 0 && arguments[^1].Type is InvocationOperator.ArgumentType.Named or InvocationOperator.ArgumentType.UnpackedStruct)
-                                throw new SyntaxError(0, 0, "All the positional arguments must apear before any named arguments");
+                        if (arguments.Count > 0 && arguments[^1].Type is InvocationOperator.ArgumentType.Named or InvocationOperator.ArgumentType.UnpackedStruct)
+                            throw new SyntaxError(part[0].Start, part[^1].End, "All the positional arguments must apear before any named arguments");
 
-                            arguments.Add(new(null, new VoidLiteral(), InvocationOperator.ArgumentType.Positional));
-                        }
-                        else if (part[0] is SymbolToken(Symbol.UNPACK_ARRAY))
-                        {
-                            if (arguments.Count > 0 && arguments[^1].Type is InvocationOperator.ArgumentType.Named or InvocationOperator.ArgumentType.UnpackedStruct)
-                                throw new SyntaxError(part[0].Start, part[^1].End, "All the positional arguments must apear before any named arguments");
+                        arguments.Add(new(null, ExpressionParser.Parse(part), InvocationOperator.ArgumentType.Positional));
+                    }
+                    else
+                    {
+                        var keyTokens = part.GetRange(..index);
+                        var valueTokens = part.GetRange((index + 1)..);
 
-                            arguments.Add(new(null, ExpressionParser.Parse(part.GetRange(1..)), InvocationOperator.ArgumentType.UnpackedArray));
-                        }
-                        else if (part[0] is SymbolToken(Symbol.UNPACK_STRUCT))
-                        {
-                            arguments.Add(new(null, ExpressionParser.Parse(part.GetRange(1..)), InvocationOperator.ArgumentType.UnpackedStruct));
-                        }
-                        else
-                        {
-                            int index = part.FindIndex(x => x is SymbolToken(Symbol.ASSIGN));
+                        if (keyTokens.Count == 0)
+                            throw new SyntaxError(0, 0, "Missing identifier");
 
-                            if (index == -1)
-                            {
-                                if (arguments.Count > 0 && arguments[^1].Type is InvocationOperator.ArgumentType.Named or InvocationOperator.ArgumentType.UnpackedStruct)
-                                    throw new SyntaxError(part[0].Start, part[^1].End, "All the positional arguments must apear before any named arguments");
+                        var keyExpr = ExpressionParser.Parse(keyTokens);
 
-                                arguments.Add(new(null, ExpressionParser.Parse(part), InvocationOperator.ArgumentType.Positional));
-                            }
-                            else
-                            {
-                                var keyTokens = part.GetRange(..index);
-                                var valueTokens = part.GetRange((index + 1)..);
+                        if (keyExpr is not NamedIdentifierExpression identifier)
+                            throw new SyntaxError(0, 0, "Invalid identifier");
 
-                                if (keyTokens.Count == 0)
-                                    throw new SyntaxError(0, 0, "Missing identifier");
+                        if (valueTokens.Count == 0)
+                            throw new SyntaxError(0, 0, "Missing value");
 
-                                var keyExpr = ExpressionParser.Parse(keyTokens);
-
-                                if (keyExpr is not NamedIdentifierExpression identifier)
-                                    throw new SyntaxError(0, 0, "Invalid identifier");
-
-                                if (valueTokens.Count == 0)
-                                    throw new SyntaxError(0, 0, "Missing value");
-
-                                arguments.Add(new(identifier.Identifier, ExpressionParser.Parse(valueTokens), InvocationOperator.ArgumentType.Named));
-                            }
-                        }
+                        arguments.Add(new(identifier.Identifier, ExpressionParser.Parse(valueTokens), InvocationOperator.ArgumentType.Named));
                     }
                 }
-
-                expression = new InvocationOperator(expression, arguments);
-            }
-            else
-            {
-                throw new SyntaxError(tokens[i].Start, tokens[i].End, "Unexpected symbol");
             }
         }
 
-        return expression;
+        return arguments;
     }
 }

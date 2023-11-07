@@ -20,7 +20,7 @@ internal sealed class ParseRelations : IParsingStep
         _nextStep = nextStep;
     }
 
-    public IExpression Parse(List<Token> tokens)
+    public IExpression Parse(List<IToken> tokens)
     {
         for (int i = tokens.Count - 1; i >= 0; i--)
         {
@@ -69,7 +69,7 @@ internal sealed class ParseRelations : IParsingStep
         return _nextStep.Parse(tokens);
     }
 
-    private static bool IsTypeTest(Token token, [NotNullWhen(true)] out TextToken? @operator)
+    private static bool IsTypeTest(IToken token, [NotNullWhen(true)] out TextToken? @operator)
     {
         if (token is KeywordToken(Keyword.IS or Keyword.IS_NOT or Keyword.AS))
         {
@@ -83,7 +83,7 @@ internal sealed class ParseRelations : IParsingStep
         }
     }
 
-    private static bool IsRelation(Token token, [NotNullWhen(true)] out TextToken? @operator)
+    private static bool IsRelation(IToken token, [NotNullWhen(true)] out TextToken? @operator)
     {
         if (token is
             SymbolToken(Symbol.LESS_THAN or Symbol.LESS_EQUAL or Symbol.MORE_THAN or Symbol.MORE_EQUAL) or

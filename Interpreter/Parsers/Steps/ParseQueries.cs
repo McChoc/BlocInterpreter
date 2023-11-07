@@ -19,7 +19,7 @@ internal sealed class ParseQueries : IParsingStep
         _nextStep = nextStep;
     }
 
-    public IExpression Parse(List<Token> tokens)
+    public IExpression Parse(List<IToken> tokens)
     {
         for (int i = tokens.Count - 1; i >= 0; i--)
         {
@@ -47,7 +47,7 @@ internal sealed class ParseQueries : IParsingStep
         return _nextStep.Parse(tokens);
     }
 
-    private static bool IsQuery(Token token, [NotNullWhen(true)] out TextToken? @operator)
+    private static bool IsQuery(IToken token, [NotNullWhen(true)] out TextToken? @operator)
     {
         if (token is KeywordToken(Keyword.SELECT or Keyword.WHERE or Keyword.ORDERBY))
         {

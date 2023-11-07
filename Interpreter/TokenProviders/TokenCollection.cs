@@ -7,9 +7,9 @@ namespace Bloc.Scanners;
 internal sealed class TokenCollection : ITokenProvider
 {
     private int _index;
-    private readonly List<Token> _tokens;
+    private readonly List<IToken> _tokens;
 
-    public TokenCollection(List<Token> tokens)
+    public TokenCollection(List<IToken> tokens)
     {
         _tokens = tokens;
     }
@@ -18,11 +18,11 @@ internal sealed class TokenCollection : ITokenProvider
 
     public bool HasNext() => _index < _tokens.Count;
 
-    public Token Next() => _tokens[_index++];
+    public IToken Next() => _tokens[_index++];
 
-    public Token Peek() => _tokens[_index];
+    public IToken Peek() => _tokens[_index];
 
-    public List<Token> PeekRange(int count)
+    public List<IToken> PeekRange(int count)
     {
         return _index + count > _tokens.Count
             ? _tokens.GetRange(_index..)

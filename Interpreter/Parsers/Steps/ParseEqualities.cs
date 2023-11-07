@@ -19,7 +19,7 @@ internal sealed class ParseEqualities : IParsingStep
         _nextStep = nextStep;
     }
 
-    public IExpression Parse(List<Token> tokens)
+    public IExpression Parse(List<IToken> tokens)
     {
         for (int i = tokens.Count - 1; i >= 0; i--)
         {
@@ -40,7 +40,7 @@ internal sealed class ParseEqualities : IParsingStep
         return _nextStep.Parse(tokens);
     }
 
-    private static bool IsEquality(Token token, [NotNullWhen(true)] out TextToken? @operator)
+    private static bool IsEquality(IToken token, [NotNullWhen(true)] out TextToken? @operator)
     {
         if (token is SymbolToken(Symbol.IS_EQUAL or Symbol.NOT_EQUAL_0 or Symbol.NOT_EQUAL_1 or Symbol.NOT_EQUAL_2))
         {

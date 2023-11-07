@@ -20,7 +20,7 @@ internal sealed class ParseUnaries : IParsingStep
         _nextStep = nextStep;
     }
 
-    public IExpression Parse(List<Token> tokens)
+    public IExpression Parse(List<IToken> tokens)
     {
         if (tokens.Count == 0)
             throw new SyntaxError(0, 0, "Missing value");
@@ -78,11 +78,6 @@ internal sealed class ParseUnaries : IParsingStep
                 Keyword.NEW         => new NewOperator(operand),
                 Keyword.CONST_NEW   => new ConstNewOperator(operand),
                 Keyword.DELETE      => new DeleteOperator(operand),
-                Keyword.GLOBAL      => new GlobalOperator(operand),
-                Keyword.MODULE      => new ModuleOperator(operand),
-                Keyword.CLOSURE     => new ClosureOperator(operand),
-                Keyword.PARAMS      => new ParamsOperator(operand),
-                Keyword.LOCAL       => new LocalOperator(operand),
                 Keyword.AWAIT       => new AwaitOperator(operand),
                 Keyword.NEXT        => new NextOperator(operand),
                 Keyword.NAMEOF      => new NameofOperator(operand),
@@ -109,7 +104,7 @@ internal sealed class ParseUnaries : IParsingStep
         return _nextStep.Parse(tokens);
     }
 
-    private static bool IsDeclaration(Token token, [NotNullWhen(true)] out TextToken? @operator)
+    private static bool IsDeclaration(IToken token, [NotNullWhen(true)] out TextToken? @operator)
     {
         if (token is KeywordToken(Keyword.LET or Keyword.LET_NEW))
         {
@@ -121,7 +116,7 @@ internal sealed class ParseUnaries : IParsingStep
         return false;
     }
 
-    private static bool IsPattern(Token token, [NotNullWhen(true)] out TextToken? @operator)
+    private static bool IsPattern(IToken token, [NotNullWhen(true)] out TextToken? @operator)
     {
         if (token is KeywordToken(Keyword.IN or Keyword.NOT_IN))
         {
@@ -147,7 +142,7 @@ internal sealed class ParseUnaries : IParsingStep
         return false;
     }
 
-    private static bool IsPostfix(Token token, [NotNullWhen(true)] out TextToken? @operator)
+    private static bool IsPostfix(IToken token, [NotNullWhen(true)] out TextToken? @operator)
     {
         if (token is SymbolToken(
                 Symbol.INCREMENT or
@@ -165,7 +160,7 @@ internal sealed class ParseUnaries : IParsingStep
         }
     }
 
-    private static bool IsPrefix(Token token, [NotNullWhen(true)] out TextToken? @operator)
+    private static bool IsPrefix(IToken token, [NotNullWhen(true)] out TextToken? @operator)
     {
         if (token is SymbolToken(
             Symbol.PLUS or
@@ -192,11 +187,6 @@ internal sealed class ParseUnaries : IParsingStep
             Keyword.NEW or
             Keyword.CONST_NEW or
             Keyword.DELETE or
-            Keyword.GLOBAL or
-            Keyword.MODULE or
-            Keyword.CLOSURE or
-            Keyword.PARAMS or
-            Keyword.LOCAL or
             Keyword.AWAIT or
             Keyword.NEXT or
             Keyword.NAMEOF or

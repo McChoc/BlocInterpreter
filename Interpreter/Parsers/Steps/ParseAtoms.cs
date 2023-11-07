@@ -17,7 +17,7 @@ namespace Bloc.Parsers.Steps;
 
 internal sealed class ParseAtoms : IParsingStep
 {
-    public IExpression Parse(List<Token> tokens)
+    public IExpression Parse(List<IToken> tokens)
     {
         return tokens[0] switch
         {
@@ -103,7 +103,7 @@ internal sealed class ParseAtoms : IParsingStep
         };
     }
 
-    private static bool IsArray(List<Token> tokens)
+    private static bool IsArray(List<IToken> tokens)
     {
         if (tokens[0] is SymbolToken(Symbol.UNPACK_ARRAY))
             return true;
@@ -123,7 +123,7 @@ internal sealed class ParseAtoms : IParsingStep
         return true;
     }
 
-    private static ArrayLiteral ParseArray(List<Token> tokens)
+    private static ArrayLiteral ParseArray(List<IToken> tokens)
     {
         var parts = tokens.Split(x => x is SymbolToken(Symbol.COMMA));
 
@@ -169,7 +169,7 @@ internal sealed class ParseAtoms : IParsingStep
         return new ArrayLiteral(elements);
     }
 
-    private static StructLiteral ParseStruct(List<Token> tokens)
+    private static StructLiteral ParseStruct(List<IToken> tokens)
     {
         var parts = tokens.Split(x => x is SymbolToken(Symbol.COMMA));
 
@@ -238,7 +238,7 @@ internal sealed class ParseAtoms : IParsingStep
         };
     }
 
-    private static bool IsArrayPattern(List<Token> tokens)
+    private static bool IsArrayPattern(List<IToken> tokens)
     {
         if (tokens[0] is SymbolToken(Symbol.UNPACK_ARRAY))
             return true;
@@ -258,7 +258,7 @@ internal sealed class ParseAtoms : IParsingStep
         return true;
     }
 
-    private static ArrayPatternLiteral ParseArrayPattern(List<Token> tokens)
+    private static ArrayPatternLiteral ParseArrayPattern(List<IToken> tokens)
     {
         var parts = tokens.Split(x => x is SymbolToken(Symbol.COMMA));
 
@@ -304,7 +304,7 @@ internal sealed class ParseAtoms : IParsingStep
         return new ArrayPatternLiteral(expressions, packExpression, packIndex);
     }
 
-    private static StructPatternLiteral ParseStructPattern(List<Token> tokens)
+    private static StructPatternLiteral ParseStructPattern(List<IToken> tokens)
     {
         var parts = tokens.Split(x => x is SymbolToken(Symbol.COMMA));
 

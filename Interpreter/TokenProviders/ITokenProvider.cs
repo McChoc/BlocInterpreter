@@ -9,9 +9,9 @@ internal interface ITokenProvider
 
     bool HasNext();
 
-    Token Next();
+    IToken Next();
 
-    Token Peek();
+    IToken Peek();
 
-    List<Token> PeekRange(int count);
+    List<IToken> PeekRange(int count);
 }

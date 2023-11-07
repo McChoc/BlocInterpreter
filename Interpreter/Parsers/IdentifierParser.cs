@@ -10,7 +10,7 @@ namespace Bloc.Parsers;
 
 internal static class IdentifierParser
 {
-    internal static IIdentifier Parse(List<Token> tokens)
+    internal static IIdentifier Parse(List<IToken> tokens)
     {
         if (tokens.Count == 0)
             throw new SyntaxError(0, 0, "Missing identifier");

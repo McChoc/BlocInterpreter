@@ -17,7 +17,7 @@ internal sealed class ParseCatches : IParsingStep
         _nextStep = nextStep;
     }
 
-    public IExpression Parse(List<Token> tokens)
+    public IExpression Parse(List<IToken> tokens)
     {
         for (int i = tokens.Count - 1; i >= 0; i--)
         {

@@ -19,7 +19,7 @@ internal sealed class ParseCoalescings : IParsingStep
         _nextStep = nextStep;
     }
 
-    public IExpression Parse(List<Token> tokens)
+    public IExpression Parse(List<IToken> tokens)
     {
         for (int i = tokens.Count - 1; i >= 0; i--)
         {
@@ -46,7 +46,7 @@ internal sealed class ParseCoalescings : IParsingStep
         return _nextStep.Parse(tokens);
     }
 
-    private static bool IsCoalescing(Token token, [NotNullWhen(true)] out TextToken? @operator)
+    private static bool IsCoalescing(IToken token, [NotNullWhen(true)] out TextToken? @operator)
     {
         if (token is SymbolToken(Symbol.COALESCE_NULL or Symbol.COALESCE_VOID))
         {

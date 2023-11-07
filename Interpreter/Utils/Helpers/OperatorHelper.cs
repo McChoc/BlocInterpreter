@@ -15,7 +15,7 @@ internal delegate Value BinaryOperation(Value left, Value right);
 
 internal static class OperatorHelper
 {
-    internal static bool IsBinary(List<Token> tokens, int index)
+    internal static bool IsBinary(List<IToken> tokens, int index)
     {
         for (int i = index - 1; i >= 0; i--)
         {

@@ -22,7 +22,7 @@ internal sealed class Tokenizer : ITokenProvider
         _code = code;
     }
 
-    internal static IEnumerable<Token> Tokenize(string code, int offset = 0)
+    internal static IEnumerable<IToken> Tokenize(string code, int offset = 0)
     {
         var tokenizer = new Tokenizer(code, offset);
 
@@ -43,7 +43,7 @@ internal sealed class Tokenizer : ITokenProvider
             Next();
     }
 
-    public Token Peek()
+    public IToken Peek()
     {
         int previousIndex = _index;
 
@@ -54,11 +54,11 @@ internal sealed class Tokenizer : ITokenProvider
         return token;
     }
 
-    public List<Token> PeekRange(int count)
+    public List<IToken> PeekRange(int count)
     {
         int previousIndex = _index;
 
-        var tokens = new List<Token>();
+        var tokens = new List<IToken>();
 
         for (int i = 0; i < count && HasNext(); i++)
             tokens.Add(Next());
@@ -68,7 +68,7 @@ internal sealed class Tokenizer : ITokenProvider
         return tokens;
     }
 
-    public Token Next()
+    public IToken Next()
     {
         if (_index >= _code.Length)
             throw new InvalidOperationException();
@@ -446,7 +446,7 @@ internal sealed class Tokenizer : ITokenProvider
 
         return new StringToken(start + _offset, _index + _offset, str.ToString(), interpolations);
 
-        List<Token> GetExpression()
+        List<IToken> GetExpression()
         {
             int depth = 0;
             int start = _index;
@@ -473,7 +473,7 @@ internal sealed class Tokenizer : ITokenProvider
         }
     }
 
-    private Token GetDynamicIdentifier()
+    private IToken GetDynamicIdentifier()
     {
         int start = _index;
         string text = GetBlock();
@@ -482,7 +482,7 @@ internal sealed class Tokenizer : ITokenProvider
         return new DynamicIdentifierToken(start, _index, tokens);
     }
 
-    private Token GetParentheses()
+    private IToken GetParentheses()
     {
         int start = _index;
         string text = GetBlock();
@@ -491,7 +491,7 @@ internal sealed class Tokenizer : ITokenProvider
         return new ParenthesesToken(start, _index, tokens);
     }
 
-    private Token GetBrackets()
+    private IToken GetBrackets()
     {
         int start = _index;
         string text = GetBlock();
@@ -500,7 +500,7 @@ internal sealed class Tokenizer : ITokenProvider
         return new BracketsToken(start, _index, tokens);
     }
 
-    private Token GetBraces()
+    private IToken GetBraces()
     {
         int start = _index;
         string text = GetBlock();

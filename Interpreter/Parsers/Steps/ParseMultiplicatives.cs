@@ -19,7 +19,7 @@ internal sealed class ParseMultiplicatives : IParsingStep
         _nextStep = nextStep;
     }
 
-    public IExpression Parse(List<Token> tokens)
+    public IExpression Parse(List<IToken> tokens)
     {
         for (int i = tokens.Count - 1; i >= 0; i--)
         {
@@ -48,7 +48,7 @@ internal sealed class ParseMultiplicatives : IParsingStep
         return _nextStep.Parse(tokens);
     }
 
-    private static bool IsMultiplicative(Token token, [NotNullWhen(true)] out TextToken? @operator)
+    private static bool IsMultiplicative(IToken token, [NotNullWhen(true)] out TextToken? @operator)
     {
         if (token is SymbolToken(
             Symbol.TIMES or

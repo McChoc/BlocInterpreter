@@ -19,7 +19,7 @@ internal sealed class ParseAssignments : IParsingStep
         _nextStep = nextStep;
     }
 
-    public IExpression Parse(List<Token> tokens)
+    public IExpression Parse(List<IToken> tokens)
     {
         for (int i = 0; i < tokens.Count; i++)
         {
@@ -61,7 +61,7 @@ internal sealed class ParseAssignments : IParsingStep
         return _nextStep.Parse(tokens);
     }
 
-    private static bool IsAssignment(Token token, [NotNullWhen(true)] out TextToken? @operator)
+    private static bool IsAssignment(IToken token, [NotNullWhen(true)] out TextToken? @operator)
     {
         if (token is SymbolToken(
             Symbol.ASSIGN or

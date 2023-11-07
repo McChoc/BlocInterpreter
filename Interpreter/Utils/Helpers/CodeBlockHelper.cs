@@ -7,7 +7,7 @@ namespace Bloc.Utils.Helpers;
 
 internal static class CodeBlockHelper
 {
-    internal static bool IsCodeBlock(List<Token> tokens)
+    internal static bool IsCodeBlock(List<IToken> tokens)
     {
         return tokens switch
         {

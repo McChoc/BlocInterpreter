@@ -1,6 +1,6 @@
 ﻿namespace Bloc.Tokens;
 
-internal interface IKeywordToken
+internal interface IKeywordToken : IToken
 {
     string Text { get; }
 }

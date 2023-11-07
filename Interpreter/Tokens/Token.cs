@@ -1,9 +1,9 @@
 ﻿namespace Bloc.Tokens;
 
-internal abstract class Token
+internal abstract class Token : IToken
 {
-    internal int Start { get; }
-    internal int End { get; }
+    public int Start { get; }
+    public int End { get; }
 
     internal Token(int start, int end)
     {

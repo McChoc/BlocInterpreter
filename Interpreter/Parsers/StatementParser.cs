@@ -281,7 +281,7 @@ internal static class StatementParser
             return GetImportStatement(line, scope);
     }
 
-    private static ImportStatement GetImportStatement(List<Token> line, VariableScope scope)
+    private static ImportStatement GetImportStatement(List<IToken> line, VariableScope scope)
     {
         var paths = line.Split(x => x is SymbolToken(Symbol.COMMA));
 
@@ -300,7 +300,7 @@ internal static class StatementParser
         return statement;
     }
 
-    private static ImportFromStatement GetImportFromStatement(List<Token> line, VariableScope scope)
+    private static ImportFromStatement GetImportFromStatement(List<IToken> line, VariableScope scope)
     {
         var index = line.FindIndex(x => x is KeywordToken(Keyword.FROM));
         var imports = line.GetRange(..index).Split(x => x is SymbolToken(Symbol.COMMA));
@@ -334,7 +334,7 @@ internal static class StatementParser
         return statement;
     }
 
-    private static ImportAllFromStatement GetImportAllFromStatement(List<Token> line, VariableScope scope)
+    private static ImportAllFromStatement GetImportAllFromStatement(List<IToken> line, VariableScope scope)
     {
         var pathTokens = line.GetRange(2..);
         var pathExpression = ExpressionParser.Parse(pathTokens);
@@ -355,7 +355,7 @@ internal static class StatementParser
             return GetExportStatement(line);
     }
 
-    private static ExportStatement GetExportStatement(List<Token> line)
+    private static ExportStatement GetExportStatement(List<IToken> line)
     {
         var exports = line.Split(x => x is SymbolToken(Symbol.COMMA));
 
@@ -387,7 +387,7 @@ internal static class StatementParser
         return statement;
     }
 
-    private static ExportFromStatement GetExportFromStatement(List<Token> line)
+    private static ExportFromStatement GetExportFromStatement(List<IToken> line)
     {
         var index = line.FindIndex(x => x is KeywordToken(Keyword.FROM));
         var exports = line.GetRange(..index).Split(x => x is SymbolToken(Symbol.COMMA));
@@ -421,7 +421,7 @@ internal static class StatementParser
         return statement;
     }
 
-    private static ExportAllFromStatement GetExportAllFromStatement(List<Token> line)
+    private static ExportAllFromStatement GetExportAllFromStatement(List<IToken> line)
     {
         var pathTokens = line.GetRange(2..);
         var pathExpression = ExpressionParser.Parse(pathTokens);
@@ -738,7 +738,7 @@ internal static class StatementParser
         return new GotoStatement(identifier);
     }
 
-    private static IExpression GetExpression(ITokenProvider provider, Token keyword)
+    private static IExpression GetExpression(ITokenProvider provider, IToken keyword)
     {
         if (!provider.HasNext() || provider.Next() is not ParenthesesToken expression)
             throw new SyntaxError(keyword.Start, keyword.End, $"Missing '{Symbol.PAREN_L}'");
@@ -746,9 +746,9 @@ internal static class StatementParser
         return ExpressionParser.Parse(expression.Tokens);
     }
 
-    private static List<Token> GetLine(ITokenProvider provider)
+    private static List<IToken> GetLine(ITokenProvider provider)
     {
-        var line = new List<Token>();
+        var line = new List<IToken>();
 
         while (provider.HasNext())
         {

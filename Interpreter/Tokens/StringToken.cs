@@ -14,5 +14,5 @@ internal sealed class StringToken : Token
         Interpolations = interpolations;
     }
 
-    public sealed record Interpolation(int Index, List<Token> Tokens);
+    public sealed record Interpolation(int Index, List<IToken> Tokens);
 }

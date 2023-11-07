@@ -21,7 +21,7 @@ internal sealed class ParseFuncs : IParsingStep
         _nextStep = nextStep;
     }
 
-    public IExpression Parse(List<Token> tokens)
+    public IExpression Parse(List<IToken> tokens)
     {
         for (int i = 0; i < tokens.Count; i++)
         {

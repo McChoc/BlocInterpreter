@@ -16,7 +16,7 @@ internal sealed class ParseTuples : IParsingStep
         _nextStep = nextStep;
     }
 
-    public IExpression Parse(List<Token> tokens)
+    public IExpression Parse(List<IToken> tokens)
     {
         var parts = tokens.Split(x => x is SymbolToken(Symbol.COMMA));
 

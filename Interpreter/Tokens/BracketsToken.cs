@@ -4,6 +4,6 @@ namespace Bloc.Tokens;
 
 internal sealed class BracketsToken : GroupToken
 {
-    internal BracketsToken(int start, int end, List<Token> tokens)
+    internal BracketsToken(int start, int end, List<IToken> tokens)
         : base(start, end, tokens) { }
 }

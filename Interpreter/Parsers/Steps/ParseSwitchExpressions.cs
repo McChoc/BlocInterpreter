@@ -18,7 +18,7 @@ internal sealed class ParseSwitchExpressions : IParsingStep
         _nextStep = nextStep;
     }
 
-    public IExpression Parse(List<Token> tokens)
+    public IExpression Parse(List<IToken> tokens)
     {
         for (int i = 0; i < tokens.Count; i++)
         {
@@ -93,7 +93,7 @@ internal sealed class ParseSwitchExpressions : IParsingStep
 
     private static IExpression GetComparedExpression(ITokenProvider provider)
     {
-        var tokens = new List<Token>();
+        var tokens = new List<IToken>();
 
         while (provider.HasNext())
         {
@@ -110,7 +110,7 @@ internal sealed class ParseSwitchExpressions : IParsingStep
 
     private static IExpression GetResultExpression(ITokenProvider provider)
     {
-        var tokens = new List<Token>();
+        var tokens = new List<IToken>();
 
         while (provider.HasNext())
         {
