@@ -12,11 +12,11 @@ internal sealed partial class StructPattern : IPatternNode
 {
     private readonly bool _hasPack;
     private readonly IPatternNode? _packPattern;
-    private readonly Dictionary<string, IPatternNode> _patterns;
+    private readonly Dictionary<string, (IPatternNode Pattern, bool Optional)> _members;
 
-    internal StructPattern(Dictionary<string, IPatternNode> patterns, IPatternNode? packPattern, bool hasPack)
+    internal StructPattern(Dictionary<string, (IPatternNode, bool)> members, IPatternNode? packPattern, bool hasPack)
     {
-        _patterns = patterns;
+        _members = members;
         _packPattern = packPattern;
         _hasPack = hasPack;
     }
@@ -26,43 +26,36 @@ internal sealed partial class StructPattern : IPatternNode
         if (value is not Struct @struct)
             return false;
 
-        if (!_hasPack)
-        {
-            if (@struct.Values.Count != _patterns.Count)
-                return false;
-        }
-        else
-        {
-            if (@struct.Values.Count - _patterns.Count < 0)
-                return false;
-        }
-
         var unmatchedMembers = @struct.Values
             .ToDictionary(x => x.Key, x => x.Value.Value);
 
-        foreach (var (key, pattern) in _patterns)
+        foreach (var (key, (pattern, optional)) in _members)
         {
-            if (!unmatchedMembers.Remove(key, out var subValue))
+            if (unmatchedMembers.Remove(key, out var subValue))
+            {
+                if (!pattern.Matches(subValue, call))
+                    return false;
+            }
+            else if (!optional)
+            {
                 return false;
-
-            if (!pattern.Matches(subValue, call))
-                return false;
+            }
         }
 
-        if (_packPattern is not null)
-        {
-            var packedValue = new Struct(unmatchedMembers);
+        if (!_hasPack && unmatchedMembers.Count > 0)
+            return false;
 
-            if (!_packPattern.Matches(packedValue, call))
-                return false;
-        }
+        if (_packPattern is null)
+            return true;
 
-        return true;
+        var packedValue = new Struct(unmatchedMembers);
+
+        return _packPattern.Matches(packedValue, call);
     }
 
     public bool HasAssignment()
     {
-        return _patterns.Values.Any(x => x.HasAssignment()) ||
+        return _members.Values.Any(x => x.Pattern.HasAssignment()) ||
             (_packPattern?.HasAssignment() ?? false);
     }
 }

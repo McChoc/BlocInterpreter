@@ -17,34 +17,34 @@ internal sealed partial class StructPatternLiteral : IExpression
 {
     private readonly bool _hasPack;
     private readonly IExpression? _packExpression;
-    private readonly List<(INamedIdentifier identifier, IExpression expression)> _expressions;
+    private readonly List<(INamedIdentifier Identifier, IExpression Expression, bool Optional)> _members;
 
-    internal StructPatternLiteral(List<(INamedIdentifier, IExpression)> expressions, IExpression? packExpression, bool hasPack)
+    internal StructPatternLiteral(List<(INamedIdentifier, IExpression, bool)> expressions, IExpression? packExpression, bool hasPack)
     {
-        _expressions = expressions;
+        _members = expressions;
         _packExpression = packExpression;
         _hasPack = hasPack;
     }
 
     public IValue Evaluate(Call call)
     {
-        var patterns = new Dictionary<string, IPatternNode>();
+        var members = new Dictionary<string, (IPatternNode, bool)>();
 
-        foreach (var (identifier, expression) in _expressions)
+        foreach (var (identifier, expression, optional) in _members)
         {
             var name = identifier.GetName(call);
 
-            if (patterns.ContainsKey(name))
+            if (members.ContainsKey(name))
                 throw new Throw("Duplicate keys");
 
-            patterns[name] = GetPattern(expression, call);
+            members[name] = (GetPattern(expression, call), optional);
         }
 
         var packPattern = _packExpression is not null
             ? GetPattern(_packExpression, call)
             : null;
 
-        return new Pattern(new StructPattern(patterns, packPattern, _hasPack));
+        return new Pattern(new StructPattern(members, packPattern, _hasPack));
     }
 
     private static IPatternNode GetPattern(IExpression expression, Call call)

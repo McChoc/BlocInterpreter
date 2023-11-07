@@ -30,7 +30,7 @@ public sealed partial class Struct : Value
     public override string ToString()
     {
         return Values.Count > 0
-            ? "{" + string.Join(", ", Values.OrderBy(x => x.Key).Select(x => $"{x.Key}={x.Value.Value}")) + "}"
+            ? "{" + string.Join(", ", Values.OrderBy(x => x.Key).Select(x => $"{x.Key}: {x.Value.Value}")) + "}"
             : "{&}";
     }
 

@@ -116,7 +116,7 @@ internal sealed class ParseAtoms : IParsingStep
             if (token is SymbolToken(Symbol.COMMA))
                 return true;
 
-            if (token is SymbolToken(Symbol.ASSIGN))
+            if (token is SymbolToken(Symbol.COLON))
                 return false;
         }
 
@@ -137,7 +137,7 @@ internal sealed class ParseAtoms : IParsingStep
             if (part.Count == 0)
                 throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COMMA}'");
 
-            if (part.Any(x => x is SymbolToken(Symbol.ASSIGN)))
+            if (part.Any(x => x is SymbolToken(Symbol.COLON)))
                 throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
 
             switch(part[0])
@@ -187,10 +187,10 @@ internal sealed class ParseAtoms : IParsingStep
             {
                 case INamedIdentifierToken token:
                 {
-                    if (!part.Any(x => x is SymbolToken(Symbol.ASSIGN)))
+                    if (!part.Any(x => x is SymbolToken(Symbol.COLON)))
                         throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
 
-                    if (part[1] is not SymbolToken(Symbol.ASSIGN))
+                    if (part[1] is not SymbolToken(Symbol.COLON))
                         throw new SyntaxError(part[1].Start, part[1].End, "Unexpected token.");
 
                     if (part.Count <= 2)
@@ -216,7 +216,7 @@ internal sealed class ParseAtoms : IParsingStep
                 }
 
                 default:
-                    if (!part.Any(x => x is SymbolToken(Symbol.ASSIGN)))
+                    if (!part.Any(x => x is SymbolToken(Symbol.COLON)))
                         throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
                     else
                         throw new SyntaxError(part[0].Start, part[^1].End, "Unexpected token.");
@@ -313,7 +313,7 @@ internal sealed class ParseAtoms : IParsingStep
 
         bool hasPack = false;
         IExpression? packExpression = null;
-        var expressions = new List<(INamedIdentifier, IExpression)>();
+        var members = new List<(INamedIdentifier, IExpression, bool)>();
 
         foreach (var part in parts)
         {
@@ -338,17 +338,37 @@ internal sealed class ParseAtoms : IParsingStep
                     if (!part.Any(x => x is SymbolToken(Symbol.COLON)))
                         throw new SyntaxError(0, 0, "Literal is ambiguous between an array pattern and a struct pattern.");
 
-                    if (part[1] is not SymbolToken(Symbol.COLON))
-                        throw new SyntaxError(part[1].Start, part[1].End, "Unexpected token.");
-
-                    if (part.Count <= 2)
-                        throw new SyntaxError(0, 0, "Missing value.");
-
-
                     var identifier = token.GetIdentifier();
-                    var expression = ExpressionParser.Parse(part.GetRange(2..));
 
-                    expressions.Add((identifier, expression));
+                    bool optional;
+                    IExpression expression;
+
+                    if (part[1] is SymbolToken(Symbol.QUESTION))
+                    {
+                        optional = true;
+
+                        if (part[2] is not SymbolToken(Symbol.COLON))
+                            throw new SyntaxError(part[1].Start, part[1].End, "Unexpected token.");
+
+                        if (part.Count <= 3)
+                            throw new SyntaxError(0, 0, "Missing value.");
+
+                        expression = ExpressionParser.Parse(part.GetRange(3..));
+                    }
+                    else
+                    {
+                        optional = false;
+
+                        if (part[1] is not SymbolToken(Symbol.COLON))
+                            throw new SyntaxError(part[1].Start, part[1].End, "Unexpected token.");
+
+                        if (part.Count <= 2)
+                            throw new SyntaxError(0, 0, "Missing value.");
+
+                        expression = ExpressionParser.Parse(part.GetRange(2..));
+                    }
+
+                    members.Add((identifier, expression, optional));
                     break;
 
                 default:
@@ -359,6 +379,6 @@ internal sealed class ParseAtoms : IParsingStep
             }
         }
 
-        return new StructPatternLiteral(expressions, packExpression, hasPack);
+        return new StructPatternLiteral(members, packExpression, hasPack);
     }
 }
