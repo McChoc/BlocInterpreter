@@ -138,7 +138,7 @@ public sealed partial class Iter : Value
                 var @params = new VariableCollection();
                 @params.Add(new(false, "value", @string, @params));
 
-                return new(new(call, new(), @params), new()
+                return new Iter(new Call(call, new(), new(), @params), new()
                 {
                     new ForStatement(false)
                     {
@@ -155,7 +155,7 @@ public sealed partial class Iter : Value
                 var @params = new VariableCollection();
                 @params.Add(new(false, "items", array, @params));
 
-                return new(new(call, new(), @params), new()
+                return new Iter(new Call(call, new(), new(), @params), new()
                 {
                     new ForStatement(false)
                     {
@@ -176,7 +176,7 @@ public sealed partial class Iter : Value
                 @params.Add(new(false, "end", new Number(end), @params));
                 @params.Add(new(false, "step", new Number(step), @params));
 
-                return new(new(call, new(), @params), new()
+                return new Iter(new Call(call, new(), new(), @params), new()
                 {
                     new ForStatement(false)
                     {

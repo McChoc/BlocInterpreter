@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Bloc.Expressions;
+using Bloc.Identifiers;
+using Bloc.Memory;
 using Bloc.Scanners;
 using Bloc.Statements;
 using Bloc.Statements.SwitchArms;
@@ -9,6 +12,7 @@ using Bloc.Utils.Constants;
 using Bloc.Utils.Exceptions;
 using Bloc.Utils.Extensions;
 using Bloc.Utils.Helpers;
+using Bloc.Variables;
 
 namespace Bloc.Parsers;
 
@@ -35,6 +39,7 @@ internal static class StatementParser
     private static Statement GetStatement(ITokenProvider provider)
     {
         string? label = GetLabel(provider);
+        var scope = GetScope(provider);
         bool mask = IsMasking(provider);
         bool check = IsChecked(provider);
 
@@ -45,8 +50,10 @@ internal static class StatementParser
             SymbolToken(Symbol.SLASH) => GetCommandStatement(provider),
             KeywordToken(Keyword.EXEC) => GetExecStatement(provider),
 
-            KeywordToken(Keyword.VAR) => GetVarStatement(provider, mask),
-            KeywordToken(Keyword.CONST) => GetConstStatement(provider, mask),
+            KeywordToken(Keyword.VAR) => GetVarStatement(provider, mask, scope),
+            KeywordToken(Keyword.CONST) => GetConstStatement(provider, mask, scope),
+            KeywordToken(Keyword.IMPORT) => GetImportStatement(provider, scope),
+            KeywordToken(Keyword.EXPORT) => GetExportStatement(provider),
 
             KeywordToken(Keyword.IF) => GetIfStatement(provider, false),
             KeywordToken(Keyword.UNLESS) => GetIfStatement(provider, true),
@@ -125,7 +132,28 @@ internal static class StatementParser
         return true;
     }
 
-    private static Statement GetStatementBlock(ITokenProvider provider)
+    private static VariableScope GetScope(ITokenProvider provider)
+    {
+        switch (provider.PeekRange(2))
+        {
+            case [KeywordToken(Keyword.GLOBAL), KeywordToken(Keyword.IMPORT)]:
+            case [KeywordToken(Keyword.GLOBAL), KeywordToken(Keyword.CONST)]:
+            case [KeywordToken(Keyword.GLOBAL), KeywordToken(Keyword.VAR)]:
+                provider.Skip();
+                return VariableScope.Global;
+
+            case [KeywordToken(Keyword.MODULE), KeywordToken(Keyword.IMPORT)]:
+            case [KeywordToken(Keyword.MODULE), KeywordToken(Keyword.CONST)]:
+            case [KeywordToken(Keyword.MODULE), KeywordToken(Keyword.VAR)]:
+                provider.Skip();
+                return VariableScope.Module;
+
+            default:
+                return VariableScope.Local;
+        }
+    }
+
+    private static StatementBlock GetStatementBlock(ITokenProvider provider)
     {
         var block = (BracesToken)provider.Next();
         var collection = new TokenCollection(block.Tokens);
@@ -137,7 +165,7 @@ internal static class StatementParser
         };
     }
 
-    private static Statement GetExpressionStatement(ITokenProvider provider)
+    private static ExpressionStatement GetExpressionStatement(ITokenProvider provider)
     {
         var line = GetLine(provider);
         var expression = ExpressionParser.Parse(line);
@@ -145,7 +173,7 @@ internal static class StatementParser
         return new ExpressionStatement(expression);
     }
 
-    private static Statement GetCommandStatement(ITokenProvider provider)
+    private static CommandStatement GetCommandStatement(ITokenProvider provider)
     {
         provider.Skip();
 
@@ -155,13 +183,13 @@ internal static class StatementParser
         return new CommandStatement(command);
     }
 
-    private static Statement GetEmptyStatement(ITokenProvider provider)
+    private static EmptyStatement GetEmptyStatement(ITokenProvider provider)
     {
         provider.Skip();
         return new EmptyStatement();
     }
 
-    private static Statement GetExecStatement(ITokenProvider provider)
+    private static ExecStatement GetExecStatement(ITokenProvider provider)
     {
         var line = GetLine(provider).GetRange(1..);
 
@@ -173,12 +201,11 @@ internal static class StatementParser
         return new ExecStatement(expression);
     }
 
-    private static Statement GetVarStatement(ITokenProvider provider, bool mask)
+    private static DeclarationStatement GetVarStatement(ITokenProvider provider, bool mask, VariableScope scope)
     {
-        var statement = new DeclarationStatement(mask, true);
+        var statement = new DeclarationStatement(mask, true, scope);
 
         var keyword = provider.Next();
-
         var definitions = GetLine(provider).Split(x => x is SymbolToken(Symbol.COMMA));
 
         foreach (var tokens in definitions)
@@ -208,12 +235,11 @@ internal static class StatementParser
         return statement;
     }
 
-    private static Statement GetConstStatement(ITokenProvider provider, bool mask)
+    private static DeclarationStatement GetConstStatement(ITokenProvider provider, bool mask, VariableScope scope)
     {
-        var statement = new DeclarationStatement(mask, false);
+        var statement = new DeclarationStatement(mask, false, scope);
 
         var keyword = provider.Next();
-
         var definitions = GetLine(provider).Split(x => x is SymbolToken(Symbol.COMMA));
 
         foreach (var tokens in definitions)
@@ -242,10 +268,170 @@ internal static class StatementParser
         return statement;
     }
 
-    private static Statement GetIfStatement(ITokenProvider provider, bool reversed)
+    private static Statement GetImportStatement(ITokenProvider provider, VariableScope scope)
+    {
+        var keyword = provider.Next();
+        var line = GetLine(provider);
+
+        if (line is [SymbolToken(Symbol.TIMES), KeywordToken(Keyword.FROM), ..])
+            return GetImportAllFromStatement(line, scope);
+        else if (line.Any(x => x is KeywordToken(Keyword.FROM)))
+            return GetImportFromStatement(line, scope);
+        else 
+            return GetImportStatement(line, scope);
+    }
+
+    private static ImportStatement GetImportStatement(List<Token> line, VariableScope scope)
+    {
+        var paths = line.Split(x => x is SymbolToken(Symbol.COMMA));
+
+        var statement = new ImportStatement(scope);
+
+        foreach (var tokens in paths)
+        {
+            if (tokens.Count == 0)
+                throw new SyntaxError(0, 0, "Missing expression");
+
+            var expression = ExpressionParser.Parse(tokens);
+
+            statement.ModulePathExpressions.Add(expression);
+        }
+
+        return statement;
+    }
+
+    private static ImportFromStatement GetImportFromStatement(List<Token> line, VariableScope scope)
+    {
+        var index = line.FindIndex(x => x is KeywordToken(Keyword.FROM));
+        var imports = line.GetRange(..index).Split(x => x is SymbolToken(Symbol.COMMA));
+        var path = line.GetRange((index + 1)..);
+
+        var statement = new ImportFromStatement(scope, ExpressionParser.Parse(path));
+
+        foreach (var tokens in imports)
+        {
+            switch (tokens)
+            {
+                case []:
+                    throw new SyntaxError(0, 0, "Missing expression");
+
+                case [INamedIdentifierToken token]:
+                    var identifier = token.GetIdentifier();
+                    statement.Imports.Add(new(identifier, null));
+                    break;
+
+                case [INamedIdentifierToken nameToken, KeywordToken(Keyword.AS), INamedIdentifierToken aliasToken]:
+                    var nameIdentifier = nameToken.GetIdentifier();
+                    var aliasIdentifier = aliasToken.GetIdentifier();
+                    statement.Imports.Add(new(nameIdentifier, aliasIdentifier));
+                    break;
+
+                default:
+                    throw new SyntaxError(0, 0, "UnexpectedSymbol");
+            }
+        }
+
+        return statement;
+    }
+
+    private static ImportAllFromStatement GetImportAllFromStatement(List<Token> line, VariableScope scope)
+    {
+        var pathTokens = line.GetRange(2..);
+        var pathExpression = ExpressionParser.Parse(pathTokens);
+
+        return new ImportAllFromStatement(scope, pathExpression);
+    }
+
+    private static Statement GetExportStatement(ITokenProvider provider)
+    {
+        var keyword = provider.Next();
+        var line = GetLine(provider);
+
+        if (line is [SymbolToken(Symbol.TIMES), KeywordToken(Keyword.FROM), ..])
+            return GetExportAllFromStatement(line);
+        else if (line.Any(x => x is KeywordToken(Keyword.FROM)))
+            return GetExportFromStatement(line);
+        else
+            return GetExportStatement(line);
+    }
+
+    private static ExportStatement GetExportStatement(List<Token> line)
+    {
+        var exports = line.Split(x => x is SymbolToken(Symbol.COMMA));
+
+        var statement = new ExportStatement();
+
+        foreach (var tokens in exports)
+        {
+            if (tokens.Count == 0)
+                throw new SyntaxError(0, 0, "Missing expression");
+
+            if (tokens is not [.., KeywordToken(Keyword.AS), INamedIdentifierToken])
+            {
+                var expression = ExpressionParser.Parse(tokens);
+
+                statement.Exports.Add(new(expression, null));
+            }
+            else
+            {
+                var expression = ExpressionParser.Parse(tokens.GetRange(..^2));
+                var identifier = IdentifierParser.Parse(tokens.GetRange(^1..));
+
+                if (identifier is not INamedIdentifier namedIdentifier)
+                    throw new SyntaxError(0, 0, "An export alias must be a named identifier");
+
+                statement.Exports.Add(new(expression, namedIdentifier));
+            }
+        }
+
+        return statement;
+    }
+
+    private static ExportFromStatement GetExportFromStatement(List<Token> line)
+    {
+        var index = line.FindIndex(x => x is KeywordToken(Keyword.FROM));
+        var exports = line.GetRange(..index).Split(x => x is SymbolToken(Symbol.COMMA));
+        var path = line.GetRange((index + 1)..);
+
+        var statement = new ExportFromStatement(ExpressionParser.Parse(path));
+
+        foreach (var tokens in exports)
+        {
+            switch (tokens)
+            {
+                case []:
+                    throw new SyntaxError(0, 0, "Missing expression");
+
+                case [INamedIdentifierToken token]:
+                    var identifier = token.GetIdentifier();
+                    statement.Exports.Add(new(identifier, null));
+                    break;
+
+                case [INamedIdentifierToken nameToken, KeywordToken(Keyword.AS), INamedIdentifierToken aliasToken]:
+                    var nameIdentifier = nameToken.GetIdentifier();
+                    var aliasIdentifier = aliasToken.GetIdentifier();
+                    statement.Exports.Add(new(nameIdentifier, aliasIdentifier));
+                    break;
+
+                default:
+                    throw new SyntaxError(0, 0, "UnexpectedSymbol");
+            }
+        }
+
+        return statement;
+    }
+
+    private static ExportAllFromStatement GetExportAllFromStatement(List<Token> line)
+    {
+        var pathTokens = line.GetRange(2..);
+        var pathExpression = ExpressionParser.Parse(pathTokens);
+
+        return new ExportAllFromStatement(pathExpression);
+    }
+
+    private static IfStatement GetIfStatement(ITokenProvider provider, bool reversed)
     {
         var @if = provider.Next();
-
         var expression = GetExpression(provider, @if);
         var then = GetStatement(provider);
 
@@ -265,7 +451,7 @@ internal static class StatementParser
         };
     }
 
-    private static Statement GetSwitchStatement(ITokenProvider provider)
+    private static SwitchStatement GetSwitchStatement(ITokenProvider provider)
     {
         var keyword = provider.Next();
         var expression = GetExpression(provider, keyword);
@@ -318,7 +504,7 @@ internal static class StatementParser
         };
     }
 
-    private static Statement GetWhileStatement(ITokenProvider provider, bool @checked, bool reversed)
+    private static WhileStatement GetWhileStatement(ITokenProvider provider, bool @checked, bool reversed)
     {
         var keyword = provider.Next();
 
@@ -329,10 +515,9 @@ internal static class StatementParser
         };
     }
 
-    private static Statement GetDoWhileStatement(ITokenProvider provider, bool @checked)
+    private static WhileStatement GetDoWhileStatement(ITokenProvider provider, bool @checked)
     {
         var @do = provider.Next();
-
         var statement = GetStatement(provider);
 
         if (!provider.HasNext() || provider.Next() is not KeywordToken(Keyword.WHILE or Keyword.UNTIL) keyword)
@@ -350,7 +535,7 @@ internal static class StatementParser
         };
     }
 
-    private static Statement GetForStatement(ITokenProvider provider, bool @checked)
+    private static ForStatement GetForStatement(ITokenProvider provider, bool @checked)
     {
         var keyword = provider.Next();
 
@@ -372,7 +557,7 @@ internal static class StatementParser
         };
     }
 
-    private static Statement GetForeachStatement(ITokenProvider provider, bool @checked)
+    private static ForeachStatement GetForeachStatement(ITokenProvider provider, bool @checked)
     {
         var keyword = provider.Next();
 
@@ -403,7 +588,7 @@ internal static class StatementParser
         };
     }
 
-    private static Statement GetRepeatStatement(ITokenProvider provider, bool @checked)
+    private static RepeatStatement GetRepeatStatement(ITokenProvider provider, bool @checked)
     {
         var keyword = provider.Next();
 
@@ -414,7 +599,7 @@ internal static class StatementParser
         };
     }
 
-    private static Statement GetLoopStatement(ITokenProvider provider, bool @checked)
+    private static LoopStatement GetLoopStatement(ITokenProvider provider, bool @checked)
     {
         provider.Skip();
 
@@ -424,7 +609,7 @@ internal static class StatementParser
         };
     }
 
-    private static Statement GetLockStatement(ITokenProvider provider)
+    private static LockStatement GetLockStatement(ITokenProvider provider)
     {
         var keyword = provider.Next();
 
@@ -435,7 +620,7 @@ internal static class StatementParser
         };
     }
 
-    private static Statement GetTryStatement(ITokenProvider provider)
+    private static TryStatement GetTryStatement(ITokenProvider provider)
     {
         provider.Skip();
 
@@ -484,7 +669,7 @@ internal static class StatementParser
         };
     }
 
-    private static Statement GetReturnStatement(ITokenProvider provider)
+    private static ReturnStatement GetReturnStatement(ITokenProvider provider)
     {
         var line = GetLine(provider).GetRange(1..);
 
@@ -494,7 +679,7 @@ internal static class StatementParser
         return new ReturnStatement(ExpressionParser.Parse(line));
     }
 
-    private static Statement GetYieldStatement(ITokenProvider provider)
+    private static YieldStatement GetYieldStatement(ITokenProvider provider)
     {
         var line = GetLine(provider).GetRange(1..);
 
@@ -504,7 +689,7 @@ internal static class StatementParser
         return new YieldStatement(ExpressionParser.Parse(line));
     }
 
-    private static Statement GetThrowStatement(ITokenProvider provider)
+    private static ThrowStatement GetThrowStatement(ITokenProvider provider)
     {
         var line = GetLine(provider).GetRange(1..);
 
@@ -514,7 +699,7 @@ internal static class StatementParser
         return new ThrowStatement(ExpressionParser.Parse(line));
     }
 
-    private static Statement GetContinueStatement(ITokenProvider provider)
+    private static ContinueStatement GetContinueStatement(ITokenProvider provider)
     {
         var line = GetLine(provider).GetRange(1..);
 
@@ -524,7 +709,7 @@ internal static class StatementParser
         return new ContinueStatement();
     }
 
-    private static Statement GetBreakStatement(ITokenProvider provider)
+    private static BreakStatement GetBreakStatement(ITokenProvider provider)
     {
         var line = GetLine(provider).GetRange(1..);
 
@@ -534,7 +719,7 @@ internal static class StatementParser
         return new BreakStatement();
     }
 
-    private static Statement GetGotoStatement(ITokenProvider provider)
+    private static GotoStatement GetGotoStatement(ITokenProvider provider)
     {
         var keyword = provider.Next();
         var line = GetLine(provider);

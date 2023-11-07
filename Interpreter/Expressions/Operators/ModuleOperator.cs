@@ -7,11 +7,11 @@ using Bloc.Values.Types;
 
 namespace Bloc.Expressions.Operators;
 
-internal sealed record ParamOperator : IExpression
+internal sealed record ModuleOperator : IExpression
 {
     private readonly IExpression _operand;
 
-    internal ParamOperator(IExpression operand)
+    internal ModuleOperator(IExpression operand)
     {
         _operand = operand;
     }
@@ -20,23 +20,23 @@ internal sealed record ParamOperator : IExpression
     {
         var identifier = _operand.Evaluate(call);
 
-        return GetParam(identifier, call);
+        return GetCapture(identifier, call);
     }
 
-    private IValue GetParam(IValue identifier, Call call)
+    private IValue GetCapture(IValue identifier, Call call)
     {
         if (identifier is UnresolvedPointer pointer)
         {
-            if (pointer.Param is null)
-                throw new Throw($"Variable {pointer.Name} was not defined in parameters");
+            if (pointer.Module is null)
+                throw new Throw($"Variable {pointer.Name} was not defined in module scope");
 
-            return new VariablePointer(pointer.Param);
+            return new VariablePointer(pointer.Module);
         }
 
         if (identifier.Value is Tuple tuple)
         {
             var variables = tuple.Values
-                .Select(x => GetParam(x, call))
+                .Select(x => GetCapture(x, call))
                 .ToList();
 
             return new Tuple(variables);

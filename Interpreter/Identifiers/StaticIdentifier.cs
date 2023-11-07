@@ -1,5 +1,7 @@
-﻿using Bloc.Memory;
+﻿using System.Xml.Linq;
+using Bloc.Memory;
 using Bloc.Values.Core;
+using Bloc.Variables;
 
 namespace Bloc.Identifiers;
 
@@ -17,8 +19,8 @@ internal sealed record StaticIdentifier : INamedIdentifier
         return _name;
     }
 
-    public IValue Define(Value value, Call call, bool mask = false, bool mutable = true)
+    public IValue Define(Value value, Call call, bool mask, bool mutable, VariableScope scope)
     {
-        return call.Set(mask, mutable, _name, value.GetOrCopy(true));
+        return call.Set(_name, value.GetOrCopy(true), mutable, mask, scope);
     }
 }

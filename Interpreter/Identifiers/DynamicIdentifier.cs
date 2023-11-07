@@ -5,6 +5,7 @@ using Bloc.Results;
 using Bloc.Utils.Helpers;
 using Bloc.Values.Core;
 using Bloc.Values.Types;
+using Bloc.Variables;
 
 namespace Bloc.Identifiers;
 
@@ -34,8 +35,8 @@ internal sealed record DynamicIdentifier : INamedIdentifier
         return @string.Value;
     }
 
-    public IValue Define(Value value, Call call, bool mask = false, bool mutable = true)
+    public IValue Define(Value value, Call call, bool mask, bool mutable, VariableScope scope)
     {
-        return call.Set(mask, mutable, GetName(call), value.GetOrCopy(true));
+        return call.Set(GetName(call), value.GetOrCopy(true), mutable, mask, scope);
     }
 }

@@ -5,6 +5,7 @@ using Bloc.Results;
 using Bloc.Utils.Attributes;
 using Bloc.Values.Core;
 using Bloc.Values.Types;
+using Bloc.Variables;
 
 namespace Bloc.Identifiers;
 
@@ -18,12 +19,12 @@ internal sealed partial class TupleIdentifier : IIdentifier
         _identifiers = identifiers;
     }
 
-    public IValue Define(Value value, Call call, bool mask = false, bool mutable = true)
+    public IValue Define(Value value, Call call, bool mask, bool mutable, VariableScope scope)
     {
         if (value is not Tuple tuple)
         {
             var values = _identifiers
-                .Select(x => x.Define(value, call, mask, mutable))
+                .Select(x => x.Define(value, call, mask, mutable, scope))
                 .ToList();
 
             return new Tuple(values);
@@ -34,7 +35,7 @@ internal sealed partial class TupleIdentifier : IIdentifier
                 throw new Throw("Miss match number of elements in tuples.");
 
             var values = _identifiers
-                .Zip(tuple.Values, (a, b) => a.Define(b.Value, call, mask, mutable))
+                .Zip(tuple.Values, (a, b) => a.Define(b.Value, call, mask, mutable, scope))
                 .ToList();
 
             return new Tuple(values);

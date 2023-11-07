@@ -18,7 +18,8 @@ public sealed partial class Func : Value, IPattern, IInvokable
     private readonly FuncType _type;
     private readonly CaptureMode _mode;
 
-    private readonly VariableCollection _captures;
+    private readonly VariableCollection _moduleVariables;
+    private readonly VariableCollection _closureVariables;
     private readonly Parameter? _argsContainer;
     private readonly Parameter? _kwargsContainer;
     private readonly List<Parameter> _parameters;
@@ -32,7 +33,8 @@ public sealed partial class Func : Value, IPattern, IInvokable
         _type = FuncType.Synchronous;
         _mode = CaptureMode.None;
 
-        _captures = new();
+        _moduleVariables = new();
+        _closureVariables = new();
         _argsContainer = null;
         _kwargsContainer = null;
         _parameters = new();
@@ -43,7 +45,8 @@ public sealed partial class Func : Value, IPattern, IInvokable
     internal Func(
         FuncType type,
         CaptureMode mode,
-        VariableCollection captures,
+        VariableCollection moduleVariables,
+        VariableCollection closureVariables,
         Parameter? argsContainer,
         Parameter? kwargsContainer,
         List<Parameter> parameters,
@@ -51,7 +54,8 @@ public sealed partial class Func : Value, IPattern, IInvokable
     {
         _type = type;
         _mode = mode;
-        _captures = captures;
+        _moduleVariables = moduleVariables;
+        _closureVariables = closureVariables;
         _argsContainer = argsContainer;
         _kwargsContainer = kwargsContainer;
         _parameters = parameters;
@@ -66,7 +70,7 @@ public sealed partial class Func : Value, IPattern, IInvokable
 
     internal Task InvokeAsync(Call parent)
     {
-        var call = new Call(parent, _captures, new());
+        var call = new Call(parent, _moduleVariables, _closureVariables, new());
 
         return new Task(() => Execute(call));
     }
@@ -143,7 +147,7 @@ public sealed partial class Func : Value, IPattern, IInvokable
         if (_kwargsContainer is not null)
             @params.Add(new(true, _kwargsContainer.Name, restStruct.GetOrCopy(true), @params));
 
-        var call = new Call(parent, _captures, @params);
+        var call = new Call(parent, _moduleVariables, _closureVariables, @params);
 
         return _type switch
         {

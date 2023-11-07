@@ -74,8 +74,10 @@ internal sealed class ParseUnaries : ParsingStep
                 Keyword.CONST_NEW   => new ConstNewOperator(operand),
                 Keyword.DELETE      => new DeleteOperator(operand),
                 Keyword.GLOBAL      => new GlobalOperator(operand),
-                Keyword.NONLOCAL    => new NonlocalOperator(operand),
-                Keyword.PARAM       => new ParamOperator(operand),
+                Keyword.MODULE      => new ModuleOperator(operand),
+                Keyword.CLOSURE     => new ClosureOperator(operand),
+                Keyword.PARAMS      => new ParamsOperator(operand),
+                Keyword.LOCAL       => new LocalOperator(operand),
                 Keyword.AWAIT       => new AwaitOperator(operand),
                 Keyword.NEXT        => new NextOperator(operand),
                 Keyword.NAMEOF      => new NameofOperator(operand),
@@ -186,8 +188,10 @@ internal sealed class ParseUnaries : ParsingStep
             Keyword.CONST_NEW or
             Keyword.DELETE or
             Keyword.GLOBAL or
-            Keyword.NONLOCAL or
-            Keyword.PARAM or
+            Keyword.MODULE or
+            Keyword.CLOSURE or
+            Keyword.PARAMS or
+            Keyword.LOCAL or
             Keyword.AWAIT or
             Keyword.NEXT or
             Keyword.NAMEOF or

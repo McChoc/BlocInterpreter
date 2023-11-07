@@ -38,7 +38,7 @@ public sealed class ExecuteCommand : ICommandInfo
             throw new Throw($"Syntax error : {e.Message}");
         }
 
-        var result = call.Engine.Execute(statements);
+        var result = call.Engine.Execute(statements, call.Module);
 
         if (result is not null)
             throw result;

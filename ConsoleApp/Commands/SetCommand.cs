@@ -3,6 +3,7 @@ using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Values.Core;
 using Bloc.Values.Types;
+using Bloc.Variables;
 
 namespace ConsoleApp.Commands;
 
@@ -30,7 +31,7 @@ public sealed class SetCommand : ICommandInfo
             var name = args[0];
             var value = input;
 
-            call.Set(true, true, name, value.GetOrCopy(true));
+            call.Set(name, value.GetOrCopy(true), true, true, VariableScope.Local);
 
             return Void.Value;
         }
@@ -40,7 +41,7 @@ public sealed class SetCommand : ICommandInfo
             var name = args[0];
             var value = new String(args[1]);
 
-            call.Set(true, true, name, value.GetOrCopy(true));
+            call.Set(name, value.GetOrCopy(true), true, true, VariableScope.Local);
 
             return Void.Value;
         }

@@ -71,7 +71,7 @@ internal sealed partial class FuncLiteral : IExpression
             parameters.Add(new(name, value));
         }
 
-        return new Func(_type, _mode, captures, argsContainer, kwargsContainer, parameters, _statements);
+        return new Func(_type, _mode, call.Module.TopLevelScope, captures, argsContainer, kwargsContainer, parameters, _statements);
     }
 
     internal sealed record Parameter(INamedIdentifier Identifier, IExpression? Expression);

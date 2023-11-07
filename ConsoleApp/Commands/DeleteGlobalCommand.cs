@@ -21,7 +21,7 @@ public sealed class DeleteGlobalCommand : ICommandInfo
         if (args.Length != 0)
             throw new Throw("'delete_global' does not take arguments.\nType '/help delete_global' to see its usage.");
 
-        foreach (var stack in call.Engine.GlobalScope.Variables.Values)
+        foreach (var stack in call.Module.TopLevelScope.Variables.Values)
             while (stack.Count > 0)
                 stack.Peek().Delete();
 

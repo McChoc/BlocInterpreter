@@ -6,6 +6,7 @@ using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Utils.Attributes;
 using Bloc.Values.Types;
+using Bloc.Variables;
 
 namespace Bloc.Statements;
 
@@ -14,13 +15,15 @@ internal sealed partial class DeclarationStatement : Statement
 {
     private readonly bool _mask;
     private readonly bool _mutable;
+    private readonly VariableScope _scope;
 
     internal List<Declaration> Declarations { get; } = new();
 
-    internal DeclarationStatement(bool mask, bool mutable)
+    internal DeclarationStatement(bool mask, bool mutable, VariableScope scope)
     {
         _mask = mask;
         _mutable = mutable;
+        _scope = scope;
     }
 
     internal override IEnumerable<IResult> Execute(Call call)
@@ -31,7 +34,7 @@ internal sealed partial class DeclarationStatement : Statement
             {
                 var value = declaration.Expression?.Evaluate(call).Value ?? Null.Value;
 
-                declaration.Identifier.Define(value, call, _mask, _mutable);
+                declaration.Identifier.Define(value, call, _mask, _mutable, _scope);
             }
             catch (Throw exception)
             {

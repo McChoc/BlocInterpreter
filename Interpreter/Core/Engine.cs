@@ -16,22 +16,22 @@ namespace Bloc.Core;
 public sealed class Engine
 {
     public object? State { get; set; }
-
-    public Call GlobalCall { get; }
-    public Scope GlobalScope { get; }
-
     public IEngineOptions Options { get; }
-    public Dictionary<string, ICommandInfo> Commands { get; }
     public Action<string> Output { get; }
+    public Dictionary<string, string> Aliases { get; }
+    public Dictionary<string, ICommandInfo> Commands { get; }
+    public Dictionary<string, Module> Modules { get; }
 
-    internal Engine(IEngineOptions options, Dictionary<string, ICommandInfo> commands, Action<string> output)
+    internal VariableCollection GlobalVariables { get; }
+
+    internal Engine(IEngineOptions options, Action<string> output, Dictionary<string, string> aliases, Dictionary<string, ICommandInfo> commands)
     {
-        GlobalCall = new Call(this);
-        GlobalScope = GlobalCall.Scopes.First();
-
         Options = options;
-        Commands = commands;
         Output = output;
+        Aliases = aliases;
+        Commands = commands;
+        Modules = new();
+        GlobalVariables = new();
     }
 
     public static void Compile(string code, out IExpression? expression, out List<Statement> statements)
@@ -44,11 +44,11 @@ public sealed class Engine
             : null;
     }
 
-    public Throw? Evaluate(IExpression expression, out Value? value)
+    public Throw? Evaluate(IExpression expression, Module module, out Value? value)
     {
         try
         {
-            value = expression.Evaluate(GlobalCall).Value.GetOrCopy();
+            value = expression.Evaluate(module.TopLevelCall).Value.GetOrCopy();
             return null;
         }
         catch (Throw @throw)
@@ -58,13 +58,13 @@ public sealed class Engine
         }
     }
 
-    public Throw? Execute(List<Statement> statements)
+    public Throw? Execute(List<Statement> statements, Module module)
     {
         var labels = StatementHelper.GetLabels(statements);
 
         for (int i = 0; i < statements.Count; i++)
         {
-            switch (statements[i].Execute(GlobalCall).FirstOrDefault())
+            switch (statements[i].Execute(module.TopLevelCall).FirstOrDefault())
             {
                 case Continue:
                     return new Throw("A continue statement can only be used inside a loop");

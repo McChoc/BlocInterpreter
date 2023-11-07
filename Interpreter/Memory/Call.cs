@@ -15,30 +15,41 @@ public sealed class Call
     private readonly int _stack;
 
     public Engine Engine { get; }
+    public Module Module { get; }
 
-    internal VariableCollection Captures { get; }
-    internal VariableCollection Params { get; }
+    internal VariableCollection ModuleVariables { get; }
+    internal VariableCollection ClosureVariables { get; }
+    internal VariableCollection ParamsVariables { get; }
     internal List<Scope> Scopes { get; }
 
-    internal Call(Engine engine)
+    internal Call(Engine engine, Module module)
     {
         Engine = engine;
-        Captures = new();
-        Params = new();
+        Module = module;
+
         Scopes = new();
         MakeScope();
+
+        ModuleVariables = Scopes[0];
+        ClosureVariables = new();
+        ParamsVariables = new();
     }
 
-    internal Call(Call parent, VariableCollection captures, VariableCollection @params)
-        : this(parent.Engine)
+    internal Call(Call parent, VariableCollection moduleVariables, VariableCollection closureVariables, VariableCollection paramsVariables)
     {
+        Engine = parent.Engine;
+        Module = parent.Module;
+
         _stack = parent._stack + 1;
 
         if (_stack > Engine.Options.StackLimit)
             throw new Throw("The stack limit was reached");
 
-        Captures = captures;
-        Params = @params;
+        ModuleVariables = moduleVariables;
+        ClosureVariables = closureVariables;
+        ParamsVariables = paramsVariables;
+        Scopes = new();
+        MakeScope();
     }
 
     internal Scope MakeScope()
@@ -57,8 +68,9 @@ public sealed class Call
         Stack<StackVariable> stack;
 
         Variable? local = null;
-        Variable? param = null;
-        Variable? nonLocal = null;
+        Variable? @params = null;
+        Variable? closure = null;
+        Variable? module = null;
         Variable? global = null;
 
         foreach (var scope in Scopes)
@@ -70,26 +82,36 @@ public sealed class Call
             }
         }
 
-        if (Params.Variables.TryGetValue(name, out stack))
-            param = stack.Peek();
+        if (ParamsVariables.Variables.TryGetValue(name, out stack))
+            @params = stack.Peek();
 
-        if (Captures.Variables.TryGetValue(name, out stack))
-            nonLocal = stack.Peek();
+        if (ClosureVariables.Variables.TryGetValue(name, out stack))
+            closure = stack.Peek();
 
-        if (Engine.GlobalScope.Variables.TryGetValue(name, out stack))
+        if (ModuleVariables.Variables.TryGetValue(name, out stack))
+            module = stack.Peek();
+
+        if (Engine.GlobalVariables.Variables.TryGetValue(name, out stack))
             global = stack.Peek();
 
-        return new UnresolvedPointer(name, local, param, nonLocal, global);
+        return new UnresolvedPointer(name, local, @params, closure, module, global);
     }
 
-    public VariablePointer Set(bool mask, bool mutable, string name, Value value)
+    public VariablePointer Set(string name, Value value, bool mutable, bool mask, VariableScope scope)
     {
-        if (!mask && Scopes[^1].Variables.ContainsKey(name))
+        var targetCollection = scope switch
+        {
+            VariableScope.Global => Engine.GlobalVariables,
+            VariableScope.Module => Module.TopLevelScope,
+            _ => Scopes[^1],
+        };
+
+        if (!mask && targetCollection.Variables.ContainsKey(name))
             throw new Throw($"Variable '{name}' was already defined in scope");
 
         var variable = new StackVariable(mutable, name, value, Scopes[^1]);
 
-        Scopes[^1].Add(variable);
+        targetCollection.Add(variable);
 
         return new VariablePointer(variable);
     }
@@ -111,9 +133,8 @@ public sealed class Call
         foreach (var scope in Scopes)
             Capture(scope, captures, callback);
 
-        Capture(Params, captures, callback);
-
-        Capture(Captures, captures, callback);
+        Capture(ParamsVariables, captures, callback);
+        Capture(ClosureVariables, captures, callback);
 
         return captures;
     }

@@ -10,7 +10,7 @@ public static class ConsoleTextStyler
         var handle = GetStdHandle(-11);
         GetConsoleMode(handle, out var mode);
         SetConsoleMode(handle, mode | 0x4);
-        System.Console.ResetColor();
+        Console.ResetColor();
     }
 
     [DllImport("kernel32.dll", SetLastError = true)]
@@ -22,8 +22,8 @@ public static class ConsoleTextStyler
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern bool SetConsoleMode(IntPtr hConsoleHandle, int mode);
 
-    public static void SetTextColor(byte color)
+    public static void SetTextColor(ConsoleColor color)
     {
-        System.Console.Write($"\x1b[38;5;{color}m");
+        Console.Write($"\x1b[38;5;{(byte)color}m");
     }
 }

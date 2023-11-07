@@ -9,17 +9,19 @@ public sealed class UnresolvedPointer : Pointer
     internal string Name { get; }
 
     internal Variable? Local { get; }
-    internal Variable? Param { get; }
-    internal Variable? NonLocal { get; }
+    internal Variable? Params { get; }
+    internal Variable? Closure { get; }
+    internal Variable? Module { get; }
     internal Variable? Global { get; }
 
-    internal UnresolvedPointer(string name, Variable? local, Variable? param, Variable? nonLocal, Variable? global)
+    internal UnresolvedPointer(string name, Variable? local, Variable? @params, Variable? closure, Variable? module, Variable? global)
     {
         Name = name;
 
         Local = local;
-        Param = param;
-        NonLocal = nonLocal;
+        Params = @params;
+        Closure = closure;
+        Module = module;
         Global = global;
     }
 
@@ -29,7 +31,7 @@ public sealed class UnresolvedPointer : Pointer
 
     internal VariablePointer Resolve()
     {
-        var variable = Local ?? Param ?? NonLocal ?? Global ?? throw new Throw($"Variable {Name} was not defined in scope");
+        var variable = Local ?? Params ?? Closure ?? Module ?? Global ?? throw new Throw($"Variable {Name} was not defined in scope");
 
         return new VariablePointer(variable);
     }

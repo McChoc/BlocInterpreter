@@ -1,25 +1,24 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Bloc.Core;
-using Bloc.Results;
 using Bloc.Utils.Exceptions;
 using Bloc.Values.Core;
 using ConsoleApp.Utils;
-using static System.Console;
+using ConsoleColor = ConsoleApp.Utils.ConsoleColor;
 
 namespace ConsoleApp;
 
-public sealed class Console
+public sealed class Application
 {
-    private const byte RED = 9;
-    private const byte ORANGE = 208;
-
     private bool _running;
 
     private readonly Engine _engine;
+    private readonly Module _module;
 
-    public Console(Engine engine)
+    public Application(Engine engine)
     {
         _engine = engine;
+        _module = new Module(AppDomain.CurrentDomain.BaseDirectory, engine);
     }
 
     public void Start()
@@ -43,9 +42,9 @@ public sealed class Console
 
             while (true)
             {
-                Write(lines.Count == 0 ? "> " : ". ");
+                Console.Write(lines.Count == 0 ? "> " : ". ");
 
-                var line = ReadLine();
+                var line = Console.ReadLine();
 
                 if (line.Length > 0 && line[^1] == '\x4')
                 {
@@ -78,35 +77,35 @@ public sealed class Console
                     {
                         Engine.Compile(code, out var expression, out var statements);
 
-                        IResult result;
                         Value value = null;
 
-                        if (expression is not null)
-                            result = _engine.Evaluate(expression, out value);
-                        else
-                            result = _engine.Execute(statements);
+                        var exception = expression is not null
+                            ? _engine.Evaluate(expression, _module, out value)
+                            : _engine.Execute(statements, _module);
 
-                        if (result is Throw t)
+                        if (exception is not null)
                         {
-                            ConsoleTextStyler.SetTextColor(ORANGE);
-                            WriteLine($"An exception was thrown : {t.Value}");
-                            ResetColor();
+                            ConsoleTextStyler.SetTextColor(ConsoleColor.Orange);
+                            Console.WriteLine($"An exception was thrown : {exception.Value}");
+                            Console.ResetColor();
                         }
                         else if (value is not null)
                         {
-                            WriteLine(value.ToString());
+                            ConsoleTextStyler.SetTextColor(ConsoleColor.Green);
+                            Console.WriteLine(value.ToString());
+                            Console.ResetColor();
                         }
                     }
                     catch (SyntaxError e)
                     {
-                        ConsoleTextStyler.SetTextColor(RED);
-                        WriteLine($"Syntax error : {e.Message}");
-                        ResetColor();
+                        ConsoleTextStyler.SetTextColor(ConsoleColor.Red);
+                        Console.WriteLine($"Syntax error : {e.Message}");
+                        Console.ResetColor();
                     }
                 }
             }
 
-            WriteLine();
+            Console.WriteLine();
         }
     }
 }

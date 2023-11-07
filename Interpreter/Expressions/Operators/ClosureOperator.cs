@@ -7,11 +7,11 @@ using Bloc.Values.Types;
 
 namespace Bloc.Expressions.Operators;
 
-internal sealed record NonlocalOperator : IExpression
+internal sealed record ClosureOperator : IExpression
 {
     private readonly IExpression _operand;
 
-    internal NonlocalOperator(IExpression operand)
+    internal ClosureOperator(IExpression operand)
     {
         _operand = operand;
     }
@@ -27,10 +27,10 @@ internal sealed record NonlocalOperator : IExpression
     {
         if (identifier is UnresolvedPointer pointer)
         {
-            if (pointer.NonLocal is null)
-                throw new Throw($"Variable {pointer.Name} was not defined in non-local scope");
+            if (pointer.Closure is null)
+                throw new Throw($"Variable {pointer.Name} was not defined in closure scope");
 
-            return new VariablePointer(pointer.NonLocal);
+            return new VariablePointer(pointer.Closure);
         }
 
         if (identifier.Value is Tuple tuple)
