@@ -8,12 +8,16 @@ using Bloc.Utils.Extensions;
 
 namespace Bloc.Parsers.Steps;
 
-internal sealed class ParseMatchAssignments : ParsingStep
+internal sealed class ParseMatchAssignments : IParsingStep
 {
-    public ParseMatchAssignments(ParsingStep nextStep)
-        : base(nextStep) { }
+    private readonly IParsingStep _nextStep;
 
-    internal override IExpression Parse(List<Token> tokens)
+    public ParseMatchAssignments(IParsingStep nextStep)
+    {
+        _nextStep = nextStep;
+    }
+
+    public IExpression Parse(List<Token> tokens)
     {
         for (int i = tokens.Count - 1; i >= 0; i--)
         {
@@ -33,12 +37,12 @@ internal sealed class ParseMatchAssignments : ParsingStep
                         throw new SyntaxError(@operator.Start, @operator.End, "Missing the right part of assignment pattern");
 
                     var left = i > 0 ? Parse(tokens.GetRange(..i)) : null;
-                    var right = NextStep!.Parse(tokens.GetRange((i + 1)..));
+                    var right = _nextStep.Parse(tokens.GetRange((i + 1)..));
 
                     return new MatchAssignmentOperator(left, right);
             }
         }
 
-        return NextStep!.Parse(tokens);
+        return _nextStep.Parse(tokens);
     }
 }

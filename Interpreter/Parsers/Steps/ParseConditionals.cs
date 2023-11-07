@@ -8,12 +8,16 @@ using Bloc.Utils.Extensions;
 
 namespace Bloc.Parsers.Steps;
 
-internal sealed class ParseConditionals : ParsingStep
+internal sealed class ParseConditionals : IParsingStep
 {
-    public ParseConditionals(ParsingStep nextStep)
-        : base(nextStep) { }
+    private readonly IParsingStep _nextStep;
 
-    internal override IExpression Parse(List<Token> tokens)
+    public ParseConditionals(IParsingStep nextStep)
+    {
+        _nextStep = nextStep;
+    }
+
+    public IExpression Parse(List<Token> tokens)
     {
         for (int i = 0; i < tokens.Count; i++)
         {
@@ -32,7 +36,7 @@ internal sealed class ParseConditionals : ParsingStep
 
                         if (depth == 0)
                         {
-                            var condition = NextStep!.Parse(tokens.GetRange(..i));
+                            var condition = _nextStep.Parse(tokens.GetRange(..i));
                             var consequent = Parse(tokens.GetRange((i + 1)..j));
                             var alternative = Parse(tokens.GetRange((j + 1)..));
 
@@ -45,6 +49,6 @@ internal sealed class ParseConditionals : ParsingStep
             }
         }
 
-        return NextStep!.Parse(tokens);
+        return _nextStep.Parse(tokens);
     }
 }

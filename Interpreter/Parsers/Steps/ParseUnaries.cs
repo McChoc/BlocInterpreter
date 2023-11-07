@@ -11,12 +11,16 @@ using Bloc.Utils.Extensions;
 
 namespace Bloc.Parsers.Steps;
 
-internal sealed class ParseUnaries : ParsingStep
+internal sealed class ParseUnaries : IParsingStep
 {
-    public ParseUnaries(ParsingStep? nextStep)
-        : base(nextStep) { }
+    private readonly IParsingStep _nextStep;
 
-    internal override IExpression Parse(List<Token> tokens)
+    public ParseUnaries(IParsingStep nextStep)
+    {
+        _nextStep = nextStep;
+    }
+
+    public IExpression Parse(List<Token> tokens)
     {
         if (tokens.Count == 0)
             throw new SyntaxError(0, 0, "Missing value");
@@ -102,7 +106,7 @@ internal sealed class ParseUnaries : ParsingStep
             };
         }
 
-        return NextStep!.Parse(tokens);
+        return _nextStep.Parse(tokens);
     }
 
     private static bool IsDeclaration(Token token, [NotNullWhen(true)] out TextToken? @operator)

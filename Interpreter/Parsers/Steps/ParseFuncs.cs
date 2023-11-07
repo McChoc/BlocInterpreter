@@ -12,12 +12,16 @@ using Bloc.Utils.Helpers;
 
 namespace Bloc.Parsers.Steps;
 
-internal sealed class ParseFuncs : ParsingStep
+internal sealed class ParseFuncs : IParsingStep
 {
-    public ParseFuncs(ParsingStep nextStep)
-        : base(nextStep) { }
+    private readonly IParsingStep _nextStep;
 
-    internal override IExpression Parse(List<Token> tokens)
+    public ParseFuncs(IParsingStep nextStep)
+    {
+        _nextStep = nextStep;
+    }
+
+    public IExpression Parse(List<Token> tokens)
     {
         for (int i = 0; i < tokens.Count; i++)
         {
@@ -191,6 +195,6 @@ internal sealed class ParseFuncs : ParsingStep
             return Parse(tokens);
         }
 
-        return NextStep!.Parse(tokens);
+        return _nextStep.Parse(tokens);
     }
 }

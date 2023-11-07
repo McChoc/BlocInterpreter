@@ -10,12 +10,16 @@ using Bloc.Utils.Extensions;
 
 namespace Bloc.Parsers.Steps;
 
-internal sealed class ParseAssignments : ParsingStep
+internal sealed class ParseAssignments : IParsingStep
 {
-    public ParseAssignments(ParsingStep nextStep)
-        : base(nextStep) { }
+    private readonly IParsingStep _nextStep;
 
-    internal override IExpression Parse(List<Token> tokens)
+    public ParseAssignments(IParsingStep nextStep)
+    {
+        _nextStep = nextStep;
+    }
+
+    public IExpression Parse(List<Token> tokens)
     {
         for (int i = 0; i < tokens.Count; i++)
         {
@@ -27,7 +31,7 @@ internal sealed class ParseAssignments : ParsingStep
                 if (i > tokens.Count - 1)
                     throw new SyntaxError(@operator.Start, @operator.End, "Missing the right part of assignment");
 
-                var left = NextStep!.Parse(tokens.GetRange(..i));
+                var left = _nextStep.Parse(tokens.GetRange(..i));
                 var right = Parse(tokens.GetRange((i + 1)..));
 
                 return @operator.Text switch
@@ -54,7 +58,7 @@ internal sealed class ParseAssignments : ParsingStep
             }
         }
 
-        return NextStep!.Parse(tokens);
+        return _nextStep.Parse(tokens);
     }
 
     private static bool IsAssignment(Token token, [NotNullWhen(true)] out TextToken? @operator)

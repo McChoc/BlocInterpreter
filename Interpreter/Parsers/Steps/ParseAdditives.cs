@@ -11,12 +11,16 @@ using Bloc.Utils.Helpers;
 
 namespace Bloc.Parsers.Steps;
 
-internal sealed class ParseAdditives : ParsingStep
+internal sealed class ParseAdditives : IParsingStep
 {
-    public ParseAdditives(ParsingStep nextStep)
-        : base(nextStep) { }
+    private readonly IParsingStep _nextStep;
 
-    internal override IExpression Parse(List<Token> tokens)
+    public ParseAdditives(IParsingStep nextStep)
+    {
+        _nextStep = nextStep;
+    }
+
+    public IExpression Parse(List<Token> tokens)
     {
         for (int i = tokens.Count - 1; i >= 0; i--)
         {
@@ -26,7 +30,7 @@ internal sealed class ParseAdditives : ParsingStep
                     throw new SyntaxError(@operator.Start, @operator.End, "Missing right part of additive");
 
                 var left = Parse(tokens.GetRange(..i));
-                var right = NextStep!.Parse(tokens.GetRange((i + 1)..));
+                var right = _nextStep.Parse(tokens.GetRange((i + 1)..));
 
                 return @operator.Text switch
                 {
@@ -37,7 +41,7 @@ internal sealed class ParseAdditives : ParsingStep
             }
         }
 
-        return NextStep!.Parse(tokens);
+        return _nextStep.Parse(tokens);
     }
 
     private static bool IsAdditive(Token token, [NotNullWhen(true)] out TextToken? @operator)

@@ -7,11 +7,11 @@ namespace Bloc.Parsers;
 
 internal static class ExpressionParser
 {
-    private static ParsingStep FirstStep { get; }
+    private static IParsingStep FirstStep { get; }
 
     static ExpressionParser()
     {
-        ParsingStep step;
+        IParsingStep step;
 
         step = new ParseAtoms();
         step = new ParsePrimaries(step);

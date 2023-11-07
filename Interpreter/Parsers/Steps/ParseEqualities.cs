@@ -10,12 +10,16 @@ using Bloc.Utils.Helpers;
 
 namespace Bloc.Parsers.Steps;
 
-internal sealed class ParseEqualities : ParsingStep
+internal sealed class ParseEqualities : IParsingStep
 {
-    public ParseEqualities(ParsingStep? nextStep)
-        : base(nextStep) { }
+    private readonly IParsingStep _nextStep;
 
-    internal override IExpression Parse(List<Token> tokens)
+    public ParseEqualities(IParsingStep nextStep)
+    {
+        _nextStep = nextStep;
+    }
+
+    public IExpression Parse(List<Token> tokens)
     {
         for (int i = tokens.Count - 1; i >= 0; i--)
         {
@@ -25,7 +29,7 @@ internal sealed class ParseEqualities : ParsingStep
                     throw new SyntaxError(@operator.Start, @operator.End, "Missing the right part of equality");
 
                 var left = Parse(tokens.GetRange(..i));
-                var right = NextStep!.Parse(tokens.GetRange((i + 1)..));
+                var right = _nextStep.Parse(tokens.GetRange((i + 1)..));
 
                 return @operator.Text == Symbol.IS_EQUAL
                     ? new EqualOperator(left, right)
@@ -33,7 +37,7 @@ internal sealed class ParseEqualities : ParsingStep
             }
         }
 
-        return NextStep!.Parse(tokens);
+        return _nextStep.Parse(tokens);
     }
 
     private static bool IsEquality(Token token, [NotNullWhen(true)] out TextToken? @operator)

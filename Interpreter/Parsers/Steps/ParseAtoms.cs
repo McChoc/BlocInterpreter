@@ -15,12 +15,9 @@ using Bloc.Values.Core;
 
 namespace Bloc.Parsers.Steps;
 
-internal sealed class ParseAtoms : ParsingStep
+internal sealed class ParseAtoms : IParsingStep
 {
-    public ParseAtoms()
-        : base(null) { }
-
-    internal override IExpression Parse(List<Token> tokens)
+    public IExpression Parse(List<Token> tokens)
     {
         return tokens[0] switch
         {

@@ -10,12 +10,16 @@ using Bloc.Utils.Extensions;
 
 namespace Bloc.Parsers.Steps;
 
-internal sealed class ParseQueries : ParsingStep
+internal sealed class ParseQueries : IParsingStep
 {
-    public ParseQueries(ParsingStep nextStep)
-        : base(nextStep) { }
+    private readonly IParsingStep _nextStep;
 
-    internal override IExpression Parse(List<Token> tokens)
+    public ParseQueries(IParsingStep nextStep)
+    {
+        _nextStep = nextStep;
+    }
+
+    public IExpression Parse(List<Token> tokens)
     {
         for (int i = tokens.Count - 1; i >= 0; i--)
         {
@@ -28,7 +32,7 @@ internal sealed class ParseQueries : ParsingStep
                     throw new SyntaxError(@operator.Start, @operator.End, "Missing the right part of query");
 
                 var left = Parse(tokens.GetRange(..i));
-                var right = NextStep!.Parse(tokens.GetRange((i + 1)..));
+                var right = _nextStep.Parse(tokens.GetRange((i + 1)..));
 
                 return @operator.Text switch
                 {
@@ -40,7 +44,7 @@ internal sealed class ParseQueries : ParsingStep
             }
         }
 
-        return NextStep!.Parse(tokens);
+        return _nextStep.Parse(tokens);
     }
 
     private static bool IsQuery(Token token, [NotNullWhen(true)] out TextToken? @operator)

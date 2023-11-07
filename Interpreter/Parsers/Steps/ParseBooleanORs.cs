@@ -8,12 +8,16 @@ using Bloc.Utils.Extensions;
 
 namespace Bloc.Parsers.Steps;
 
-internal sealed class ParseBooleanORs : ParsingStep
+internal sealed class ParseBooleanORs : IParsingStep
 {
-    public ParseBooleanORs(ParsingStep nextStep)
-        : base(nextStep) { }
+    private readonly IParsingStep _nextStep;
 
-    internal override IExpression Parse(List<Token> tokens)
+    public ParseBooleanORs(IParsingStep nextStep)
+    {
+        _nextStep = nextStep;
+    }
+
+    public IExpression Parse(List<Token> tokens)
     {
         for (int i = tokens.Count - 1; i >= 0; i--)
         {
@@ -26,12 +30,12 @@ internal sealed class ParseBooleanORs : ParsingStep
                     throw new SyntaxError(@operator.Start, @operator.End, "Missing the right part of logical OR");
 
                 var left = Parse(tokens.GetRange(..i));
-                var right = NextStep!.Parse(tokens.GetRange((i + 1)..));
+                var right = _nextStep.Parse(tokens.GetRange((i + 1)..));
 
                 return new BooleanOrOperator(left, right);
             }
         }
 
-        return NextStep!.Parse(tokens);
+        return _nextStep.Parse(tokens);
     }
 }

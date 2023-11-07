@@ -9,12 +9,16 @@ using Bloc.Utils.Extensions;
 
 namespace Bloc.Parsers.Steps;
 
-internal sealed class ParseSwitchExpressions : ParsingStep
+internal sealed class ParseSwitchExpressions : IParsingStep
 {
-    public ParseSwitchExpressions(ParsingStep nextStep)
-        : base(nextStep) { }
+    private readonly IParsingStep _nextStep;
 
-    internal override IExpression Parse(List<Token> tokens)
+    public ParseSwitchExpressions(IParsingStep nextStep)
+    {
+        _nextStep = nextStep;
+    }
+
+    public IExpression Parse(List<Token> tokens)
     {
         for (int i = 0; i < tokens.Count; i++)
         {
@@ -24,7 +28,7 @@ internal sealed class ParseSwitchExpressions : ParsingStep
             if (i == 0)
                 throw new SyntaxError(keyword.Start, keyword.End, "Missing value of switch expression");
 
-            var expression = NextStep!.Parse(tokens.GetRange(..i));
+            var expression = _nextStep.Parse(tokens.GetRange(..i));
 
             if (i == tokens.Count - 1 || tokens[i + 1] is not BracesToken braces)
                 throw new SyntaxError(keyword.Start, keyword.End, "Missing cases of switch expression");
@@ -84,7 +88,7 @@ internal sealed class ParseSwitchExpressions : ParsingStep
             return Parse(tokens);
         }
 
-        return NextStep!.Parse(tokens);
+        return _nextStep.Parse(tokens);
     }
 
     private static IExpression GetComparedExpression(ITokenProvider provider)

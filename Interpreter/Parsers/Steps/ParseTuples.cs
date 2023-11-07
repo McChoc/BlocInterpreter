@@ -7,17 +7,21 @@ using Bloc.Utils.Extensions;
 
 namespace Bloc.Parsers.Steps;
 
-internal sealed class ParseTuples : ParsingStep
+internal sealed class ParseTuples : IParsingStep
 {
-    public ParseTuples(ParsingStep nextStep)
-        : base(nextStep) { }
+    private readonly IParsingStep _nextStep;
 
-    internal override IExpression Parse(List<Token> tokens)
+    public ParseTuples(IParsingStep nextStep)
+    {
+        _nextStep = nextStep;
+    }
+
+    public IExpression Parse(List<Token> tokens)
     {
         var parts = tokens.Split(x => x is SymbolToken(Symbol.COMMA));
 
         if (parts.Count == 1)
-            return NextStep!.Parse(tokens);
+            return _nextStep.Parse(tokens);
 
         if (parts[^1].Count == 0)
             parts.RemoveAt(parts.Count - 1);
@@ -25,7 +29,7 @@ internal sealed class ParseTuples : ParsingStep
         var expressions = new List<IExpression>();
 
         foreach (var part in parts)
-            expressions.Add(NextStep!.Parse(part));
+            expressions.Add(_nextStep.Parse(part));
 
         return new TupleLiteral(expressions);
     }

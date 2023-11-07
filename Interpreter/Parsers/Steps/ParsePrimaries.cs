@@ -9,14 +9,18 @@ using Bloc.Utils.Extensions;
 
 namespace Bloc.Parsers.Steps;
 
-internal sealed class ParsePrimaries : ParsingStep
+internal sealed class ParsePrimaries : IParsingStep
 {
-    public ParsePrimaries(ParsingStep nextStep)
-        : base(nextStep) { }
+    private readonly IParsingStep _nextStep;
 
-    internal override IExpression Parse(List<Token> tokens)
+    public ParsePrimaries(IParsingStep nextStep)
     {
-        var expression = NextStep!.Parse(tokens.GetRange(0, 1));
+        _nextStep = nextStep;
+    }
+
+    public IExpression Parse(List<Token> tokens)
+    {
+        var expression = _nextStep.Parse(tokens.GetRange(0, 1));
 
         for (int i = 1; i < tokens.Count; i++)
         {

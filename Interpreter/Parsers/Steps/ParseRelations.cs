@@ -11,12 +11,16 @@ using Bloc.Utils.Helpers;
 
 namespace Bloc.Parsers.Steps;
 
-internal sealed class ParseRelations : ParsingStep
+internal sealed class ParseRelations : IParsingStep
 {
-    public ParseRelations(ParsingStep nextStep)
-        : base(nextStep) { }
+    private readonly IParsingStep _nextStep;
 
-    internal override IExpression Parse(List<Token> tokens)
+    public ParseRelations(IParsingStep nextStep)
+    {
+        _nextStep = nextStep;
+    }
+
+    public IExpression Parse(List<Token> tokens)
     {
         for (int i = tokens.Count - 1; i >= 0; i--)
         {
@@ -29,7 +33,7 @@ internal sealed class ParseRelations : ParsingStep
                     throw new SyntaxError(@operator.Start, @operator.End, "Missing the right part of relation");
 
                 var left = Parse(tokens.GetRange(..i));
-                var right = NextStep!.Parse(tokens.GetRange((i + 1)..));
+                var right = _nextStep.Parse(tokens.GetRange((i + 1)..));
 
                 return @operator.Text switch
                 {
@@ -47,7 +51,7 @@ internal sealed class ParseRelations : ParsingStep
                     throw new SyntaxError(@operator.Start, @operator.End, "Missing the right part of relation");
 
                 var left = Parse(tokens.GetRange(..i));
-                var right = NextStep!.Parse(tokens.GetRange((i + 1)..));
+                var right = _nextStep.Parse(tokens.GetRange((i + 1)..));
 
                 return @operator.Text switch
                 {
@@ -62,7 +66,7 @@ internal sealed class ParseRelations : ParsingStep
             }
         }
 
-        return NextStep!.Parse(tokens);
+        return _nextStep.Parse(tokens);
     }
 
     private static bool IsTypeTest(Token token, [NotNullWhen(true)] out TextToken? @operator)
