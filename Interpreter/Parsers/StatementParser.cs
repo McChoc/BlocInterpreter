@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Bloc.Expressions;
 using Bloc.Identifiers;
-using Bloc.Memory;
 using Bloc.Scanners;
 using Bloc.Statements;
 using Bloc.Statements.SwitchArms;
@@ -39,9 +37,7 @@ internal static class StatementParser
     private static Statement GetStatement(ITokenProvider provider)
     {
         string? label = GetLabel(provider);
-        var scope = GetScope(provider);
-        bool mask = IsMasking(provider);
-        bool check = IsChecked(provider);
+        var (@unchecked, mask, scope) = GetModifiers(provider);
 
         var statement = provider.Peek() switch
         {
@@ -61,13 +57,13 @@ internal static class StatementParser
             KeywordToken(Keyword.TRY) => GetTryStatement(provider),
             KeywordToken(Keyword.LOCK) => GetLockStatement(provider),
 
-            KeywordToken(Keyword.DO) => GetDoWhileStatement(provider, check),
-            KeywordToken(Keyword.WHILE) => GetWhileStatement(provider, check, false),
-            KeywordToken(Keyword.UNTIL) => GetWhileStatement(provider, check, true),
-            KeywordToken(Keyword.LOOP) => GetLoopStatement(provider, check),
-            KeywordToken(Keyword.REPEAT) => GetRepeatStatement(provider, check),
-            KeywordToken(Keyword.FOR) => GetForStatement(provider, check),
-            KeywordToken(Keyword.FOREACH) => GetForeachStatement(provider, check),
+            KeywordToken(Keyword.DO) => GetDoWhileStatement(provider, !@unchecked),
+            KeywordToken(Keyword.WHILE) => GetWhileStatement(provider, !@unchecked, false),
+            KeywordToken(Keyword.UNTIL) => GetWhileStatement(provider, !@unchecked, true),
+            KeywordToken(Keyword.LOOP) => GetLoopStatement(provider, !@unchecked),
+            KeywordToken(Keyword.REPEAT) => GetRepeatStatement(provider, !@unchecked),
+            KeywordToken(Keyword.FOR) => GetForStatement(provider, !@unchecked),
+            KeywordToken(Keyword.FOREACH) => GetForeachStatement(provider, !@unchecked),
 
             KeywordToken(Keyword.THROW) => GetThrowStatement(provider),
             KeywordToken(Keyword.RETURN) => GetReturnStatement(provider),
@@ -99,58 +95,55 @@ internal static class StatementParser
         return null;
     }
 
-    private static bool IsMasking(ITokenProvider provider)
+    private static (bool Unchecked, bool Mask, VariableScope Scope) GetModifiers(ITokenProvider provider)
     {
-        if (provider.PeekRange(2) is [
-            KeywordToken(Keyword.NEW),
-            KeywordToken(Keyword.VAR or Keyword.CONST)])
+        switch (provider.PeekRange(3))
         {
-            provider.Skip();
-            return true;
+            case [KeywordToken(Keyword.NEW), KeywordToken(Keyword.GLOBAL), KeywordToken(Keyword.VAR or Keyword.CONST)]:
+            case [KeywordToken(Keyword.GLOBAL), KeywordToken(Keyword.NEW), KeywordToken(Keyword.VAR or Keyword.CONST)]:
+                provider.Skip(2);
+                return (default, true, VariableScope.Global);
+
+            case [KeywordToken(Keyword.NEW), KeywordToken(Keyword.MODULE), KeywordToken(Keyword.VAR or Keyword.CONST)]:
+            case [KeywordToken(Keyword.MODULE), KeywordToken(Keyword.NEW), KeywordToken(Keyword.VAR or Keyword.CONST)]:
+                provider.Skip(2);
+                return (default, true, VariableScope.Module);
         }
 
-        return false;
-    }
-
-    private static bool IsChecked(ITokenProvider provider)
-    {
-        if (provider.PeekRange(2) is [
-            WordToken(Keyword.UNCHECKED),
-            KeywordToken(
-                Keyword.DO or
-                Keyword.WHILE or
-                Keyword.UNTIL or
-                Keyword.LOOP or
-                Keyword.REPEAT or
-                Keyword.FOR or
-                Keyword.FOREACH)])
-        {
-            provider.Skip();
-            return false;
-        }
-
-        return true;
-    }
-
-    private static VariableScope GetScope(ITokenProvider provider)
-    {
         switch (provider.PeekRange(2))
         {
             case [KeywordToken(Keyword.GLOBAL), KeywordToken(Keyword.IMPORT)]:
-            case [KeywordToken(Keyword.GLOBAL), KeywordToken(Keyword.CONST)]:
-            case [KeywordToken(Keyword.GLOBAL), KeywordToken(Keyword.VAR)]:
                 provider.Skip();
-                return VariableScope.Global;
+                return (default, default, VariableScope.Global);
 
             case [KeywordToken(Keyword.MODULE), KeywordToken(Keyword.IMPORT)]:
-            case [KeywordToken(Keyword.MODULE), KeywordToken(Keyword.CONST)]:
-            case [KeywordToken(Keyword.MODULE), KeywordToken(Keyword.VAR)]:
                 provider.Skip();
-                return VariableScope.Module;
+                return (default, default, VariableScope.Module);
 
-            default:
-                return VariableScope.Local;
+            case [KeywordToken(Keyword.GLOBAL), KeywordToken(Keyword.VAR or Keyword.CONST)]:
+                provider.Skip();
+                return (default, false, VariableScope.Global);
+
+            case [KeywordToken(Keyword.MODULE), KeywordToken(Keyword.VAR or Keyword.CONST)]:
+                provider.Skip();
+                return (default, false, VariableScope.Module);
+
+            case [KeywordToken(Keyword.NEW), KeywordToken(Keyword.VAR or Keyword.CONST)]:
+                provider.Skip();
+                return (default, true, VariableScope.Local);
+
+            case [WordToken(Keyword.UNCHECKED), KeywordToken(Keyword.DO)]:
+            case [WordToken(Keyword.UNCHECKED), KeywordToken(Keyword.WHILE)]:
+            case [WordToken(Keyword.UNCHECKED), KeywordToken(Keyword.UNTIL)]:
+            case [WordToken(Keyword.UNCHECKED), KeywordToken(Keyword.LOOP)]:
+            case [WordToken(Keyword.UNCHECKED), KeywordToken(Keyword.REPEAT)]:
+            case [WordToken(Keyword.UNCHECKED), KeywordToken(Keyword.FOR)]:
+            case [WordToken(Keyword.UNCHECKED), KeywordToken(Keyword.FOREACH)]:
+                provider.Skip();
+                return (true, default, default);
         }
+
+        return default;
     }
 
     private static StatementBlock GetStatementBlock(ITokenProvider provider)
