@@ -93,134 +93,89 @@ internal sealed class ParseAtoms : IParsingStep
 
     private static IExpression ParseBraces(BracesToken token)
     {
-        return token.Tokens switch
+        switch (token.Tokens)
         {
-            [] => throw new SyntaxError(token.End - 1, token.End, "Unexpected symbol '}'"),
-            [SymbolToken(Symbol.BIT_OR)] => new ArrayLiteral(new()),
-            [SymbolToken(Symbol.BIT_AND)] => new StructLiteral(new()),
-            var tokens when IsArray(tokens) => ParseArray(tokens),
-            var tokens => ParseStruct(tokens)
-        };
-    }
-
-    private static bool IsArray(List<IToken> tokens)
-    {
-        if (tokens[0] is SymbolToken(Symbol.UNPACK_ARRAY))
-            return true;
-
-        if (tokens[0] is SymbolToken(Symbol.UNPACK_STRUCT))
-            return false;
-
-        foreach (var token in tokens)
-        {
-            if (token is SymbolToken(Symbol.COMMA))
-                return true;
-
-            if (token is SymbolToken(Symbol.COLON))
-                return false;
+            case []:
+                throw new SyntaxError(token.End - 1, token.End, "Unexpected symbol '}'");
+            case [SymbolToken(Symbol.BIT_OR)]:
+                return new ArrayLiteral(new());
+            case [SymbolToken(Symbol.BIT_AND)]:
+                return new StructLiteral(new());
         }
 
-        return true;
-    }
-
-    private static ArrayLiteral ParseArray(List<IToken> tokens)
-    {
-        var parts = tokens.Split(x => x is SymbolToken(Symbol.COMMA));
+        var parts = token.Tokens.Split(x => x is SymbolToken(Symbol.COMMA));
 
         if (parts[^1].Count == 0)
             parts.RemoveAt(parts.Count - 1);
 
+        return GetBracesContentType(parts) switch
+        {
+            BracesToken.ContentType.Array => ParseArray(parts),
+            BracesToken.ContentType.Struct => ParseStruct(parts),
+            _ => throw new System.Exception()
+        };
+    }
+
+    private static BracesToken.ContentType GetBracesContentType (List<List<IToken>> parts)
+    {
+        foreach (var part in parts)
+        {
+            switch (part)
+            {
+                case []:
+                    throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COMMA}'");
+                case [INamedIdentifierToken]:
+                    continue;
+                case [SymbolToken(Symbol.UNPACK_STRUCT), ..]:
+                case [INamedIdentifierToken, SymbolToken(Symbol.COLON), ..]:
+                    return BracesToken.ContentType.Struct;
+                default:
+                    return BracesToken.ContentType.Array;
+            }
+        }
+
+        return BracesToken.ContentType.Array;
+    }
+
+    private static ArrayLiteral ParseArray(List<List<IToken>> parts)
+    {
         var elements = new List<IElement>();
 
         foreach (var part in parts)
         {
-            if (part.Count == 0)
-                throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COMMA}'");
-
-            if (part.Any(x => x is SymbolToken(Symbol.COLON)))
-                throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
-
-            switch(part[0])
+            IElement element = part switch
             {
-                case SymbolToken(Symbol.UNPACK_STRUCT):
-                    throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
+                [] => throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COMMA}'"),
+                [INamedIdentifierToken, SymbolToken(Symbol.COLON), ..] => throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COLON}'"),
+                [SymbolToken(Symbol.UNPACK_ARRAY)] => throw new SyntaxError(0, 0, "Missing value"),
+                [SymbolToken(Symbol.UNPACK_ARRAY), ..] => new UnpackedElement(ExpressionParser.Parse(part.GetRange(1..))),
+                _ => new Element(ExpressionParser.Parse(part)),
+            };
 
-                case SymbolToken(Symbol.UNPACK_ARRAY):
-                {
-                    if (part.Count <= 1)
-                        throw new SyntaxError(0, 0, "Missing value");
-
-                    var expression = ExpressionParser.Parse(part.GetRange(1..));
-                    var element = new UnpackedElement(expression);
-                    elements.Add(element);
-                    break;
-                }
-
-                default:
-                {
-                    var expression = ExpressionParser.Parse(part);
-                    var element = new Element(expression);
-                    elements.Add(element);
-                    break;
-                }
-            }
+            elements.Add(element);
         }
 
         return new ArrayLiteral(elements);
     }
 
-    private static StructLiteral ParseStruct(List<IToken> tokens)
+    private static StructLiteral ParseStruct(List<List<IToken>> parts)
     {
-        var parts = tokens.Split(x => x is SymbolToken(Symbol.COMMA));
-
-        if (parts[^1].Count == 0)
-            parts.RemoveAt(parts.Count - 1);
-
         var members = new List<IMember>();
 
         foreach (var part in parts)
         {
-            if (part.Count == 0)
-                throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COMMA}'");
-
-            switch (part[0])
+            IMember member = part switch
             {
-                case INamedIdentifierToken token:
-                {
-                    if (!part.Any(x => x is SymbolToken(Symbol.COLON)))
-                        throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
+                [] => throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COMMA}'"),
+                [INamedIdentifierToken token] => new Member(token.GetIdentifier(), ExpressionParser.Parse(part)),
+                [INamedIdentifierToken, SymbolToken(Symbol.COLON)] => throw new SyntaxError(0, 0, "Missing value."),
+                [INamedIdentifierToken token, SymbolToken(Symbol.COLON), ..] => new Member(token.GetIdentifier(), ExpressionParser.Parse(part.GetRange(2..))),
+                [SymbolToken(Symbol.UNPACK_STRUCT)] => throw new SyntaxError(0, 0, "Missing value"),
+                [SymbolToken(Symbol.UNPACK_STRUCT), ..] => new UnpackedMember(ExpressionParser.Parse(part.GetRange(1..))),
+                _ => throw new SyntaxError(part[0].Start, part[^1].End, "Unexpected token."),
+            };
 
-                    if (part[1] is not SymbolToken(Symbol.COLON))
-                        throw new SyntaxError(part[1].Start, part[1].End, "Unexpected token.");
-
-                    if (part.Count <= 2)
-                        throw new SyntaxError(0, 0, "Missing value.");
-
-                    var identifier = token.GetIdentifier();
-                    var expression = ExpressionParser.Parse(part.GetRange(2..));
-                    var member = new Member(identifier, expression);
-
-                    members.Add(member);
-                    break;
-                }
-
-                case SymbolToken(Symbol.UNPACK_STRUCT):
-                {
-                    if (part.Count <= 1)
-                        throw new SyntaxError(0, 0, "Missing value");
-
-                    var expression = ExpressionParser.Parse(part.GetRange(1..));
-                    var member = new UnpackedMember(expression);
-                    members.Add(member);
-                    break;
-                }
-
-                default:
-                    if (!part.Any(x => x is SymbolToken(Symbol.COLON)))
-                        throw new SyntaxError(0, 0, "Literal is ambiguous between an array and a struct.");
-                    else
-                        throw new SyntaxError(part[0].Start, part[^1].End, "Unexpected token.");
-            }
+            members.Add(member);
         }
 
         return new StructLiteral(members);
@@ -228,72 +183,75 @@ internal sealed class ParseAtoms : IParsingStep
 
     private static IExpression ParseBrackets(BracketsToken token)
     {
-        return token.Tokens switch
+        switch (token.Tokens)
         {
-            [] => new PatternLiteral(new EmptyPattern()),
-            [SymbolToken(Symbol.BIT_OR)] => new ArrayPatternLiteral(new(), null, -1),
-            [SymbolToken(Symbol.BIT_AND)] => new StructPatternLiteral(new(), null, false),
-            var tokens when IsArrayPattern(tokens) => ParseArrayPattern(tokens),
-            var tokens => ParseStructPattern(tokens)
-        };
-    }
-
-    private static bool IsArrayPattern(List<IToken> tokens)
-    {
-        if (tokens[0] is SymbolToken(Symbol.UNPACK_ARRAY))
-            return true;
-
-        if (tokens[0] is SymbolToken(Symbol.UNPACK_STRUCT))
-            return false;
-
-        foreach (var token in tokens)
-        {
-            if (token is SymbolToken(Symbol.COMMA))
-                return true;
-
-            if (token is SymbolToken(Symbol.COLON))
-                return false;
+            case []:
+                throw new SyntaxError(token.End - 1, token.End, "Unexpected symbol ']'");
+            case [SymbolToken(Symbol.BIT_OR)]:
+                return new ArrayPatternLiteral(new(), null, -1);
+            case [SymbolToken(Symbol.BIT_AND)]:
+                return new StructPatternLiteral(new(), null, false);
         }
 
-        return true;
-    }
-
-    private static ArrayPatternLiteral ParseArrayPattern(List<IToken> tokens)
-    {
-        var parts = tokens.Split(x => x is SymbolToken(Symbol.COMMA));
+        var parts = token.Tokens.Split(x => x is SymbolToken(Symbol.COMMA));
 
         if (parts[^1].Count == 0)
             parts.RemoveAt(parts.Count - 1);
 
+        return GetBracketsContentType(parts) switch
+        {
+            BracketsToken.ContentType.ArrayPattern => ParseArrayPattern(parts),
+            BracketsToken.ContentType.StructPattern => ParseStructPattern(parts),
+            _ => throw new System.Exception()
+        };
+    }
+
+    private static BracketsToken.ContentType GetBracketsContentType(List<List<IToken>> parts)
+    {
+        foreach (var part in parts)
+        {
+            switch (part)
+            {
+                case []:
+                    throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COMMA}'");
+                case [INamedIdentifierToken]:
+                    continue;
+                case [SymbolToken(Symbol.UNPACK_STRUCT), ..]:
+                case [INamedIdentifierToken, SymbolToken(Symbol.QUESTION)]:
+                case [INamedIdentifierToken, SymbolToken(Symbol.COLON), ..]:
+                case [INamedIdentifierToken, SymbolToken(Symbol.QUESTION), SymbolToken(Symbol.COLON), ..]:
+                    return BracketsToken.ContentType.StructPattern;
+                default:
+                    return BracketsToken.ContentType.ArrayPattern;
+            }
+        }
+
+        return BracketsToken.ContentType.ArrayPattern;
+    }
+
+    private static ArrayPatternLiteral ParseArrayPattern(List<List<IToken>> parts)
+    {
         int packIndex = -1;
         IExpression? packExpression = null;
         var expressions = new List<IExpression>();
 
         foreach (var part in parts)
         {
-            if (part.Count == 0)
-                throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COMMA}'");
-
-            if (part.Any(x => x is SymbolToken(Symbol.COLON)))
-                throw new SyntaxError(0, 0, "Literal is ambiguous between an array pattern and a struct pattern.");
-
-            switch (part[0])
+            switch (part)
             {
-                case SymbolToken(Symbol.UNPACK_STRUCT):
-                    throw new SyntaxError(0, 0, "Literal is ambiguous between an array pattern and a struct pattern.");
-
-                case SymbolToken(Symbol.UNPACK_ARRAY):
-                    if (packIndex > -1)
-                        throw new SyntaxError(0, 0, "The array unpack syntax can only be used once per array pattern.");
-
+                case []:
+                    throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COMMA}'");
+                case [INamedIdentifierToken, SymbolToken(Symbol.COLON), ..]:
+                    throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COLON}'");
+                case [SymbolToken(Symbol.UNPACK_ARRAY), ..] when packIndex > -1:
+                    throw new SyntaxError(0, 0, "The array unpack syntax can only be used once per array pattern.");
+                case [SymbolToken(Symbol.UNPACK_ARRAY)]:
                     packIndex = expressions.Count;
-
-                    if (part.Count <= 1)
-                        continue;
-
+                    break;
+                case [SymbolToken(Symbol.UNPACK_ARRAY), ..]:
+                    packIndex = expressions.Count;
                     packExpression = ExpressionParser.Parse(part.GetRange(1..));
                     break;
-
                 default:
                     var expression = ExpressionParser.Parse(part);
                     expressions.Add(expression);
@@ -304,78 +262,44 @@ internal sealed class ParseAtoms : IParsingStep
         return new ArrayPatternLiteral(expressions, packExpression, packIndex);
     }
 
-    private static StructPatternLiteral ParseStructPattern(List<IToken> tokens)
+    private static StructPatternLiteral ParseStructPattern(List<List<IToken>> parts)
     {
-        var parts = tokens.Split(x => x is SymbolToken(Symbol.COMMA));
-
-        if (parts[^1].Count == 0)
-            parts.RemoveAt(parts.Count - 1);
-
         bool hasPack = false;
         IExpression? packExpression = null;
         var members = new List<(INamedIdentifier, IExpression, bool)>();
 
         foreach (var part in parts)
         {
-            if (part.Count == 0)
-                throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COMMA}'");
-
-            switch (part[0])
+            switch (part)
             {
-                case SymbolToken(Symbol.UNPACK_STRUCT):
-                    if (hasPack)
-                        throw new SyntaxError(0, 0, "The struct unpack syntax can only be used once per struct pattern.");
-
+                case []:
+                    throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COMMA}'");
+                case [INamedIdentifierToken token]:
+                    members.Add((token.GetIdentifier(), new PatternLiteral(new AnyPattern()), false));
+                    break;
+                case [INamedIdentifierToken token, SymbolToken(Symbol.QUESTION)]:
+                    members.Add((token.GetIdentifier(), new PatternLiteral(new AnyPattern()), true));
+                    break;
+                case [INamedIdentifierToken, SymbolToken(Symbol.COLON)]:
+                case [INamedIdentifierToken, SymbolToken(Symbol.QUESTION), SymbolToken(Symbol.COLON)]:
+                    throw new SyntaxError(0, 0, "Missing value.");
+                case [INamedIdentifierToken token, SymbolToken(Symbol.COLON), ..]:
+                    members.Add((token.GetIdentifier(), ExpressionParser.Parse(part.GetRange(2..)), false));
+                    break;
+                case [INamedIdentifierToken token, SymbolToken(Symbol.QUESTION), SymbolToken(Symbol.COLON), ..]:
+                    members.Add((token.GetIdentifier(), ExpressionParser.Parse(part.GetRange(3..)), true));
+                    break;
+                case [SymbolToken(Symbol.UNPACK_STRUCT), ..] when hasPack:
+                    throw new SyntaxError(0, 0, "The struct unpack syntax can only be used once per struct pattern.");
+                case [SymbolToken(Symbol.UNPACK_STRUCT)]:
                     hasPack = true;
-
-                    if (part.Count <= 1)
-                        continue;
-
+                    break;
+                case [SymbolToken(Symbol.UNPACK_STRUCT), ..]:
+                    hasPack = true;
                     packExpression = ExpressionParser.Parse(part.GetRange(1..));
                     break;
-
-                case INamedIdentifierToken token:
-                    if (!part.Any(x => x is SymbolToken(Symbol.COLON)))
-                        throw new SyntaxError(0, 0, "Literal is ambiguous between an array pattern and a struct pattern.");
-
-                    var identifier = token.GetIdentifier();
-
-                    bool optional;
-                    IExpression expression;
-
-                    if (part[1] is SymbolToken(Symbol.QUESTION))
-                    {
-                        optional = true;
-
-                        if (part[2] is not SymbolToken(Symbol.COLON))
-                            throw new SyntaxError(part[1].Start, part[1].End, "Unexpected token.");
-
-                        if (part.Count <= 3)
-                            throw new SyntaxError(0, 0, "Missing value.");
-
-                        expression = ExpressionParser.Parse(part.GetRange(3..));
-                    }
-                    else
-                    {
-                        optional = false;
-
-                        if (part[1] is not SymbolToken(Symbol.COLON))
-                            throw new SyntaxError(part[1].Start, part[1].End, "Unexpected token.");
-
-                        if (part.Count <= 2)
-                            throw new SyntaxError(0, 0, "Missing value.");
-
-                        expression = ExpressionParser.Parse(part.GetRange(2..));
-                    }
-
-                    members.Add((identifier, expression, optional));
-                    break;
-
                 default:
-                    if (!part.Any(x => x is SymbolToken(Symbol.COLON)))
-                        throw new SyntaxError(0, 0, "Literal is ambiguous between an array pattern and a struct pattern.");
-                    else
-                        throw new SyntaxError(part[0].Start, part[^1].End, "Unexpected token.");
+                    throw new SyntaxError(part[0].Start, part[^1].End, "Unexpected token.");
             }
         }
 
