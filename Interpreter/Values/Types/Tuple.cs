@@ -1,14 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Bloc.Patterns;
 using Bloc.Results;
 using Bloc.Utils.Attributes;
 using Bloc.Utils.Comparers;
+using Bloc.Values.Behaviors;
 using Bloc.Values.Core;
 
 namespace Bloc.Values.Types;
 
 [Record]
-public sealed partial class Tuple : Value
+public sealed partial class Tuple : Value, IPattern
 {
     [DoNotCompare]
     private bool _assigned = false;
@@ -47,6 +49,21 @@ public sealed partial class Tuple : Value
             1 => $"({Values[0].Value},)",
             _ => $"({string.Join(", ", Values.Select(v => v.Value))})"
         };
+    }
+
+    public IPatternNode GetRoot()
+    {
+        var patterns = new List<IPatternNode>();
+
+        foreach (var element in Values)
+        {
+            if (element.Value is not IPattern pattern)
+                throw new Throw("The elements of a tuple pattern must be patterns");
+
+            patterns.Add(pattern.GetRoot());
+        }
+
+        return new TuplePattern(patterns);
     }
 
     public override Value Copy(bool assign)

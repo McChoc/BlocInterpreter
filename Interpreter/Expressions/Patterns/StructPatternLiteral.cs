@@ -54,7 +54,7 @@ internal sealed partial class StructPatternLiteral : IExpression
         value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit).Value;
 
         if (value is not IPattern pattern)
-            throw new Throw($"The members of a struct pattern must also be patterns");
+            throw new Throw($"The members of a struct pattern must be patterns");
 
         return pattern.GetRoot();
     }

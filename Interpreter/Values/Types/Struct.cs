@@ -1,16 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Bloc.Patterns;
 using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Utils.Attributes;
 using Bloc.Utils.Comparers;
+using Bloc.Values.Behaviors;
 using Bloc.Values.Core;
 using Bloc.Variables;
 
 namespace Bloc.Values.Types;
 
 [Record]
-public sealed partial class Struct : Value
+public sealed partial class Struct : Value, IPattern
 {
     [DoNotCompare]
     private bool _assigned = false;
@@ -32,6 +34,21 @@ public sealed partial class Struct : Value
         return Values.Count > 0
             ? "{" + string.Join(", ", Values.OrderBy(x => x.Key).Select(x => $"{x.Key}: {x.Value.Value}")) + "}"
             : "{&}";
+    }
+
+    public IPatternNode GetRoot()
+    {
+        var patterns = new Dictionary<string, (IPatternNode, bool)>();
+
+        foreach (var (name, member) in Values)
+        {
+            if (member.Value is not IPattern pattern)
+                throw new Throw($"The members of a struct pattern must be patterns");
+
+            patterns.Add(name, (pattern.GetRoot(), false));
+        }
+
+        return new StructPattern(patterns, null, false);
     }
 
     public override void Destroy()

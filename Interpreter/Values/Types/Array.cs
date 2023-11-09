@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Bloc.Memory;
+using Bloc.Patterns;
 using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Utils.Attributes;
@@ -13,7 +14,7 @@ using Bloc.Variables;
 namespace Bloc.Values.Types;
 
 [Record]
-public sealed partial class Array : Value, IIndexable
+public sealed partial class Array : Value, IIndexable, IPattern
 {
     [DoNotCompare]
     private bool _assigned = false;
@@ -35,6 +36,21 @@ public sealed partial class Array : Value, IIndexable
         return Values.Count > 0
             ? "{" + string.Join(", ", Values.Select(v => v.Value)) + "}"
             : "{|}";
+    }
+
+    public IPatternNode GetRoot()
+    {
+        var patterns = new List<IPatternNode>();
+
+        foreach (var element in Values)
+        {
+            if (element.Value is not IPattern pattern)
+                throw new Throw("The elements of an array pattern must be patterns");
+
+            patterns.Add(pattern.GetRoot());
+        }
+
+        return new ArrayPattern(patterns, null, -1);
     }
 
     public override void Destroy()
