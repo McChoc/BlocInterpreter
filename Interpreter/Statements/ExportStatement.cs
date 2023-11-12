@@ -46,7 +46,7 @@ internal sealed partial class ExportStatement : Statement
                     };
                 }
 
-                call.Module.Exports[name] = value.Value;
+                call.Module.Exports[name] = value.Value.GetOrCopy();
             }
             catch (Throw exception)
             {

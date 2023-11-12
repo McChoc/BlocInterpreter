@@ -1,4 +1,5 @@
-﻿using Bloc.Values.Types;
+﻿using System;
+using Range = Bloc.Values.Types.Range;
 
 namespace Bloc.Utils.Helpers;
 
@@ -21,16 +22,16 @@ internal static class RangeHelper
     {
         int start = range switch
         {
-            { Start: int n and >= 0 } => n,
-            { Start: int n and < 0 } => count + n,
+            { Start: int n and >= 0 } => Math.Clamp(n, 0, count - 1),
+            { Start: int n and < 0 } => Math.Clamp(count + n, 0, count - 1),
             { Start: null, Step: null or >= 0 } => 0,
             { Start: null, Step: < 0 } => count - 1,
         };
 
         int end = range switch
         {
-            { End: int n and >= 0 } => n,
-            { End: int n and < 0 } => count + n,
+            { End: int n and >= 0 } => Math.Clamp(n, -1, count),
+            { End: int n and < 0 } => Math.Clamp(count + n, -1, count),
             { End: null, Step: null or >= 0 } => count,
             { End: null, Step: < 0 } => -1,
         };

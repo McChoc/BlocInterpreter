@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Net.WebSockets;
 using System.Text;
 using Bloc.Memory;
 using Bloc.Patterns;
@@ -27,34 +28,37 @@ public sealed partial class String : Value, IPattern, IIndexable
     public override ValueType GetType() => ValueType.String;
     public override string ToString() => $"\"{Value}\"";
 
-    public IValue Index(Value value, Call _)
+    public IValue Index(List<Value> args, Call _)
     {
-        if (value is Number number)
+        switch (args)
         {
-            int index = number.GetInt();
+            case [Number number]:
+                int index = number.GetInt();
 
-            if (index < 0)
-                index += Value.Length;
+                if (index < 0)
+                    index += Value.Length;
 
-            if (index < 0 || index >= Value.Length)
-                throw new Throw("Index out of range");
+                if (index < 0 || index >= Value.Length)
+                    throw new Throw("Index out of range");
 
-            return new String(Value[index].ToString());
+                return new String(Value[index].ToString());
+
+            case [Range range]:
+                var (start, end, step) = RangeHelper.Deconstruct(range, Value.Length);
+
+                var builder = new StringBuilder();
+
+                for (int i = start; i != end && i < end == step > 0; i += step)
+                    builder.Append(Value[i]);
+
+                return new String(builder.ToString());
+
+            case [var arg]:
+                throw new Throw($"The string indexer does not takes a '{arg.GetTypeName()}'");
+
+            default:
+                throw new Throw($"The string indexer does not take {args.Count} arguments");
         }
-
-        if (value is Range range)
-        {
-            var (start, end, step) = RangeHelper.Deconstruct(range, Value.Length);
-
-            var builder = new StringBuilder();
-
-            for (int i = start; i != end && end - i > 0 == step > 0; i += step)
-                builder.Append(Value[i]);
-
-            return new String(builder.ToString());
-        }
-
-        throw new Throw("It should be a number or a range.");
     }
 
     internal static String ImplicitCast(IValue value)

@@ -40,7 +40,7 @@ internal sealed partial class ImportFromStatement : Statement
                 if (!module.Exports.TryGetValue(name, out var export))
                     throw new Throw($"Module '{path}' does not export {name}");
 
-                call.Set(alias, export, false, true, _scope);
+                call.Set(alias, export.Copy(true), false, true, _scope);
             }
         }
         catch (Throw t)

@@ -6,6 +6,7 @@ using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Utils.Attributes;
 using Bloc.Utils.Comparers;
+using Bloc.Utils.Extensions;
 using Bloc.Utils.Helpers;
 using Bloc.Values.Behaviors;
 using Bloc.Values.Core;
@@ -67,8 +68,8 @@ public sealed partial class Array : Value, IIndexable, IPattern
         };
 
         array.Values = assign
-            ? Values.Select(x => new ArrayVariable(x.Value.GetOrCopy(assign), array)).ToList<IValue>()
-            : Values.Select(x => x.Value.GetOrCopy(assign)).ToList<IValue>();
+            ? Values.Select(x => new ArrayVariable(x.Value.Copy(assign), array)).ToList<IValue>()
+            : Values.Select(x => x.Value.Copy(assign)).ToList<IValue>();
 
         return array;
     }
@@ -87,45 +88,97 @@ public sealed partial class Array : Value, IIndexable, IPattern
         return array;
     }
 
-    public IValue Index(Value value, Call call)
+    public IValue Index(List<Value> args, Call call)
     {
-        if (value is Number number)
+        return args switch
         {
-            int index = number.GetInt();
+            [] => throw new Throw($"The array indexer does not take 0 arguments"),
+            [Range { Step: null } range] when _assigned => new ContiguousSlicePointer(this, range),
+            [Number number, ..] => IndexJaggedArray(IndexByNumber(number), args.GetRange(1..), call),
+            [Range range, ..] => IndexJaggedArray(IndexByRange(range), args.GetRange(1..), call),
+            [Tuple tuple, ..] => IndexJaggedArray(IndexByTuple(tuple), args.GetRange(1..), call),
+            _ => throw new Throw($"The array indexer does not takes a '{args[0].GetTypeName()}'"),
+        };
+    }
 
-            if (index < 0)
-                index += Values.Count;
+    private IValue IndexJaggedArray(IValue value, List<Value> args, Call call)
+    {
+        if (args.Count == 0)
+            return value is ArrayVariable variable
+                ? new VariablePointer(variable)
+                : value;
 
-            if (index < 0 || index >= Values.Count)
-                throw new Throw("Index out of range");
+        if (value.Value is IIndexable indexable)
+            return indexable.Index(args, call);
 
-            if (_assigned)
-                return new VariablePointer((ArrayVariable)Values[index]);
-            else
-                return Values[index];
+        throw new Throw("The '[]' operator can only be apllied to strings and arrays");
+    }
+
+    private IValue IndexJaggedArray(IEnumerable<IValue> values, List<Value> args, Call call)
+    {
+        var indexedValues = values
+            .Select(x => IndexJaggedArray(x, args, call))
+            .ToList();
+
+        if (_assigned)
+        {
+            var pointers = indexedValues
+                .Cast<Pointer>()
+                .ToList();
+
+            return new SlicePointer(pointers);
         }
-
-        if (value is Range range)
+        else
         {
-            if (_assigned)
-                return new SlicePointer(this, range);
+            var elements = indexedValues
+                .Select(x => x.Value)
+                .ToList();
 
-            var (start, end, step) = RangeHelper.Deconstruct(range, Values.Count);
+            return new Array(elements);
+        }
+    }
 
-            var values = new List<Value>();
+    private IValue IndexByNumber(Number number)
+    {
+        int index = number.GetInt();
 
-            for (int i = start; i != end && end - i > 0 == step > 0; i += step)
+        if (index < 0)
+            index += Values.Count;
+
+        if (index < 0 || index >= Values.Count)
+            throw new Throw("Index out of range");
+
+        return Values[index];
+    }
+
+    private IEnumerable<IValue> IndexByRange(Range range)
+    {
+        var (start, end, step) = RangeHelper.Deconstruct(range, Values.Count);
+
+        for (int i = start; i != end && i < end == step > 0; i += step)
+            yield return Values[i];
+    }
+
+    private IEnumerable<IValue> IndexByTuple(Tuple tuple)
+    {
+        foreach (var index in tuple.Values)
+        {
+            if (index.Value is Number number)
             {
-                if (i < 0 || i >= Values.Count)
-                    throw new Throw("Index out of range");
-
-                values.Add(Values[i].Value);
+                yield return IndexByNumber(number);
+                continue;
             }
 
-            return new Array(values);
-        }
+            var values = index.Value switch
+            {
+                Range range => IndexByRange(range),
+                Tuple nested => IndexByTuple(nested),
+                _ => throw new Throw($"The array indexer does not takes a '{index.Value.GetTypeName()}'")
+            };
 
-        throw new Throw("It should be a number or a range.");
+            foreach (var value in values)
+                yield return value;
+        }
     }
 
     internal static Array Construct(List<Value> values)

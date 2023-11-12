@@ -146,7 +146,10 @@ public sealed partial class Iter : Value
                         Initialisation = new AssignmentOperator(new LetOperator(new StaticIdentifier("i")), new NumberLiteral(0)),
                         Condition = new LessThanOperator(new NamedIdentifierExpression(new StaticIdentifier("i")), new NumberLiteral(@string.Value.Length)),
                         Increment = new IncrementPrefix(new NamedIdentifierExpression(new StaticIdentifier("i"))),
-                        Statement = new YieldStatement(new IndexerOperator(new NamedIdentifierExpression(new StaticIdentifier("value")), new NamedIdentifierExpression(new StaticIdentifier("i"))))
+                        Statement = new YieldStatement(new IndexerOperator(new NamedIdentifierExpression(new StaticIdentifier("value")), new()
+                        {
+                            new IndexerOperator.Argument(new NamedIdentifierExpression(new StaticIdentifier("i")), false)
+                        }))
                     }
                 });
             }
@@ -163,7 +166,10 @@ public sealed partial class Iter : Value
                         Initialisation = new AssignmentOperator(new LetOperator(new StaticIdentifier("i")), new NumberLiteral(0)),
                         Condition = new LessThanOperator(new NamedIdentifierExpression(new StaticIdentifier("i")), new NumberLiteral(array.Values.Count)),
                         Increment = new IncrementPrefix(new NamedIdentifierExpression(new StaticIdentifier("i"))),
-                        Statement = new YieldStatement(new IndexerOperator(new NamedIdentifierExpression(new StaticIdentifier("items")), new NamedIdentifierExpression(new StaticIdentifier("i"))))
+                        Statement = new YieldStatement(new IndexerOperator(new NamedIdentifierExpression(new StaticIdentifier("items")), new()
+                        {
+                            new IndexerOperator.Argument(new NamedIdentifierExpression(new StaticIdentifier("i")), false)
+                        }))
                     }
                 });
             }

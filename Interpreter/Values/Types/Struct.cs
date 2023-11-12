@@ -65,8 +65,8 @@ public sealed partial class Struct : Value, IPattern
         };
 
         @struct.Values = assign
-            ? Values.ToDictionary(x => x.Key, x => (IValue)new StructVariable(x.Key, x.Value.Value.GetOrCopy(assign), @struct))
-            : Values.ToDictionary(x => x.Key, x => (IValue)x.Value.Value.GetOrCopy(assign));
+            ? Values.ToDictionary(x => x.Key, x => (IValue)new StructVariable(x.Key, x.Value.Value.Copy(assign), @struct))
+            : Values.ToDictionary(x => x.Key, x => (IValue)x.Value.Value.Copy(assign));
 
         return @struct;
     }

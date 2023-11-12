@@ -73,7 +73,7 @@ public sealed partial class Tuple : Value, IPattern
             _assigned = assign,
             Assignable = false,
             Values = Values
-                .Select(x => x.Value.GetOrCopy(assign))
+                .Select(x => x.Value.Copy(assign))
                 .ToList<IValue>()
         };
     }

@@ -35,9 +35,26 @@ internal sealed class ParsePrimaries : IParsingStep
         };
     }
 
-    private static IExpression ParseIndexingArguments(List<IToken> tokens)
+    private static List<IndexerOperator.Argument> ParseIndexingArguments(List<IToken> tokens)
     {
-        return ExpressionParser.Parse(tokens);
+        var arguments = new List<IndexerOperator.Argument>();
+
+        if (tokens.Count > 0)
+        {
+            foreach (var part in tokens.Split(x => x is SymbolToken(Symbol.COMMA)))
+            {
+                var argument = part switch
+                {
+                    [] => throw new SyntaxError(0, 0, "Unexpected token"),
+                    [SymbolToken(Symbol.UNPACK_ARRAY), ..] => new IndexerOperator.Argument(ExpressionParser.Parse(part.GetRange(1..)), true),
+                    _ => new IndexerOperator.Argument(ExpressionParser.Parse(part), false),
+                };
+
+                arguments.Add(argument);
+            }
+        }
+
+        return arguments;
     }
 
     private static List<InvocationOperator.Argument> ParseInvocationArguments(List<IToken> tokens)

@@ -15,13 +15,7 @@ public sealed partial class Void : Value
     public override ValueType GetType() => ValueType.Void;
     public override string ToString() => "void";
 
-    public override Value Copy(bool assign)
-    {
-        if (assign)
-            throw new Throw("'void' is not assignable");
-
-        return this;
-    }
+    public override Value Copy(bool assign) => GetOrCopy(assign);
 
     public override Value GetOrCopy(bool assign)
     {

@@ -31,7 +31,7 @@ internal sealed partial class ImportAllFromStatement : Statement
             var module = ImportHelper.GetModule(path, call);
 
             foreach (var (name, export) in module.Exports)
-                call.Set(name, export, false, true, _scope);
+                call.Set(name, export.Copy(true), false, true, _scope);
         }
         catch (Throw t)
         {
