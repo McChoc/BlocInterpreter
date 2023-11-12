@@ -108,10 +108,12 @@ public sealed partial class Array : Value, IIndexable, IPattern
                 ? new VariablePointer(variable)
                 : value;
 
-        if (value.Value is IIndexable indexable)
-            return indexable.Index(args, call);
+        value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit);
 
-        throw new Throw("The '[]' operator can only be apllied to strings and arrays");
+        if (value.Value is not IIndexable indexable)
+            throw new Throw("The '[]' operator can only be apllied to strings and arrays");
+
+        return indexable.Index(args, call);
     }
 
     private IValue IndexJaggedArray(IEnumerable<IValue> values, List<Value> args, Call call)
