@@ -42,7 +42,6 @@ internal static class Keyword
 
     [SoftKeyword] internal const string DISCARD = "_";
     [SoftKeyword] internal const string ASYNC = "async";
-    [SoftKeyword] internal const string GENERATOR = "generator";
     [SoftKeyword] internal const string UNCHECKED = "unchecked";
 
     #endregion

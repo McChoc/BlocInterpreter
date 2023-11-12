@@ -139,25 +139,25 @@ internal sealed class ParseFuncs : IParsingStep
 
             while (j >= 0)
             {
-                if (tokens[j] is WordToken(Keyword.ASYNC))
+                if (tokens[j] is SymbolToken(Symbol.UNPACK_ARRAY))
+                {
+                    if (type == FuncType.Asynchronous)
+                        throw new SyntaxError(tokens[j].Start, tokens[j].End, "A generator cannot be async");
+
+                    if (type == FuncType.Generator)
+                        throw new SyntaxError(tokens[j].Start, tokens[j].End, $"'{Symbol.UNPACK_ARRAY}' modifier doubled");
+
+                    type = FuncType.Generator;
+                }
+                else if (tokens[j] is WordToken(Keyword.ASYNC))
                 {
                     if (type == FuncType.Asynchronous)
                         throw new SyntaxError(tokens[j].Start, tokens[j].End, $"'{Keyword.ASYNC}' modifier doubled");
 
                     if (type == FuncType.Generator)
-                        throw new SyntaxError(tokens[j].Start, tokens[j].End, "a function cannot be both async and a generator");
+                        throw new SyntaxError(tokens[j].Start, tokens[j].End, "A generator cannot be async");
 
                     type = FuncType.Asynchronous;
-                }
-                else if (tokens[j] is WordToken(Keyword.GENERATOR))
-                {
-                    if (type == FuncType.Asynchronous)
-                        throw new SyntaxError(tokens[j].Start, tokens[j].End, "a function cannot be both async and a generator");
-
-                    if (type == FuncType.Generator)
-                        throw new SyntaxError(tokens[j].Start, tokens[j].End, $"'{Keyword.GENERATOR}' modifier doubled");
-
-                    type = FuncType.Generator;
                 }
                 else if (tokens[j] is KeywordToken(Keyword.VAL))
                 {
