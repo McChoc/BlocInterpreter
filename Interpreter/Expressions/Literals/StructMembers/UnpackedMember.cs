@@ -17,7 +17,7 @@ internal sealed record UnpackedMember : IMember
 
     public IEnumerable<(string, Value)> GetMembers(Call call)
     {
-        var value = _expression.Evaluate(call).Value.GetOrCopy();
+        var value = _expression.Evaluate(call).Value;
 
         if (value is not Struct @struct)
             throw new Throw("Only a struct can be unpacked using the struct unpack syntax");

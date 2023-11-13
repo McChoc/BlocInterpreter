@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Bloc.Memory;
-using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Utils.Attributes;
 using Bloc.Values.Core;
@@ -29,10 +28,7 @@ internal sealed partial class TupleLiteral : IExpression
             if (value is Void)
                 throw new Throw("'void' is not assignable");
 
-            if (value is Pointer)
-                values.Add(value);
-            else
-                values.Add(value.Value.GetOrCopy());
+            values.Add(value);
         }
 
         return new Tuple(values);

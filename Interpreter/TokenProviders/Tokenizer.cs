@@ -108,19 +108,18 @@ internal sealed class Tokenizer : ITokenProvider
 
         var word = GetWord(false);
 
-        if (word is KeywordToken(Keyword.IS) && PeekRange(1) is [KeywordToken(Keyword.NOT)])
-            return new KeywordToken(word.Start, Next().End, Keyword.IS_NOT);
+        if (PeekRange(1) is not [var next])
+            return word;
 
-        if (word is KeywordToken(Keyword.NOT) && PeekRange(1) is [KeywordToken(Keyword.IN)])
-            return new KeywordToken(word.Start, Next().End, Keyword.NOT_IN);
-
-        if (word is KeywordToken(Keyword.LET) && PeekRange(1) is [KeywordToken(Keyword.NEW)])
-            return new KeywordToken(word.Start, Next().End, Keyword.LET_NEW);
-
-        if (word is KeywordToken(Keyword.CONST) && PeekRange(1) is [KeywordToken(Keyword.NEW)])
-            return new KeywordToken(word.Start, Next().End, Keyword.CONST_NEW);
-
-        return word;
+        return (word, next) switch
+        {
+            (KeywordToken(Keyword.IS), KeywordToken(Keyword.NOT)) => new KeywordToken(word.Start, Next().End, Keyword.IS_NOT),
+            (KeywordToken(Keyword.NOT), KeywordToken(Keyword.IN)) => new KeywordToken(word.Start, Next().End, Keyword.NOT_IN),
+            (KeywordToken(Keyword.LET), KeywordToken(Keyword.NEW)) => new KeywordToken(word.Start, Next().End, Keyword.LET_NEW),
+            (KeywordToken(Keyword.CONST), KeywordToken(Keyword.NEW)) => new KeywordToken(word.Start, Next().End, Keyword.CONST_NEW),
+            (KeywordToken(Keyword.SELECT), SymbolToken(Symbol.UNPACK_ITER)) => new KeywordToken(word.Start, Next().End, Keyword.SELECT_MANY),
+            _ => word
+        };
     }
 
     private bool IsNumber()

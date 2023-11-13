@@ -23,20 +23,15 @@ internal sealed record ExpressionArgument : IArgument
 
         if (!_unpack)
         {
-            var @string = String.ImplicitCast(value.Value);
-
-            yield return @string.Value;
-            yield break;
+            yield return String.ImplicitCast(value).Value;
         }
-
-        if (value.Value is not Array array)
-            throw new Throw("Only an array can be unpacked using the array unpack syntax");
-
-        foreach (var item in array.Values)
+        else
         {
-            var @string = String.ImplicitCast(item.Value);
+            if (!Iter.TryImplicitCast(value, out var iter, call))
+                throw new Throw("Cannot implicitly convert to iter");
 
-            yield return @string.Value;
+            foreach (var item in iter.Iterate())
+                yield return String.ImplicitCast(item).Value;
         }
     }
 }

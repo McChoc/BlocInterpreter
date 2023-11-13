@@ -40,10 +40,10 @@ internal sealed record IndexerOperator : IExpression
             }
             else
             {
-                if (val is not Array array)
-                    throw new Throw("Only an array can be unpacked using the array unpack syntax");
+                if (!Iter.TryImplicitCast(val, out var iter, call))
+                    throw new Throw("Cannot implicitly convert to iter");
 
-                args.AddRange(array.Values.Select(x => x.Value));
+                args.AddRange(iter.Iterate());
             }
         }
 

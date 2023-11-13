@@ -115,6 +115,7 @@ internal static class Keyword
     [CompositeKeyword] internal const string NOT_IN = $"{NOT} {IN}";
     [CompositeKeyword] internal const string LET_NEW = $"{LET} {NEW}";
     [CompositeKeyword] internal const string CONST_NEW = $"{CONST} {NEW}";
+    [CompositeKeyword] internal const string SELECT_MANY = $"{SELECT} {Symbol.UNPACK_ITER}";
 
     #endregion
 

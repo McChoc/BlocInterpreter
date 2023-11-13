@@ -21,7 +21,7 @@ internal sealed record Member : IMember
     public IEnumerable<(string, Value)> GetMembers(Call call)
     {
         var name = _identifier.GetName(call);
-        var value = _expression.Evaluate(call).Value.GetOrCopy();
+        var value = _expression.Evaluate(call).Value;
 
         if (value is Void)
             throw new Throw("'void' is not assignable");

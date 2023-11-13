@@ -17,12 +17,12 @@ internal sealed record UnpackedElement : IElement
 
     public IEnumerable<Value> GetElements(Call call)
     {
-        var value = _expression.Evaluate(call).Value.GetOrCopy();
+        var value = _expression.Evaluate(call).Value;
 
-        if (value is not Array array)
-            throw new Throw("Only an array can be unpacked using the array unpack syntax");
+        if (!Iter.TryImplicitCast(value, out var iter, call))
+            throw new Throw("Cannot implicitly convert to iter");
 
-        foreach (var val in array.Values)
-            yield return val.Value;
+        foreach (var item in iter.Iterate())
+            yield return item;
     }
 }

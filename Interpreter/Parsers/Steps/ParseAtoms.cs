@@ -147,8 +147,8 @@ internal sealed class ParseAtoms : IParsingStep
             {
                 [] => throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COMMA}'"),
                 [INamedIdentifierToken, SymbolToken(Symbol.COLON), ..] => throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COLON}'"),
-                [SymbolToken(Symbol.UNPACK_ARRAY)] => throw new SyntaxError(0, 0, "Missing value"),
-                [SymbolToken(Symbol.UNPACK_ARRAY), ..] => new UnpackedElement(ExpressionParser.Parse(part.GetRange(1..))),
+                [SymbolToken(Symbol.UNPACK_ITER)] => throw new SyntaxError(0, 0, "Missing value"),
+                [SymbolToken(Symbol.UNPACK_ITER), ..] => new UnpackedElement(ExpressionParser.Parse(part.GetRange(1..))),
                 _ => new Element(ExpressionParser.Parse(part)),
             };
 
@@ -243,12 +243,12 @@ internal sealed class ParseAtoms : IParsingStep
                     throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COMMA}'");
                 case [INamedIdentifierToken, SymbolToken(Symbol.COLON), ..]:
                     throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COLON}'");
-                case [SymbolToken(Symbol.UNPACK_ARRAY), ..] when packIndex > -1:
-                    throw new SyntaxError(0, 0, "The array unpack syntax can only be used once per array pattern.");
-                case [SymbolToken(Symbol.UNPACK_ARRAY)]:
+                case [SymbolToken(Symbol.UNPACK_ITER), ..] when packIndex > -1:
+                    throw new SyntaxError(0, 0, "The iterable unpack syntax can only be used once per array pattern.");
+                case [SymbolToken(Symbol.UNPACK_ITER)]:
                     packIndex = expressions.Count;
                     break;
-                case [SymbolToken(Symbol.UNPACK_ARRAY), ..]:
+                case [SymbolToken(Symbol.UNPACK_ITER), ..]:
                     packIndex = expressions.Count;
                     packExpression = ExpressionParser.Parse(part.GetRange(1..));
                     break;

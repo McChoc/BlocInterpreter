@@ -36,7 +36,8 @@ internal sealed class ParseQueries : IParsingStep
 
                 return @operator.Text switch
                 {
-                    Keyword.SELECT  => new SelectOperator(left, right),
+                    Keyword.SELECT => new SelectOperator(left, right),
+                    Keyword.SELECT_MANY => new SelectManyOperator(left, right),
                     Keyword.WHERE   => new WhereOperator(left, right),
                     Keyword.ORDERBY => new OrderbyOperator(left, right),
                     _ => throw new Exception()
@@ -49,7 +50,7 @@ internal sealed class ParseQueries : IParsingStep
 
     private static bool IsQuery(IToken token, [NotNullWhen(true)] out TextToken? @operator)
     {
-        if (token is KeywordToken(Keyword.SELECT or Keyword.WHERE or Keyword.ORDERBY))
+        if (token is KeywordToken(Keyword.SELECT or Keyword.SELECT_MANY or Keyword.WHERE or Keyword.ORDERBY))
         {
             @operator = (TextToken)token;
             return true;

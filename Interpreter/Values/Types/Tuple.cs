@@ -113,7 +113,12 @@ public sealed partial class Tuple : Value, IPattern
 
             [Struct @struct] => new(@struct.Values
                 .OrderBy(x => x.Key)
-                .Select(x => x.Value.Value)
+                .Select(x => (Value)new Tuple(new List<Value>() { new String(x.Key), x.Value.Value }))
+                .ToList()),
+
+            [Struct @struct, Array array] => new(array.Values
+                .Select(x => String.ImplicitCast(x).Value)
+                .Select(x => @struct.Values.GetValueOrDefault(x) ?? throw new Throw($"'{x}' was not defined inside this struct"))
                 .ToList()),
 
             [Range range] => new(new List<Value>()

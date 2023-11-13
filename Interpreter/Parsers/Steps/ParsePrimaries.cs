@@ -46,7 +46,7 @@ internal sealed class ParsePrimaries : IParsingStep
                 var argument = part switch
                 {
                     [] => throw new SyntaxError(0, 0, "Unexpected token"),
-                    [SymbolToken(Symbol.UNPACK_ARRAY), ..] => new IndexerOperator.Argument(ExpressionParser.Parse(part.GetRange(1..)), true),
+                    [SymbolToken(Symbol.UNPACK_ITER), ..] => new IndexerOperator.Argument(ExpressionParser.Parse(part.GetRange(1..)), true),
                     _ => new IndexerOperator.Argument(ExpressionParser.Parse(part), false),
                 };
 
@@ -72,7 +72,7 @@ internal sealed class ParsePrimaries : IParsingStep
 
                     arguments.Add(new(null, new VoidLiteral(), InvocationOperator.ArgumentType.Positional));
                 }
-                else if (part[0] is SymbolToken(Symbol.UNPACK_ARRAY))
+                else if (part[0] is SymbolToken(Symbol.UNPACK_ITER))
                 {
                     if (arguments.Count > 0 && arguments[^1].Type is InvocationOperator.ArgumentType.Named or InvocationOperator.ArgumentType.UnpackedStruct)
                         throw new SyntaxError(part[0].Start, part[^1].End, "All the positional arguments must apear before any named arguments");

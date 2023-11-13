@@ -60,7 +60,7 @@ internal static class Symbol
     internal const string MORE_EQUAL = ">=";
     internal const string COMPARISON = "<=>";
     internal const string ACCESS_MEMBER = ".";
-    internal const string UNPACK_ARRAY = "..";
+    internal const string UNPACK_ITER = "..";
     internal const string UNPACK_STRUCT = "...";
     internal const string COMMA = ",";
     internal const string COLON = ":";

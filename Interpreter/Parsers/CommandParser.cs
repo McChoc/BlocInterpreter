@@ -30,7 +30,7 @@ internal static class CommandParser
 
         for (int i = 0; i < tokens.Count; i++)
         {
-            if (i < tokens.Count - 1 && tokens[i] is SymbolToken(Symbol.UNPACK_ARRAY))
+            if (i < tokens.Count - 1 && tokens[i] is SymbolToken(Symbol.UNPACK_ITER))
                 arguments.Add(ParseArgument(tokens[++i], true));
             else
                 arguments.Add(ParseArgument(tokens[i]));

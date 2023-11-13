@@ -67,13 +67,13 @@ internal sealed class ParseFuncs : IParsingStep
                     {
                         throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COMMA}'");
                     }
-                    else if (part[0] is SymbolToken(Symbol.UNPACK_ARRAY))
+                    else if (part[0] is SymbolToken(Symbol.UNPACK_ITER))
                     {
                         if (argsContainer is not null)
-                            throw new SyntaxError(0, 0, "The array unpack syntax may only be used once in a function literal");
+                            throw new SyntaxError(0, 0, "The iterable unpack syntax may only be used once in a function literal");
 
                         if (kwargsContainer is not null)
-                            throw new SyntaxError(0, 0, "The array unpack syntax must be used before the struct unpack syntax");
+                            throw new SyntaxError(0, 0, "The iterable unpack syntax must be used before the struct unpack syntax");
 
                         var name = ExpressionParser.Parse(part.GetRange(1..));
 
@@ -139,13 +139,13 @@ internal sealed class ParseFuncs : IParsingStep
 
             while (j >= 0)
             {
-                if (tokens[j] is SymbolToken(Symbol.UNPACK_ARRAY))
+                if (tokens[j] is SymbolToken(Symbol.UNPACK_ITER))
                 {
                     if (type == FuncType.Asynchronous)
                         throw new SyntaxError(tokens[j].Start, tokens[j].End, "A generator cannot be async");
 
                     if (type == FuncType.Generator)
-                        throw new SyntaxError(tokens[j].Start, tokens[j].End, $"'{Symbol.UNPACK_ARRAY}' modifier doubled");
+                        throw new SyntaxError(tokens[j].Start, tokens[j].End, $"'{Symbol.UNPACK_ITER}' modifier doubled");
 
                     type = FuncType.Generator;
                 }

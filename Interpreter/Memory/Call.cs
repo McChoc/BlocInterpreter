@@ -109,7 +109,7 @@ public sealed class Call
         if (!mask && targetCollection.Variables.ContainsKey(name))
             throw new Throw($"Variable '{name}' was already defined in scope");
 
-        var variable = new StackVariable(mutable, name, value, Scopes[^1]);
+        var variable = new StackVariable(mutable, name, value, targetCollection);
 
         targetCollection.Add(variable);
 

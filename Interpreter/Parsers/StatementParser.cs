@@ -672,14 +672,16 @@ internal static class StatementParser
         return new ReturnStatement(ExpressionParser.Parse(line));
     }
 
-    private static YieldStatement GetYieldStatement(ITokenProvider provider)
+    private static Statement GetYieldStatement(ITokenProvider provider)
     {
-        var line = GetLine(provider).GetRange(1..);
+        var line = GetLine(provider);
 
-        if (line.Count == 0)
-            throw new SyntaxError(0, 0, "Missing expression");
-
-        return new YieldStatement(ExpressionParser.Parse(line));
+        return line switch
+        {
+            [_, SymbolToken(Symbol.UNPACK_ITER), ..] => new YieldManyStatement(ExpressionParser.Parse(line.GetRange(2..))),
+            [_, ..] => new YieldStatement(ExpressionParser.Parse(line.GetRange(1..))),
+            _ => throw new SyntaxError(0, 0, "Missing expression")
+        };
     }
 
     private static ThrowStatement GetThrowStatement(ITokenProvider provider)
