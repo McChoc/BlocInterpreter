@@ -4,7 +4,6 @@ using Bloc.Expressions;
 using Bloc.Identifiers;
 using Bloc.Scanners;
 using Bloc.Statements;
-using Bloc.Statements.SwitchArms;
 using Bloc.Tokens;
 using Bloc.Utils.Constants;
 using Bloc.Utils.Exceptions;
@@ -452,7 +451,7 @@ internal static class StatementParser
         if (!provider.HasNext() || provider.Next() is not BracesToken braces)
             throw new SyntaxError(keyword.Start, keyword.End, $"Missing '{Symbol.BRACE_L}'");
 
-        var arms = new List<IArm>();
+        var cases = new List<SwitchStatement.Case>();
         Statement? @default = null;
 
         var subProvider = new TokenCollection(braces.Tokens);
@@ -467,15 +466,9 @@ internal static class StatementParser
                     var caseExpression = GetExpression(subProvider, armKeyword);
                     var caseStatement = GetStatement(subProvider);
 
-                    arms.Add(new Case(caseExpression, caseStatement));
+                    cases.Add(new SwitchStatement.Case(caseExpression, caseStatement));
                     break;
 
-                case KeywordToken(Keyword.MATCH):
-                    var matchExpression = GetExpression(subProvider, armKeyword);
-                    var matchStatement = GetStatement(subProvider);
-
-                    arms.Add(new Match(matchExpression, matchStatement));
-                    break;
 
                 case KeywordToken(Keyword.DEFAULT):
                     if (@default is not null)
@@ -492,7 +485,7 @@ internal static class StatementParser
         return new SwitchStatement()
         {
             Expression = expression,
-            Arms = arms,
+            Cases = cases,
             Default = @default
         };
     }

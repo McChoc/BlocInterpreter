@@ -33,53 +33,21 @@ internal sealed class ParseSwitchExpressions : IParsingStep
             if (i == tokens.Count - 1 || tokens[i + 1] is not BracesToken braces)
                 throw new SyntaxError(keyword.Start, keyword.End, "Missing cases of switch expression");
 
-            var cases = new List<IArm>();
-            IExpression? @default = null;
+            var cases = new List<SwitchExpression.Case>();
 
             var provider = new TokenCollection(braces.Tokens);
 
             while (provider.HasNext())
             {
-                var caseKeyword = provider.Next();
-
-                switch (caseKeyword)
-                {
-                    case KeywordToken(Keyword.CASE):
-                    {
-                        var comparedExpression = GetComparedExpression(provider);
-                        var resultExpression = GetResultExpression(provider);
-                        cases.Add(new Case(comparedExpression, resultExpression));
-                        break;
-                    }
-
-                    case KeywordToken(Keyword.MATCH):
-                    {
-                        var comparedExpression = GetComparedExpression(provider);
-                        var resultExpression = GetResultExpression(provider);
-                        cases.Add(new Match(comparedExpression, resultExpression));
-                        break;
-                    }
-
-                    case KeywordToken(Keyword.DEFAULT):
-                        if (@default is not null)
-                            throw new SyntaxError(caseKeyword.Start, caseKeyword.End, "A switch expression can only have a single default expression");
-
-                        if (!provider.HasNext() || provider.Next() is not SymbolToken(Symbol.COLON))
-                            throw new SyntaxError(0, 0, "Unexpected token");
-
-                        @default = GetResultExpression(provider);
-                        break;
-
-                    default:
-                        throw new SyntaxError(caseKeyword.Start, caseKeyword.End, "Unexpected token");
-                }
+                var comparedExpression = GetComparedExpression(provider);
+                var resultExpression = GetResultExpression(provider);
+                cases.Add(new SwitchExpression.Case(comparedExpression, resultExpression));
             }
 
             var @switch = new SwitchExpression()
             {
                 Expression = expression,
-                Arms = cases,
-                Default = @default
+                Cases = cases
             };
 
             tokens.RemoveRange(0, i + 2);

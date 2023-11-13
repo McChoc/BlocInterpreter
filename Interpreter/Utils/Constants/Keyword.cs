@@ -80,7 +80,6 @@ internal static class Keyword
     [HardKeyword] internal const string LOCK = "lock";
     [HardKeyword] internal const string LOOP = "loop";
     [HardKeyword] internal const string LVAL = "lval";
-    [HardKeyword] internal const string MATCH = "match";
     [HardKeyword] internal const string MODULE = "module";
     [HardKeyword] internal const string NAMEOF = "nameof";
     [HardKeyword] internal const string NEW = "new";
