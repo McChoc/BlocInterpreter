@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Bloc.Expressions;
-using Bloc.Expressions.Literals;
 using Bloc.Expressions.Operators;
+using Bloc.Funcs;
 using Bloc.Tokens;
 using Bloc.Utils.Constants;
 using Bloc.Utils.Exceptions;
@@ -65,54 +65,16 @@ internal sealed class ParsePrimaries : IParsingStep
         {
             foreach (var part in tokens.Split(x => x is SymbolToken(Symbol.COMMA)))
             {
-                if (part.Count == 0)
+                var argument = part switch
                 {
-                    if (arguments.Count > 0 && arguments[^1].Type is InvocationOperator.ArgumentType.Named or InvocationOperator.ArgumentType.UnpackedStruct)
-                        throw new SyntaxError(0, 0, "All the positional arguments must apear before any named arguments");
+                    [] => new InvocationOperator.Argument(null, null, ArgumentType.Positional),
+                    [SymbolToken(Symbol.UNPACK_ITER), ..] => new InvocationOperator.Argument(null, ExpressionParser.Parse(part.GetRange(1..)), ArgumentType.UnpackedArray),
+                    [SymbolToken(Symbol.UNPACK_STRUCT), ..] => new InvocationOperator.Argument(null, ExpressionParser.Parse(part.GetRange(1..)), ArgumentType.UnpackedStruct),
+                    [INamedIdentifierToken token, SymbolToken(Symbol.ASSIGN), _, ..] => new InvocationOperator.Argument(token.GetIdentifier(), ExpressionParser.Parse(part.GetRange(2..)), ArgumentType.Keyword),
+                    _ => new InvocationOperator.Argument(null, ExpressionParser.Parse(part), ArgumentType.Positional)
+                };
 
-                    arguments.Add(new(null, new VoidLiteral(), InvocationOperator.ArgumentType.Positional));
-                }
-                else if (part[0] is SymbolToken(Symbol.UNPACK_ITER))
-                {
-                    if (arguments.Count > 0 && arguments[^1].Type is InvocationOperator.ArgumentType.Named or InvocationOperator.ArgumentType.UnpackedStruct)
-                        throw new SyntaxError(part[0].Start, part[^1].End, "All the positional arguments must apear before any named arguments");
-
-                    arguments.Add(new(null, ExpressionParser.Parse(part.GetRange(1..)), InvocationOperator.ArgumentType.UnpackedArray));
-                }
-                else if (part[0] is SymbolToken(Symbol.UNPACK_STRUCT))
-                {
-                    arguments.Add(new(null, ExpressionParser.Parse(part.GetRange(1..)), InvocationOperator.ArgumentType.UnpackedStruct));
-                }
-                else
-                {
-                    int index = part.FindIndex(x => x is SymbolToken(Symbol.ASSIGN));
-
-                    if (index == -1)
-                    {
-                        if (arguments.Count > 0 && arguments[^1].Type is InvocationOperator.ArgumentType.Named or InvocationOperator.ArgumentType.UnpackedStruct)
-                            throw new SyntaxError(part[0].Start, part[^1].End, "All the positional arguments must apear before any named arguments");
-
-                        arguments.Add(new(null, ExpressionParser.Parse(part), InvocationOperator.ArgumentType.Positional));
-                    }
-                    else
-                    {
-                        var keyTokens = part.GetRange(..index);
-                        var valueTokens = part.GetRange((index + 1)..);
-
-                        if (keyTokens.Count == 0)
-                            throw new SyntaxError(0, 0, "Missing identifier");
-
-                        var keyExpr = ExpressionParser.Parse(keyTokens);
-
-                        if (keyExpr is not NamedIdentifierExpression identifier)
-                            throw new SyntaxError(0, 0, "Invalid identifier");
-
-                        if (valueTokens.Count == 0)
-                            throw new SyntaxError(0, 0, "Missing value");
-
-                        arguments.Add(new(identifier.Identifier, ExpressionParser.Parse(valueTokens), InvocationOperator.ArgumentType.Named));
-                    }
-                }
+                arguments.Add(argument);
             }
         }
 

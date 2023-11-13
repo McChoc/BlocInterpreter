@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
+using Bloc.Funcs;
 using Bloc.Identifiers;
 using Bloc.Memory;
 using Bloc.Results;
@@ -26,18 +26,20 @@ internal sealed partial class InvocationOperator : IExpression
     public IValue Evaluate(Call call)
     {
         var value = _expression.Evaluate(call).Value;
-
         value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit).Value;
 
         if (value is not IInvokable invokable)
             throw new Throw("The '()' operator can only be applied to funcs and types");
 
-        var args = new List<Value>();
+        var args = new List<Value?>();
         var kwargs = new Dictionary<string, Value>();
 
         foreach (var argument in _arguments)
         {
-            var val = argument.Expression.Evaluate(call).Value.GetOrCopy();
+            var val = argument.Expression?.Evaluate(call).Value.GetOrCopy();
+
+            if (val is Void)
+                throw new Throw("'void' is not assignable");
 
             switch (argument.Type)
             {
@@ -45,17 +47,17 @@ internal sealed partial class InvocationOperator : IExpression
                     args.Add(val);
                     break;
 
-                case ArgumentType.Named:
+                case ArgumentType.Keyword:
                     var name = argument.Identifier!.GetName(call);
 
                     if (kwargs.ContainsKey(name))
                         throw new Throw($"Parameter named '{name}' cannot be specified multiple times");
 
-                    kwargs.Add(name, val);
+                    kwargs.Add(name, val!);
                     break;
 
                 case ArgumentType.UnpackedArray:
-                    if (!Iter.TryImplicitCast(val, out var iter, call))
+                    if (!Iter.TryImplicitCast(val!, out var iter, call))
                         throw new Throw("Cannot implicitly convert to iter");
 
                     args.AddRange(iter.Iterate());
@@ -79,7 +81,5 @@ internal sealed partial class InvocationOperator : IExpression
         return invokable.Invoke(args, kwargs, call);
     }
 
-    internal enum ArgumentType { Positional, Named, UnpackedArray, UnpackedStruct }
-
-    internal sealed record Argument(INamedIdentifier? Identifier, IExpression Expression, ArgumentType Type);
+    internal sealed record Argument(INamedIdentifier? Identifier, IExpression? Expression, ArgumentType Type);
 }

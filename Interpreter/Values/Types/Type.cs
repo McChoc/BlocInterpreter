@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Bloc.Memory;
 using Bloc.Patterns;
 using Bloc.Results;
@@ -46,29 +47,36 @@ public sealed partial class Type : Value, IPattern, IInvokable
         };
     }
 
-    public Value Invoke(List<Value> args, Dictionary<string, Value> kwargs, Call call)
+    public Value Invoke(List<Value?> args, Dictionary<string, Value> kwargs, Call call)
     {
+        var values = args
+            .OfType<Value>()
+            .ToList();
+
+        if (args.Count != values.Count)
+            throw new Throw("Constructors do not support default parameters");
+
         if (kwargs.Count != 0)
             throw new Throw("Constructors do not support named parameters");
 
         return Value switch
         {
-            ValueType.Void => Void.Construct(args),
-            ValueType.Null => Null.Construct(args),
-            ValueType.Bool => Bool.Construct(args),
-            ValueType.Number => Number.Construct(args),
-            ValueType.Range => Range.Construct(args),
-            ValueType.String => String.Construct(args),
-            ValueType.Array => Array.Construct(args),
-            ValueType.Struct => Struct.Construct(args),
-            ValueType.Tuple => Tuple.Construct(args),
-            ValueType.Func => Func.Construct(args),
-            ValueType.Task => Task.Construct(args, call),
-            ValueType.Iter => Iter.Construct(args, call),
-            ValueType.Reference => Reference.Construct(args),
-            ValueType.Extern => Extern.Construct(args),
-            ValueType.Type => Construct(args),
-            ValueType.Pattern => Pattern.Construct(args),
+            ValueType.Void => Void.Construct(values),
+            ValueType.Null => Null.Construct(values),
+            ValueType.Bool => Bool.Construct(values),
+            ValueType.Number => Number.Construct(values ),
+            ValueType.Range => Range.Construct(values),
+            ValueType.String => String.Construct(values),
+            ValueType.Array => Array.Construct(values),
+            ValueType.Struct => Struct.Construct(values),
+            ValueType.Tuple => Tuple.Construct(values),
+            ValueType.Func => Func.Construct(values),
+            ValueType.Task => Task.Construct(values, call),
+            ValueType.Iter => Iter.Construct(values, call),
+            ValueType.Reference => Reference.Construct(values),
+            ValueType.Extern => Extern.Construct(values),
+            ValueType.Type => Construct(values),
+            ValueType.Pattern => Pattern.Construct(values),
             _ => throw new System.Exception()
         };
     }

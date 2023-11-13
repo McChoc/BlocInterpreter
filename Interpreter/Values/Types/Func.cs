@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
+using System.Xml.Linq;
 using Bloc.Funcs;
 using Bloc.Memory;
 using Bloc.Patterns;
@@ -20,8 +22,8 @@ public sealed partial class Func : Value, IPattern, IInvokable
 
     private readonly VariableCollection _moduleVariables;
     private readonly VariableCollection _closureVariables;
-    private readonly Parameter? _argsContainer;
-    private readonly Parameter? _kwargsContainer;
+    private readonly string? _packingParameterName;
+    private readonly string? _kwPackingParameterName;
     private readonly List<Parameter> _parameters;
     private readonly List<Statement> _statements;
 
@@ -35,8 +37,8 @@ public sealed partial class Func : Value, IPattern, IInvokable
 
         _moduleVariables = new();
         _closureVariables = new();
-        _argsContainer = null;
-        _kwargsContainer = null;
+        _packingParameterName = null;
+        _kwPackingParameterName = null;
         _parameters = new();
         _statements = new();
         _labels = new();
@@ -47,8 +49,8 @@ public sealed partial class Func : Value, IPattern, IInvokable
         CaptureMode mode,
         VariableCollection moduleVariables,
         VariableCollection closureVariables,
-        Parameter? argsContainer,
-        Parameter? kwargsContainer,
+        string? packingParameterName,
+        string? kwPackingParameterName,
         List<Parameter> parameters,
         List<Statement> statements)
     {
@@ -56,8 +58,8 @@ public sealed partial class Func : Value, IPattern, IInvokable
         _mode = mode;
         _moduleVariables = moduleVariables;
         _closureVariables = closureVariables;
-        _argsContainer = argsContainer;
-        _kwargsContainer = kwargsContainer;
+        _packingParameterName = packingParameterName;
+        _kwPackingParameterName = kwPackingParameterName;
         _parameters = parameters;
         _statements = statements;
 
@@ -75,79 +77,67 @@ public sealed partial class Func : Value, IPattern, IInvokable
         return new Task(() => Execute(call));
     }
 
-    public Value Invoke(List<Value> args, Dictionary<string, Value> kwargs, Call parent)
+    public Value Invoke(List<Value?> args, Dictionary<string, Value> kwargs, Call parent)
     {
-        var @params = new VariableCollection();
+        var arguments = new VariableCollection();
 
-        var restArray = new Array();
-        var restStruct = new Struct();
-
-        var remainingParameters = new List<Parameter>(_parameters);
-
-        foreach (var (name, value) in kwargs)
+        foreach (var parameter in _parameters)
         {
-            var parameter = remainingParameters.FirstOrDefault(x => x.Name == name);
+            Value? value = null;
 
-            if (parameter is not null)
+            switch (parameter.Type)
             {
-                remainingParameters.Remove(parameter);
+                case ParameterType.KeywordOnly:
+                case ParameterType.Standard when kwargs.ContainsKey(parameter.Name):
+                    value = kwargs.Remove(parameter.Name, out var val)
+                        ? val.GetOrCopy(true)
+                        : parameter.DefaultValue?.Copy(true)
+                            ?? throw new Throw($"A value must be provided for the required parameter '{parameter.Name}'");
+                    break;
 
-                var val = value != Void.Value ? value : parameter.Value?.Copy()
-                    ?? throw new Throw($"A non-void value must be provided for the required parameter '{name}'");
+                case ParameterType.PositionalOnly:
+                case ParameterType.Standard:
+                    if (args.Count > 0)
+                    {
+                        value = args[0]?.GetOrCopy(true);
+                        args.RemoveAt(0);
+                    }
 
-                @params.Add(new(true, name, val.GetOrCopy(true), @params));
+                    value ??= parameter.DefaultValue?.Copy(true)
+                        ?? throw new Throw($"A value must be provided for the required parameter '{parameter.Name}'");
+                    break;
+
+                default:
+                    throw new System.Exception();
             }
-            else if (_kwargsContainer is not null)
-            {
-                if (value != Void.Value)
-                    restStruct.Values.Add(name, value);
-            }
-            else
-            {
-                throw new Throw($"This function does not have a parameter named '{name}'");
-            }
+
+            arguments.Add(true, parameter.Name, value);
         }
 
-        foreach (var value in args)
+        if (_packingParameterName is not null)
         {
-            if (remainingParameters.Count > 0)
-            {
-                var parameter = remainingParameters[0];
-                remainingParameters.RemoveAt(0);
+            var values = args.OfType<Value>().ToList();
+            var packingArray = new Array(values).GetOrCopy(true);
 
-                string name = parameter.Name;
-
-                var val = value != Void.Value ? value : parameter.Value?.Copy()
-                    ?? throw new Throw($"A non-void value must be provided for the required parameter '{name}'");
-
-                @params.Add(new(true, name, val.GetOrCopy(true), @params));
-            }
-            else if (_argsContainer is not null)
-            {
-                if (value != Void.Value)
-                    restArray.Values.Add(value);
-            }
-            else
-            {
-                throw new Throw($"This function does not take this many positional arguments");
-            }
+            arguments.Add(true, _packingParameterName, packingArray);
+        }
+        else if (args.Count > 0)
+        {
+            throw new Throw($"To many positional arguments were provided");
         }
 
-        foreach (var parameter in remainingParameters)
+        if (_kwPackingParameterName is not null)
         {
-            if (parameter.Value is not null)
-                @params.Add(new(true, parameter.Name, parameter.Value.GetOrCopy(true), @params));
-            else
-                throw new Throw($"A non-void value must be provided for the required parameter '{parameter.Name}'");
+            var packingStruct = new Struct(kwargs).GetOrCopy(true);
+
+            arguments.Add(true, _kwPackingParameterName, packingStruct);
+        }
+        else if (kwargs.Count > 0)
+        {
+            throw new Throw($"This function does not have a parameter named '{kwargs.First().Key}'");
         }
 
-        if (_argsContainer is not null)
-            @params.Add(new(true, _argsContainer.Name, restArray.GetOrCopy(true), @params));
-
-        if (_kwargsContainer is not null)
-            @params.Add(new(true, _kwargsContainer.Name, restStruct.GetOrCopy(true), @params));
-
-        var call = new Call(parent, _moduleVariables, _closureVariables, @params);
+        var call = new Call(parent, _moduleVariables, _closureVariables, arguments);
 
         return _type switch
         {
@@ -214,5 +204,5 @@ public sealed partial class Func : Value, IPattern, IInvokable
         };
     }
 
-    internal sealed record Parameter(string Name, Value? Value);
+    internal sealed record Parameter(string Name, Value? DefaultValue, ParameterType Type);
 }

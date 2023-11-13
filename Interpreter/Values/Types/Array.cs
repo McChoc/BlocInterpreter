@@ -195,7 +195,7 @@ public sealed partial class Array : Value, IIndexable, IPattern
             [Tuple tuple] => new(tuple.Values.Select(x => x.Value).ToList()),
             [Iter iter] => new(iter.Iterate().ToList()),
             [var value, Number number] => new(Enumerable.Repeat(value, number.GetInt()).ToList()),
-            [_] => throw new Throw($"'array' does not have a constructor that takes a '{values[0].GetTypeName()}'"),
+            [var value] => throw new Throw($"'array' does not have a constructor that takes a '{value.GetTypeName()}'"),
             [_, _] => throw new Throw($"'array' does not have a constructor that takes a '{values[0].GetTypeName()}' and a '{values[1].GetTypeName()}'"),
             [..] => throw new Throw($"'array' does not have a constructor that takes {values.Count} arguments")
         };

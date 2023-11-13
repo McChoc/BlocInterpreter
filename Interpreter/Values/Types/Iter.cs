@@ -139,9 +139,9 @@ public sealed partial class Iter : Value
                 var (start, end, step) = RangeHelper.Deconstruct(range);
 
                 var @params = new VariableCollection();
-                @params.Add(new(false, "start", new Number(start), @params));
-                @params.Add(new(false, "end", new Number(end), @params));
-                @params.Add(new(false, "step", new Number(step), @params));
+                @params.Add(false, "start", new Number(start));
+                @params.Add(false, "end", new Number(end));
+                @params.Add(false, "step", new Number(step));
 
                 return new Iter(new Call(call, new(), new(), @params), new()
                 {
@@ -164,7 +164,7 @@ public sealed partial class Iter : Value
             {
                 var array = Array.Construct(values);
                 var @params = new VariableCollection();
-                @params.Add(new(false, "items", array, @params));
+                @params.Add(false, "items", array);
 
                 return new Iter(new Call(call, new(), new(), @params), new()
                 {

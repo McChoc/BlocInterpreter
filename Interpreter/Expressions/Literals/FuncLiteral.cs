@@ -16,23 +16,23 @@ internal sealed partial class FuncLiteral : IExpression
 {
     private readonly FuncType _type;
     private readonly CaptureMode _mode;
-    private readonly Parameter? _argsContainer;
-    private readonly Parameter? _kwargsContainer;
+    private readonly INamedIdentifier? _packingParameterIdentifier;
+    private readonly INamedIdentifier? _kwPackingParameterIdentifier;
     private readonly List<Parameter> _parameters;
     private readonly List<Statement> _statements;
 
     internal FuncLiteral(
         FuncType type,
         CaptureMode mode,
-        Parameter? argsContainer,
-        Parameter? kwargsContainer,
+        INamedIdentifier? packingParameterIdentifier,
+        INamedIdentifier? kwPackingParameterIdentifier,
         List<Parameter> parameters,
         List<Statement> statements)
     {
         _type = type;
         _mode = mode;
-        _argsContainer = argsContainer;
-        _kwargsContainer = kwargsContainer;
+        _packingParameterIdentifier = packingParameterIdentifier;
+        _kwPackingParameterIdentifier = kwPackingParameterIdentifier;
         _parameters = parameters;
         _statements = statements;
     }
@@ -46,13 +46,8 @@ internal sealed partial class FuncLiteral : IExpression
             _ => new()
         };
 
-        var argsContainer = _argsContainer is not null
-            ? new Func.Parameter(_argsContainer.Identifier.GetName(call), null)
-            : null;
-
-        var kwargsContainer = _kwargsContainer is not null
-            ? new Func.Parameter(_kwargsContainer.Identifier.GetName(call), null)
-            : null;
+        var packingParameterName = _packingParameterIdentifier?.GetName(call);
+        var kwPackingParameterName = _kwPackingParameterIdentifier?.GetName(call);
 
         var parameters = new List<Func.Parameter>();
 
@@ -68,11 +63,11 @@ internal sealed partial class FuncLiteral : IExpression
             if (value is Void)
                 throw new Throw("'void' is not assignable");
 
-            parameters.Add(new(name, value));
+            parameters.Add(new(name, value, parameter.Type));
         }
 
-        return new Func(_type, _mode, call.Module.TopLevelScope, captures, argsContainer, kwargsContainer, parameters, _statements);
+        return new Func(_type, _mode, call.Module.TopLevelScope, captures, packingParameterName, kwPackingParameterName, parameters, _statements);
     }
 
-    internal sealed record Parameter(INamedIdentifier Identifier, IExpression? Expression);
+    internal sealed record Parameter(INamedIdentifier Identifier, IExpression? Expression, ParameterType Type);
 }

@@ -2,6 +2,7 @@
 using Bloc.Expressions;
 using Bloc.Expressions.Literals;
 using Bloc.Funcs;
+using Bloc.Identifiers;
 using Bloc.Scanners;
 using Bloc.Statements;
 using Bloc.Tokens;
@@ -56,78 +57,94 @@ internal sealed class ParseFuncs : IParsingStep
 
             var parameters = new List<FuncLiteral.Parameter>();
 
-            FuncLiteral.Parameter? argsContainer = null;
-            FuncLiteral.Parameter? kwargsContainer = null;
+            INamedIdentifier? packingParameterIdentifier = null;
+            INamedIdentifier? kwPackingParameterIdentifier = null;
 
             if (paramTokens.Count > 0)
             {
                 foreach (var part in paramTokens.Split(x => x is SymbolToken(Symbol.COMMA)))
                 {
-                    if (part.Count == 0)
+                    switch (part)
                     {
-                        throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COMMA}'");
-                    }
-                    else if (part[0] is SymbolToken(Symbol.UNPACK_ITER))
-                    {
-                        if (argsContainer is not null)
+                        case []:
+                            throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COMMA}'");
+
+                        case [SymbolToken(Symbol.UNPACK_ITER), INamedIdentifierToken] when packingParameterIdentifier is not null:
                             throw new SyntaxError(0, 0, "The iterable unpack syntax may only be used once in a function literal");
 
-                        if (kwargsContainer is not null)
-                            throw new SyntaxError(0, 0, "The iterable unpack syntax must be used before the struct unpack syntax");
+                        case [SymbolToken(Symbol.UNPACK_ITER), INamedIdentifierToken token]:
+                            packingParameterIdentifier = token.GetIdentifier();
+                            break;
 
-                        var name = ExpressionParser.Parse(part.GetRange(1..));
-
-                        if (name is not NamedIdentifierExpression identifier)
-                            throw new SyntaxError(0, 0, "Invalid identifier");
-
-                        argsContainer = new(identifier.Identifier, null);
-                    }
-                    else if (part[0] is SymbolToken(Symbol.UNPACK_STRUCT))
-                    {
-                        if (kwargsContainer is not null)
+                        case [SymbolToken(Symbol.UNPACK_STRUCT), INamedIdentifierToken] when kwPackingParameterIdentifier is not null:
                             throw new SyntaxError(0, 0, "The struct unpack syntax may only be used once in a function literal");
 
-                        var name = ExpressionParser.Parse(part.GetRange(1..));
+                        case [SymbolToken(Symbol.UNPACK_STRUCT), INamedIdentifierToken token]:
+                            kwPackingParameterIdentifier = token.GetIdentifier();
+                            break;
 
-                        if (name is not NamedIdentifierExpression identifier)
-                            throw new SyntaxError(0, 0, "Invalid identifier");
-
-                        kwargsContainer = new(identifier.Identifier, null);
-                    }
-                    else
-                    {
-                        if (argsContainer is not null || kwargsContainer is not null)
-                            throw new SyntaxError(0, 0, "All the parameters must apear before any unpack syntax");
-
-                        IExpression name;
-                        IExpression? defaultValue;
-
-                        int index = part.FindIndex(x => x is SymbolToken(Symbol.ASSIGN));
-
-                        if (index == -1)
+                        case [INamedIdentifierToken token]:
                         {
-                            name = ExpressionParser.Parse(part);
-                            defaultValue = null;
-                        }
-                        else
-                        {
-                            var nameTokens = part.GetRange(..index);
-                            var valueTokens = part.GetRange((index + 1)..);
+                            var identifier = token.GetIdentifier();
 
-                            if (nameTokens.Count == 0)
-                                throw new SyntaxError(0, 0, "Missing identifier");
+                            parameters.Add(new(identifier, null, ParameterType.Standard));
 
-                            if (valueTokens.Count == 0)
-                                throw new SyntaxError(0, 0, "Missing value");
-
-                            name = ExpressionParser.Parse(nameTokens);
-                            defaultValue = ExpressionParser.Parse(valueTokens);
+                            break;
                         }
 
-                        if (name is not NamedIdentifierExpression identifier)
-                            throw new SyntaxError(0, 0, "Invalid identifier");
+                        case [INamedIdentifierToken token, SymbolToken(Symbol.ASSIGN), _, ..]:
+                        {
+                            var identifier = token.GetIdentifier();
+                            var defaultValueTokens = part.GetRange(2..);
+                            var defaultValueExpression = ExpressionParser.Parse(defaultValueTokens);
 
-                        parameters.Add(new(identifier.Identifier, defaultValue));
+                            parameters.Add(new(identifier, defaultValueExpression, ParameterType.Standard));
+                            
+                            break;
+                        }
+
+                        case [SymbolToken(Symbol.BIT_OR), INamedIdentifierToken token]:
+                        {
+                            var identifier = token.GetIdentifier();
+
+                            parameters.Add(new(identifier, null, ParameterType.PositionalOnly));
+
+                            break;
+                        }
+
+                        case [SymbolToken(Symbol.BIT_OR) , INamedIdentifierToken token, SymbolToken(Symbol.ASSIGN), _, ..]:
+                        {
+                            var identifier = token.GetIdentifier();
+                            var defaultValueTokens = part.GetRange(3..);
+                            var defaultValueExpression = ExpressionParser.Parse(defaultValueTokens);
+
+                            parameters.Add(new(identifier, defaultValueExpression, ParameterType.PositionalOnly));
+                            
+                            break;
+                        }
+
+                        case [SymbolToken(Symbol.BIT_AND), INamedIdentifierToken token]:
+                        {
+                            var identifier = token.GetIdentifier();
+
+                            parameters.Add(new(identifier, null, ParameterType.KeywordOnly));
+
+                            break;
+                        }
+
+                        case [SymbolToken(Symbol.BIT_AND) , INamedIdentifierToken token, SymbolToken(Symbol.ASSIGN), _, ..]:
+                        {
+                            var identifier = token.GetIdentifier();
+                            var defaultValueTokens = part.GetRange(3..);
+                            var defaultValueExpression = ExpressionParser.Parse(defaultValueTokens);
+
+                            parameters.Add(new(identifier, defaultValueExpression, ParameterType.KeywordOnly));
+                            
+                            break;
+                        }
+
+                        default:
+                            throw new SyntaxError(0, 0, $"Unexpected token");
                     }
                 }
             }
@@ -188,7 +205,7 @@ internal sealed class ParseFuncs : IParsingStep
                 j--;
             }
 
-            var func = new FuncLiteral(type, mode, argsContainer, kwargsContainer, parameters, statements);
+            var func = new FuncLiteral(type, mode, packingParameterIdentifier, kwPackingParameterIdentifier, parameters, statements);
 
             tokens.Insert(j + 1, new ParsedToken(0, 0, func));
 
