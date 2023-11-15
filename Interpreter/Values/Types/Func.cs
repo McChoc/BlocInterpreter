@@ -20,8 +20,8 @@ public sealed partial class Func : Value, IPattern, IInvokable
     private readonly FuncType _type;
     private readonly CaptureMode _mode;
 
-    private readonly VariableCollection _moduleVariables;
-    private readonly VariableCollection _closureVariables;
+    private readonly VariableCollection _toplvlVariables;
+    private readonly VariableCollection _outerVariables;
     private readonly string? _packingParameterName;
     private readonly string? _kwPackingParameterName;
     private readonly List<Parameter> _parameters;
@@ -35,8 +35,8 @@ public sealed partial class Func : Value, IPattern, IInvokable
         _type = FuncType.Synchronous;
         _mode = CaptureMode.None;
 
-        _moduleVariables = new();
-        _closureVariables = new();
+        _toplvlVariables = new();
+        _outerVariables = new();
         _packingParameterName = null;
         _kwPackingParameterName = null;
         _parameters = new();
@@ -47,8 +47,8 @@ public sealed partial class Func : Value, IPattern, IInvokable
     internal Func(
         FuncType type,
         CaptureMode mode,
-        VariableCollection moduleVariables,
-        VariableCollection closureVariables,
+        VariableCollection toplvlVariables,
+        VariableCollection outerVariables,
         string? packingParameterName,
         string? kwPackingParameterName,
         List<Parameter> parameters,
@@ -56,8 +56,8 @@ public sealed partial class Func : Value, IPattern, IInvokable
     {
         _type = type;
         _mode = mode;
-        _moduleVariables = moduleVariables;
-        _closureVariables = closureVariables;
+        _toplvlVariables = toplvlVariables;
+        _outerVariables = outerVariables;
         _packingParameterName = packingParameterName;
         _kwPackingParameterName = kwPackingParameterName;
         _parameters = parameters;
@@ -72,7 +72,7 @@ public sealed partial class Func : Value, IPattern, IInvokable
 
     internal Task InvokeAsync(Call parent)
     {
-        var call = new Call(parent, _moduleVariables, _closureVariables, new());
+        var call = new Call(parent, _toplvlVariables, _outerVariables, new());
 
         return new Task(() => Execute(call));
     }
@@ -137,7 +137,7 @@ public sealed partial class Func : Value, IPattern, IInvokable
             throw new Throw($"This function does not have a parameter named '{kwargs.First().Key}'");
         }
 
-        var call = new Call(parent, _moduleVariables, _closureVariables, arguments);
+        var call = new Call(parent, _toplvlVariables, _outerVariables, arguments);
 
         return _type switch
         {

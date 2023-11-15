@@ -24,9 +24,9 @@ internal sealed class ParsePrimaries : IParsingStep
         {
             [Token token] => _nextStep.Parse(new() { token }),
             [KeywordToken(Keyword.GLOBAL), SymbolToken(Symbol.ACCESS_MEMBER), INamedIdentifierToken token] => new GlobalOperator(_nextStep.Parse(new() { token })),
-            [KeywordToken(Keyword.MODULE), SymbolToken(Symbol.ACCESS_MEMBER), INamedIdentifierToken token] => new ModuleOperator(_nextStep.Parse(new() { token })),
-            [KeywordToken(Keyword.CLOSURE), SymbolToken(Symbol.ACCESS_MEMBER), INamedIdentifierToken token] => new ClosureOperator(_nextStep.Parse(new() { token })),
-            [KeywordToken(Keyword.PARAMS), SymbolToken(Symbol.ACCESS_MEMBER), INamedIdentifierToken token] => new ParamsOperator(_nextStep.Parse(new() { token })),
+            [KeywordToken(Keyword.TOPLVL), SymbolToken(Symbol.ACCESS_MEMBER), INamedIdentifierToken token] => new ToplvlOperator(_nextStep.Parse(new() { token })),
+            [KeywordToken(Keyword.OUTER), SymbolToken(Symbol.ACCESS_MEMBER), INamedIdentifierToken token] => new OuterOperator(_nextStep.Parse(new() { token })),
+            [KeywordToken(Keyword.PARAM), SymbolToken(Symbol.ACCESS_MEMBER), INamedIdentifierToken token] => new ParamOperator(_nextStep.Parse(new() { token })),
             [KeywordToken(Keyword.LOCAL), SymbolToken(Symbol.ACCESS_MEMBER), INamedIdentifierToken token] => new LocalOperator(_nextStep.Parse(new() { token })),
             [.., _, SymbolToken(Symbol.ACCESS_MEMBER), INamedIdentifierToken token] => new MemberAccessOperator(Parse(tokens.GetRange(..^2)), token.GetIdentifier()),
             [.., _, BracketsToken brackets] => new IndexerOperator(Parse(tokens.GetRange(..^1)), ParseIndexingArguments(brackets.Tokens)),

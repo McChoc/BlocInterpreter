@@ -10,21 +10,21 @@ namespace Bloc.Expressions.Literals;
 internal sealed record RangeLiteral : IExpression
 {
     private readonly IExpression? _start;
-    private readonly IExpression? _end;
+    private readonly IExpression? _stop;
     private readonly IExpression? _step;
     private readonly bool _inclusive;
 
-    internal RangeLiteral(IExpression? start, IExpression? end, IExpression? step, bool inclusive)
+    internal RangeLiteral(IExpression? start, IExpression? stop, IExpression? step, bool inclusive)
     {
         _start = start;
-        _end = end;
+        _stop = stop;
         _step = step;
         _inclusive = inclusive;
     }
 
     public IValue Evaluate(Call call)
     {
-        int? start = null, end = null, step = null;
+        int? start = null, stop = null, step = null;
 
         if (_start is not null)
         {
@@ -38,11 +38,11 @@ internal sealed record RangeLiteral : IExpression
             };
         }
 
-        if (_end is not null)
+        if (_stop is not null)
         {
-            var value = _end.Evaluate(call).Value;
+            var value = _stop.Evaluate(call).Value;
             value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit).Value;
-            end = value switch
+            stop = value switch
             {
                 Null => null,
                 INumeric numeric => numeric.GetInt(),
@@ -63,6 +63,6 @@ internal sealed record RangeLiteral : IExpression
             };
         }
 
-        return new Range(start, end, step, _inclusive);
+        return new Range(start, stop, step, _inclusive);
     }
 }

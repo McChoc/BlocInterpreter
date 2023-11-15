@@ -17,9 +17,9 @@ public sealed class Call
     public Engine Engine { get; }
     public Module Module { get; }
 
-    internal VariableCollection ModuleVariables { get; }
-    internal VariableCollection ClosureVariables { get; }
-    internal VariableCollection ParamsVariables { get; }
+    internal VariableCollection ToplvlVariables { get; }
+    internal VariableCollection OuterVariables { get; }
+    internal VariableCollection ParamVariables { get; }
     internal List<Scope> Scopes { get; }
 
     internal Call(Engine engine, Module module)
@@ -30,12 +30,12 @@ public sealed class Call
         Scopes = new();
         MakeScope();
 
-        ModuleVariables = Scopes[0];
-        ClosureVariables = new();
-        ParamsVariables = new();
+        ToplvlVariables = Scopes[0];
+        OuterVariables = new();
+        ParamVariables = new();
     }
 
-    internal Call(Call parent, VariableCollection moduleVariables, VariableCollection closureVariables, VariableCollection paramsVariables)
+    internal Call(Call parent, VariableCollection toplvlVariables, VariableCollection outerVariables, VariableCollection paramVariables)
     {
         Engine = parent.Engine;
         Module = parent.Module;
@@ -45,9 +45,9 @@ public sealed class Call
         if (_stack > Engine.Options.StackLimit)
             throw new Throw("The stack limit was reached");
 
-        ModuleVariables = moduleVariables;
-        ClosureVariables = closureVariables;
-        ParamsVariables = paramsVariables;
+        ToplvlVariables = toplvlVariables;
+        OuterVariables = outerVariables;
+        ParamVariables = paramVariables;
         Scopes = new();
         MakeScope();
     }
@@ -68,9 +68,9 @@ public sealed class Call
         Stack<StackVariable> stack;
 
         Variable? local = null;
-        Variable? @params = null;
-        Variable? closure = null;
-        Variable? module = null;
+        Variable? param = null;
+        Variable? outer = null;
+        Variable? toplvl = null;
         Variable? global = null;
 
         foreach (var scope in Scopes)
@@ -82,19 +82,19 @@ public sealed class Call
             }
         }
 
-        if (ParamsVariables.Variables.TryGetValue(name, out stack))
-            @params = stack.Peek();
+        if (ParamVariables.Variables.TryGetValue(name, out stack))
+            param = stack.Peek();
 
-        if (ClosureVariables.Variables.TryGetValue(name, out stack))
-            closure = stack.Peek();
+        if (OuterVariables.Variables.TryGetValue(name, out stack))
+            outer = stack.Peek();
 
-        if (ModuleVariables.Variables.TryGetValue(name, out stack))
-            module = stack.Peek();
+        if (ToplvlVariables.Variables.TryGetValue(name, out stack))
+            toplvl = stack.Peek();
 
         if (Engine.GlobalVariables.Variables.TryGetValue(name, out stack))
             global = stack.Peek();
 
-        return new UnresolvedPointer(name, local, @params, closure, module, global);
+        return new UnresolvedPointer(name, local, param, outer, toplvl, global);
     }
 
     public VariablePointer Set(string name, Value value, bool mutable, bool mask, VariableScope scope)
@@ -131,8 +131,8 @@ public sealed class Call
         foreach (var scope in Scopes)
             Capture(scope, captures, callback);
 
-        Capture(ParamsVariables, captures, callback);
-        Capture(ClosureVariables, captures, callback);
+        Capture(ParamVariables, captures, callback);
+        Capture(OuterVariables, captures, callback);
 
         return captures;
     }

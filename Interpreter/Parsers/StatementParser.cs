@@ -103,8 +103,8 @@ internal static class StatementParser
                 provider.Skip(2);
                 return (default, true, VariableScope.Global);
 
-            case [KeywordToken(Keyword.NEW), KeywordToken(Keyword.MODULE), KeywordToken(Keyword.VAR or Keyword.CONST)]:
-            case [KeywordToken(Keyword.MODULE), KeywordToken(Keyword.NEW), KeywordToken(Keyword.VAR or Keyword.CONST)]:
+            case [KeywordToken(Keyword.NEW), KeywordToken(Keyword.TOPLVL), KeywordToken(Keyword.VAR or Keyword.CONST)]:
+            case [KeywordToken(Keyword.TOPLVL), KeywordToken(Keyword.NEW), KeywordToken(Keyword.VAR or Keyword.CONST)]:
                 provider.Skip(2);
                 return (default, true, VariableScope.Module);
         }
@@ -115,7 +115,7 @@ internal static class StatementParser
                 provider.Skip();
                 return (default, default, VariableScope.Global);
 
-            case [KeywordToken(Keyword.MODULE), KeywordToken(Keyword.IMPORT)]:
+            case [KeywordToken(Keyword.TOPLVL), KeywordToken(Keyword.IMPORT)]:
                 provider.Skip();
                 return (default, default, VariableScope.Module);
 
@@ -123,7 +123,7 @@ internal static class StatementParser
                 provider.Skip();
                 return (default, false, VariableScope.Global);
 
-            case [KeywordToken(Keyword.MODULE), KeywordToken(Keyword.VAR or Keyword.CONST)]:
+            case [KeywordToken(Keyword.TOPLVL), KeywordToken(Keyword.VAR or Keyword.CONST)]:
                 provider.Skip();
                 return (default, false, VariableScope.Module);
 

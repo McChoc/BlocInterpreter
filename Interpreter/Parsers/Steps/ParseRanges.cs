@@ -48,7 +48,7 @@ internal sealed class ParseRanges : IParsingStep
         if (firstIndex == -1)
             return _nextStep.Parse(tokens);
 
-        IExpression? start, end, step;
+        IExpression? start, stop, step;
 
         start = firstIndex > 0
             ? _nextStep.Parse(tokens.GetRange(..firstIndex))
@@ -56,7 +56,7 @@ internal sealed class ParseRanges : IParsingStep
 
         if (secondIndex == -1)
         {
-            end = firstIndex < tokens.Count - 1
+            stop = firstIndex < tokens.Count - 1
                 ? _nextStep.Parse(tokens.GetRange((firstIndex + 1)..))
                 : null;
 
@@ -64,7 +64,7 @@ internal sealed class ParseRanges : IParsingStep
         }
         else
         {
-            end = secondIndex - firstIndex > 1
+            stop = secondIndex - firstIndex > 1
                 ? _nextStep.Parse(tokens.GetRange((firstIndex + 1)..secondIndex))
                 : null;
 
@@ -73,9 +73,9 @@ internal sealed class ParseRanges : IParsingStep
                 : null;
         }
 
-        if (inclusive && end is null)
+        if (inclusive && stop is null)
             throw new SyntaxError(0, 0, $"Missing value");
 
-        return new RangeLiteral(start, end, step, inclusive);
+        return new RangeLiteral(start, stop, step, inclusive);
     }
 }

@@ -54,7 +54,6 @@ internal static class Keyword
     [HardKeyword] internal const string CASE = "case";
     [HardKeyword] internal const string CATCH = "catch";
     [HardKeyword] internal const string CHR = "chr";
-    [HardKeyword] internal const string CLOSURE = "closure";
     [HardKeyword] internal const string CONST = "const";
     [HardKeyword] internal const string CONTINUE = "continue";
     [HardKeyword] internal const string DEFAULT = "default";
@@ -80,14 +79,14 @@ internal static class Keyword
     [HardKeyword] internal const string LOCK = "lock";
     [HardKeyword] internal const string LOOP = "loop";
     [HardKeyword] internal const string LVAL = "lval";
-    [HardKeyword] internal const string MODULE = "module";
     [HardKeyword] internal const string NAMEOF = "nameof";
     [HardKeyword] internal const string NEW = "new";
     [HardKeyword] internal const string NEXT = "next";
     [HardKeyword] internal const string NOT = "not";
     [HardKeyword] internal const string ORD = "ord";
     [HardKeyword] internal const string ORDERBY = "orderby";
-    [HardKeyword] internal const string PARAMS = "params";
+    [HardKeyword] internal const string OUTER = "outer";
+    [HardKeyword] internal const string PARAM = "param";
     [HardKeyword] internal const string REF = "ref";
     [HardKeyword] internal const string REPEAT = "repeat";
     [HardKeyword] internal const string RETURN = "return";
@@ -95,6 +94,7 @@ internal static class Keyword
     [HardKeyword] internal const string SELECT = "select";
     [HardKeyword] internal const string SWITCH = "switch";
     [HardKeyword] internal const string THROW = "throw";
+    [HardKeyword] internal const string TOPLVL = "toplvl";
     [HardKeyword] internal const string TRY = "try";
     [HardKeyword] internal const string TYPEOF = "typeof";
     [HardKeyword] internal const string UNLESS = "unless";
