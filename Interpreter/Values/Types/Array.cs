@@ -155,9 +155,9 @@ public sealed partial class Array : Value, IIndexable, IPattern
 
     private IEnumerable<IValue> IndexByRange(Range range)
     {
-        var (start, end, step) = RangeHelper.Deconstruct(range, Values.Count);
+        var (start, stop, step) = RangeHelper.Deconstruct(range, Values.Count);
 
-        for (int i = start; i != end && i < end == step > 0; i += step)
+        for (int i = start; i != stop && i < stop == step > 0; i += step)
             yield return Values[i];
     }
 
@@ -195,7 +195,7 @@ public sealed partial class Array : Value, IIndexable, IPattern
             [Tuple tuple] => new(tuple.Values.Select(x => x.Value).ToList()),
             [Iter iter] => new(iter.Iterate().ToList()),
             [var value, Number number] => new(Enumerable.Repeat(value, number.GetInt()).ToList()),
-            [var value] => throw new Throw($"'array' does not have a constructor that takes a '{value.GetTypeName()}'"),
+            [_] => throw new Throw($"'array' does not have a constructor that takes a '{values[0].GetTypeName()}'"),
             [_, _] => throw new Throw($"'array' does not have a constructor that takes a '{values[0].GetTypeName()}' and a '{values[1].GetTypeName()}'"),
             [..] => throw new Throw($"'array' does not have a constructor that takes {values.Count} arguments")
         };

@@ -64,6 +64,7 @@ internal static class Symbol
     internal const string UNPACK_STRUCT = "...";
     internal const string COMMA = ",";
     internal const string COLON = ":";
+    internal const string INCLUSIVE_RANGE = ":=";
     internal const string SEMICOLON = ";";
     internal const string QUESTION = "?";
     internal const string LAMBDA = "=>";

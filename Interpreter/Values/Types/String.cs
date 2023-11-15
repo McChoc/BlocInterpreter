@@ -2,8 +2,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
-using System.Net.WebSockets;
-using System.Text;
 using Bloc.Memory;
 using Bloc.Patterns;
 using Bloc.Results;
@@ -30,34 +28,66 @@ public sealed partial class String : Value, IPattern, IIndexable
 
     public IValue Index(List<Value> args, Call _)
     {
-        switch (args)
+        return args switch
         {
-            case [Number number]:
-                int index = number.GetInt();
+            [Number number] => MakeString(IndexByNumber(number)),
+            [Range range] => MakeString(IndexByRange(range)),
+            [Tuple tuple] => MakeString(IndexByTuple(tuple)),
+            [_] => throw new Throw($"The string indexer does not takes a '{args[0].GetTypeName()}'"),
+            [..] => throw new Throw($"The string indexer does not take {args.Count} arguments"),
+        };
+    }
 
-                if (index < 0)
-                    index += Value.Length;
+    private String MakeString(char character)
+    {
+        return new String(character.ToString());
+    }
 
-                if (index < 0 || index >= Value.Length)
-                    throw new Throw("Index out of range");
+    private String MakeString(IEnumerable<char> characters)
+    {
+        return new String(new string(characters.ToArray()));
+    }
 
-                return new String(Value[index].ToString());
+    private char IndexByNumber(Number number)
+    {
+        int index = number.GetInt();
 
-            case [Range range]:
-                var (start, end, step) = RangeHelper.Deconstruct(range, Value.Length);
+        if (index < 0)
+            index += Value.Length;
 
-                var builder = new StringBuilder();
+        if (index < 0 || index >= Value.Length)
+            throw new Throw("Index out of range");
 
-                for (int i = start; i != end && i < end == step > 0; i += step)
-                    builder.Append(Value[i]);
+        return Value[index];
+    }
 
-                return new String(builder.ToString());
+    private IEnumerable<char> IndexByRange(Range range)
+    {
+        var (start, stop, step) = RangeHelper.Deconstruct(range, Value.Length);
 
-            case [var arg]:
-                throw new Throw($"The string indexer does not takes a '{arg.GetTypeName()}'");
+        for (int i = start; i != stop && i < stop == step > 0; i += step)
+            yield return Value[i];
+    }
 
-            default:
-                throw new Throw($"The string indexer does not take {args.Count} arguments");
+    private IEnumerable<char> IndexByTuple(Tuple tuple)
+    {
+        foreach (var index in tuple.Values)
+        {
+            if (index.Value is Number number)
+            {
+                yield return IndexByNumber(number);
+                continue;
+            }
+
+            var values = index.Value switch
+            {
+                Range range => IndexByRange(range),
+                Tuple nested => IndexByTuple(nested),
+                _ => throw new Throw($"The string indexer does not takes a '{index.Value.GetTypeName()}'")
+            };
+
+            foreach (var value in values)
+                yield return value;
         }
     }
 

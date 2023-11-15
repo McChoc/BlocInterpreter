@@ -11,12 +11,12 @@ namespace Bloc.Pointers;
 public sealed class ContiguousSlicePointer : Pointer
 {
     private readonly Array _array;
-    private readonly int _start, _end;
+    private readonly int _start, _stop;
 
     internal ContiguousSlicePointer(Array array, Range range)
     {
         _array = array;
-        (_start, _end, _) = RangeHelper.Deconstruct(range, array.Values.Count);
+        (_start, _stop, _) = RangeHelper.Deconstruct(range, array.Values.Count);
     }
 
     public override Value Get()
@@ -61,7 +61,7 @@ public sealed class ContiguousSlicePointer : Pointer
     {
         var variables = new List<ArrayVariable>();
 
-        for (int i = _start; i < _end; i++)
+        for (int i = _start; i < _stop; i++)
             variables.Add((ArrayVariable)_array.Values[i]);
 
         return variables;

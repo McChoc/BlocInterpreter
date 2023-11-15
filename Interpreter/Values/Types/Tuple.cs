@@ -124,7 +124,7 @@ public sealed partial class Tuple : Value, IPattern
             [Range range] => new(new List<Value>()
             {
                 range.Start is int start ? new Number(start) : Null.Value,
-                range.End is int end ? new Number(end) : Null.Value,
+                range.Stop is int end ? new Number(end) : Null.Value,
                 range.Step is int step ? new Number(step) : Null.Value
             }),
 

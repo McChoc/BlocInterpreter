@@ -136,22 +136,17 @@ public sealed partial class Iter : Value
 
             case [Range range]:
             {
-                var (start, end, step) = RangeHelper.Deconstruct(range);
+                var (start, stop, step) = RangeHelper.Deconstruct(range);
 
-                var @params = new VariableCollection();
-                @params.Add(false, "start", new Number(start));
-                @params.Add(false, "end", new Number(end));
-                @params.Add(false, "step", new Number(step));
-
-                return new Iter(new Call(call, new(), new(), @params), new()
+                return new Iter(new Call(call, new(), new(), new()), new()
                 {
                     new ForStatement(false)
                     {
-                        Initialisation = new AssignmentOperator(new LetOperator(new StaticIdentifier("i")), new NamedIdentifierExpression(new StaticIdentifier("start"))),
-                        Condition = new LessThanOperator(
-                            new MultiplicationOperator(new NamedIdentifierExpression(new StaticIdentifier("i")), new NamedIdentifierExpression(new StaticIdentifier("step"))),
-                            new MultiplicationOperator(new NamedIdentifierExpression(new StaticIdentifier("end")), new NamedIdentifierExpression(new StaticIdentifier("step")))),
-                        Increment = new AdditionAssignment(new NamedIdentifierExpression(new StaticIdentifier("i")), new NamedIdentifierExpression(new StaticIdentifier("step"))),
+                        Initialisation = new AssignmentOperator(new LetOperator(new StaticIdentifier("i")), new NumberLiteral(start)),
+                        Condition = step < 0
+                            ? new GreaterThanOperator(new NamedIdentifierExpression(new StaticIdentifier("i")), new NumberLiteral(stop))
+                            : new LessThanOperator(new NamedIdentifierExpression(new StaticIdentifier("i")), new NumberLiteral(stop)),
+                        Increment = new AdditionAssignment(new NamedIdentifierExpression(new StaticIdentifier("i")), new NumberLiteral(step)),
                         Statement = new YieldStatement(new NamedIdentifierExpression(new StaticIdentifier("i")))
                     }
                 });

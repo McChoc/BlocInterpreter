@@ -19,28 +19,63 @@ internal sealed class ParseRanges : IParsingStep
 
     public IExpression Parse(List<IToken> tokens)
     {
-        var parts = tokens.Split(x => x is SymbolToken(Symbol.COLON));
+        bool inclusive = false;
+        int firstIndex = -1, secondIndex = -1;
 
-        if (parts.Count == 1)
-            return _nextStep.Parse(parts[0]);
-
-        if (parts.Count == 2)
+        for (int i = 0; i < tokens.Count; i++)
         {
-            var start = parts[0].Count > 0 ? _nextStep.Parse(parts[0]) : null;
-            var end = parts[1].Count > 0 ? _nextStep.Parse(parts[1]) : null;
+            switch (tokens[i])
+            {
+                case SymbolToken(Symbol.COLON):
+                    if (firstIndex == -1)
+                        firstIndex = i;
+                    else if (secondIndex == -1)
+                        secondIndex = i;
+                    else
+                        throw new SyntaxError(tokens[i].Start, tokens[i].End, $"Unexpected symbol '{Symbol.COLON}'");
+                    break;
 
-            return new RangeLiteral(start, end, null);
+                case SymbolToken(Symbol.INCLUSIVE_RANGE):
+                    if (firstIndex != -1)
+                        throw new SyntaxError(tokens[i].Start, tokens[i].End, $"Unexpected symbol '{Symbol.INCLUSIVE_RANGE}'");
+
+                    firstIndex = i;
+                    inclusive = true;
+                    break;
+            }
         }
 
-        if (parts.Count == 3)
-        {
-            var start = parts[0].Count > 0 ? _nextStep.Parse(parts[0]) : null;
-            var end = parts[1].Count > 0 ? _nextStep.Parse(parts[1]) : null;
-            var step = parts[2].Count > 0 ? _nextStep.Parse(parts[2]) : null;
+        if (firstIndex == -1)
+            return _nextStep.Parse(tokens);
 
-            return new RangeLiteral(start, end, step);
+        IExpression? start, end, step;
+
+        start = firstIndex > 0
+            ? _nextStep.Parse(tokens.GetRange(..firstIndex))
+            : null;
+
+        if (secondIndex == -1)
+        {
+            end = firstIndex < tokens.Count - 1
+                ? _nextStep.Parse(tokens.GetRange((firstIndex + 1)..))
+                : null;
+
+            step = null;
+        }
+        else
+        {
+            end = secondIndex - firstIndex > 1
+                ? _nextStep.Parse(tokens.GetRange((firstIndex + 1)..secondIndex))
+                : null;
+
+            step = secondIndex < tokens.Count - 1
+                ? _nextStep.Parse(tokens.GetRange((secondIndex + 1)..))
+                : null;
         }
 
-        throw new SyntaxError(tokens[0].Start, tokens[^1].End, $"Unexpected symbol '{Symbol.COLON}'");
+        if (inclusive && end is null)
+            throw new SyntaxError(0, 0, $"Missing value");
+
+        return new RangeLiteral(start, end, step, inclusive);
     }
 }
