@@ -35,6 +35,9 @@ internal sealed partial class TryStatement : Statement
             }
         }
 
+        if (Catches.Count == 0 && Finally is null)
+            yield break;
+
         if (mainResult is Throw @throw)
         {
             foreach (var @catch in Catches)
