@@ -69,6 +69,7 @@ internal static class Keyword
     [HardKeyword] internal const string FROM = "from";
     [HardKeyword] internal const string GLOBAL = "global";
     [HardKeyword] internal const string GOTO = "goto";
+    [HardKeyword] internal const string GROUPBY = "groupby";
     [HardKeyword] internal const string IF = "if";
     [HardKeyword] internal const string IMPORT = "import";
     [HardKeyword] internal const string IN = "in";
