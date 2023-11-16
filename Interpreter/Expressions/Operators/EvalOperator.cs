@@ -22,7 +22,6 @@ internal sealed record EvalOperator : IExpression
     public IValue Evaluate(Call call)
     {
         var value = _operand.Evaluate(call).Value;
-
         value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit).Value;
 
         if (value is not String @string)

@@ -15,6 +15,8 @@ internal static class ImportHelper
     internal static string ResolveModulePath(IExpression modulePathExpression, Call call)
     {
         var modulePathValue = modulePathExpression.Evaluate(call).Value;
+        modulePathValue = ReferenceHelper.Resolve(modulePathValue, call.Engine.Options.HopLimit).Value;
+
         string modulePath = String.ImplicitCast(modulePathValue).Value;
 
         if (!modulePath.StartsWith("@"))

@@ -6,6 +6,7 @@ using Bloc.Results;
 using Bloc.Scanners;
 using Bloc.Utils.Attributes;
 using Bloc.Utils.Exceptions;
+using Bloc.Utils.Helpers;
 using Bloc.Values.Types;
 
 namespace Bloc.Statements;
@@ -23,6 +24,21 @@ internal sealed partial class ExecStatement : Statement
     internal override IEnumerable<IResult> Execute(Call call)
     {
         if (!EvaluateExpression(_expression, call, out var value, out var exception))
+        {
+            yield return exception;
+            yield break;
+        }
+
+        try
+        {
+            value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit).Value;
+        }
+        catch (Throw e)
+        {
+            exception = e;
+        }
+
+        if (exception is not null)
         {
             yield return exception;
             yield break;
