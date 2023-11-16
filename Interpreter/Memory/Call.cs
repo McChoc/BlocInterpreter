@@ -73,7 +73,7 @@ public sealed class Call
         Variable? toplvl = null;
         Variable? global = null;
 
-        foreach (var scope in Scopes)
+        foreach (var scope in Scopes.Reverse<Scope>())
         {
             if (scope.Variables.TryGetValue(name, out stack))
             {
