@@ -1,8 +1,10 @@
 ﻿using System;
+using Bloc.Utils.Attributes;
 
 namespace Bloc.Memory;
 
-public sealed class Scope : VariableCollection, IDisposable
+[Record]
+public sealed partial class Scope : VariableCollection, IDisposable
 {
     private readonly Call _call;
 
@@ -18,6 +20,6 @@ public sealed class Scope : VariableCollection, IDisposable
             while (stack.Count > 0)
                 stack.Peek().Delete();
 
-        _call.Scopes.Remove(this);
+        _call.Scopes.RemoveAt(_call.Scopes.Count - 1);
     }
 }
