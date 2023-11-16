@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using Bloc.Expressions;
-using Bloc.Expressions.Switch;
+using Bloc.Expressions.Operators;
 using Bloc.Scanners;
 using Bloc.Tokens;
 using Bloc.Utils.Constants;

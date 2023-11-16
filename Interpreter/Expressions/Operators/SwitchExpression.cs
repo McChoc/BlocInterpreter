@@ -8,7 +8,7 @@ using Bloc.Values.Behaviors;
 using Bloc.Values.Core;
 using Bloc.Values.Types;
 
-namespace Bloc.Expressions.Switch;
+namespace Bloc.Expressions.Operators;
 
 [Record]
 internal sealed partial class SwitchExpression : IExpression

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Bloc.Core;
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Utils.Attributes;
@@ -17,6 +18,15 @@ internal sealed partial class TupleIdentifier : IIdentifier
     public TupleIdentifier(List<IIdentifier> identifiers)
     {
         _identifiers = identifiers;
+    }
+
+    public Value From(Module module, Call call)
+    {
+        var values = _identifiers
+            .Select(x => x.From(module, call))
+            .ToList();
+
+        return new Tuple(values);
     }
 
     public IValue Define(Value value, Call call, bool mask, bool mutable, VariableScope scope)

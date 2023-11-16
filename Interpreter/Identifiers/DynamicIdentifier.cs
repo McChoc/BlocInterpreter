@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using Bloc.Core;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
@@ -35,8 +36,20 @@ internal sealed record DynamicIdentifier : INamedIdentifier
         return @string.Value;
     }
 
+    public Value From(Module module, Call call)
+    {
+        var name = GetName(call);
+
+        if (!module.Exports.TryGetValue(name, out var export))
+            throw new Throw($"Module '{module.Path}' does not export {name}");
+
+        return export.Copy();
+    }
+
     public IValue Define(Value value, Call call, bool mask, bool mutable, VariableScope scope)
     {
-        return call.Set(GetName(call), value.GetOrCopy(true), mutable, mask, scope);
+        var name = GetName(call);
+
+        return call.Set(name, value.GetOrCopy(true), mutable, mask, scope);
     }
 }
