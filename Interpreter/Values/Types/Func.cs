@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
-using System.Xml.Linq;
 using Bloc.Funcs;
 using Bloc.Memory;
 using Bloc.Patterns;
@@ -68,7 +66,7 @@ public sealed partial class Func : Value, IPattern, IInvokable
 
     public IPatternNode GetRoot() => new PredicatePattern(this);
     public override ValueType GetType() => ValueType.Func;
-    public override string ToString() => "[func]";
+    public override string ToString() => "<func>";
 
     internal Task InvokeAsync(Call parent)
     {

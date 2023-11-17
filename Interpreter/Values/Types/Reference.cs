@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Bloc.Memory;
 using Bloc.Pointers;
 using Bloc.Results;
 using Bloc.Utils.Attributes;
@@ -20,7 +19,7 @@ public sealed partial class Reference : Value
     }
 
     public override ValueType GetType() => ValueType.Reference;
-    public override string ToString() => "[reference]";
+    public override string ToString() => "<reference>";
 
     internal static Reference Construct(List<Value> values)
     {

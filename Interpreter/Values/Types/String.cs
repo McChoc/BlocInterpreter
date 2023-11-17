@@ -24,7 +24,7 @@ public sealed partial class String : Value, IPattern, IIndexable
 
     public IPatternNode GetRoot() => new RegexPattern(Value);
     public override ValueType GetType() => ValueType.String;
-    public override string ToString() => $"\"{Value}\"";
+    public override string ToString() => @$"""{Value}""";
 
     public IValue Index(List<Value> args, Call _)
     {

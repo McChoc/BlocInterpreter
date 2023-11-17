@@ -16,7 +16,7 @@ public sealed partial class Extern : Value
     }
 
     public override ValueType GetType() => ValueType.Extern;
-    public override string ToString() => "[extern]";
+    public override string ToString() => "<extern>";
 
     internal static Extern Construct(List<Value> values)
     {

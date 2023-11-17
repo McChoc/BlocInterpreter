@@ -20,7 +20,7 @@ public sealed partial class Task : Value
     }
 
     public override ValueType GetType() => ValueType.Task;
-    public override string ToString() => "[task]";
+    public override string ToString() => "<task>";
 
     internal Value Await()
     {

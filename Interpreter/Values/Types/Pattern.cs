@@ -19,7 +19,7 @@ public sealed partial class Pattern : Value, IPattern
 
     public IPatternNode GetRoot() => Value;
     public override ValueType GetType() => ValueType.Pattern;
-    public override string ToString() => "[pattern]";
+    public override string ToString() => "<pattern>";
 
     internal static Pattern Construct(List<Value> values)
     {

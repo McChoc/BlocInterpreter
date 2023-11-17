@@ -38,7 +38,7 @@ public sealed partial class Iter : Value
     }
 
     public override ValueType GetType() => ValueType.Iter;
-    public override string ToString() => "[iter]";
+    public override string ToString() => "<iter>";
 
     internal static bool TryImplicitCast(IValue value, [NotNullWhen(true)] out Iter? iter, Call call)
     {
