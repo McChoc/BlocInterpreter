@@ -43,7 +43,7 @@ internal sealed record IndexerOperator : IExpression
                 if (!Iter.TryImplicitCast(val, out var iter, call))
                     throw new Throw("Cannot implicitly convert to iter");
 
-                args.AddRange(iter.Iterate());
+                args.AddRange(IterHelper.CheckedIterate(iter, call.Engine.Options));
             }
         }
 

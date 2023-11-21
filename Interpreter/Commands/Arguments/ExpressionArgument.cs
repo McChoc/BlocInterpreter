@@ -2,6 +2,7 @@
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
+using Bloc.Utils.Helpers;
 using Bloc.Values.Types;
 
 namespace Bloc.Commands.Arguments;
@@ -30,7 +31,7 @@ internal sealed record ExpressionArgument : IArgument
             if (!Iter.TryImplicitCast(value, out var iter, call))
                 throw new Throw("Cannot implicitly convert to iter");
 
-            foreach (var item in iter.Iterate())
+            foreach (var item in IterHelper.CheckedIterate(iter, call.Engine.Options))
                 yield return String.ImplicitCast(item).Value;
         }
     }

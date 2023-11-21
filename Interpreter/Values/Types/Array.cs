@@ -183,21 +183,48 @@ public sealed partial class Array : Value, IIndexable, IPattern
         }
     }
 
-    internal static Array Construct(List<Value> values)
+    internal static Array Construct(List<Value> values, Call call)
     {
         return values switch
         {
             [] or [Null] => new(),
             [Array array] => array,
+            [Range range] => Construct(range, call),
             [Number number] => new(Enumerable.Repeat((Value)Null.Value, number.GetInt()).ToList()),
             [String @string] => new(@string.Value.ToCharArray().Select(x => (Value)new String(x.ToString())).ToList()),
             [Struct @struct] => new(@struct.Values.OrderBy(x => x.Key).Select(x => (Value)new Tuple(new List<Value>() { new String(x.Key), x.Value.Value })).ToList()),
             [Tuple tuple] => new(tuple.Values.Select(x => x.Value).ToList()),
-            [Iter iter] => new(iter.Iterate().ToList()),
+            [Iter iter] => Construct(iter, call),
             [var value, Number number] => new(Enumerable.Repeat(value, number.GetInt()).ToList()),
             [_] => throw new Throw($"'array' does not have a constructor that takes a '{values[0].GetTypeName()}'"),
             [_, _] => throw new Throw($"'array' does not have a constructor that takes a '{values[0].GetTypeName()}' and a '{values[1].GetTypeName()}'"),
             [..] => throw new Throw($"'array' does not have a constructor that takes {values.Count} arguments")
         };
+    }
+
+    private static Array Construct(Range range, Call call)
+    {
+        var values = new List<Value>();
+
+        var (start, stop, step) = RangeHelper.Deconstruct(range);
+
+        for (var (i, loopCount) = (start, 0); i != stop && i < stop == step > 0; i += step, loopCount++)
+        {
+            if (loopCount > call.Engine.Options.LoopLimit)
+                throw new Throw("The loop limit was reached.");
+
+            values.Add(new Number(i));
+        }
+
+        return new Array(values);
+    }
+
+    private static Array Construct(Iter iter, Call call)
+    {
+        var values = IterHelper
+            .CheckedIterate(iter, call.Engine.Options)
+            .ToList();
+
+        return new Array(values);
     }
 }

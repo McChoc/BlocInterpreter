@@ -27,22 +27,23 @@ public sealed partial class Type : Value, IPattern, IInvokable
     {
         return Value switch
         {
-            ValueType.Void => Keyword.VOID_T,
-            ValueType.Null => Keyword.NULL_T,
-            ValueType.Bool => Keyword.BOOL,
-            ValueType.Number => Keyword.NUMBER,
-            ValueType.Range => Keyword.RANGE,
-            ValueType.String => Keyword.STRING,
-            ValueType.Array => Keyword.ARRAY,
-            ValueType.Struct => Keyword.STRUCT,
-            ValueType.Tuple => Keyword.TUPLE,
-            ValueType.Func => Keyword.FUNC,
-            ValueType.Task => Keyword.TASK,
-            ValueType.Iter => Keyword.ITER,
+            ValueType.Void      => Keyword.VOID_T,
+            ValueType.Null      => Keyword.NULL_T,
+            ValueType.Bool      => Keyword.BOOL,
+            ValueType.Number    => Keyword.NUMBER,
+            ValueType.Range     => Keyword.RANGE,
+            ValueType.String    => Keyword.STRING,
+            ValueType.Array     => Keyword.ARRAY,
+            ValueType.Struct    => Keyword.STRUCT,
+            ValueType.Tuple     => Keyword.TUPLE,
+            ValueType.Func      => Keyword.FUNC,
+            ValueType.Task      => Keyword.TASK,
+            ValueType.Iter      => Keyword.ITER,
             ValueType.Reference => Keyword.REFERENCE,
-            ValueType.Extern => Keyword.EXTERN,
-            ValueType.Type => Keyword.TYPE,
-            ValueType.Pattern => Keyword.PATTERN,
+            ValueType.Extern    => Keyword.EXTERN,
+            ValueType.Type      => Keyword.TYPE,
+            ValueType.Pattern   => Keyword.PATTERN,
+
             _ => throw new System.Exception(),
         };
     }
@@ -61,22 +62,23 @@ public sealed partial class Type : Value, IPattern, IInvokable
 
         return Value switch
         {
-            ValueType.Void => Void.Construct(values),
-            ValueType.Null => Null.Construct(values),
-            ValueType.Bool => Bool.Construct(values),
-            ValueType.Number => Number.Construct(values ),
-            ValueType.Range => Range.Construct(values),
-            ValueType.String => String.Construct(values),
-            ValueType.Array => Array.Construct(values),
-            ValueType.Struct => Struct.Construct(values),
-            ValueType.Tuple => Tuple.Construct(values),
-            ValueType.Func => Func.Construct(values),
-            ValueType.Task => Task.Construct(values, call),
-            ValueType.Iter => Iter.Construct(values, call),
+            ValueType.Void      => Void.Construct(values),
+            ValueType.Null      => Null.Construct(values),
+            ValueType.Bool      => Bool.Construct(values),
+            ValueType.Number    => Number.Construct(values),
+            ValueType.Range     => Range.Construct(values),
+            ValueType.String    => String.Construct(values),
+            ValueType.Array     => Array.Construct(values, call),
+            ValueType.Struct    => Struct.Construct(values, call),
+            ValueType.Tuple     => Tuple.Construct(values, call),
+            ValueType.Func      => Func.Construct(values, call),
+            ValueType.Task      => Task.Construct(values, call),
+            ValueType.Iter      => Iter.Construct(values, call),
             ValueType.Reference => Reference.Construct(values),
-            ValueType.Extern => Extern.Construct(values),
-            ValueType.Type => Construct(values),
-            ValueType.Pattern => Pattern.Construct(values),
+            ValueType.Extern    => Extern.Construct(values),
+            ValueType.Type      => Type.Construct(values),
+            ValueType.Pattern   => Pattern.Construct(values),
+
             _ => throw new System.Exception()
         };
     }

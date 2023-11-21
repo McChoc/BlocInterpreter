@@ -157,7 +157,7 @@ public sealed partial class Iter : Value
             case [Struct]:
             case [Tuple]:
             {
-                var array = Array.Construct(values);
+                var array = Array.Construct(values, call);
                 var @params = new VariableCollection();
                 @params.Add(false, "items", array);
 

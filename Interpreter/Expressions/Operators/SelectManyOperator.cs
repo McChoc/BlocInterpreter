@@ -38,7 +38,7 @@ internal sealed record SelectManyOperator : IExpression
             if (!Iter.TryImplicitCast(result, out var iter, call))
                 throw new Throw("Cannot implicitly convert to iter");
 
-            values.AddRange(iter.Iterate());
+            values.AddRange(IterHelper.CheckedIterate(iter, call.Engine.Options));
         }
 
         return new Array(values);

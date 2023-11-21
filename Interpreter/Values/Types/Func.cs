@@ -191,7 +191,7 @@ public sealed partial class Func : Value, IPattern, IInvokable
         }
     }
 
-    internal static Func Construct(List<Value> values)
+    internal static Func Construct(List<Value> values, Call call)
     {
         return values switch
         {

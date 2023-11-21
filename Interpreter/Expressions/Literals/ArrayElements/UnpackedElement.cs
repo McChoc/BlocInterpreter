@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Bloc.Memory;
 using Bloc.Results;
+using Bloc.Utils.Helpers;
 using Bloc.Values.Core;
 using Bloc.Values.Types;
 
@@ -22,7 +23,6 @@ internal sealed record UnpackedElement : IElement
         if (!Iter.TryImplicitCast(value, out var iter, call))
             throw new Throw("Cannot implicitly convert to iter");
 
-        foreach (var item in iter.Iterate())
-            yield return item;
+        return IterHelper.CheckedIterate(iter, call.Engine.Options);
     }
 }

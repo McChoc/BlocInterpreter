@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Bloc.Memory;
 using Bloc.Patterns;
 using Bloc.Pointers;
 using Bloc.Results;
@@ -95,7 +96,7 @@ public sealed partial class Struct : Value, IPattern
             : Values[key];
     }
 
-    internal static Struct Construct(List<Value> values)
+    internal static Struct Construct(List<Value> values, Call call)
     {
         return values switch
         {

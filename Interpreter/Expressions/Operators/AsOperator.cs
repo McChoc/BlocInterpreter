@@ -37,22 +37,22 @@ internal sealed record AsOperator : IExpression
         {
             return type.Value switch
             {
-                ValueType.Void => Void.Construct(values),
-                ValueType.Null => Null.Construct(values),
-                ValueType.Bool => Bool.Construct(values),
-                ValueType.Number => Number.Construct(values),
-                ValueType.Range => Range.Construct(values),
-                ValueType.String => String.Construct(values),
-                ValueType.Array => Array.Construct(values),
-                ValueType.Struct => Struct.Construct(values),
-                ValueType.Tuple => Tuple.Construct(values),
-                ValueType.Func => Func.Construct(values),
-                ValueType.Task => Task.Construct(values, call),
-                ValueType.Iter => Iter.Construct(values, call),
+                ValueType.Void      => Void.Construct(values),
+                ValueType.Null      => Null.Construct(values),
+                ValueType.Bool      => Bool.Construct(values),
+                ValueType.Number    => Number.Construct(values),
+                ValueType.Range     => Range.Construct(values),
+                ValueType.String    => String.Construct(values),
+                ValueType.Array     => Array.Construct(values, call),
+                ValueType.Struct    => Struct.Construct(values, call),
+                ValueType.Tuple     => Tuple.Construct(values, call),
+                ValueType.Func      => Func.Construct(values, call),
+                ValueType.Task      => Task.Construct(values, call),
+                ValueType.Iter      => Iter.Construct(values, call),
                 ValueType.Reference => Reference.Construct(values),
-                ValueType.Extern => Extern.Construct(values),
-                ValueType.Type => Type.Construct(values),
-                ValueType.Pattern => Pattern.Construct(values),
+                ValueType.Extern    => Extern.Construct(values),
+                ValueType.Type      => Type.Construct(values),
+                ValueType.Pattern   => Pattern.Construct(values),
 
                 _ => throw new System.Exception()
             };
