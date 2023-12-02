@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Bloc.Expressions;
 using Bloc.Expressions.Operators;
+using Bloc.Expressions.Patterns;
 using Bloc.Tokens;
 using Bloc.Utils.Constants;
 using Bloc.Utils.Exceptions;
@@ -23,17 +24,35 @@ internal sealed class ParseEqualities : IParsingStep
     {
         for (int i = tokens.Count - 1; i >= 0; i--)
         {
-            if (IsEquality(tokens[i], out var @operator) && OperatorHelper.IsBinary(tokens, i))
-            {
-                if (i > tokens.Count - 1)
-                    throw new SyntaxError(@operator.Start, @operator.End, "Missing the right part of equality");
+            if (!IsEquality(tokens[i], out var @operator))
+                continue;
 
+            if (i > tokens.Count - 1)
+                throw new SyntaxError(@operator.Start, @operator.End, "Missing the right part of equality");
+
+            if (OperatorHelper.IsBinary(tokens, i))
+            {
                 var left = Parse(tokens.GetRange(..i));
                 var right = _nextStep.Parse(tokens.GetRange((i + 1)..));
 
                 return @operator.Text == Symbol.DBL_EQ
                     ? new EqualOperator(left, right)
                     : new NotEqualOperator(left, right);
+            }
+            else
+            {
+                var operand = _nextStep.Parse(tokens.GetRange((i + 1)..));
+
+                IExpression expression = @operator.Text == Symbol.DBL_EQ
+                    ? new EqualPatternLiteral(operand)
+                    : new NotEqualPatternLiteral(operand);
+
+                var parsedToken = new ParsedToken(tokens[i].Start, tokens[^1].End, expression);
+
+                tokens.RemoveRange(i..);
+                tokens.Add(parsedToken);
+
+                return Parse(tokens);
             }
         }
 

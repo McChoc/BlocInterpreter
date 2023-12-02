@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Bloc.Expressions;
 using Bloc.Expressions.Operators;
-using Bloc.Expressions.Patterns;
 using Bloc.Tokens;
 using Bloc.Utils.Constants;
 using Bloc.Utils.Exceptions;
@@ -37,23 +36,6 @@ internal sealed class ParseUnaries : IParsingStep
             };
         }
 
-        if (IsPattern(tokens[0], out @operator))
-        {
-            var operand = Parse(tokens.GetRange(1..));
-
-            return @operator.Text switch
-            {
-                Symbol.DBL_EQ => new EqualPatternLiteral(operand),
-                Symbol.MORE => new GreaterThanPatternLiteral(operand),
-                Symbol.MORE_EQ => new GreaterEqualPatternLiteral(operand),
-                Symbol.LESS => new LessThanPatternLiteral(operand),
-                Symbol.LESS_EQ => new LessEqualPatternLiteral(operand),
-                Keyword.IN => new InPatternLiteral(operand),
-                Keyword.NOT_IN => new NotInPatternLiteral(operand),
-                _ => new NotEqualPatternLiteral(operand)
-            };
-        }
-
         if (IsPrefix(tokens[0], out @operator))
         {
             var operand = Parse(tokens.GetRange(1..));
@@ -62,11 +44,11 @@ internal sealed class ParseUnaries : IParsingStep
             {
                 Symbol.PLUS         => new PositiveOperator(operand),
                 Symbol.MINUS        => new NegativeOperator(operand),
-                Symbol.TILDE      => new ComplementOperator(operand),
-                Symbol.EXCL     => new NegationOperator(operand),
-                Symbol.DBL_PLUS    => new IncrementPrefix(operand),
+                Symbol.TILDE        => new ComplementOperator(operand),
+                Symbol.EXCL         => new NegationOperator(operand),
+                Symbol.DBL_PLUS     => new IncrementPrefix(operand),
                 Symbol.DBL_MINUS    => new DecrementPrefix(operand),
-                Symbol.DBL_TILDE      => new ComplementPrefix(operand),
+                Symbol.DBL_TILDE    => new ComplementPrefix(operand),
                 Symbol.DBL_EXCL     => new NegationPrefix(operand),
                 Keyword.LEN         => new LengthOperator(operand),
                 Keyword.CHR         => new ChrOperator(operand),
@@ -93,9 +75,9 @@ internal sealed class ParseUnaries : IParsingStep
 
             return @operator.Text switch
             {
-                Symbol.DBL_PLUS    => new IncrementPostfix(operand),
+                Symbol.DBL_PLUS     => new IncrementPostfix(operand),
                 Symbol.DBL_MINUS    => new DecrementPostfix(operand),
-                Symbol.DBL_TILDE      => new ComplementPostfix(operand),
+                Symbol.DBL_TILDE    => new ComplementPostfix(operand),
                 Symbol.DBL_EXCL     => new NegationPostfix(operand),
                 _ => throw new Exception()
             };
@@ -107,32 +89,6 @@ internal sealed class ParseUnaries : IParsingStep
     private static bool IsDeclaration(IToken token, [NotNullWhen(true)] out TextToken? @operator)
     {
         if (token is KeywordToken(Keyword.LET or Keyword.LET_NEW))
-        {
-            @operator = (TextToken)token;
-            return true;
-        }
-
-        @operator = null;
-        return false;
-    }
-
-    private static bool IsPattern(IToken token, [NotNullWhen(true)] out TextToken? @operator)
-    {
-        if (token is KeywordToken(Keyword.IN or Keyword.NOT_IN))
-        {
-            @operator = (TextToken)token;
-            return true;
-        }
-
-        if (token is SymbolToken(
-            Symbol.DBL_EQ or
-            Symbol.NOT_EQ_0 or
-            Symbol.NOT_EQ_1 or
-            Symbol.NOT_EQ_2 or
-            Symbol.MORE or
-            Symbol.MORE_EQ or
-            Symbol.LESS or
-            Symbol.LESS_EQ))
         {
             @operator = (TextToken)token;
             return true;

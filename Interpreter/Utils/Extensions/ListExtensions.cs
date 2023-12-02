@@ -11,6 +11,12 @@ public static class ListExtensions
         return list.GetRange(start, length);
     }
 
+    public static void RemoveRange<T>(this List<T> list, Range range)
+    {
+        var (start, length) = range.GetOffsetAndLength(list.Count);
+        list.RemoveRange(start, length);
+    }
+
     public static List<List<T>> Split<T>(this List<T> list, T separator)
     {
         if (separator is null)
