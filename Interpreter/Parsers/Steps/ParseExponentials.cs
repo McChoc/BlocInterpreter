@@ -21,7 +21,7 @@ internal sealed class ParseExponentiations : IParsingStep
     {
         for (int i = tokens.Count - 1; i >= 0; i--)
         {
-            if (tokens[i] is SymbolToken(Symbol.POWER) @operator)
+            if (tokens[i] is SymbolToken(Symbol.DBL_STAR) @operator)
             {
                 if (i == 0)
                     throw new SyntaxError(@operator.Start, @operator.End, "Missing the left part of exponentiation");

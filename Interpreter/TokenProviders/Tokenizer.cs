@@ -77,16 +77,12 @@ internal sealed class Tokenizer : ITokenProvider
 
         if (IsNumber())
             return GetNumber();
-
         if (IsString())
             return GetString();
-
         if (IsParentheses())
             return GetParentheses();
-
         if (IsBrackets())
             return GetBrackets();
-
         if (IsBraces())
             return GetBraces();
 
@@ -94,7 +90,7 @@ internal sealed class Tokenizer : ITokenProvider
         {
             var symbol = GetSymbol();
 
-            if (symbol is not SymbolToken(Symbol.VARIABLE))
+            if (symbol is not SymbolToken(Symbol.DOLAR))
                 return symbol;
 
             if (IsParentheses())
@@ -117,7 +113,7 @@ internal sealed class Tokenizer : ITokenProvider
             (KeywordToken(Keyword.NOT), KeywordToken(Keyword.IN)) => new KeywordToken(word.Start, Next().End, Keyword.NOT_IN),
             (KeywordToken(Keyword.LET), KeywordToken(Keyword.NEW)) => new KeywordToken(word.Start, Next().End, Keyword.LET_NEW),
             (KeywordToken(Keyword.CONST), KeywordToken(Keyword.NEW)) => new KeywordToken(word.Start, Next().End, Keyword.CONST_NEW),
-            (KeywordToken(Keyword.SELECT), SymbolToken(Symbol.UNPACK_ITER)) => new KeywordToken(word.Start, Next().End, Keyword.SELECT_MANY),
+            (KeywordToken(Keyword.SELECT), SymbolToken(Symbol.STAR)) => new KeywordToken(word.Start, Next().End, Keyword.SELECT_MANY),
             _ => word
         };
     }
@@ -172,7 +168,7 @@ internal sealed class Tokenizer : ITokenProvider
         {
             skip = false;
 
-            if (_index < _code.Length - 1 && _code.Substring(_index, 2) == Symbol.COMMENT_L)
+            if (_index < _code.Length - 1 && _code.Substring(_index, 2) == Symbol.L_COMMENT)
             {
                 skip = true;
 
@@ -181,9 +177,9 @@ internal sealed class Tokenizer : ITokenProvider
                 while (true)
                 {
                     if (_index >= _code.Length - 1)
-                        throw new SyntaxError(start, start + 2, $"missing '{Symbol.COMMENT_R}'");
+                        throw new SyntaxError(start, start + 2, $"missing '{Symbol.R_COMMENT}'");
 
-                    if (_code.Substring(_index, 2) == Symbol.COMMENT_R)
+                    if (_code.Substring(_index, 2) == Symbol.R_COMMENT)
                     {
                         _index += 2;
                         break;
@@ -245,28 +241,24 @@ internal sealed class Tokenizer : ITokenProvider
     private SymbolToken GetSymbol()
     {
         int start = _index;
+        int end = _index;
 
-        while (true)
-        {
-            if (_index == _code.Length)
-                break;
+        while (_index < _code.Length && Character.ReservedCharacters.Contains(_code[_index]))
+            if (Symbol.Symbols.Contains(_code[start..++_index]))
+                end = _index;
 
-            if (Symbol.Symbols.Contains(_code[start..(_index + 1)]))
-                _index++;
-            else
-                break;
-        }
-
-        if (start == _index)
+        if (start == end)
             throw new SyntaxError(start + _offset, start + _offset + 1, "unknown symbol");
 
-        return new SymbolToken(start + _offset, _index + _offset, _code[start.._index]);
+        _index = end;
+
+        return new SymbolToken(start + _offset, end + _offset, _code[start..end]);
     }
 
     private NumberToken GetNumber()
     {
-        bool hasPeriod = false;
-        bool hasExp = false;
+        int expIndex = -1;
+        int dotIndex = -1;
 
         byte @base = 10;
 
@@ -286,60 +278,44 @@ internal sealed class Tokenizer : ITokenProvider
 
         int start = _index;
 
-        while (true)
+        do
         {
-            if (_index == _code.Length)
-                break;
-
-            if (_code[_index] == '.' && !hasPeriod && !hasExp && @base == 10)
+            switch (char.ToLower(_code[_index]))
             {
-                _index++;
-                hasPeriod = true;
-                continue;
-            }
+                case '.' when dotIndex == -1 && @base == 10:
+                    dotIndex = _index;
+                    continue;
 
-            if (char.ToLower(_code[_index]) == 'e' && !hasExp && @base == 10)
-            {
-                _index++;
-                hasExp = true;
-                continue;
-            }
+                case 'e' when expIndex == -1 && @base == 10:
+                    expIndex = _index;
+                    continue;
 
-            if ((_code[_index] == '+' || _code[_index] == '-') && _index > 0 &&
-                char.ToLower(_code[_index - 1]) == 'e' && @base == 10)
-            {
-                _index++;
-                continue;
-            }
-
-            if (char.IsLetterOrDigit(_code[_index]) || _code[_index] == '_')
-            {
-                _index++;
-                continue;
+                case '_':
+                case '0' or '1' when @base >= 2:
+                case '2' or '3' or '4' or '5' or '6' or '7' when @base >= 8:
+                case '8' or '9' when @base >= 10:
+                case 'a' or 'b' or 'c' or 'd' or 'e' or 'f' when @base >= 16:
+                case '+' or '-' when expIndex == _index - 1:
+                    continue;
             }
 
             break;
         }
+        while (++_index < _code.Length);
 
-        string num = _code[start.._index];
+        if (dotIndex == _index - 1)
+            _index--;
 
-        if (num[^1] == '_')
+        string text = _code[start.._index].Replace("_", "");
+
+        if (text == "")
             throw new SyntaxError(start + _offset, _index + _offset, "Invalid number");
 
-        num = num.Replace("_", "");
+        double number = @base == 10
+            ? double.Parse(text, CultureInfo.InvariantCulture)
+            : Convert.ToInt32(text, @base);
 
-        try
-        {
-            double number = @base == 10
-                ? double.Parse(num, CultureInfo.InvariantCulture)
-                : Convert.ToInt32(num, @base);
-
-            return new NumberToken(start + _offset, _index + _offset, number);
-        }
-        catch
-        {
-            throw new SyntaxError(start + _offset, _index + _offset, "Invalid number");
-        }
+        return new NumberToken(start + _offset, _index + _offset, number);
     }
 
     private StringToken GetString()
@@ -450,7 +426,7 @@ internal sealed class Tokenizer : ITokenProvider
             int depth = 0;
             int start = _index;
 
-            while (true)
+            do
             {
                 if (_index == _code.Length)
                     throw new SyntaxError(start + _offset, _index + _offset, "Missing '}'");
@@ -461,10 +437,8 @@ internal sealed class Tokenizer : ITokenProvider
                     depth--;
 
                 _index++;
-
-                if (depth == 0)
-                    break;
             }
+            while (depth > 0);
 
             string text = _code[(start + 1)..(_index - 1)];
 
@@ -521,7 +495,7 @@ internal sealed class Tokenizer : ITokenProvider
         int depth = 0;
         int start = _index;
 
-        while (true)
+        do
         {
             if (_index == _code.Length)
                 throw new SyntaxError(_index + _offset - 1, _index + _offset, $"Missing closing {close}");
@@ -532,10 +506,8 @@ internal sealed class Tokenizer : ITokenProvider
                 depth--;
 
             _index++;
-
-            if (depth == 0)
-                break;
         }
+        while (depth > 0);
 
         return _code[(start + 1)..(_index - 1)];
     }

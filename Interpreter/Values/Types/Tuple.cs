@@ -124,9 +124,11 @@ public sealed partial class Tuple : Value, IPattern
 
             [Range range] => new(new List<Value>()
             {
-                range.Start is int start ? new Number(start) : Null.Value,
-                range.Stop is int stop ? new Number(stop) : Null.Value,
-                range.Step is int step ? new Number(step) : Null.Value
+                range.Start.Value is double start ? new Number(start) : Null.Value,
+                range.Stop.Value is double stop ? new Number(stop) : Null.Value,
+                range.Step is double step ? new Number(step) : Null.Value,
+                new Bool(range.Start.Inclusive),
+                new Bool(range.Stop.Inclusive),
             }),
 
             [_] => throw new Throw($"'tuple' does not have a constructor that takes a '{values[0].GetTypeName()}'"),

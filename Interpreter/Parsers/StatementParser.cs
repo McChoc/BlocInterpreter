@@ -40,7 +40,7 @@ internal static class StatementParser
 
         var statement = provider.Peek() switch
         {
-            SymbolToken(Symbol.SEMICOLON) => GetEmptyStatement(provider),
+            SymbolToken(Symbol.SEMI) => GetEmptyStatement(provider),
 
             SymbolToken(Symbol.SLASH) => GetCommandStatement(provider),
             KeywordToken(Keyword.EXEC) => GetExecStatement(provider),
@@ -98,32 +98,32 @@ internal static class StatementParser
     {
         switch (provider.PeekRange(3))
         {
-            case [KeywordToken(Keyword.NEW), KeywordToken(Keyword.GLOBAL), KeywordToken(Keyword.VAR or Keyword.CONST)]:
-            case [KeywordToken(Keyword.GLOBAL), KeywordToken(Keyword.NEW), KeywordToken(Keyword.VAR or Keyword.CONST)]:
+            case [KeywordToken(Keyword.NEW), WordToken(Keyword.GLOBAL), KeywordToken(Keyword.VAR or Keyword.CONST)]:
+            case [WordToken(Keyword.GLOBAL), KeywordToken(Keyword.NEW), KeywordToken(Keyword.VAR or Keyword.CONST)]:
                 provider.Skip(2);
                 return (default, true, VariableScope.Global);
 
-            case [KeywordToken(Keyword.NEW), KeywordToken(Keyword.TOPLVL), KeywordToken(Keyword.VAR or Keyword.CONST)]:
-            case [KeywordToken(Keyword.TOPLVL), KeywordToken(Keyword.NEW), KeywordToken(Keyword.VAR or Keyword.CONST)]:
+            case [KeywordToken(Keyword.NEW), WordToken(Keyword.TOPLVL), KeywordToken(Keyword.VAR or Keyword.CONST)]:
+            case [WordToken(Keyword.TOPLVL), KeywordToken(Keyword.NEW), KeywordToken(Keyword.VAR or Keyword.CONST)]:
                 provider.Skip(2);
                 return (default, true, VariableScope.Module);
         }
 
         switch (provider.PeekRange(2))
         {
-            case [KeywordToken(Keyword.GLOBAL), KeywordToken(Keyword.IMPORT)]:
+            case [WordToken(Keyword.GLOBAL), KeywordToken(Keyword.IMPORT)]:
                 provider.Skip();
                 return (default, default, VariableScope.Global);
 
-            case [KeywordToken(Keyword.TOPLVL), KeywordToken(Keyword.IMPORT)]:
+            case [WordToken(Keyword.TOPLVL), KeywordToken(Keyword.IMPORT)]:
                 provider.Skip();
                 return (default, default, VariableScope.Module);
 
-            case [KeywordToken(Keyword.GLOBAL), KeywordToken(Keyword.VAR or Keyword.CONST)]:
+            case [WordToken(Keyword.GLOBAL), KeywordToken(Keyword.VAR or Keyword.CONST)]:
                 provider.Skip();
                 return (default, false, VariableScope.Global);
 
-            case [KeywordToken(Keyword.TOPLVL), KeywordToken(Keyword.VAR or Keyword.CONST)]:
+            case [WordToken(Keyword.TOPLVL), KeywordToken(Keyword.VAR or Keyword.CONST)]:
                 provider.Skip();
                 return (default, false, VariableScope.Module);
 
@@ -205,7 +205,7 @@ internal static class StatementParser
             if (tokens.Count == 0)
                 throw new SyntaxError(keyword.Start, keyword.End, "Missing identifier");
 
-            int index = tokens.FindIndex(x => x is SymbolToken(Symbol.ASSIGN));
+            int index = tokens.FindIndex(x => x is SymbolToken(Symbol.EQUAL));
 
             if (index == 0)
                 throw new SyntaxError(tokens[0].Start, tokens[^1].End, "Missing identifier");
@@ -239,7 +239,7 @@ internal static class StatementParser
             if (tokens.Count == 0)
                 throw new SyntaxError(keyword.Start, keyword.End, "Missing identifier");
 
-            int index = tokens.FindIndex(x => x is SymbolToken(Symbol.ASSIGN));
+            int index = tokens.FindIndex(x => x is SymbolToken(Symbol.EQUAL));
 
             if (index == 0)
                 throw new SyntaxError(tokens[0].Start, tokens[^1].End, "Missing identifier");
@@ -265,7 +265,7 @@ internal static class StatementParser
         var keyword = provider.Next();
         var line = GetLine(provider);
 
-        if (line is [SymbolToken(Symbol.TIMES), KeywordToken(Keyword.FROM), ..])
+        if (line is [SymbolToken(Symbol.STAR), KeywordToken(Keyword.FROM), ..])
             return GetImportAllFromStatement(line, scope);
         else if (line.Any(x => x is KeywordToken(Keyword.FROM)))
             return GetImportFromStatement(line, scope);
@@ -339,7 +339,7 @@ internal static class StatementParser
         var keyword = provider.Next();
         var line = GetLine(provider);
 
-        if (line is [SymbolToken(Symbol.TIMES), KeywordToken(Keyword.FROM), ..])
+        if (line is [SymbolToken(Symbol.STAR), KeywordToken(Keyword.FROM), ..])
             return GetExportAllFromStatement(line);
         else if (line.Any(x => x is KeywordToken(Keyword.FROM)))
             return GetExportFromStatement(line);
@@ -449,7 +449,7 @@ internal static class StatementParser
         var expression = GetExpression(provider, keyword);
 
         if (!provider.HasNext() || provider.Next() is not BracesToken braces)
-            throw new SyntaxError(keyword.Start, keyword.End, $"Missing '{Symbol.BRACE_L}'");
+            throw new SyntaxError(keyword.Start, keyword.End, $"Missing '{Symbol.L_BRACE}'");
 
         var cases = new List<SwitchStatement.Case>();
         Statement? @default = null;
@@ -511,7 +511,7 @@ internal static class StatementParser
 
         var expression = GetExpression(provider, keyword);
 
-        if (!provider.HasNext() || provider.Next() is not SymbolToken(Symbol.SEMICOLON))
+        if (!provider.HasNext() || provider.Next() is not SymbolToken(Symbol.SEMI))
             throw new MissingSemicolonError(keyword.Start, keyword.End);
 
         return new WhileStatement(@checked, keyword.Text == Keyword.UNTIL, true)
@@ -526,13 +526,13 @@ internal static class StatementParser
         var keyword = provider.Next();
 
         if (!provider.HasNext() || provider.Next() is not ParenthesesToken expression)
-            throw new SyntaxError(keyword.Start, keyword.End, $"Missing '{Symbol.PAREN_L}'");
+            throw new SyntaxError(keyword.Start, keyword.End, $"Missing '{Symbol.L_PAREN}'");
 
         var tokens = expression.Tokens;
-        var parts = tokens.Split(x => x is SymbolToken(Symbol.SEMICOLON));
+        var parts = tokens.Split(x => x is SymbolToken(Symbol.SEMI));
 
         if (parts.Count != 3)
-            throw new SyntaxError(expression.Start, expression.End, $"Missing '{Symbol.PAREN_R}'");
+            throw new SyntaxError(expression.Start, expression.End, $"Missing '{Symbol.R_PAREN}'");
 
         return new ForStatement(@checked)
         {
@@ -548,7 +548,7 @@ internal static class StatementParser
         var keyword = provider.Next();
 
         if (!provider.HasNext() || provider.Next() is not ParenthesesToken expression)
-            throw new SyntaxError(keyword.Start, keyword.End, $"Missing '{Symbol.PAREN_L}'");
+            throw new SyntaxError(keyword.Start, keyword.End, $"Missing '{Symbol.L_PAREN}'");
 
         var tokens = expression.Tokens;
 
@@ -623,7 +623,7 @@ internal static class StatementParser
                 throw new SyntaxError(keyword.Start, keyword.End, "There cannot be another catch clause after the general catch");
 
             if (!provider.HasNext() || provider.Next() is not ParenthesesToken parentheses)
-                throw new SyntaxError(keyword.Start, keyword.End, $"Missing '{Symbol.PAREN_L}'");
+                throw new SyntaxError(keyword.Start, keyword.End, $"Missing '{Symbol.L_PAREN}'");
 
             var identifier = parentheses.Tokens.Count > 1
                 ? IdentifierParser.Parse(parentheses.Tokens)
@@ -671,7 +671,7 @@ internal static class StatementParser
 
         return line switch
         {
-            [_, SymbolToken(Symbol.UNPACK_ITER), ..] => new YieldManyStatement(ExpressionParser.Parse(line.GetRange(2..))),
+            [_, SymbolToken(Symbol.STAR), ..] => new YieldManyStatement(ExpressionParser.Parse(line.GetRange(2..))),
             [_, ..] => new YieldStatement(ExpressionParser.Parse(line.GetRange(1..))),
             _ => throw new SyntaxError(0, 0, "Missing expression")
         };
@@ -729,7 +729,7 @@ internal static class StatementParser
     private static IExpression GetExpression(ITokenProvider provider, IToken keyword)
     {
         if (!provider.HasNext() || provider.Next() is not ParenthesesToken expression)
-            throw new SyntaxError(keyword.Start, keyword.End, $"Missing '{Symbol.PAREN_L}'");
+            throw new SyntaxError(keyword.Start, keyword.End, $"Missing '{Symbol.L_PAREN}'");
 
         return ExpressionParser.Parse(expression.Tokens);
     }
@@ -742,7 +742,7 @@ internal static class StatementParser
         {
             var token = provider.Next();
 
-            if (token is SymbolToken(Symbol.SEMICOLON))
+            if (token is SymbolToken(Symbol.SEMI))
                 return line;
 
             line.Add(token);

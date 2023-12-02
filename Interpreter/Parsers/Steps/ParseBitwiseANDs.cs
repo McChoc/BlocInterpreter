@@ -21,7 +21,7 @@ internal sealed class ParseBitwiseANDs : IParsingStep
     {
         for (int i = tokens.Count - 1; i >= 0; i--)
         {
-            if (tokens[i] is SymbolToken(Symbol.BIT_AND) @operator)
+            if (tokens[i] is SymbolToken(Symbol.AMP) @operator)
             {
                 if (i == 0)
                     throw new SyntaxError(@operator.Start, @operator.End, "Missing the left part of logical AND");

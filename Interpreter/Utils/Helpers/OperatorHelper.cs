@@ -19,8 +19,11 @@ internal static class OperatorHelper
     {
         for (int i = index - 1; i >= 0; i--)
         {
-            if (tokens[i] is SymbolToken(Symbol.INCREMENT or Symbol.DECREMENT or Symbol.BIT_INV or Symbol.BOOL_INV))
+            if (tokens[i] is SymbolToken(Symbol.DBL_PLUS or Symbol.DBL_MINUS or Symbol.DBL_TILDE or Symbol.DBL_EXCL))
                 continue;
+
+            if (tokens[i] is SymbolToken(Symbol.RANGE_INC_INC or Symbol.RANGE_INC_EXC or Symbol.RANGE_EXC_INC or Symbol.RANGE_EXC_EXC))
+                return true;
 
             return tokens[i] is not SymbolToken and not KeywordToken;
         }

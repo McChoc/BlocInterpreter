@@ -55,10 +55,10 @@ internal sealed class ParseRelations : IParsingStep
 
                 return @operator.Text switch
                 {
-                    Symbol.LESS_THAN => new LessThanOperator(left, right),
-                    Symbol.LESS_EQUAL => new LessEqualOperator(left, right),
-                    Symbol.MORE_THAN => new GreaterThanOperator(left, right),
-                    Symbol.MORE_EQUAL => new GreaterEqualOperator(left, right),
+                    Symbol.LESS => new LessThanOperator(left, right),
+                    Symbol.LESS_EQ => new LessEqualOperator(left, right),
+                    Symbol.MORE => new GreaterThanOperator(left, right),
+                    Symbol.MORE_EQ => new GreaterEqualOperator(left, right),
                     Keyword.IN => new InOperator(left, right),
                     Keyword.NOT_IN => new NotInOperator(left, right),
                     _ => throw new Exception()
@@ -86,7 +86,7 @@ internal sealed class ParseRelations : IParsingStep
     private static bool IsRelation(IToken token, [NotNullWhen(true)] out TextToken? @operator)
     {
         if (token is
-            SymbolToken(Symbol.LESS_THAN or Symbol.LESS_EQUAL or Symbol.MORE_THAN or Symbol.MORE_EQUAL) or
+            SymbolToken(Symbol.LESS or Symbol.LESS_EQ or Symbol.MORE or Symbol.MORE_EQ) or
             KeywordToken(Keyword.IN or Keyword.NOT_IN))
         {
             @operator = (TextToken)token;

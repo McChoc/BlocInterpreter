@@ -42,6 +42,11 @@ internal static class Keyword
 
     [SoftKeyword] internal const string DISCARD = "_";
     [SoftKeyword] internal const string ASYNC = "async";
+    [SoftKeyword] internal const string GLOBAL = "global";
+    [SoftKeyword] internal const string LOCAL = "local";
+    [SoftKeyword] internal const string OUTER = "outer";
+    [SoftKeyword] internal const string PARAM = "param";
+    [SoftKeyword] internal const string TOPLVL = "toplvl";
     [SoftKeyword] internal const string UNCHECKED = "unchecked";
 
     #endregion
@@ -67,7 +72,6 @@ internal static class Keyword
     [HardKeyword] internal const string FOR = "for";
     [HardKeyword] internal const string FOREACH = "foreach";
     [HardKeyword] internal const string FROM = "from";
-    [HardKeyword] internal const string GLOBAL = "global";
     [HardKeyword] internal const string GOTO = "goto";
     [HardKeyword] internal const string GROUPBY = "groupby";
     [HardKeyword] internal const string IF = "if";
@@ -76,7 +80,6 @@ internal static class Keyword
     [HardKeyword] internal const string IS = "is";
     [HardKeyword] internal const string LEN = "len";
     [HardKeyword] internal const string LET = "let";
-    [HardKeyword] internal const string LOCAL = "local";
     [HardKeyword] internal const string LOCK = "lock";
     [HardKeyword] internal const string LOOP = "loop";
     [HardKeyword] internal const string LVAL = "lval";
@@ -86,8 +89,6 @@ internal static class Keyword
     [HardKeyword] internal const string NOT = "not";
     [HardKeyword] internal const string ORD = "ord";
     [HardKeyword] internal const string ORDERBY = "orderby";
-    [HardKeyword] internal const string OUTER = "outer";
-    [HardKeyword] internal const string PARAM = "param";
     [HardKeyword] internal const string REF = "ref";
     [HardKeyword] internal const string REPEAT = "repeat";
     [HardKeyword] internal const string RETURN = "return";
@@ -95,7 +96,6 @@ internal static class Keyword
     [HardKeyword] internal const string SELECT = "select";
     [HardKeyword] internal const string SWITCH = "switch";
     [HardKeyword] internal const string THROW = "throw";
-    [HardKeyword] internal const string TOPLVL = "toplvl";
     [HardKeyword] internal const string TRY = "try";
     [HardKeyword] internal const string TYPEOF = "typeof";
     [HardKeyword] internal const string UNLESS = "unless";
@@ -115,7 +115,7 @@ internal static class Keyword
     [CompositeKeyword] internal const string NOT_IN = $"{NOT} {IN}";
     [CompositeKeyword] internal const string LET_NEW = $"{LET} {NEW}";
     [CompositeKeyword] internal const string CONST_NEW = $"{CONST} {NEW}";
-    [CompositeKeyword] internal const string SELECT_MANY = $"{SELECT} {Symbol.UNPACK_ITER}";
+    [CompositeKeyword] internal const string SELECT_MANY = $"{SELECT} {Symbol.STAR}";
 
     #endregion
 

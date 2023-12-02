@@ -19,36 +19,47 @@ internal sealed class ParseConditionals : IParsingStep
 
     public IExpression Parse(List<IToken> tokens)
     {
+        int firstIndex = -1, secondIndex = -1;
+
         for (int i = 0; i < tokens.Count; i++)
         {
             if (tokens[i] is SymbolToken(Symbol.QUESTION))
             {
-                int depth = 0;
-
-                for (int j = i; j < tokens.Count; j++)
-                {
-                    if (tokens[j] is SymbolToken(Symbol.QUESTION))
-                        depth++;
-
-                    if (tokens[j] is SymbolToken(Symbol.COLON))
-                    {
-                        depth--;
-
-                        if (depth == 0)
-                        {
-                            var condition = _nextStep.Parse(tokens.GetRange(..i));
-                            var consequent = Parse(tokens.GetRange((i + 1)..j));
-                            var alternative = Parse(tokens.GetRange((j + 1)..));
-
-                            return new ConditionalOperator(condition, consequent, alternative);
-                        }
-                    }
-                }
-
-                throw new SyntaxError(tokens[^1].Start, tokens[^1].End, "Missing ':'");
+                firstIndex = i;
+                break;
             }
         }
 
-        return _nextStep.Parse(tokens);
+        if (firstIndex == -1)
+            return _nextStep.Parse(tokens);
+
+        int depth = 1;
+
+        for (int i = firstIndex + 1; i < tokens.Count; i++)
+        {
+            if (tokens[i] is SymbolToken(Symbol.QUESTION))
+                depth++;
+
+            if (tokens[i] is SymbolToken(Symbol.COLON))
+            {
+                switch (--depth)
+                {
+                    case 0:
+                        secondIndex = i;
+                        break;
+                    case < 0:
+                        throw new SyntaxError(tokens[i].Start, tokens[i].End, "Unexpected symbol ':'");
+                }
+            }
+        }
+
+        if (secondIndex == -1)
+            throw new SyntaxError(tokens[^1].Start, tokens[^1].End, "Missing ':'");
+
+        var condition = _nextStep.Parse(tokens.GetRange(..firstIndex));
+        var consequent = Parse(tokens.GetRange((firstIndex + 1)..secondIndex));
+        var alternative = Parse(tokens.GetRange((secondIndex + 1)..));
+
+        return new ConditionalOperator(condition, consequent, alternative);
     }
 }

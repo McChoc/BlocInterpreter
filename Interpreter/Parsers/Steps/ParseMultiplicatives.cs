@@ -36,10 +36,10 @@ internal sealed class ParseMultiplicatives : IParsingStep
 
                 return @operator.Text switch
                 {
-                    Symbol.TIMES =>     new MultiplicationOperator(left, right),
+                    Symbol.STAR =>     new MultiplicationOperator(left, right),
                     Symbol.SLASH =>     new DivisionOperator(left, right),
-                    Symbol.REMAINDER => new RemainderOperator(left, right),
-                    Symbol.MODULO =>    new ModuloOperator(left, right),
+                    Symbol.PERCENT => new RemainderOperator(left, right),
+                    Symbol.DBL_PERCENT =>    new ModuloOperator(left, right),
                     _ => throw new Exception()
                 };
             }
@@ -51,10 +51,10 @@ internal sealed class ParseMultiplicatives : IParsingStep
     private static bool IsMultiplicative(IToken token, [NotNullWhen(true)] out TextToken? @operator)
     {
         if (token is SymbolToken(
-            Symbol.TIMES or
+            Symbol.STAR or
             Symbol.SLASH or
-            Symbol.REMAINDER or
-            Symbol.MODULO))
+            Symbol.PERCENT or
+            Symbol.DBL_PERCENT))
         {
             @operator = (TextToken)token;
             return true;

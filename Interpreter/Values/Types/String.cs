@@ -63,10 +63,13 @@ public sealed partial class String : Value, IPattern, IIndexable
 
     private IEnumerable<char> IndexByRange(Range range)
     {
-        var (start, stop, step) = RangeHelper.Deconstruct(range, Value.Length);
+        var (count, start, step) = RangeHelper.GetSliceParameters(range, Value.Length);
 
-        for (int i = start; i != stop && i < stop == step > 0; i += step)
-            yield return Value[i];
+        for (int i = 0; i < count; i++)
+        {
+            int index = NumberHelper.Round(start + step * i);
+            yield return Value[index];
+        }
     }
 
     private IEnumerable<char> IndexByTuple(Tuple tuple)

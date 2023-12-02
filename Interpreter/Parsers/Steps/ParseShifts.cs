@@ -36,8 +36,8 @@ internal sealed class ParseShifts : IParsingStep
 
                 return @operator.Text switch
                 {
-                    Symbol.SHIFT_L => new LeftShiftOperator(left, right),
-                    Symbol.SHIFT_R => new RightShiftOperator(left, right),
+                    Symbol.L_SHIFT => new LeftShiftOperator(left, right),
+                    Symbol.R_SHIFT => new RightShiftOperator(left, right),
                     _ => throw new Exception()
                 };
             }
@@ -48,7 +48,7 @@ internal sealed class ParseShifts : IParsingStep
 
     private static bool IsShift(IToken token, [NotNullWhen(true)] out TextToken? @operator)
     {
-        if (token is SymbolToken(Symbol.SHIFT_L or Symbol.SHIFT_R))
+        if (token is SymbolToken(Symbol.L_SHIFT or Symbol.R_SHIFT))
         {
             @operator = (TextToken)token;
             return true;

@@ -155,10 +155,13 @@ public sealed partial class Array : Value, IIndexable, IPattern
 
     private IEnumerable<IValue> IndexByRange(Range range)
     {
-        var (start, stop, step) = RangeHelper.Deconstruct(range, Values.Count);
+        var (count, start, step) = RangeHelper.GetSliceParameters(range, Values.Count);
 
-        for (int i = start; i != stop && i < stop == step > 0; i += step)
-            yield return Values[i];
+        for (int i = 0; i < count; i++)
+        {
+            int index = NumberHelper.Round(start + step * i);
+            yield return Values[index];
+        }
     }
 
     private IEnumerable<IValue> IndexByTuple(Tuple tuple)
@@ -205,18 +208,33 @@ public sealed partial class Array : Value, IIndexable, IPattern
     private static Array Construct(Range range, Call call)
     {
         var values = new List<Value>();
+        var (start, stop, step) = RangeHelper.GetLoopParameters(range);
 
-        var (start, stop, step) = RangeHelper.Deconstruct(range);
-
-        for (var (i, loopCount) = (start, 0); i != stop && i < stop == step > 0; i += step, loopCount++)
+        if (step != 0 && !double.IsNaN(step) && !double.IsInfinity(step))
         {
-            if (loopCount > call.Engine.Options.LoopLimit)
-                throw new Throw("The loop limit was reached.");
+            int loopCount = 0;
 
-            values.Add(new Number(i));
+            if (!range.Start.Inclusive)
+                start += step;
+
+            for (double i = start; ShouldContinue(i); i += step)
+            {
+                if (loopCount++ > call.Engine.Options.LoopLimit)
+                    throw new Throw("The loop limit was reached.");
+
+                values.Add(new Number(i));
+            }
         }
 
         return new Array(values);
+
+        bool ShouldContinue(double i) => (step, range.Stop.Inclusive) switch
+        {
+            (< 0, false) => i > stop,
+            (< 0, true) => i >= stop,
+            (_, false) => i < stop,
+            (_, true) => i <= stop,
+        };
     }
 
     private static Array Construct(Iter iter, Call call)

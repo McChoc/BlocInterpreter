@@ -31,7 +31,7 @@ internal sealed class ParseEqualities : IParsingStep
                 var left = Parse(tokens.GetRange(..i));
                 var right = _nextStep.Parse(tokens.GetRange((i + 1)..));
 
-                return @operator.Text == Symbol.IS_EQUAL
+                return @operator.Text == Symbol.DBL_EQ
                     ? new EqualOperator(left, right)
                     : new NotEqualOperator(left, right);
             }
@@ -42,7 +42,7 @@ internal sealed class ParseEqualities : IParsingStep
 
     private static bool IsEquality(IToken token, [NotNullWhen(true)] out TextToken? @operator)
     {
-        if (token is SymbolToken(Symbol.IS_EQUAL or Symbol.NOT_EQUAL_0 or Symbol.NOT_EQUAL_1 or Symbol.NOT_EQUAL_2))
+        if (token is SymbolToken(Symbol.DBL_EQ or Symbol.NOT_EQ_0 or Symbol.NOT_EQ_1 or Symbol.NOT_EQ_2))
         {
             @operator = (TextToken)token;
             return true;

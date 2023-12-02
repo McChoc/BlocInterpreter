@@ -135,28 +135,34 @@ public sealed partial class Iter : Value
                 return iter;
 
             case [Range range]:
-            {
-                var (start, stop, step) = RangeHelper.Deconstruct(range);
+                var statements = new List<Statement>();
+                var (start, stop, step) = RangeHelper.GetLoopParameters(range);
 
-                return new Iter(new Call(call, new(), new(), new()), new()
+                if (step != 0 && !double.IsNaN(step) && !double.IsInfinity(step))
                 {
-                    new ForStatement(false)
+                    statements.Add(new ForStatement(false)
                     {
-                        Initialisation = new AssignmentOperator(new LetOperator(new StaticIdentifier("i")), new NumberLiteral(start)),
-                        Condition = step < 0
-                            ? new GreaterThanOperator(new NamedIdentifierExpression(new StaticIdentifier("i")), new NumberLiteral(stop))
-                            : new LessThanOperator(new NamedIdentifierExpression(new StaticIdentifier("i")), new NumberLiteral(stop)),
+                        Initialisation = range.Start.Inclusive
+                            ? new AssignmentOperator(new LetOperator(new StaticIdentifier("i")), new NumberLiteral(start))
+                            : new AssignmentOperator(new LetOperator(new StaticIdentifier("i")), new NumberLiteral(start + step)),
+                        Condition = (step, range.Stop.Inclusive) switch
+                        {
+                            ( < 0, false) => new GreaterThanOperator(new NamedIdentifierExpression(new StaticIdentifier("i")), new NumberLiteral(stop)),
+                            ( < 0, true) => new GreaterEqualOperator(new NamedIdentifierExpression(new StaticIdentifier("i")), new NumberLiteral(stop)),
+                            (_, false) => new LessThanOperator(new NamedIdentifierExpression(new StaticIdentifier("i")), new NumberLiteral(stop)),
+                            (_, true) => new LessEqualOperator(new NamedIdentifierExpression(new StaticIdentifier("i")), new NumberLiteral(stop))
+                        },
                         Increment = new AdditionAssignment(new NamedIdentifierExpression(new StaticIdentifier("i")), new NumberLiteral(step)),
                         Statement = new YieldStatement(new NamedIdentifierExpression(new StaticIdentifier("i")))
-                    }
-                });
-            }
+                    });
+                }
+
+                return new Iter(new Call(call, new(), new(), new()), statements);
 
             case [String]:
             case [Array]:
             case [Struct]:
             case [Tuple]:
-            {
                 var array = Array.Construct(values, call);
                 var @params = new VariableCollection();
                 @params.Add(false, "items", array);
@@ -174,7 +180,6 @@ public sealed partial class Iter : Value
                         }))
                     }
                 });
-            }
 
             case [_]:
                 throw new Throw($"'iter' does not have a constructor that takes a '{values[0].GetTypeName()}'");

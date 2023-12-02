@@ -26,7 +26,7 @@ internal sealed class ParseFuncs : IParsingStep
     {
         for (int i = 0; i < tokens.Count; i++)
         {
-            if (tokens[i] is not SymbolToken(Symbol.LAMBDA) @operator)
+            if (tokens[i] is not SymbolToken(Symbol.ARROW) @operator)
                 continue;
 
             if (i == 0)
@@ -69,17 +69,17 @@ internal sealed class ParseFuncs : IParsingStep
                         case []:
                             throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COMMA}'");
 
-                        case [SymbolToken(Symbol.UNPACK_ITER), INamedIdentifierToken] when packingParameterIdentifier is not null:
+                        case [SymbolToken(Symbol.STAR), INamedIdentifierToken] when packingParameterIdentifier is not null:
                             throw new SyntaxError(0, 0, "The iterable unpack syntax may only be used once in a function literal");
 
-                        case [SymbolToken(Symbol.UNPACK_ITER), INamedIdentifierToken token]:
+                        case [SymbolToken(Symbol.STAR), INamedIdentifierToken token]:
                             packingParameterIdentifier = token.GetIdentifier();
                             break;
 
-                        case [SymbolToken(Symbol.UNPACK_STRUCT), INamedIdentifierToken] when kwPackingParameterIdentifier is not null:
+                        case [SymbolToken(Symbol.DBL_STAR), INamedIdentifierToken] when kwPackingParameterIdentifier is not null:
                             throw new SyntaxError(0, 0, "The struct unpack syntax may only be used once in a function literal");
 
-                        case [SymbolToken(Symbol.UNPACK_STRUCT), INamedIdentifierToken token]:
+                        case [SymbolToken(Symbol.DBL_STAR), INamedIdentifierToken token]:
                             kwPackingParameterIdentifier = token.GetIdentifier();
                             break;
 
@@ -92,7 +92,7 @@ internal sealed class ParseFuncs : IParsingStep
                             break;
                         }
 
-                        case [INamedIdentifierToken token, SymbolToken(Symbol.ASSIGN), _, ..]:
+                        case [INamedIdentifierToken token, SymbolToken(Symbol.EQUAL), _, ..]:
                         {
                             var identifier = token.GetIdentifier();
                             var defaultValueTokens = part.GetRange(2..);
@@ -103,7 +103,7 @@ internal sealed class ParseFuncs : IParsingStep
                             break;
                         }
 
-                        case [SymbolToken(Symbol.BIT_OR), INamedIdentifierToken token]:
+                        case [SymbolToken(Symbol.BAR), INamedIdentifierToken token]:
                         {
                             var identifier = token.GetIdentifier();
 
@@ -112,7 +112,7 @@ internal sealed class ParseFuncs : IParsingStep
                             break;
                         }
 
-                        case [SymbolToken(Symbol.BIT_OR) , INamedIdentifierToken token, SymbolToken(Symbol.ASSIGN), _, ..]:
+                        case [SymbolToken(Symbol.BAR) , INamedIdentifierToken token, SymbolToken(Symbol.EQUAL), _, ..]:
                         {
                             var identifier = token.GetIdentifier();
                             var defaultValueTokens = part.GetRange(3..);
@@ -123,7 +123,7 @@ internal sealed class ParseFuncs : IParsingStep
                             break;
                         }
 
-                        case [SymbolToken(Symbol.BIT_AND), INamedIdentifierToken token]:
+                        case [SymbolToken(Symbol.AMP), INamedIdentifierToken token]:
                         {
                             var identifier = token.GetIdentifier();
 
@@ -132,7 +132,7 @@ internal sealed class ParseFuncs : IParsingStep
                             break;
                         }
 
-                        case [SymbolToken(Symbol.BIT_AND) , INamedIdentifierToken token, SymbolToken(Symbol.ASSIGN), _, ..]:
+                        case [SymbolToken(Symbol.AMP) , INamedIdentifierToken token, SymbolToken(Symbol.EQUAL), _, ..]:
                         {
                             var identifier = token.GetIdentifier();
                             var defaultValueTokens = part.GetRange(3..);
@@ -156,13 +156,13 @@ internal sealed class ParseFuncs : IParsingStep
 
             while (j >= 0)
             {
-                if (tokens[j] is SymbolToken(Symbol.UNPACK_ITER))
+                if (tokens[j] is SymbolToken(Symbol.STAR))
                 {
                     if (type == FuncType.Asynchronous)
                         throw new SyntaxError(tokens[j].Start, tokens[j].End, "A generator cannot be async");
 
                     if (type == FuncType.Generator)
-                        throw new SyntaxError(tokens[j].Start, tokens[j].End, $"'{Symbol.UNPACK_ITER}' modifier doubled");
+                        throw new SyntaxError(tokens[j].Start, tokens[j].End, $"'{Symbol.STAR}' modifier doubled");
 
                     type = FuncType.Generator;
                 }

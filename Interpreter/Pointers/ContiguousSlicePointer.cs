@@ -11,12 +11,12 @@ namespace Bloc.Pointers;
 public sealed class ContiguousSlicePointer : Pointer
 {
     private readonly Array _array;
-    private readonly int _start, _stop;
+    private readonly Range _range;
 
     internal ContiguousSlicePointer(Array array, Range range)
     {
         _array = array;
-        (_start, _stop, _) = RangeHelper.Deconstruct(range, array.Values.Count);
+        _range = range;
     }
 
     public override Value Get()
@@ -36,10 +36,11 @@ public sealed class ContiguousSlicePointer : Pointer
         foreach (var variable in GetVariables())
             variable.Delete(false);
 
-        var values = array.Values
-            .Select(x => new ArrayVariable(x.Value.GetOrCopy(true), _array));
+        var (_, start, _) = RangeHelper.GetSliceParameters(_range, _array.Values.Count);
+        int index = NumberHelper.Round(start);
+        var values = array.Values.Select(x => new ArrayVariable(x.Value.GetOrCopy(true), _array));
 
-        _array.Values.InsertRange(_start, values);
+        _array.Values.InsertRange(index, values);
 
         return array;
     }
@@ -60,9 +61,17 @@ public sealed class ContiguousSlicePointer : Pointer
     private List<ArrayVariable> GetVariables()
     {
         var variables = new List<ArrayVariable>();
+        var (count, start, step) = RangeHelper.GetSliceParameters(_range, _array.Values.Count);
 
-        for (int i = _start; i < _stop; i++)
-            variables.Add((ArrayVariable)_array.Values[i]);
+        if (!double.IsNaN(step))
+        {
+            for (int i = 0; i < count; i++)
+            {
+                int index = NumberHelper.Round(start + step * i);
+                var variable = (ArrayVariable)_array.Values[index];
+                variables.Add(variable);
+            }
+        }
 
         return variables;
     }

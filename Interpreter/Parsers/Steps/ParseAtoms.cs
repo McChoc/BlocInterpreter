@@ -97,9 +97,9 @@ internal sealed class ParseAtoms : IParsingStep
         {
             case []:
                 throw new SyntaxError(token.End - 1, token.End, "Unexpected symbol '}'");
-            case [SymbolToken(Symbol.BIT_OR)]:
+            case [SymbolToken(Symbol.BAR)]:
                 return new ArrayLiteral(new());
-            case [SymbolToken(Symbol.BIT_AND)]:
+            case [SymbolToken(Symbol.AMP)]:
                 return new StructLiteral(new());
         }
 
@@ -126,7 +126,7 @@ internal sealed class ParseAtoms : IParsingStep
                     throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COMMA}'");
                 case [INamedIdentifierToken]:
                     continue;
-                case [SymbolToken(Symbol.UNPACK_STRUCT), ..]:
+                case [SymbolToken(Symbol.DBL_STAR), ..]:
                 case [INamedIdentifierToken, SymbolToken(Symbol.COLON), ..]:
                     return BracesToken.ContentType.Struct;
                 default:
@@ -147,8 +147,8 @@ internal sealed class ParseAtoms : IParsingStep
             {
                 [] => throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COMMA}'"),
                 [INamedIdentifierToken, SymbolToken(Symbol.COLON), ..] => throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COLON}'"),
-                [SymbolToken(Symbol.UNPACK_ITER)] => throw new SyntaxError(0, 0, "Missing value"),
-                [SymbolToken(Symbol.UNPACK_ITER), ..] => new UnpackedElement(ExpressionParser.Parse(part.GetRange(1..))),
+                [SymbolToken(Symbol.STAR)] => throw new SyntaxError(0, 0, "Missing value"),
+                [SymbolToken(Symbol.STAR), ..] => new UnpackedElement(ExpressionParser.Parse(part.GetRange(1..))),
                 _ => new Element(ExpressionParser.Parse(part)),
             };
 
@@ -170,8 +170,8 @@ internal sealed class ParseAtoms : IParsingStep
                 [INamedIdentifierToken token] => new Member(token.GetIdentifier(), ExpressionParser.Parse(part)),
                 [INamedIdentifierToken, SymbolToken(Symbol.COLON)] => throw new SyntaxError(0, 0, "Missing value."),
                 [INamedIdentifierToken token, SymbolToken(Symbol.COLON), ..] => new Member(token.GetIdentifier(), ExpressionParser.Parse(part.GetRange(2..))),
-                [SymbolToken(Symbol.UNPACK_STRUCT)] => throw new SyntaxError(0, 0, "Missing value"),
-                [SymbolToken(Symbol.UNPACK_STRUCT), ..] => new UnpackedMember(ExpressionParser.Parse(part.GetRange(1..))),
+                [SymbolToken(Symbol.DBL_STAR)] => throw new SyntaxError(0, 0, "Missing value"),
+                [SymbolToken(Symbol.DBL_STAR), ..] => new UnpackedMember(ExpressionParser.Parse(part.GetRange(1..))),
                 _ => throw new SyntaxError(part[0].Start, part[^1].End, "Unexpected token."),
             };
 
@@ -187,9 +187,9 @@ internal sealed class ParseAtoms : IParsingStep
         {
             case []:
                 throw new SyntaxError(token.End - 1, token.End, "Unexpected symbol ']'");
-            case [SymbolToken(Symbol.BIT_OR)]:
+            case [SymbolToken(Symbol.BAR)]:
                 return new ArrayPatternLiteral(new(), null, -1);
-            case [SymbolToken(Symbol.BIT_AND)]:
+            case [SymbolToken(Symbol.AMP)]:
                 return new StructPatternLiteral(new(), null, false);
         }
 
@@ -216,7 +216,7 @@ internal sealed class ParseAtoms : IParsingStep
                     throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COMMA}'");
                 case [INamedIdentifierToken]:
                     continue;
-                case [SymbolToken(Symbol.UNPACK_STRUCT), ..]:
+                case [SymbolToken(Symbol.DBL_STAR), ..]:
                 case [INamedIdentifierToken, SymbolToken(Symbol.QUESTION)]:
                 case [INamedIdentifierToken, SymbolToken(Symbol.COLON), ..]:
                 case [INamedIdentifierToken, SymbolToken(Symbol.QUESTION), SymbolToken(Symbol.COLON), ..]:
@@ -243,12 +243,12 @@ internal sealed class ParseAtoms : IParsingStep
                     throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COMMA}'");
                 case [INamedIdentifierToken, SymbolToken(Symbol.COLON), ..]:
                     throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COLON}'");
-                case [SymbolToken(Symbol.UNPACK_ITER), ..] when packIndex > -1:
+                case [SymbolToken(Symbol.STAR), ..] when packIndex > -1:
                     throw new SyntaxError(0, 0, "The iterable unpack syntax can only be used once per array pattern.");
-                case [SymbolToken(Symbol.UNPACK_ITER)]:
+                case [SymbolToken(Symbol.STAR)]:
                     packIndex = expressions.Count;
                     break;
-                case [SymbolToken(Symbol.UNPACK_ITER), ..]:
+                case [SymbolToken(Symbol.STAR), ..]:
                     packIndex = expressions.Count;
                     packExpression = ExpressionParser.Parse(part.GetRange(1..));
                     break;
@@ -289,12 +289,12 @@ internal sealed class ParseAtoms : IParsingStep
                 case [INamedIdentifierToken token, SymbolToken(Symbol.QUESTION), SymbolToken(Symbol.COLON), ..]:
                     members.Add((token.GetIdentifier(), ExpressionParser.Parse(part.GetRange(3..)), true));
                     break;
-                case [SymbolToken(Symbol.UNPACK_STRUCT), ..] when hasPack:
+                case [SymbolToken(Symbol.DBL_STAR), ..] when hasPack:
                     throw new SyntaxError(0, 0, "The struct unpack syntax can only be used once per struct pattern.");
-                case [SymbolToken(Symbol.UNPACK_STRUCT)]:
+                case [SymbolToken(Symbol.DBL_STAR)]:
                     hasPack = true;
                     break;
-                case [SymbolToken(Symbol.UNPACK_STRUCT), ..]:
+                case [SymbolToken(Symbol.DBL_STAR), ..]:
                     hasPack = true;
                     packExpression = ExpressionParser.Parse(part.GetRange(1..));
                     break;

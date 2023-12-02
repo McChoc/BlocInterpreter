@@ -43,11 +43,11 @@ internal sealed class ParseUnaries : IParsingStep
 
             return @operator.Text switch
             {
-                Symbol.IS_EQUAL => new EqualPatternLiteral(operand),
-                Symbol.MORE_THAN => new GreaterThanPatternLiteral(operand),
-                Symbol.MORE_EQUAL => new GreaterEqualPatternLiteral(operand),
-                Symbol.LESS_THAN => new LessThanPatternLiteral(operand),
-                Symbol.LESS_EQUAL => new LessEqualPatternLiteral(operand),
+                Symbol.DBL_EQ => new EqualPatternLiteral(operand),
+                Symbol.MORE => new GreaterThanPatternLiteral(operand),
+                Symbol.MORE_EQ => new GreaterEqualPatternLiteral(operand),
+                Symbol.LESS => new LessThanPatternLiteral(operand),
+                Symbol.LESS_EQ => new LessEqualPatternLiteral(operand),
                 Keyword.IN => new InPatternLiteral(operand),
                 Keyword.NOT_IN => new NotInPatternLiteral(operand),
                 _ => new NotEqualPatternLiteral(operand)
@@ -62,12 +62,12 @@ internal sealed class ParseUnaries : IParsingStep
             {
                 Symbol.PLUS         => new PositiveOperator(operand),
                 Symbol.MINUS        => new NegativeOperator(operand),
-                Symbol.BIT_NOT      => new ComplementOperator(operand),
-                Symbol.BOOL_NOT     => new NegationOperator(operand),
-                Symbol.INCREMENT    => new IncrementPrefix(operand),
-                Symbol.DECREMENT    => new DecrementPrefix(operand),
-                Symbol.BIT_INV      => new ComplementPrefix(operand),
-                Symbol.BOOL_INV     => new NegationPrefix(operand),
+                Symbol.TILDE      => new ComplementOperator(operand),
+                Symbol.EXCL     => new NegationOperator(operand),
+                Symbol.DBL_PLUS    => new IncrementPrefix(operand),
+                Symbol.DBL_MINUS    => new DecrementPrefix(operand),
+                Symbol.DBL_TILDE      => new ComplementPrefix(operand),
+                Symbol.DBL_EXCL     => new NegationPrefix(operand),
                 Keyword.LEN         => new LengthOperator(operand),
                 Keyword.CHR         => new ChrOperator(operand),
                 Keyword.ORD         => new OrdOperator(operand),
@@ -93,10 +93,10 @@ internal sealed class ParseUnaries : IParsingStep
 
             return @operator.Text switch
             {
-                Symbol.INCREMENT    => new IncrementPostfix(operand),
-                Symbol.DECREMENT    => new DecrementPostfix(operand),
-                Symbol.BIT_INV      => new ComplementPostfix(operand),
-                Symbol.BOOL_INV     => new NegationPostfix(operand),
+                Symbol.DBL_PLUS    => new IncrementPostfix(operand),
+                Symbol.DBL_MINUS    => new DecrementPostfix(operand),
+                Symbol.DBL_TILDE      => new ComplementPostfix(operand),
+                Symbol.DBL_EXCL     => new NegationPostfix(operand),
                 _ => throw new Exception()
             };
         }
@@ -125,14 +125,14 @@ internal sealed class ParseUnaries : IParsingStep
         }
 
         if (token is SymbolToken(
-            Symbol.IS_EQUAL or
-            Symbol.NOT_EQUAL_0 or
-            Symbol.NOT_EQUAL_1 or
-            Symbol.NOT_EQUAL_2 or
-            Symbol.MORE_THAN or
-            Symbol.MORE_EQUAL or
-            Symbol.LESS_THAN or
-            Symbol.LESS_EQUAL))
+            Symbol.DBL_EQ or
+            Symbol.NOT_EQ_0 or
+            Symbol.NOT_EQ_1 or
+            Symbol.NOT_EQ_2 or
+            Symbol.MORE or
+            Symbol.MORE_EQ or
+            Symbol.LESS or
+            Symbol.LESS_EQ))
         {
             @operator = (TextToken)token;
             return true;
@@ -145,10 +145,10 @@ internal sealed class ParseUnaries : IParsingStep
     private static bool IsPostfix(IToken token, [NotNullWhen(true)] out TextToken? @operator)
     {
         if (token is SymbolToken(
-                Symbol.INCREMENT or
-                Symbol.DECREMENT or
-                Symbol.BIT_INV or
-                Symbol.BOOL_INV))
+                Symbol.DBL_PLUS or
+                Symbol.DBL_MINUS or
+                Symbol.DBL_TILDE or
+                Symbol.DBL_EXCL))
         {
             @operator = (TextToken)token;
             return true;
@@ -165,12 +165,12 @@ internal sealed class ParseUnaries : IParsingStep
         if (token is SymbolToken(
             Symbol.PLUS or
             Symbol.MINUS or
-            Symbol.BIT_NOT or
-            Symbol.BOOL_NOT or
-            Symbol.INCREMENT or
-            Symbol.DECREMENT or
-            Symbol.BIT_INV or
-            Symbol.BOOL_INV))
+            Symbol.TILDE or
+            Symbol.EXCL or
+            Symbol.DBL_PLUS or
+            Symbol.DBL_MINUS or
+            Symbol.DBL_TILDE or
+            Symbol.DBL_EXCL))
         {
             @operator = (TextToken)token;
             return true;

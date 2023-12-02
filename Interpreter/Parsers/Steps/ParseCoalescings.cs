@@ -36,8 +36,8 @@ internal sealed class ParseCoalescings : IParsingStep
 
                 return @operator.Text switch
                 {
-                    Symbol.COALESCE_NULL => new NullCoalescingOperator(left, right),
-                    Symbol.COALESCE_VOID => new VoidCoalescingOperator(left, right),
+                    Symbol.DBL_QUESTION => new NullCoalescingOperator(left, right),
+                    Symbol.TPL_QUESTION => new VoidCoalescingOperator(left, right),
                     _ => throw new Exception()
                 };
             }
@@ -48,7 +48,7 @@ internal sealed class ParseCoalescings : IParsingStep
 
     private static bool IsCoalescing(IToken token, [NotNullWhen(true)] out TextToken? @operator)
     {
-        if (token is SymbolToken(Symbol.COALESCE_NULL or Symbol.COALESCE_VOID))
+        if (token is SymbolToken(Symbol.DBL_QUESTION or Symbol.TPL_QUESTION))
         {
             @operator = (TextToken)token;
             return true;

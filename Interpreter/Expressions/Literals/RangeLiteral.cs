@@ -9,60 +9,72 @@ namespace Bloc.Expressions.Literals;
 
 internal sealed record RangeLiteral : IExpression
 {
-    private readonly IExpression? _start;
-    private readonly IExpression? _stop;
+    private readonly Index _start;
+    private readonly Index _stop;
     private readonly IExpression? _step;
-    private readonly bool _inclusive;
 
-    internal RangeLiteral(IExpression? start, IExpression? stop, IExpression? step, bool inclusive)
+    internal record Index(IExpression? Expression, bool Inclusive);
+
+    internal RangeLiteral(Index start, Index stop, IExpression? step)
     {
         _start = start;
         _stop = stop;
         _step = step;
-        _inclusive = inclusive;
     }
 
     public IValue Evaluate(Call call)
     {
-        int? start = null, stop = null, step = null;
+        Range.Index start, stop;
+        double? step;
 
-        if (_start is not null)
+        if (_start.Expression is null)
         {
-            var value = _start.Evaluate(call).Value;
+            start = new(null, _start.Inclusive);
+        }
+        else
+        {
+            var value = _start.Expression.Evaluate(call).Value;
             value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit).Value;
             start = value switch
             {
-                Null => null,
-                INumeric numeric => numeric.GetInt(),
+                Null => new(null, _start.Inclusive),
+                INumeric numeric => new(numeric.GetDouble(), _start.Inclusive),
                 _ => throw new Throw($"Range indices must be null_t, bool or number, not {value.GetTypeName()}")
             };
         }
 
-        if (_stop is not null)
+        if (_stop.Expression is null)
         {
-            var value = _stop.Evaluate(call).Value;
+            stop = new(null, _stop.Inclusive);
+        }
+        else
+        {
+            var value = _stop.Expression.Evaluate(call).Value;
             value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit).Value;
             stop = value switch
             {
-                Null => null,
-                INumeric numeric => numeric.GetInt(),
+                Null => new(null, _start.Inclusive),
+                INumeric numeric => new(numeric.GetDouble(), _stop.Inclusive),
                 _ => throw new Throw($"Range indices must be null_t, bool or number, not {value.GetTypeName()}")
             };
         }
 
-        if (_step is not null)
+        if (_step is null)
+        {
+            step = null;
+        }
+        else
         {
             var value = _step.Evaluate(call).Value;
             value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit).Value;
             step = value switch
             {
                 Null => null,
-                INumeric numeric when numeric.GetInt() != 0 => numeric.GetInt(),
-                INumeric => throw new Throw("A range cannot have a step of 0"),
+                INumeric numeric => numeric.GetDouble(),
                 _ => throw new Throw($"Range indices must be null_t, bool or number, not {value.GetTypeName()}")
             };
         }
 
-        return new Range(start, stop, step, _inclusive);
+        return new Range(start, stop, step);
     }
 }

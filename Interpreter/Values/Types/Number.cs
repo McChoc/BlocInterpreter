@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Bloc.Results;
 using Bloc.Utils.Attributes;
+using Bloc.Utils.Helpers;
 using Bloc.Values.Behaviors;
 using Bloc.Values.Core;
 
@@ -18,37 +19,10 @@ public sealed partial class Number : Value, INumeric
         Value = value;
     }
 
-    public override ValueType GetType() => ValueType.Number;
-
+    public int GetInt() => NumberHelper.Round(Value);
     public double GetDouble() => Value;
-
-    public int GetInt()
-    {
-        if (double.IsNaN(Value))
-            return 0;
-
-        if (Value > int.MaxValue)
-            return int.MaxValue;
-
-        if (Value < int.MinValue)
-            return int.MinValue;
-
-        return (int)Value;
-    }
-
-    public override string ToString()
-    {
-        if (double.IsNaN(Value))
-            return "nan";
-
-        if (double.IsPositiveInfinity(Value))
-            return "infinity";
-
-        if (double.IsNegativeInfinity(Value))
-            return "-infinity";
-
-        return Value.ToString(CultureInfo.InvariantCulture);
-    }
+    public override ValueType GetType() => ValueType.Number;
+    public override string ToString() => Value.ToString(CultureInfo.InvariantCulture).ToLower();
 
     internal static Number ImplicitCast(IValue value)
     {

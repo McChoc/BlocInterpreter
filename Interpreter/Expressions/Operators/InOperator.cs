@@ -2,6 +2,7 @@
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Utils.Helpers;
+using Bloc.Values.Behaviors;
 using Bloc.Values.Core;
 using Bloc.Values.Types;
 
@@ -25,11 +26,14 @@ internal sealed record InOperator : IExpression
 
         right = ReferenceHelper.Resolve(right, call.Engine.Options.HopLimit).Value;
 
-        if (right is Array array)
-            return new Bool(array.Values.Any(v => v.Value.Equals(left)));
+        if (left is INumeric numeric && right is Range range)
+            return new Bool(RangeHelper.Contains(range, numeric.GetDouble()));
 
         if (left is String sub && right is String str)
             return new Bool(str.Value.Contains(sub.Value));
+
+        if (right is Array array)
+            return new Bool(array.Values.Any(v => v.Value.Equals(left)));
 
         throw new Throw($"Cannot apply operator 'in' on operands of types {left.GetTypeName()} and {right.GetTypeName()}");
     }

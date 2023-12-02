@@ -21,7 +21,7 @@ internal sealed class ParseComparisons : IParsingStep
     {
         for (int i = tokens.Count - 1; i >= 0; i--)
         {
-            if (tokens[i] is SymbolToken(Symbol.COMPARISON) @operator)
+            if (tokens[i] is SymbolToken(Symbol.UFO) @operator)
             {
                 if (i == 0)
                     throw new SyntaxError(@operator.Start, @operator.End, "Missing the left part of comparison");
