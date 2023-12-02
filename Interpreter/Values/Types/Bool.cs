@@ -57,9 +57,13 @@ public sealed partial class Bool : Value, INumeric
         {
             [] or [Null] => False,
             [Bool @bool] => @bool,
-            [Number number] => new(number.Value is not (0 or double.NaN)),
-            [Void] => throw new Throw($"'bool' does not have a constructor that takes a 'void'"),
-            [_] => True,
+            [Number number] => new(number.Value is not 0 and not double.NaN),
+            [String @string] => new(@string.Value.Length > 0),
+            [Array array] => new(array.Values.Count > 0),
+            [Struct @struct] => new(@struct.Values.Count > 0),
+            [Tuple tuple] => new(tuple.Values.Count > 0),
+            [not Void] => True,
+            [_] => throw new Throw($"'bool' does not have a constructor that takes a '{values[0].GetTypeName()}'"),
             [..] => throw new Throw($"'bool' does not have a constructor that takes {values.Count} arguments")
         };
     }
