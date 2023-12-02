@@ -4,6 +4,7 @@ using Bloc.Identifiers;
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Utils.Attributes;
+using Bloc.Utils.Helpers;
 using Bloc.Values.Types;
 
 namespace Bloc.Statements;
@@ -29,6 +30,8 @@ internal sealed partial class ForeachStatement : Statement
             yield return exception;
             yield break;
         }
+
+        value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit).Value;
 
         if (!Iter.TryImplicitCast(value, out var iter, call))
         {

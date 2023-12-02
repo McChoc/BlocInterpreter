@@ -57,7 +57,9 @@ internal sealed partial class InvocationOperator : IExpression
                     break;
 
                 case ArgumentType.UnpackedArray:
-                    if (!Iter.TryImplicitCast(val!, out var iter, call))
+                    val = ReferenceHelper.Resolve(val!, call.Engine.Options.HopLimit).Value;
+
+                    if (!Iter.TryImplicitCast(val, out var iter, call))
                         throw new Throw("Cannot implicitly convert to iter");
 
                     args.AddRange(IterHelper.CheckedIterate(iter, call.Engine.Options));

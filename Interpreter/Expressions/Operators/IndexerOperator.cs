@@ -40,6 +40,8 @@ internal sealed record IndexerOperator : IExpression
             }
             else
             {
+                val = ReferenceHelper.Resolve(val, call.Engine.Options.HopLimit).Value;
+
                 if (!Iter.TryImplicitCast(val, out var iter, call))
                     throw new Throw("Cannot implicitly convert to iter");
 

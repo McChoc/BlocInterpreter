@@ -28,6 +28,8 @@ internal sealed record ExpressionArgument : IArgument
         }
         else
         {
+            value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit).Value;
+
             if (!Iter.TryImplicitCast(value, out var iter, call))
                 throw new Throw("Cannot implicitly convert to iter");
 

@@ -34,6 +34,7 @@ internal sealed record SelectManyOperator : IExpression
         foreach (var value in array.Values)
         {
             var result = func.Invoke(new() { value.Value.GetOrCopy() }, new(), call);
+            result = ReferenceHelper.Resolve(result, call.Engine.Options.HopLimit).Value;
 
             if (!Iter.TryImplicitCast(result, out var iter, call))
                 throw new Throw("Cannot implicitly convert to iter");

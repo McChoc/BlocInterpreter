@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
@@ -27,7 +26,9 @@ internal sealed partial class YieldManyStatement : Statement
             yield return exception;
             yield break;
         }
-        
+
+        value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit).Value;
+
         if (!Iter.TryImplicitCast(value, out var iter, call))
         {
 
