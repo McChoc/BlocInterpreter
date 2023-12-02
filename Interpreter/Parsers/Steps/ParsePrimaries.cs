@@ -70,6 +70,7 @@ internal sealed class ParsePrimaries : IParsingStep
                     [] => new InvocationOperator.Argument(null, null, ArgumentType.Positional),
                     [SymbolToken(Symbol.STAR), ..] => new InvocationOperator.Argument(null, ExpressionParser.Parse(part.GetRange(1..)), ArgumentType.UnpackedArray),
                     [SymbolToken(Symbol.DBL_STAR), ..] => new InvocationOperator.Argument(null, ExpressionParser.Parse(part.GetRange(1..)), ArgumentType.UnpackedStruct),
+                    [INamedIdentifierToken token, SymbolToken(Symbol.EXCL)] => new InvocationOperator.Argument(token.GetIdentifier(), ExpressionParser.Parse(part.GetRange(..1)), ArgumentType.Keyword),
                     [INamedIdentifierToken token, SymbolToken(Symbol.COLON), _, ..] => new InvocationOperator.Argument(token.GetIdentifier(), ExpressionParser.Parse(part.GetRange(2..)), ArgumentType.Keyword),
                     _ => new InvocationOperator.Argument(null, ExpressionParser.Parse(part), ArgumentType.Positional)
                 };
