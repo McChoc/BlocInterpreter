@@ -108,7 +108,7 @@ internal sealed class ParseAtoms : IParsingStep
         if (parts[^1].Count == 0)
             parts.RemoveAt(parts.Count - 1);
 
-        return GetBracesContentType(parts) switch
+        return GetBracesContentType(parts[0]) switch
         {
             BracesToken.ContentType.Array => ParseArray(parts),
             BracesToken.ContentType.Struct => ParseStruct(parts),
@@ -116,25 +116,16 @@ internal sealed class ParseAtoms : IParsingStep
         };
     }
 
-    private static BracesToken.ContentType GetBracesContentType (List<List<IToken>> parts)
+    private static BracesToken.ContentType GetBracesContentType (List<IToken> part)
     {
-        foreach (var part in parts)
+        return part switch
         {
-            switch (part)
-            {
-                case []:
-                    throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COMMA}'");
-                case [INamedIdentifierToken]:
-                    continue;
-                case [SymbolToken(Symbol.DBL_STAR), ..]:
-                case [INamedIdentifierToken, SymbolToken(Symbol.COLON), ..]:
-                    return BracesToken.ContentType.Struct;
-                default:
-                    return BracesToken.ContentType.Array;
-            }
-        }
-
-        return BracesToken.ContentType.Array;
+            [] => throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COMMA}'"),
+            [SymbolToken(Symbol.DBL_STAR), ..] or
+            [INamedIdentifierToken, SymbolToken(Symbol.EXCL)] or
+            [INamedIdentifierToken, SymbolToken(Symbol.COLON), ..] => BracesToken.ContentType.Struct,
+            _ => BracesToken.ContentType.Array,
+        };
     }
 
     private static ArrayLiteral ParseArray(List<List<IToken>> parts)
@@ -167,7 +158,7 @@ internal sealed class ParseAtoms : IParsingStep
             IMember member = part switch
             {
                 [] => throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COMMA}'"),
-                [INamedIdentifierToken token] => new Member(token.GetIdentifier(), ExpressionParser.Parse(part)),
+                [INamedIdentifierToken token, SymbolToken(Symbol.EXCL)] => new Member(token.GetIdentifier(), ExpressionParser.Parse(part.GetRange(..1))),
                 [INamedIdentifierToken, SymbolToken(Symbol.COLON)] => throw new SyntaxError(0, 0, "Missing value."),
                 [INamedIdentifierToken token, SymbolToken(Symbol.COLON), ..] => new Member(token.GetIdentifier(), ExpressionParser.Parse(part.GetRange(2..))),
                 [SymbolToken(Symbol.DBL_STAR)] => throw new SyntaxError(0, 0, "Missing value"),
@@ -198,7 +189,7 @@ internal sealed class ParseAtoms : IParsingStep
         if (parts[^1].Count == 0)
             parts.RemoveAt(parts.Count - 1);
 
-        return GetBracketsContentType(parts) switch
+        return GetBracketsContentType(parts[0]) switch
         {
             BracketsToken.ContentType.ArrayPattern => ParseArrayPattern(parts),
             BracketsToken.ContentType.StructPattern => ParseStructPattern(parts),
@@ -206,27 +197,18 @@ internal sealed class ParseAtoms : IParsingStep
         };
     }
 
-    private static BracketsToken.ContentType GetBracketsContentType(List<List<IToken>> parts)
+    private static BracketsToken.ContentType GetBracketsContentType(List<IToken> part)
     {
-        foreach (var part in parts)
+        return part switch
         {
-            switch (part)
-            {
-                case []:
-                    throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COMMA}'");
-                case [INamedIdentifierToken]:
-                    continue;
-                case [SymbolToken(Symbol.DBL_STAR), ..]:
-                case [INamedIdentifierToken, SymbolToken(Symbol.QUESTION)]:
-                case [INamedIdentifierToken, SymbolToken(Symbol.COLON), ..]:
-                case [INamedIdentifierToken, SymbolToken(Symbol.QUESTION), SymbolToken(Symbol.COLON), ..]:
-                    return BracketsToken.ContentType.StructPattern;
-                default:
-                    return BracketsToken.ContentType.ArrayPattern;
-            }
-        }
-
-        return BracketsToken.ContentType.ArrayPattern;
+            [] => throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COMMA}'"),
+            [SymbolToken(Symbol.DBL_STAR), ..] or
+            [INamedIdentifierToken, SymbolToken(Symbol.EXCL)] or
+            [INamedIdentifierToken, SymbolToken(Symbol.QUESTION)] or
+            [INamedIdentifierToken, SymbolToken(Symbol.COLON), ..] or
+            [INamedIdentifierToken, SymbolToken(Symbol.QUESTION), SymbolToken(Symbol.COLON), ..] => BracketsToken.ContentType.StructPattern,
+            _ => BracketsToken.ContentType.ArrayPattern,
+        };
     }
 
     private static ArrayPatternLiteral ParseArrayPattern(List<List<IToken>> parts)
@@ -274,7 +256,7 @@ internal sealed class ParseAtoms : IParsingStep
             {
                 case []:
                     throw new SyntaxError(0, 0, $"Unexpected symbol '{Symbol.COMMA}'");
-                case [INamedIdentifierToken token]:
+                case [INamedIdentifierToken token, SymbolToken(Symbol.EXCL)]:
                     members.Add((token.GetIdentifier(), new PatternLiteral(new AnyPattern()), false));
                     break;
                 case [INamedIdentifierToken token, SymbolToken(Symbol.QUESTION)]:
