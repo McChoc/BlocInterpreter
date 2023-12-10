@@ -3,28 +3,29 @@ using Bloc.Expressions;
 using Bloc.Memory;
 using Bloc.Results;
 using Bloc.Utils.Helpers;
+using Bloc.Values.Core;
 using Bloc.Values.Types;
 
-namespace Bloc.Commands.Arguments;
+namespace Bloc.Commands;
 
-internal sealed record ExpressionArgument : IArgument
+internal sealed record CommandArg
 {
     private readonly bool _unpack;
     private readonly IExpression _expression;
 
-    internal ExpressionArgument(IExpression expression, bool unpack = false)
+    internal CommandArg(IExpression expression, bool unpack = false)
     {
         _unpack = unpack;
         _expression = expression;
     }
 
-    public IEnumerable<string> GetArguments(Call call)
+    public IEnumerable<Value> GetArguments(Call call)
     {
         var value = _expression.Evaluate(call);
 
         if (!_unpack)
         {
-            yield return String.ImplicitCast(value).Value;
+            yield return value.Value;
         }
         else
         {
@@ -34,7 +35,7 @@ internal sealed record ExpressionArgument : IArgument
                 throw new Throw("Cannot implicitly convert to iter");
 
             foreach (var item in IterHelper.CheckedIterate(iter, call.Engine.Options))
-                yield return String.ImplicitCast(item).Value;
+                yield return item;
         }
     }
 }

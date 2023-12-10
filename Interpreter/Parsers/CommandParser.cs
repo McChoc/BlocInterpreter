@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Bloc.Commands;
-using Bloc.Commands.Arguments;
+using Bloc.Expressions.Literals;
 using Bloc.Tokens;
 using Bloc.Utils.Constants;
 using Bloc.Utils.Exceptions;
@@ -26,7 +26,7 @@ internal static class CommandParser
         if (tokens.Count == 0)
             throw new SyntaxError(0, 0, "Empty command");
 
-        var arguments = new List<IArgument>();
+        var arguments = new List<CommandArg>();
 
         for (int i = 0; i < tokens.Count; i++)
         {
@@ -39,16 +39,15 @@ internal static class CommandParser
         return new CommandCall(arguments);
     }
 
-    private static IArgument ParseArgument(IToken token, bool unpack = false)
+    private static CommandArg ParseArgument(IToken token, bool unpack = false)
     {
         if (token is SymbolToken)
             throw new SyntaxError(token.Start, token.End, "Unexpected token");
 
-        if (token is IKeywordToken keyword)
-            return new LiteralArgument(keyword.Text);
+        var expression = token is IKeywordToken keyword
+            ? new StringLiteral(keyword.Text, new())
+            : ExpressionParser.Parse(new() { token });
 
-        var expression = ExpressionParser.Parse(new() { token });
-
-        return new ExpressionArgument(expression, unpack);
+        return new CommandArg(expression, unpack);
     }
 }

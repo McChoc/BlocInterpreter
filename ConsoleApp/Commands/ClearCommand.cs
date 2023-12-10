@@ -16,7 +16,7 @@ public sealed class ClearCommand : ICommandInfo
         Clears the console.
         """;
 
-    public Value Call(string[] args, Value input, Call call)
+    public Value Call(Value[] args, Value input, Call call)
     {
         if (args.Length != 0)
             throw new Throw("'clear' does not take arguments.\nType '/help clear' to see its usage");

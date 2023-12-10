@@ -20,7 +20,7 @@ internal sealed class HelpCommand : ICommandInfo
         Returns the description of the given command.
         """;
 
-    public Value Call(string[] args, Value input, Call call)
+    public Value Call(Value[] args, Value input, Call call)
     {
         if (args.Length == 0)
         {
@@ -42,12 +42,15 @@ internal sealed class HelpCommand : ICommandInfo
                 return new String(command.Description);
             }
 
-            throw new Throw("The input could not be converted to a string");
+            throw new Throw("The input value was not a string");
         }
 
         if (args.Length == 1)
         {
-            if (!call.Engine.Commands.TryGetValue(args[0].ToLower(), out var command))
+            if (args[0] is not String @string)
+                throw new Throw("The command name was not a string");
+
+            if (!call.Engine.Commands.TryGetValue(@string.Value.ToLower(), out var command))
                 throw new Throw("Unknown command");
 
             return new String(command.Description);

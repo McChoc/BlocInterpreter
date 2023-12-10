@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Linq;
 using System.Runtime.InteropServices;
 using Bloc.Commands;
 using Bloc.Memory;
@@ -6,7 +6,6 @@ using Bloc.Results;
 using Bloc.Values.Core;
 using Bloc.Values.Types;
 using ConsoleApp.Utils;
-using Void = Bloc.Values.Types.Void;
 
 namespace ConsoleApp.Commands;
 
@@ -19,52 +18,50 @@ public sealed class LibraryCommand : ICommandInfo
     public string Description =>
         """
         library open <path>
-        Opens a library at a given path and returns a libraryHandle.
+        Opens a library at a given path and returns a extern library handle.
         
-        <library> |> library close
+        library close <handle>
         Closes a library.
 
-        <libraryHandle> |> library call <function> [arguments] ...
+        library call <handle> <function> [arguments] ...
         Calls a function defined in a library with a given name with a list of arguments and returns the result.
         """;
 
-    public Value Call(string[] args, Value input, Call call)
+    public Value Call(Value[] args, Value input, Call call)
     {
-        if (args.Length == 2 && args[0].ToLower() == "open")
+        switch (args)
         {
-            var name = args[1];
-            var libraryHandle = LibraryHelper.OpenLibrary(name);
-            return new Extern(libraryHandle);
-        }
+            case [String command, String name] when command.Value.ToLower() == "open":
+            {
+                nint libraryHandle = LibraryHelper.OpenLibrary(name.Value);
+                return new Extern(libraryHandle);
+            }
 
-        if (args.Length == 1 && args[0].ToLower() == "close")
-        {
-            if (input is not Extern @extern)
-                throw new Throw("");
+            case [String command, Extern @extern] when command.Value.ToLower() == "close":
+            {
+                if (@extern.Value is not nint libraryHandle)
+                    throw new Throw("Invalid command");
 
-            if (@extern.Value is not IntPtr libraryHandle)
-                throw new Throw("");
+                LibraryHelper.CloseLibrary(libraryHandle);
+                return Void.Value;
+            }
 
-            LibraryHelper.CloseLibrary(libraryHandle);
-            return Void.Value;
-        }
+            case [String command, Extern @extern, String name, ..] when command.Value.ToLower() == "call":
+            {
+                if (@extern.Value is not nint libraryHandle)
+                    throw new Throw("Invalid command");
 
-        if (args.Length >= 2 && args[0].ToLower() == "call")
-        {
-            if (input is not Extern @extern)
-                throw new Throw("");
+                var arguments = args[3..]
+                        .Cast<String>()
+                        .Select(x => x.Value)
+                        .ToArray();
 
-            if (@extern.Value is not IntPtr libraryHandle)
-                throw new Throw("");
+                nint functionHandle = LibraryHelper.GetFunction(libraryHandle, name.Value);
+                var function = Marshal.GetDelegateForFunctionPointer<ExternCallback>(functionHandle);
+                int result = function(arguments);
 
-            var name = args[1];
-            var arguments = args[2..];
-
-            var handle = LibraryHelper.GetFunction(libraryHandle, name);
-            var function = Marshal.GetDelegateForFunctionPointer<ExternCallback>(handle);
-            int result = function(arguments);
-
-            return new Number(result);
+                return new Number(result);
+            }
         }
 
         throw new Throw("Invalid command");

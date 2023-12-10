@@ -16,7 +16,7 @@ public sealed class ExitCommand : ICommandInfo
         Exits the application.
         """;
 
-    public Value Call(string[] args, Value input, Call call)
+    public Value Call(Value[] args, Value input, Call call)
     {
         if (args.Length != 0)
             throw new Throw("'exit' does not take arguments.\nType '/help exit' to see its usage.");

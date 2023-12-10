@@ -7,5 +7,5 @@ public interface ICommandInfo
 {
     string Name { get; }
     string Description { get; }
-    Value Call(string[] args, Value input, Call call);
+    Value Call(Value[] args, Value input, Call call);
 }

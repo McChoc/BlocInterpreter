@@ -18,7 +18,7 @@ public sealed class SetCommand : ICommandInfo
         Creates a new variable with a specified name and value in the current scope.
         """;
 
-    public Value Call(string[] args, Value input, Call call)
+    public Value Call(Value[] args, Value input, Call call)
     {
         if (args.Length == 0)
             throw new Throw("'set' does not take 0 arguments.\nType '/help set' to see its usage");
@@ -28,20 +28,20 @@ public sealed class SetCommand : ICommandInfo
             if (input is Void)
                 throw new Throw("The input was empty");
 
-            var name = args[0];
-            var value = input;
+            if (args[0] is not String @string)
+                throw new Throw("The name was not a string");
 
-            call.Set(name, value.GetOrCopy(true), true, true, VariableScope.Local);
+            call.Set(@string.Value, input.GetOrCopy(true), true, true, VariableScope.Local);
 
             return Void.Value;
         }
 
         if (args.Length == 2)
         {
-            var name = args[0];
-            var value = new String(args[1]);
+            if (args[0] is not String @string)
+                throw new Throw("The name was not a string");
 
-            call.Set(name, value.GetOrCopy(true), true, true, VariableScope.Local);
+            call.Set(@string.Value, args[1].GetOrCopy(true), true, true, VariableScope.Local);
 
             return Void.Value;
         }

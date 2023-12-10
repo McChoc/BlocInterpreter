@@ -17,19 +17,20 @@ public sealed class CallCommand : ICommandInfo
         Calls a function and passes it a list of positional arguments.
         """;
 
-    public Value Call(string[] args, Value input, Call call)
+    public Value Call(Value[] args, Value input, Call call)
     {
         if (args.Length == 0)
             throw new Throw("'call' does not take 0 arguments.\nType '/help call' to see its usage");
 
-        var name = args[0];
-        var values = args[1..].Select(a => new String(a)).ToList<Value>();
+        if (args[0] is not String @string)
+            throw new Throw("The function name was not a string");
 
-        var value = call.Get(name).Get();
+        var value = call.Get(@string.Value).Get();
 
         if (value is not Func func)
             throw new Throw("The variable was not a 'func'");
 
-        return func.Invoke(values, new(), call);
+        var funcArguments = args[1..].ToList();
+        return func.Invoke(funcArguments, new(), call);
     }
 }

@@ -25,28 +25,28 @@ public sealed class RandomCommand : ICommandInfo
         Returns a pseudo-random integer between min and max, the max value is excluded.
         """;
 
-    public Value Call(string[] args, Value input, Call call)
+    public Value Call(Value[] args, Value input, Call call)
     {
         if (args.Length == 0)
             return new Number(random.NextDouble());
 
         if (args.Length == 1)
         {
-            if (!int.TryParse(args[0], out int max))
-                throw new Throw($"Cannot parse '{args[0]}' has number");
+            if (args[0] is not Number max)
+                throw new Throw("The max was not a number");
 
-            return new Number(random.Next(max));
+            return new Number(random.Next(max.GetInt()));
         }
 
         if (args.Length == 2)
         {
-            if (!int.TryParse(args[0], out int min))
-                throw new Throw($"Cannot parse '{args[0]}' has number");
+            if (args[0] is not Number min)
+                throw new Throw("The min was not a number");
 
-            if (!int.TryParse(args[1], out int max))
-                throw new Throw($"Cannot parse '{args[1]}' has number");
+            if (args[1] is not Number max)
+                throw new Throw("The max was not a number");
 
-            return new Number(random.Next(min, max));
+            return new Number(random.Next(min.GetInt(), max.GetInt()));
         }
 
         throw new Throw($"'random' does not take {args.Length} arguments.\nType '/help random' to see its usage");

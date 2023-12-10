@@ -17,7 +17,7 @@ public sealed class TimeCommand : ICommandInfo
         Returns the current time.
         """;
 
-    public Value Call(string[] args, Value input, Call call)
+    public Value Call(Value[] args, Value input, Call call)
     {
         if (args.Length == 0)
             return new String(DateTime.UtcNow.ToString());

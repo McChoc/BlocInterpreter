@@ -17,18 +17,23 @@ public sealed class GetCommand : ICommandInfo
         Gets the value of the variable with the specified name.
         """;
 
-    public Value Call(string[] args, Value input, Call call)
+    public Value Call(Value[] args, Value input, Call call)
     {
         if (args.Length == 0)
         {
             if (input is not String @string)
-                throw new Throw("The input was not a 'string'");
+                throw new Throw("The input was not a string");
 
             return call.Get(@string.Value).Get();
         }
 
         if (args.Length == 1)
-            return call.Get(args[0]).Get();
+        {
+            if (args[0] is not String @string)
+                throw new Throw("The name was not a string");
+
+            return call.Get(@string.Value).Get();
+        }
 
         throw new Throw($"'get' does not take {args.Length} arguments.\nType '/help get' to see its usage");
     }

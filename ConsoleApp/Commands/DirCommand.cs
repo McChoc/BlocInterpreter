@@ -17,7 +17,7 @@ public sealed class DirCommand : ICommandInfo
         Returns a list of all the variables in scope.
         """;
 
-    public Value Call(string[] args, Value input, Call call)
+    public Value Call(Value[] args, Value input, Call call)
     {
         if (args.Length != 0)
             throw new Throw($"'dir' does not take {args.Length} arguments.\nType '/help dir' to see its usage");

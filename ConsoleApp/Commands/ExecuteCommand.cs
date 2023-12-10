@@ -20,18 +20,19 @@ public sealed class ExecuteCommand : ICommandInfo
         Executes a piece of code.
         """;
 
-    public Value Call(string[] args, Value input, Call call)
+    public Value Call(Value[] args, Value input, Call call)
     {
         if (args.Length != 1)
             throw new Throw($"'execute' does not take {args.Length} arguments.\nType '/help execute' to see its usage");
 
-        var code = args[0];
+        if (args[0] is not String @string)
+            throw new Throw("The code was not a string");
 
         List<Statement> statements;
 
         try
         {
-            Engine.Compile(code, out var _, out statements);
+            Engine.Compile(@string.Value, out var _, out statements);
         }
         catch (SyntaxError e)
         {
