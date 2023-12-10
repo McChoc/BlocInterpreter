@@ -16,7 +16,7 @@ internal static class ExpressionParser
         step = new ParseAtoms();
         step = new ParsePrimaries(step);
         step = new ParseUnaries(step);
-        step = new ParseSwitchExpressions(step);
+        step = new ParseSelectiveExpressions(step);
         step = new ParseFromExpressions(step);
         step = new ParseQueries(step);
         step = new ParseExponentiations(step);

@@ -11,7 +11,7 @@ using Bloc.Values.Types;
 namespace Bloc.Expressions.Operators;
 
 [Record]
-internal sealed partial class SwitchExpression : IExpression
+internal sealed partial class SelectiveExpression : IExpression
 {
     internal required IExpression Expression { get; init; }
     internal required List<Case> Cases { get; init; }
@@ -27,13 +27,27 @@ internal sealed partial class SwitchExpression : IExpression
         return Void.Value;
     }
 
-    internal sealed record Case(IExpression ComparedExpression, IExpression ResultExpression)
+    internal abstract record Case
     {
-        public bool Matches(Value value, Call call)
-        {
-            var pattern = GetPattern(ComparedExpression, call);
+        public IExpression ComparedExpression { get; set; } = null!;
+        public IExpression ResultExpression { get; set; } = null!;
 
-            return pattern.Matches(value, call);
+        public abstract bool Matches(Value value, Call call);
+    }
+
+    internal sealed record SwitchCase : Case
+    {
+        public override bool Matches(Value value, Call call)
+        {
+            return ComparedExpression.Evaluate(call).Value.Equals(value);
+        }
+    }
+
+    internal sealed record MatchCase : Case
+    {
+        public override bool Matches(Value value, Call call)
+        {
+            return GetPattern(ComparedExpression, call).Matches(value, call);
         }
 
         private static IPatternNode GetPattern(IExpression expression, Call call)
