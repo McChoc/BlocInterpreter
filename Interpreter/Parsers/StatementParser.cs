@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Bloc.Expressions;
+using Bloc.Expressions.Literals;
 using Bloc.Identifiers;
 using Bloc.Scanners;
 using Bloc.Statements;
@@ -52,8 +53,8 @@ internal static class StatementParser
 
             KeywordToken(Keyword.IF) => GetIfStatement(provider, false),
             KeywordToken(Keyword.UNLESS) => GetIfStatement(provider, true),
-            KeywordToken(Keyword.SWITCH) => GetSelectiveStatement<SelectiveStatement.SwitchCase>(provider),
-            KeywordToken(Keyword.MATCH) => GetSelectiveStatement<SelectiveStatement.MatchCase>(provider),
+            KeywordToken(Keyword.SWITCH) => GetSwitchStatement(provider),
+            KeywordToken(Keyword.MATCH) => GetMatchStatement(provider),
             KeywordToken(Keyword.TRY) => GetTryStatement(provider),
             KeywordToken(Keyword.LOCK) => GetLockStatement(provider),
 
@@ -444,8 +445,56 @@ internal static class StatementParser
         };
     }
 
-    private static SelectiveStatement GetSelectiveStatement<T>(ITokenProvider provider)
-        where T : SelectiveStatement.Case, new()
+    private static SelectiveStatement GetSwitchStatement(ITokenProvider provider)
+    {
+        var keyword = provider.Next();
+
+        var expression = provider.HasNext() && provider.Peek() is ParenthesesToken
+            ? GetExpression(provider, keyword)
+            : new BoolLiteral(true);
+
+        if (!provider.HasNext() || provider.Next() is not BracesToken braces)
+            throw new SyntaxError(keyword.Start, keyword.End, $"Missing '{Symbol.L_BRACE}'");
+
+        var cases = new List<SelectiveStatement.Case>();
+        Statement? @default = null;
+
+        var subProvider = new TokenCollection(braces.Tokens);
+
+        while (subProvider.HasNext())
+        {
+            var armKeyword = subProvider.Next();
+
+            switch (armKeyword)
+            {
+                case KeywordToken(Keyword.DEFAULT):
+                    if (@default is not null)
+                        throw new SyntaxError(armKeyword.Start, armKeyword.End, "A switch statement can only have a single default statement");
+
+                    @default = GetStatement(subProvider);
+                    break;
+
+                case KeywordToken(Keyword.CASE):
+                    var caseExpression = GetExpression(subProvider, armKeyword);
+                    var caseStatement = GetStatement(subProvider);
+                    var arm = new SelectiveStatement.SwitchCase(caseExpression, caseStatement);
+                    cases.Add(arm);
+                    break;
+
+                default:
+                    throw new SyntaxError(armKeyword.Start, armKeyword.End, "Unexpected token");
+            }
+        }
+
+        return new SelectiveStatement()
+        {
+            Expression = expression,
+            Cases = cases,
+            Default = @default
+        };
+    }
+
+    private static SelectiveStatement GetMatchStatement(ITokenProvider provider)
     {
         var keyword = provider.Next();
         var expression = GetExpression(provider, keyword);
@@ -474,13 +523,7 @@ internal static class StatementParser
                 case KeywordToken(Keyword.CASE):
                     var caseExpression = GetExpression(subProvider, armKeyword);
                     var caseStatement = GetStatement(subProvider);
-
-                    var arm = new T()
-                    {
-                        Expression = caseExpression,
-                        Statement = caseStatement
-                    };
-
+                    var arm = new SelectiveStatement.MatchCase(caseExpression, caseStatement);
                     cases.Add(arm);
                     break;
 

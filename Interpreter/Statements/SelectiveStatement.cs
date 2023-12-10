@@ -51,16 +51,16 @@ internal sealed partial class SelectiveStatement : Statement
         }
     }
 
-    internal abstract record Case
+    internal abstract record Case(IExpression Expression, Statement Statement)
     {
-        public IExpression Expression { get; set; } = null!;
-        public Statement Statement { get; set; } = null!;
-
         public abstract bool Matches(Value value, Call call);
     }
 
     internal sealed record SwitchCase : Case
     {
+        public SwitchCase(IExpression Expression, Statement Statement)
+            : base(Expression, Statement) { }
+
         public override bool Matches(Value value, Call call)
         {
             return Expression.Evaluate(call).Value.Equals(value);
@@ -69,6 +69,9 @@ internal sealed partial class SelectiveStatement : Statement
 
     internal sealed record MatchCase : Case
     {
+        public MatchCase(IExpression Expression, Statement Statement)
+            : base(Expression, Statement) { }
+
         public override bool Matches(Value value, Call call)
         {
             return GetPattern(Expression, call).Matches(value, call);
