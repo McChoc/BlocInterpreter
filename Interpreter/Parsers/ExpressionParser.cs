@@ -16,8 +16,8 @@ internal static class ExpressionParser
         step = new ParseAtoms();
         step = new ParsePrimaries(step);
         step = new ParseUnaries(step);
-        step = new ParseSelectiveExpressions(step);
-        step = new ParseFromExpressions(step);
+        step = new ParseSelectives(step);
+        step = new ParseFroms(step);
         step = new ParseQueries(step);
         step = new ParseExponentiations(step);
         step = new ParseMultiplicatives(step);
@@ -35,7 +35,7 @@ internal static class ExpressionParser
         step = new ParseBooleanXORs(step);
         step = new ParseBooleanORs(step);
         step = new ParseCoalescings(step);
-        step = new ParseCatchExpressions(step);
+        step = new ParseCatches(step);
         step = new ParseConditionals(step);
         step = new ParseAssignments(step);
         step = new ParseFuncs(step);

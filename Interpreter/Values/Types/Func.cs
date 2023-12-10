@@ -159,8 +159,11 @@ public sealed partial class Func : Value, IPattern, IInvokable
                     case Break:
                         throw new Throw("A break statement can only be used inside a loop");
 
+                    case GotoCase:
+                        throw new Throw("A goto case statement can only be used inside a switch or a match statement");
+
                     case Yield:
-                        throw new Throw("A yield statement can only be used inside a generator");
+                        throw new Throw("A yield statement can only be used inside a generator function");
 
                     case Throw @throw:
                         throw @throw;
@@ -171,7 +174,7 @@ public sealed partial class Func : Value, IPattern, IInvokable
                     case Goto @goto:
                         if (_labels.TryGetValue(@goto.Label, out var label))
                         {
-                            if (++label.Count > call.Engine.Options.JumpLimit)
+                            if (++label.JumpCount > call.Engine.Options.JumpLimit)
                                 throw new Throw("The jump limit was reached.");
 
                             i = label.Index - 1;

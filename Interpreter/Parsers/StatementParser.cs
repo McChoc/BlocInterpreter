@@ -4,6 +4,7 @@ using Bloc.Expressions;
 using Bloc.Expressions.Literals;
 using Bloc.Identifiers;
 using Bloc.Scanners;
+using Bloc.Cases;
 using Bloc.Statements;
 using Bloc.Tokens;
 using Bloc.Utils.Constants;
@@ -456,33 +457,33 @@ internal static class StatementParser
         if (!provider.HasNext() || provider.Next() is not BracesToken braces)
             throw new SyntaxError(keyword.Start, keyword.End, $"Missing '{Symbol.L_BRACE}'");
 
-        var cases = new List<SelectiveStatement.Case>();
+        var cases = new List<Case>();
         Statement? @default = null;
 
         var subProvider = new TokenCollection(braces.Tokens);
 
         while (subProvider.HasNext())
         {
-            var armKeyword = subProvider.Next();
+            var caseKeyword = subProvider.Next();
 
-            switch (armKeyword)
+            switch (caseKeyword)
             {
                 case KeywordToken(Keyword.DEFAULT):
                     if (@default is not null)
-                        throw new SyntaxError(armKeyword.Start, armKeyword.End, "A switch statement can only have a single default statement");
+                        throw new SyntaxError(caseKeyword.Start, caseKeyword.End, "A switch statement can only have a single default statement");
 
                     @default = GetStatement(subProvider);
                     break;
 
                 case KeywordToken(Keyword.CASE):
-                    var caseExpression = GetExpression(subProvider, armKeyword);
+                    var caseExpression = GetExpression(subProvider, caseKeyword);
                     var caseStatement = GetStatement(subProvider);
-                    var arm = new SelectiveStatement.SwitchCase(caseExpression, caseStatement);
-                    cases.Add(arm);
+                    var @case = new SwitchCase(caseExpression, caseStatement);
+                    cases.Add(@case);
                     break;
 
                 default:
-                    throw new SyntaxError(armKeyword.Start, armKeyword.End, "Unexpected token");
+                    throw new SyntaxError(caseKeyword.Start, caseKeyword.End, "Unexpected token");
             }
         }
 
@@ -502,33 +503,33 @@ internal static class StatementParser
         if (!provider.HasNext() || provider.Next() is not BracesToken braces)
             throw new SyntaxError(keyword.Start, keyword.End, $"Missing '{Symbol.L_BRACE}'");
 
-        var cases = new List<SelectiveStatement.Case>();
+        var cases = new List<Case>();
         Statement? @default = null;
 
         var subProvider = new TokenCollection(braces.Tokens);
 
         while (subProvider.HasNext())
         {
-            var armKeyword = subProvider.Next();
+            var caseKeyword = subProvider.Next();
 
-            switch (armKeyword)
+            switch (caseKeyword)
             {
                 case KeywordToken(Keyword.DEFAULT):
                     if (@default is not null)
-                        throw new SyntaxError(armKeyword.Start, armKeyword.End, "A switch statement can only have a single default statement");
+                        throw new SyntaxError(caseKeyword.Start, caseKeyword.End, "A switch statement can only have a single default statement");
 
                     @default = GetStatement(subProvider);
                     break;
 
                 case KeywordToken(Keyword.CASE):
-                    var caseExpression = GetExpression(subProvider, armKeyword);
+                    var caseExpression = GetExpression(subProvider, caseKeyword);
                     var caseStatement = GetStatement(subProvider);
-                    var arm = new SelectiveStatement.MatchCase(caseExpression, caseStatement);
-                    cases.Add(arm);
+                    var @case = new MatchCase(caseExpression, caseStatement);
+                    cases.Add(@case);
                     break;
 
                 default:
-                    throw new SyntaxError(armKeyword.Start, armKeyword.End, "Unexpected token");
+                    throw new SyntaxError(caseKeyword.Start, caseKeyword.End, "Unexpected token");
             }
         }
 
@@ -757,23 +758,32 @@ internal static class StatementParser
         return new BreakStatement();
     }
 
-    private static GotoStatement GetGotoStatement(ITokenProvider provider)
+    private static Statement GetGotoStatement(ITokenProvider provider)
     {
-        var keyword = provider.Next();
         var line = GetLine(provider);
 
-        if (line.Count == 0)
-            throw new SyntaxError(keyword.Start, keyword.End, "Missing label.");
+        if (line is [_, KeywordToken(Keyword.CASE), ..])
+        {
+            if (line.Count < 3)
+                throw new SyntaxError(line[0].Start, line[1].End, "Missing expression.");
 
-        if (line[0] is not INamedIdentifierToken token)
-            throw new SyntaxError(line[0].Start, line[0].End, "Unexpected symbol.");
+            var expression = ExpressionParser.Parse(line.GetRange(2..));
+            return new GotoCaseStatement(expression);
+        }
+        else
+        {
+            if (line.Count < 2)
+                throw new SyntaxError(line[0].Start, line[0].End, "Missing label.");
 
-        if (line.Count > 1)
-            throw new SyntaxError(line[1].Start, line[^1].End, "Unexpected symbol.");
+            if (line[1] is not INamedIdentifierToken token)
+                throw new SyntaxError(line[1].Start, line[1].End, "Unexpected symbol.");
 
-        var identifier = token.GetIdentifier();
+            if (line.Count > 2)
+                throw new SyntaxError(line[2].Start, line[2].End, "Unexpected symbol.");
 
-        return new GotoStatement(identifier);
+            var identifier = token.GetIdentifier();
+            return new GotoStatement(identifier);
+        }
     }
 
     private static IExpression GetExpression(ITokenProvider provider, IToken keyword)

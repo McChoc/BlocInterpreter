@@ -73,11 +73,14 @@ public sealed class Engine
                 case Break:
                     return new Throw("A break statement can only be used inside a loop");
 
-                case Yield:
-                    return new Throw("A yield statement can only be used inside a generator");
+                case GotoCase:
+                    return new Throw("A goto case statement can only be used inside a switch or a match statement");
 
                 case Return:
                     return new Throw("A return statement can only be used inside a function");
+
+                case Yield:
+                    return new Throw("A yield statement can only be used inside a generator function");
 
                 case Throw @throw:
                     return @throw;
@@ -85,7 +88,7 @@ public sealed class Engine
                 case Goto @goto:
                     if (labels.TryGetValue(@goto.Label, out var label))
                     {
-                        if (++label.Count > Options.JumpLimit)
+                        if (++label.JumpCount > Options.JumpLimit)
                             return new Throw("The jump limit was reached.");
 
                         i = label.Index - 1;

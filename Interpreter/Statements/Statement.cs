@@ -117,7 +117,7 @@ public abstract class Statement
                 switch (result)
                 {
                     case Goto @goto when labels.TryGetValue(@goto.Label, out var label):
-                        if (label.Count++ < call.Engine.Options.JumpLimit)
+                        if (label.JumpCount++ < call.Engine.Options.JumpLimit)
                         {
                             i = label.Index - 1;
                             done = true;

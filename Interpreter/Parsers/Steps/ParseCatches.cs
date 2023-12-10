@@ -8,11 +8,11 @@ using Bloc.Utils.Extensions;
 
 namespace Bloc.Parsers.Steps;
 
-internal sealed class ParseCatchExpressions : IParsingStep
+internal sealed class ParseCatches : IParsingStep
 {
     private readonly IParsingStep _nextStep;
 
-    public ParseCatchExpressions(IParsingStep nextStep)
+    public ParseCatches(IParsingStep nextStep)
     {
         _nextStep = nextStep;
     }

@@ -1,12 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Bloc.Expressions;
 using Bloc.Memory;
-using Bloc.Patterns;
 using Bloc.Results;
+using Bloc.Cases;
 using Bloc.Utils.Attributes;
-using Bloc.Utils.Helpers;
-using Bloc.Values.Behaviors;
-using Bloc.Values.Core;
 
 namespace Bloc.Statements;
 
@@ -25,13 +23,17 @@ internal sealed partial class SelectiveStatement : Statement
             yield break;
         }
 
+        var cases = Cases
+            .Select(x => x.Evaluate(call))
+            .ToArray();
+
         var statement = Default;
 
-        foreach (var arm in Cases)
+        foreach (var @case in cases)
         {
-            if (arm.Matches(value, call))
+            if (@case.Matches(value, call))
             {
-                statement = arm.Statement;
+                statement = @case.Statement;
                 break;
             }
         }
@@ -39,53 +41,54 @@ internal sealed partial class SelectiveStatement : Statement
         if (statement is null)
             yield break;
 
-        using (call.MakeScope())
-        {
-            foreach (var result in ExecuteStatement(statement, call))
-            {
-                yield return result;
+        bool @continue;
 
-                if (result is not Yield)
-                    yield break;
+        do
+        {
+            @continue = false;
+
+            using (call.MakeScope())
+            {
+                foreach (var result in ExecuteStatement(statement, call))
+                {
+                    switch (result)
+                    {
+                        case GotoCase gotoCase:
+                            foreach (var @case in cases)
+                            {
+                                if (@case.Value != gotoCase.Value)
+                                    continue;
+
+                                if (@case.JumpCount++ >= call.Engine.Options.JumpLimit)
+                                {
+                                    yield return new Throw("The jump limit was reached.");
+                                    yield break;
+                                }
+
+                                statement = @case.Statement;
+                                @continue = true;
+                                break;
+                            }
+
+                            if (!@continue)
+                            {
+                                yield return new Throw($"case ({gotoCase.Value}) does not exist in this statement.");
+                                yield break;
+                            }
+
+                            break;
+
+                        case Yield:
+                            yield return result;
+                            break;
+
+                        default:
+                            yield return result;
+                            yield break;
+                    }
+                }
             }
         }
-    }
-
-    internal abstract record Case(IExpression Expression, Statement Statement)
-    {
-        public abstract bool Matches(Value value, Call call);
-    }
-
-    internal sealed record SwitchCase : Case
-    {
-        public SwitchCase(IExpression Expression, Statement Statement)
-            : base(Expression, Statement) { }
-
-        public override bool Matches(Value value, Call call)
-        {
-            return Expression.Evaluate(call).Value.Equals(value);
-        }
-    }
-
-    internal sealed record MatchCase : Case
-    {
-        public MatchCase(IExpression Expression, Statement Statement)
-            : base(Expression, Statement) { }
-
-        public override bool Matches(Value value, Call call)
-        {
-            return GetPattern(Expression, call).Matches(value, call);
-        }
-
-        private static IPatternNode GetPattern(IExpression expression, Call call)
-        {
-            var value = expression.Evaluate(call).Value;
-            value = ReferenceHelper.Resolve(value, call.Engine.Options.HopLimit).Value;
-
-            if (value is not IPattern pattern)
-                throw new Throw($"The expression of a case arm must be a pattern");
-
-            return pattern.GetRoot();
-        }
+        while (@continue);
     }
 }
