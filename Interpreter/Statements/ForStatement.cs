@@ -73,12 +73,14 @@ internal sealed partial class ForStatement : Statement
 
                         switch (result)
                         {
-                            case Continue:
-                                @continue = true;
+                            case Break { Label: null }:
+                            case Break { Label: string label } when label == Label:
+                                @break = true;
                                 break;
 
-                            case Break:
-                                @break = true;
+                            case Continue { Label: null }:
+                            case Continue { Label: string label } when label == Label:
+                                @continue = true;
                                 break;
 
                             case Yield:

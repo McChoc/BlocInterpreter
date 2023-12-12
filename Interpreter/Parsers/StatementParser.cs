@@ -43,7 +43,6 @@ internal static class StatementParser
         var statement = provider.Peek() switch
         {
             SymbolToken(Symbol.SEMI) => GetEmptyStatement(provider),
-
             SymbolToken(Symbol.SLASH) => GetCommandStatement(provider),
             KeywordToken(Keyword.EXEC) => GetExecStatement(provider),
 
@@ -742,48 +741,77 @@ internal static class StatementParser
     {
         var line = GetLine(provider).GetRange(1..);
 
-        if (line.Count != 0)
-            throw new SyntaxError(line[0].Start, line[^1].End, "Unexpected expression");
+        if (line.Count == 0)
+            return new ContinueStatement();
 
-        return new ContinueStatement();
+        if (line[0] is not INamedIdentifierToken token)
+            throw new SyntaxError(line[0].Start, line[0].End, "Unexpected symbol.");
+
+        if (line.Count > 1)
+            throw new SyntaxError(line[1].Start, line[1].End, "Unexpected symbol.");
+
+        var identifier = token.GetIdentifier();
+
+        return new ContinueStatement(identifier);
     }
 
     private static BreakStatement GetBreakStatement(ITokenProvider provider)
     {
         var line = GetLine(provider).GetRange(1..);
 
-        if (line.Count != 0)
-            throw new SyntaxError(line[0].Start, line[^1].End, "Unexpected expression");
+        if (line.Count == 0)
+            return new BreakStatement();
+        
+        if (line[0] is not INamedIdentifierToken token)
+            throw new SyntaxError(line[0].Start, line[0].End, "Unexpected symbol.");
 
-        return new BreakStatement();
+        if (line.Count > 1)
+            throw new SyntaxError(line[1].Start, line[1].End, "Unexpected symbol.");
+
+        var identifier = token.GetIdentifier();
+
+        return new BreakStatement(identifier);
     }
 
     private static Statement GetGotoStatement(ITokenProvider provider)
     {
         var line = GetLine(provider);
 
-        if (line is [_, KeywordToken(Keyword.CASE), ..])
+        return line switch
         {
-            if (line.Count < 3)
-                throw new SyntaxError(line[0].Start, line[1].End, "Missing expression.");
+            [_, KeywordToken(Keyword.DEFAULT)] => GetGotoDefaultStatement(),
+            [_, KeywordToken(Keyword.CASE), ..] => GetGotoCaseStatement(line),
+            _ => GetGotoStatement(line),
+        };
+    }
 
-            var expression = ExpressionParser.Parse(line.GetRange(2..));
-            return new GotoCaseStatement(expression);
-        }
-        else
-        {
-            if (line.Count < 2)
-                throw new SyntaxError(line[0].Start, line[0].End, "Missing label.");
+    private static GotoDefaultStatement GetGotoDefaultStatement()
+    {
+        return new GotoDefaultStatement();
+    }
 
-            if (line[1] is not INamedIdentifierToken token)
-                throw new SyntaxError(line[1].Start, line[1].End, "Unexpected symbol.");
+    private static GotoCaseStatement GetGotoCaseStatement(List<IToken> line)
+    {
+        if (line.Count < 3)
+            throw new SyntaxError(line[0].Start, line[1].End, "Missing expression.");
 
-            if (line.Count > 2)
-                throw new SyntaxError(line[2].Start, line[2].End, "Unexpected symbol.");
+        var expression = ExpressionParser.Parse(line.GetRange(2..));
+        return new GotoCaseStatement(expression);
+    }
 
-            var identifier = token.GetIdentifier();
-            return new GotoStatement(identifier);
-        }
+    private static GotoStatement GetGotoStatement(List<IToken> line)
+    {
+        if (line.Count < 2)
+            throw new SyntaxError(line[0].Start, line[0].End, "Missing label.");
+
+        if (line[1] is not INamedIdentifierToken token)
+            throw new SyntaxError(line[1].Start, line[1].End, "Unexpected symbol.");
+
+        if (line.Count > 2)
+            throw new SyntaxError(line[2].Start, line[2].End, "Unexpected symbol.");
+
+        var identifier = token.GetIdentifier();
+        return new GotoStatement(identifier);
     }
 
     private static IExpression GetExpression(ITokenProvider provider, IToken keyword)

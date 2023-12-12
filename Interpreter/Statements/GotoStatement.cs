@@ -18,8 +18,7 @@ internal sealed partial class GotoStatement : Statement
 
     internal override IEnumerable<IResult> Execute(Call call)
     {
-        var label = _identifier.GetName(call);
-
+        string label = _identifier.GetName(call);
         yield return new Goto(label);
     }
 }

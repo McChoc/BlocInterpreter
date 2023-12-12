@@ -153,17 +153,20 @@ public sealed partial class Func : Value, IPattern, IInvokable
             {
                 switch (_statements[i].Execute(call).FirstOrDefault())
                 {
-                    case Continue:
-                        throw new Throw("A continue statement can only be used inside a loop");
+                    case Yield:
+                        throw new Throw("A yield statement can only be used inside a generator function");
 
                     case Break:
                         throw new Throw("A break statement can only be used inside a loop");
 
+                    case Continue:
+                        throw new Throw("A continue statement can only be used inside a loop");
+
                     case GotoCase:
                         throw new Throw("A goto case statement can only be used inside a switch or a match statement");
 
-                    case Yield:
-                        throw new Throw("A yield statement can only be used inside a generator function");
+                    case GotoDefault:
+                        throw new Throw("A goto default statement can only be used inside a switch or a match statement");
 
                     case Throw @throw:
                         throw @throw;
@@ -182,7 +185,7 @@ public sealed partial class Func : Value, IPattern, IInvokable
                             continue;
                         }
 
-                        throw new Throw("No such label in scope");
+                        throw new Throw($"Label '{@goto.Label}' does not exist in scope.");
                 }
             }
 

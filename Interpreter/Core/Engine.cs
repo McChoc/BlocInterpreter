@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Bloc.Commands;
 using Bloc.Expressions;
@@ -67,20 +66,23 @@ public sealed class Engine
         {
             switch (statements[i].Execute(module.TopLevelCall).FirstOrDefault())
             {
-                case Continue:
-                    return new Throw("A continue statement can only be used inside a loop");
-
-                case Break:
-                    return new Throw("A break statement can only be used inside a loop");
-
-                case GotoCase:
-                    return new Throw("A goto case statement can only be used inside a switch or a match statement");
-
                 case Return:
                     return new Throw("A return statement can only be used inside a function");
 
                 case Yield:
                     return new Throw("A yield statement can only be used inside a generator function");
+
+                case Break:
+                    return new Throw("A break statement can only be used inside a loop");
+
+                case Continue:
+                    return new Throw("A continue statement can only be used inside a loop");
+
+                case GotoCase:
+                    return new Throw("A goto case statement can only be used inside a switch or a match statement");
+
+                case GotoDefault:
+                    return new Throw("A goto default statement can only be used inside a switch or a match statement");
 
                 case Throw @throw:
                     return @throw;
